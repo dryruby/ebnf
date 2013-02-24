@@ -1,0 +1,33 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dc:   <http://purl.org/dc/terms/> .
+@prefix earl: <http://www.w3.org/ns/earl#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix doap: <http://usefulinc.com/ns/doap#> .
+@prefix ex:   <http://example.org/> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+<http://rubygems.org/gems/rdf-turtle> a doap:Project, earl:TestSubject, earl:Software ;
+  doap:name          "RDF::Turtle" ;
+  doap:homepage      <http://ruby-rdf.github.com/rdf-turtle> ;
+  doap:license       <http://creativecommons.org/licenses/publicdomain/> ;
+  doap:shortdesc     "Turtle reader/writer for Ruby."@en ;
+  doap:description   "RDF::Turtle is an Turtle reader/writer for the RDF.rb library suite."@en ;
+  doap:created       "2011-08-29"^^xsd:date ;
+  doap:programming-language "Ruby" ;
+  doap:implements    <http://www.w3.org/TR/turtle/> ;
+  doap:category      <http://dbpedia.org/resource/Resource_Description_Framework>,
+                     <http://dbpedia.org/resource/Ruby_(programming_language)> ;
+  doap:download-page <http://rubygems.org/gems/rdf-turtle> ;
+  doap:mailing-list  <http://lists.w3.org/Archives/Public/public-rdf-ruby/> ;
+  doap:bug-database  <http://github.com/ruby-rdf/rdf-turtle/issues> ;
+  doap:blog          <http://greggkellogg.net/> ;
+  doap:developer     <http://greggkellogg.net/foaf#me> ;
+  doap:maintainer    <http://greggkellogg.net/foaf#me> ;
+  doap:documenter    <http://greggkellogg.net/foaf#me> ;
+  foaf:maker         <http://greggkellogg.net/foaf#me> ;
+  dc:title           "RDF::Turtle" ;
+  dc:description     "RDF::Turtle is an Turtle reader/writer for the RDF.rb library suite."@en ;
+  dc:date            "2011-08-29"^^xsd:date ;
+  dc:creator         <http://greggkellogg.net/foaf#me> ;
+  dc:isPartOf        <http://rubygems.org/gems/rdf> .

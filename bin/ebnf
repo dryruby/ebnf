@@ -1,0 +1,54 @@
+#!/usr/bin/env ruby
+# ebnf2ttl --- Generate reasoned Turtle representation of EBNF input file
+# to be used in extracting parser branch tables (see gramLL1).
+
+$:.unshift(File.expand_path(File.join(File.dirname(__FILE__), "..", 'lib')))
+require "bundler/setup"
+require 'rubygems'
+require 'getoptlong'
+require 'ebnf'
+require 'sxp'
+
+options = {
+  :format => :sxp,
+  :prefix => "ttl",
+  :namespace => "http://www.w3.org/ns/formats/Turtle#",
+}
+
+out = STDOUT
+
+opts = GetoptLong.new(
+  ["--dbg", GetoptLong::NO_ARGUMENT],
+  ["--bnf", GetoptLong::NO_ARGUMENT],
+  ["--execute", "-e", GetoptLong::REQUIRED_ARGUMENT],
+  ["--output", "-o", GetoptLong::REQUIRED_ARGUMENT],
+  ["--format", "-f", GetoptLong::REQUIRED_ARGUMENT],
+  ["--prefix", "-p", GetoptLong::REQUIRED_ARGUMENT],
+  ["--namespace", "-n", GetoptLong::REQUIRED_ARGUMENT],
+  ["--verbose", GetoptLong::NO_ARGUMENT]
+)
+
+opts.each do |opt, arg|
+  case opt
+  when '--dbg'          then options[:debug] = true
+  when '--bnf'          then options[:bnf] = true
+  when '--execute'      then input = arg
+  when '--format'       then options[:format] = arg.to_sym
+  when '--output'       then out = File.open(arg, "w")
+  when '--prefix'       then options[:prefix] = arg
+  when '--namespace'    then options[:namespace] = arg
+  when '--verbose'      then $verbose = true
+  end
+end
+
+input = File.open(ARGV[0]) if ARGV[0]
+
+ebnf = EBNF.new(input || STDIN, options)
+ebnf = ebnf.make_bnf if options[:bnf]
+res = case options[:format]
+when :sxp     then ebnf.to_sxp
+when :ttl     then ebnf.to_ttl(options[:prefix], options[:namespace])
+else          ebnf.ast.inspect
+end
+
+out.puts res
