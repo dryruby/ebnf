@@ -1,0 +1,54 @@
+/* An EBNF grammar for EBNF */
+[1] ebnf        ::= (declaration | rule)*
+
+[2] declaration ::= '@terminals' | '@pass'
+
+[3] rule        ::= lhs '::=' expression
+
+[4] lhs         ::= '[' SYMBOL ']' SYMBOL
+
+[5] expression  ::= alt
+
+[6] alt         ::= seq ('|' seq)*
+
+[7] seq         ::= diff+
+
+[8] diff        ::= postfix ('-' postfix)*
+
+[9] postfix     ::= primary ( [?*+] )?
+
+[10] primary    ::= HEX
+                |   RANGE
+                |   ENUM 
+                |   O_RANGE
+                |   O_ENUM
+                |   STRING1
+                |   STRING2
+                |   '(' expression ')'
+
+@terminals
+
+[11] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | "_")+
+
+[12] HEX        ::= '#x' ([0-9] | [a-f] | [A-F])+
+
+[13] RANGE      ::= '[' CHAR '-' CHAR ']'
+
+[14] ENUM       ::= '[' CHAR+ ']'
+
+[15] O_RANGE    ::= '[^' CHAR '-' CHAR ']'
+
+[16] OENUM      ::= '[^' CHAR+ ']'
+
+[17] STRING1    ::= '"' (CHAR - '"')* '"'
+
+[18] STRING2    ::= "'" (CHAR - "'")* "'"
+
+[19] CHAR       ::= HEX
+                |   ('\\' [\\trn'"])
+                |   [^\t\r\n'"]
+
+@pass           ::= (
+                      [#x20\t\r\n]
+                    |  
+                    )+
