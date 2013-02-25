@@ -65,7 +65,12 @@ module EBNF
       elements << first.sort_by(&:to_s).unshift(:first) if first
       elements << follow.sort_by(&:to_s).unshift(:follow) if follow
       elements << expr
-      elements.to_sxp
+      begin
+        require 'sxp'
+        SXP::Generator.string(elements)
+      rescue LoadError
+        elements.to_sxp
+      end
     end
     def to_s; to_sxp; end
     

@@ -1,6 +1,9 @@
 #!/usr/bin/env ruby
-# ebnf2ttl --- Generate reasoned Turtle representation of EBNF input file
-# to be used in extracting parser branch tables (see gramLL1).
+# ebnf --- Process EBNF to generate the following:
+# * S-Expression
+# * Turtle
+# * Either of the above, transformed to BNF
+# * And with First/Follow rules
 
 $:.unshift(File.expand_path(File.join(File.dirname(__FILE__), "..", 'lib')))
 require "bundler/setup"
@@ -17,34 +20,57 @@ options = {
 
 out = STDOUT
 
-opts = GetoptLong.new(
-  ["--dbg", GetoptLong::NO_ARGUMENT],
-  ["--bnf", GetoptLong::NO_ARGUMENT],
-  ["--execute", "-e", GetoptLong::REQUIRED_ARGUMENT],
-  ["--output", "-o", GetoptLong::REQUIRED_ARGUMENT],
-  ["--format", "-f", GetoptLong::REQUIRED_ARGUMENT],
-  ["--prefix", "-p", GetoptLong::REQUIRED_ARGUMENT],
-  ["--namespace", "-n", GetoptLong::REQUIRED_ARGUMENT],
-  ["--verbose", GetoptLong::NO_ARGUMENT]
-)
+OPT_ARGS = [
+  ["--dbg",             GetoptLong::NO_ARGUMENT,      "Turn on verbose debugging"],
+  ["--bnf",             GetoptLong::NO_ARGUMENT,      "Transform EBNF to BNF"],
+  ["--evaluate","-e",   GetoptLong::REQUIRED_ARGUMENT,"Evaluate argument as a JSON-LD document"],
+  ["--ll1",             GetoptLong::REQUIRED_ARGUMENT,"Generate First/Follow rules, argument is start symbol"],
+  ["--format", "-f",    GetoptLong::REQUIRED_ARGUMENT,"Specify output format one of ttl, or sxp"],
+  ["--output", "-o",    GetoptLong::REQUIRED_ARGUMENT,"Output to the specified file path"],
+  ["--prefix", "-p",    GetoptLong::REQUIRED_ARGUMENT,"Prefix to use when generating Turtle"],
+  ["--namespace", "-n", GetoptLong::REQUIRED_ARGUMENT,"Namespace to use when generating Turtle"],
+  ["--verbose", "-v",   GetoptLong::NO_ARGUMENT,      "Detail on execution"],
+  ["--help", "-?",      GetoptLong::NO_ARGUMENT,      "This message"]
+]
+def usage
+  STDERR.puts %{#{$0} Version #{EBNF::VERSION}}
+  STDERR.puts %{Usage: #{$0} [options] file ...}
+  width = OPT_ARGS.map do |o|
+    l = o.first.length
+    l += o[1].length + 2 if o[1].is_a?(String)
+    l
+  end.max
+  OPT_ARGS.each do |o|
+    s = "  %-*s  " % [width, (o[1].is_a?(String) ? "#{o[0,2].join(', ')}" : o[0])]
+    s += o.last
+    STDERR.puts s
+  end
+  exit(1)
+end
+
+opts = GetoptLong.new(*OPT_ARGS.map {|o| o[0..-2]})
 
 opts.each do |opt, arg|
   case opt
   when '--dbg'          then options[:debug] = true
   when '--bnf'          then options[:bnf] = true
-  when '--execute'      then input = arg
+  when '--evaluate'     then input = arg
   when '--format'       then options[:format] = arg.to_sym
+  when '--ll1'          then options[:ll1] = arg.to_sym
   when '--output'       then out = File.open(arg, "w")
   when '--prefix'       then options[:prefix] = arg
   when '--namespace'    then options[:namespace] = arg
   when '--verbose'      then $verbose = true
+  when '--help'         then usage
   end
 end
 
 input = File.open(ARGV[0]) if ARGV[0]
 
-ebnf = EBNF.new(input || STDIN, options)
-ebnf = ebnf.make_bnf if options[:bnf]
+ebnf = EBNF.parse(input || STDIN, options)
+ebnf.make_bnf if options[:bnf] || options[:ll1]
+ebnf.first_follow([options[:ll1]]) if options[:ll1]
+
 res = case options[:format]
 when :sxp     then ebnf.to_sxp
 when :ttl     then ebnf.to_ttl(options[:prefix], options[:namespace])
