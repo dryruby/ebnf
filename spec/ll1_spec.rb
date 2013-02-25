@@ -35,33 +35,32 @@ describe EBNF::Base do
         "alt" => [
           %{[1] ebnf        ::= declaration | rule},
           %{
-            ((_empty "0" (kind rule) (first _eps) (seq))
-             (ebnf "1" (kind rule) (alt declaration rule)))
+            ((rule _empty "0" (first _eps) (seq))
+             (rule ebnf "1" (alt declaration rule)))
           }
         ],
         "seq[1]" => [
           %{[1] rule::= a b },
           %{
-            ((_empty "0" (kind rule) (first _eps) (seq))
-             (rule "1" (kind rule) (seq a b))
-             (_rule_comp "1.comp" (kind rule) (seq b)))
+            ((rule _empty "0" (first _eps) (seq))
+             (rule rule "1" (seq a b))
+             (rule _rule_comp "1.comp" (seq b)))
           }
         ],
         "blankNodePropertyList" => [
           %{[14] blankNodePropertyList            ::= "[" predicateObjectList "]"},
           %{
-            ((_empty "0" (kind rule) (first _eps) (seq))
-             (blankNodePropertyList "14" (kind rule) (first "[") (seq "[" predicateObjectList "]"))
-             (_blankNodePropertyList_comp "14.comp" (kind rule) (seq predicateObjectList "]"))
-             (__blankNodePropertyList_comp_comp "14.comp.comp" (kind rule) (first "]") (seq "]")))
+            ((rule _empty "0" (first _eps) (seq))
+             (rule blankNodePropertyList "14" (first "[") (seq "[" predicateObjectList "]"))
+             (rule _blankNodePropertyList_comp "14.comp" (seq predicateObjectList "]"))
+             (rule __blankNodePropertyList_comp_comp "14.comp.comp" (first "]") (seq "]")))
           }
         ]
       }.each do |name, (input, expected)|
         it name do
           ebnf = parse(input)
-          sin = ebnf.ast.sort.to_sxp.gsub(/\s+/m, ' ')
-          sout = expected.gsub(/\s+/m, ' ').strip
-          sin.should produce(sout, @debug)
+          sin = ebnf.ast.sort.to_sxp
+          sin.should produce(expected, @debug)
         end
       end
     end
@@ -73,10 +72,10 @@ describe EBNF::Base do
             [5] base                              ::= '@base' IRIREF "."
           },
           %{
-            ((_empty "0" (kind rule) (first _eps) (seq))
-             (base "5" (kind rule) (first "@base") (seq "@base" IRIREF "."))
-             (_base_comp "5.comp" (kind rule) (seq IRIREF "."))
-             (__base_comp_comp "5.comp.comp" (kind rule) (first ".") (seq ".")))
+            ((rule _empty "0" (first _eps) (seq))
+             (rule base "5" (first "@base") (seq "@base" IRIREF "."))
+             (rule _base_comp "5.comp" (seq IRIREF "."))
+             (rule __base_comp_comp "5.comp.comp" (first ".") (seq ".")))
           }, []
         ],
         "sparqlPrefix (FF.1)" => [
@@ -86,11 +85,11 @@ describe EBNF::Base do
             [29t] SPARQL_BASE                     ::= [Bb][Aa][Ss][Ee]
           },
           %{
-            ((_empty "0" (kind rule) (first _eps) (seq))
-            (IRIREF "18" (kind terminal) (seq "<" (star (alt "range" UCHAR)) ">"))
-            (sparqlBase "29s" (kind rule) (first SPARQL_BASE) (seq SPARQL_BASE IRIREF))
-            (_sparqlBase_comp "29s.comp" (kind rule) (first IRIREF) (seq IRIREF))
-            (SPARQL_BASE "29t" (kind terminal) (seq (range "Bb") (range "Aa") (range "Ss") (range "Ee"))))
+            ((rule _empty "0" (first _eps) (seq))
+             (terminal IRIREF "18" (seq "<" (star (alt "range" UCHAR)) ">"))
+             (rule sparqlBase "29s" (first SPARQL_BASE) (seq SPARQL_BASE IRIREF))
+             (rule _sparqlBase_comp "29s.comp" (first IRIREF) (seq IRIREF))
+             (terminal SPARQL_BASE "29t" (seq (range "Bb") (range "Aa") (range "Ss") (range "Ee"))))
           }, []
         ],
         "declaration (FF.1)" => [
@@ -98,8 +97,8 @@ describe EBNF::Base do
             [2] declaration ::= '@terminals' | '@pass'
           },
           %{
-            ((_empty "0" (kind rule) (first _eps) (seq))
-            (declaration "2" (kind rule) (first "@pass" "@terminals") (alt "@terminals" "@pass")))
+            ((rule _empty "0" (first _eps) (seq))
+             (rule declaration "2" (first "@pass" "@terminals") (alt "@terminals" "@pass")))
           }, []
         ],
         "turtleDoc (FF.2)" => [
@@ -108,22 +107,21 @@ describe EBNF::Base do
             [2] statement                         ::= directive | triples "." 
           },
           %{
-            ((_empty "0" (kind rule) (first _eps) (follow _eof) (seq))
-             (turtleDoc "1" (kind rule) (start #t) (first _eps) (follow _eof)
+            ((rule _empty "0" (first _eps) (follow _eof) (seq))
+             (rule turtleDoc "1" (start #t) (first _eps) (follow _eof)
               (alt _empty _turtleDoc_star))
-             (_turtleDoc_star "1*" (kind rule) (follow _eof) (seq statement turtleDoc))
-             (__turtleDoc_star_comp "1*.comp" (kind rule) (first _eps) (follow _eof) (seq turtleDoc))
-             (statement "2" (kind rule) (alt directive _statement_1))
-             (_statement_1 "2.1" (kind rule) (seq triples "."))
-             (__statement_1_comp "2.1.comp" (kind rule) (first ".") (seq ".")))
+             (rule _turtleDoc_star "1*" (follow _eof) (seq statement turtleDoc))
+             (rule __turtleDoc_star_comp "1*.comp" (first _eps) (follow _eof) (seq turtleDoc))
+             (rule statement "2" (alt directive _statement_1))
+             (rule _statement_1 "2.1" (seq triples "."))
+             (rule __statement_1_comp "2.1.comp" (first ".") (seq ".")))
           }, [:turtleDoc]
         ]
       }.each do |name, (input, expected, start)|
         it name do
           ebnf = parse(input, :start => start)
-          sin = ebnf.ast.sort.to_sxp.gsub(/\s+/m, ' ')
-          sout = expected.gsub(/\s+/m, ' ').strip
-          sin.should produce(sout, @debug)
+          sin = ebnf.ast.sort.to_sxp
+          sin.should produce(expected, @debug)
         end
       end
     end
@@ -137,11 +135,11 @@ describe EBNF::Base do
             [3] b     ::= "bar"
           },
           %{
-            ((_empty "0" (kind rule) (first _eps) (seq))
-             (rule1 "1" (kind rule) (first "foo") (seq a b))
-             (_rule1_comp "1.comp" (kind rule) (first "bar") (seq b))
-             (a "2" (kind rule) (first "foo") (follow "bar") (seq "foo"))
-             (b "3" (kind rule) (first "bar") (seq "bar")))
+            ((rule _empty "0" (first _eps) (seq))
+             (rule rule1 "1" (first "foo") (seq a b))
+             (rule _rule1_comp "1.comp" (first "bar") (seq b))
+             (rule a "2" (first "foo") (follow "bar") (seq "foo"))
+             (rule b "3" (first "bar") (seq "bar")))
           }
         ],
         "blankNodePropertyList (FF.4)" => [
@@ -150,12 +148,12 @@ describe EBNF::Base do
             [14] blankNodePropertyList            ::= "[" predicateObjectList "]"
           },
           %{
-            ((_empty "0" (kind rule) (first _eps) (seq))
-            (predicateObjectList "7" (kind rule) (follow "]") (seq verb objectList))
-            (_predicateObjectList_comp "7.comp" (kind rule) (follow "]") (seq objectList))
-            (blankNodePropertyList "14" (kind rule) (first "[") (seq "[" predicateObjectList "]"))
-            (_blankNodePropertyList_comp "14.comp" (kind rule) (seq predicateObjectList "]"))
-            (__blankNodePropertyList_comp_comp "14.comp.comp" (kind rule) (first "]") (seq "]")))
+            ((rule _empty "0" (first _eps) (seq))
+             (rule predicateObjectList "7" (follow "]") (seq verb objectList))
+             (rule _predicateObjectList_comp "7.comp" (follow "]") (seq objectList))
+             (rule blankNodePropertyList "14" (first "[") (seq "[" predicateObjectList "]"))
+             (rule _blankNodePropertyList_comp "14.comp" (seq predicateObjectList "]"))
+             (rule __blankNodePropertyList_comp_comp "14.comp.comp" (first "]") (seq "]")))
           }
         ],
         "collection (FF.6/7)" => [
@@ -163,21 +161,20 @@ describe EBNF::Base do
             [15] collection                       ::= "(" object* ")"
           },
           %{
-            ((_empty "0" (kind rule) (first _eps) (seq))
-             (collection "15" (kind rule) (first "(") (seq "(" _collection_1 ")"))
-             (_collection_1 "15.1" (kind rule) (first _eps) (follow ")") (alt _empty __collection_1_star))
-             (__collection_1_star "15.1*" (kind rule) (follow ")")(seq object _collection_1))
-             (___collection_1_star_comp "15.1*.comp" (kind rule) (first _eps) (follow ")") (seq _collection_1))
-             (_collection_comp "15.comp" (kind rule) (first _eps) (seq _collection_1 ")"))
-             (__collection_comp_comp "15.comp.comp" (kind rule) (first ")") (seq ")")))
+            ((rule _empty "0" (first _eps) (follow ")") (seq))
+             (rule collection "15" (first "(") (seq "(" _collection_1 ")"))
+             (rule _collection_1 "15.1" (first _eps) (follow ")") (alt _empty __collection_1_star))
+             (rule __collection_1_star "15.1*" (follow ")") (seq object _collection_1))
+             (rule ___collection_1_star_comp "15.1*.comp" (first _eps) (follow ")") (seq _collection_1))
+             (rule _collection_comp "15.comp" (first _eps) (seq _collection_1 ")"))
+             (rule __collection_comp_comp "15.comp.comp" (first ")") (seq ")")))
           }
         ]
       }.each do |name, (input, expected)|
         it name do
           ebnf = parse(input)
-          sin = ebnf.ast.sort.to_sxp.gsub(/\s+/m, ' ')
-          sout = expected.gsub(/\s+/m, ' ').strip
-          sin.should produce(sout, @debug)
+          sin = ebnf.ast.sort.to_sxp
+          sin.should produce(expected, @debug)
         end
       end
     end

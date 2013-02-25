@@ -1,0 +1,1567 @@
+((rule
+ _empty
+ "0"
+ (first _eps)
+ (follow "("
+  ")"
+  ","
+  "."
+  ";"
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "]"
+  _eof
+  "false"
+  "true"
+ )
+ (seq)
+)
+ (rule
+ turtleDoc
+ "1"
+ (start #t)
+ (first
+  "("
+  "@base"
+  "@prefix"
+  ANON
+  BLANK_NODE_LABEL
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  SPARQL_BASE
+  SPARQL_PREFIX
+  "["
+  _eps
+ )
+ (follow _eof)
+ (alt _empty _turtleDoc_star)
+)
+ (rule
+ _turtleDoc_star
+ "1*"
+ (first
+  "("
+  "@base"
+  "@prefix"
+  ANON
+  BLANK_NODE_LABEL
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  SPARQL_BASE
+  SPARQL_PREFIX
+  "["
+ )
+ (follow _eof)
+ (seq statement turtleDoc)
+)
+ (rule
+ __turtleDoc_star_comp
+ "1*.comp"
+ (first
+  "("
+  "@base"
+  "@prefix"
+  ANON
+  BLANK_NODE_LABEL
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  SPARQL_BASE
+  SPARQL_PREFIX
+  "["
+  _eps
+ )
+ (follow _eof)
+ (seq turtleDoc)
+)
+ (rule
+ statement
+ "2"
+ (first
+  "("
+  "@base"
+  "@prefix"
+  ANON
+  BLANK_NODE_LABEL
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  SPARQL_BASE
+  SPARQL_PREFIX
+  "["
+ )
+ (follow
+  "("
+  "@base"
+  "@prefix"
+  ANON
+  BLANK_NODE_LABEL
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  SPARQL_BASE
+  SPARQL_PREFIX
+  "["
+ )
+ (alt directive _statement_1)
+)
+ (rule
+ _statement_1
+ "2.1"
+ (first
+  "("
+  ANON
+  BLANK_NODE_LABEL
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  "["
+ )
+ (follow
+  "("
+  "@base"
+  "@prefix"
+  ANON
+  BLANK_NODE_LABEL
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  SPARQL_BASE
+  SPARQL_PREFIX
+  "["
+ )
+ (seq triples ".")
+)
+ (rule
+ __statement_1_comp
+ "2.1.comp"
+ (first ".")
+ (follow
+  "("
+  "@base"
+  "@prefix"
+  ANON
+  BLANK_NODE_LABEL
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  SPARQL_BASE
+  SPARQL_PREFIX
+  "["
+ )
+ (seq ".")
+)
+ (rule
+ directive
+ "3"
+ (first
+  "@base"
+  "@prefix"
+  SPARQL_BASE
+  SPARQL_PREFIX
+ )
+ (follow
+  "("
+  "@base"
+  "@prefix"
+  ANON
+  BLANK_NODE_LABEL
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  SPARQL_BASE
+  SPARQL_PREFIX
+  "["
+ )
+ (alt
+  prefixID
+  base
+  sparqlPrefix
+  sparqlBase
+ )
+)
+ (rule
+ prefixID
+ "4"
+ (first "@prefix")
+ (follow
+  "("
+  "@base"
+  "@prefix"
+  ANON
+  BLANK_NODE_LABEL
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  SPARQL_BASE
+  SPARQL_PREFIX
+  "["
+ )
+ (seq "@prefix" PNAME_NS IRIREF ".")
+)
+ (rule
+ _prefixID_comp
+ "4.comp"
+ (first PNAME_NS)
+ (follow
+  "("
+  "@base"
+  "@prefix"
+  ANON
+  BLANK_NODE_LABEL
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  SPARQL_BASE
+  SPARQL_PREFIX
+  "["
+ )
+ (seq PNAME_NS IRIREF ".")
+)
+ (rule
+ base
+ "5"
+ (first "@base")
+ (follow
+  "("
+  "@base"
+  "@prefix"
+  ANON
+  BLANK_NODE_LABEL
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  SPARQL_BASE
+  SPARQL_PREFIX
+  "["
+ )
+ (seq "@base" IRIREF ".")
+)
+ (rule
+ _base_comp
+ "5.comp"
+ (first IRIREF)
+ (follow
+  "("
+  "@base"
+  "@prefix"
+  ANON
+  BLANK_NODE_LABEL
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  SPARQL_BASE
+  SPARQL_PREFIX
+  "["
+ )
+ (seq IRIREF ".")
+)
+ (rule
+ triples
+ "6"
+ (first
+  "("
+  ANON
+  BLANK_NODE_LABEL
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  "["
+ )
+ (follow ".")
+ (alt _triples_1 _triples_2)
+)
+ (rule
+ _triples_1
+ "6.1"
+ (first
+  "("
+  ANON
+  BLANK_NODE_LABEL
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+ )
+ (follow ".")
+ (seq subject predicateObjectList)
+)
+ (rule
+ __triples_1_comp
+ "6.1.comp"
+ (first IRIREF PNAME_LN PNAME_NS "a")
+ (follow ".")
+ (seq predicateObjectList)
+)
+ (rule
+ _triples_2
+ "6.2"
+ (first "[")
+ (follow ".")
+ (seq blankNodePropertyList __triples_2_1)
+)
+ (rule
+ __triples_2_1
+ "6.2.1"
+ (first IRIREF PNAME_LN PNAME_NS _eps "a")
+ (follow ".")
+ (alt _empty predicateObjectList)
+)
+ (rule
+ __triples_2_comp
+ "6.2.comp"
+ (first IRIREF PNAME_LN PNAME_NS _eps "a")
+ (follow ".")
+ (seq __triples_2_1)
+)
+ (rule
+ predicateObjectList
+ "7"
+ (first IRIREF PNAME_LN PNAME_NS "a")
+ (follow "." "]")
+ (seq
+  verb
+  objectList
+  _predicateObjectList_1
+ )
+)
+ (rule
+ _predicateObjectList_1
+ "7.1"
+ (first ";" _eps)
+ (follow "." "]")
+ (alt _empty __predicateObjectList_1_star)
+)
+ (rule
+ __predicateObjectList_1_star
+ "7.1*"
+ (first ";")
+ (follow "." "]")
+ (seq
+  __predicateObjectList_1_1
+  _predicateObjectList_1
+ )
+)
+ (rule
+ ___predicateObjectList_1_star_comp
+ "7.1*.comp"
+ (first ";" _eps)
+ (follow "." "]")
+ (seq _predicateObjectList_1)
+)
+ (rule
+ __predicateObjectList_1_1
+ "7.1.1"
+ (first ";")
+ (follow ";")
+ (seq ";" ___predicateObjectList_1_1_1)
+)
+ (rule
+ ___predicateObjectList_1_1_1
+ "7.1.1.1"
+ (first IRIREF PNAME_LN PNAME_NS _eps "a")
+ (follow ";")
+ (alt
+  _empty
+  ____predicateObjectList_1_1_1_1
+ )
+)
+ (rule
+ ____predicateObjectList_1_1_1_1
+ "7.1.1.1.1"
+ (first IRIREF PNAME_LN PNAME_NS "a")
+ (follow ";")
+ (seq verb objectList)
+)
+ (rule
+ _____predicateObjectList_1_1_1_1_comp
+ "7.1.1.1.1.comp"
+ (first
+  "("
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "false"
+  "true"
+ )
+ (follow ";")
+ (seq objectList)
+)
+ (rule
+ ___predicateObjectList_1_1_comp
+ "7.1.1.comp"
+ (first IRIREF PNAME_LN PNAME_NS _eps "a")
+ (follow ";")
+ (seq ___predicateObjectList_1_1_1)
+)
+ (rule
+ _predicateObjectList_comp
+ "7.comp"
+ (first
+  "("
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "false"
+  "true"
+ )
+ (follow "." "]")
+ (seq objectList _predicateObjectList_1)
+)
+ (rule
+ objectList
+ "8"
+ (first
+  "("
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "false"
+  "true"
+ )
+ (follow ";")
+ (seq object _objectList_1)
+)
+ (rule
+ _objectList_1
+ "8.1"
+ (first "," _eps)
+ (follow ";")
+ (alt _empty __objectList_1_star)
+)
+ (rule
+ __objectList_1_star
+ "8.1*"
+ (first ",")
+ (follow ";")
+ (seq __objectList_1_1 _objectList_1)
+)
+ (rule
+ ___objectList_1_star_comp
+ "8.1*.comp"
+ (first "," _eps)
+ (follow ";")
+ (seq _objectList_1)
+)
+ (rule
+ __objectList_1_1
+ "8.1.1"
+ (first ",")
+ (follow ",")
+ (seq "," object)
+)
+ (rule
+ ___objectList_1_1_comp
+ "8.1.1.comp"
+ (first
+  "("
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "false"
+  "true"
+ )
+ (follow ",")
+ (seq object)
+)
+ (rule
+ _objectList_comp
+ "8.comp"
+ (first "," _eps)
+ (follow ";")
+ (seq _objectList_1)
+)
+ (rule
+ verb
+ "9"
+ (first IRIREF PNAME_LN PNAME_NS "a")
+ (follow
+  "("
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "false"
+  "true"
+ )
+ (alt predicate "a")
+)
+ (rule
+ subject
+ "10"
+ (first
+  "("
+  ANON
+  BLANK_NODE_LABEL
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+ )
+ (follow IRIREF PNAME_LN PNAME_NS "a")
+ (alt iri BlankNode collection)
+)
+ (rule
+ predicate
+ "11"
+ (first IRIREF PNAME_LN PNAME_NS)
+ (follow
+  "("
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "false"
+  "true"
+ )
+ (seq iri)
+)
+ (rule
+ object
+ "12"
+ (first
+  "("
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "false"
+  "true"
+ )
+ (follow
+  "("
+  ","
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "false"
+  "true"
+ )
+ (alt
+  iri
+  BlankNode
+  collection
+  blankNodePropertyList
+  literal
+ )
+)
+ (rule
+ literal
+ "13"
+ (first
+  DECIMAL
+  DOUBLE
+  INTEGER
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "false"
+  "true"
+ )
+ (follow
+  "("
+  ","
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "false"
+  "true"
+ )
+ (alt
+  RDFLiteral
+  NumericLiteral
+  BooleanLiteral
+ )
+)
+ (rule
+ blankNodePropertyList
+ "14"
+ (first "[")
+ (follow
+  "("
+  ","
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "a"
+  "false"
+  "true"
+ )
+ (seq "[" predicateObjectList "]")
+)
+ (rule
+ _blankNodePropertyList_comp
+ "14.comp"
+ (first IRIREF PNAME_LN PNAME_NS "a")
+ (follow
+  "("
+  ","
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "a"
+  "false"
+  "true"
+ )
+ (seq predicateObjectList "]")
+)
+ (rule
+ __blankNodePropertyList_comp_comp
+ "14.comp.comp"
+ (first "]")
+ (follow
+  "("
+  ","
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "a"
+  "false"
+  "true"
+ )
+ (seq "]")
+)
+ (rule
+ collection
+ "15"
+ (first "(")
+ (follow
+  "("
+  ","
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "a"
+  "false"
+  "true"
+ )
+ (seq "(" _collection_1 ")")
+)
+ (rule
+ _collection_1
+ "15.1"
+ (first
+  "("
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  _eps
+  "false"
+  "true"
+ )
+ (follow ")")
+ (alt _empty __collection_1_star)
+)
+ (rule
+ __collection_1_star
+ "15.1*"
+ (first
+  "("
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "false"
+  "true"
+ )
+ (follow ")")
+ (seq object _collection_1)
+)
+ (rule
+ ___collection_1_star_comp
+ "15.1*.comp"
+ (first
+  "("
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  _eps
+  "false"
+  "true"
+ )
+ (follow ")")
+ (seq _collection_1)
+)
+ (rule
+ _collection_comp
+ "15.comp"
+ (first
+  "("
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  _eps
+  "false"
+  "true"
+ )
+ (follow
+  "("
+  ","
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "a"
+  "false"
+  "true"
+ )
+ (seq _collection_1 ")")
+)
+ (rule
+ __collection_comp_comp
+ "15.comp.comp"
+ (first ")")
+ (follow
+  "("
+  ","
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "a"
+  "false"
+  "true"
+ )
+ (seq ")")
+)
+ (rule
+ NumericLiteral
+ "16"
+ (first DECIMAL DOUBLE INTEGER)
+ (follow
+  "("
+  ","
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "false"
+  "true"
+ )
+ (alt INTEGER DECIMAL DOUBLE)
+)
+ (rule
+ String
+ "17"
+ (first
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+ )
+ (follow
+  LANGTAG
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "^^"
+ )
+ (alt
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_LONG_QUOTE
+ )
+)
+ (terminal
+ IRIREF
+ "18"
+ (seq
+  "<"
+  (star
+   (alt (range "^#x00-#x20<>\"{}|^`\\") UCHAR)
+  )
+  ">"
+ )
+)
+ (terminal
+ INTEGER
+ "19"
+ (seq (opt (range "+-")) (plus (range "0-9")))
+)
+ (terminal
+ DECIMAL
+ "20"
+ (seq
+  (opt (range "+-"))
+  (seq
+   (star (range "0-9"))
+   "."
+   (plus (range "0-9"))
+  )
+ )
+)
+ (terminal
+ DOUBLE
+ "21"
+ (seq
+  (opt (range "+-"))
+  (alt
+   (seq
+    (plus (range "0-9"))
+    "."
+    (star (range "0-9"))
+    EXPONENT
+   )
+   (seq "." (plus (range "0-9")) EXPONENT)
+   (seq (plus (range "0-9")) EXPONENT)
+  )
+ )
+)
+ (terminal
+ STRING_LITERAL_QUOTE
+ "22"
+ (seq
+  "\""
+  (star
+   (alt (range "^#x22#x5C#xA#xD") ECHAR UCHAR)
+  )
+  "\""
+ )
+)
+ (terminal
+ STRING_LITERAL_SINGLE_QUOTE
+ "23"
+ (seq
+  "'"
+  (star
+   (alt (range "^#x27#x5C#xA#xD") ECHAR UCHAR)
+  )
+  "'"
+ )
+)
+ (terminal
+ STRING_LITERAL_LONG_SINGLE_QUOTE
+ "24"
+ (seq
+  "'''"
+  (star
+   (seq
+    (opt (alt "'" "''"))
+    (alt (range "^'\\") ECHAR UCHAR)
+   )
+  )
+  "'''"
+ )
+)
+ (terminal
+ STRING_LITERAL_LONG_QUOTE
+ "25"
+ (seq
+  "\"\"\""
+  (star
+   (seq
+    (opt (alt "\"" "\"\""))
+    (alt (range "^\"\\") ECHAR UCHAR)
+   )
+  )
+  "\"\"\""
+ )
+)
+ (terminal
+ UCHAR
+ "26"
+ (alt
+  (seq "\\u" HEX HEX HEX HEX)
+  (seq
+   "\\U"
+   HEX
+   HEX
+   HEX
+   HEX
+   HEX
+   HEX
+   HEX
+   HEX
+  )
+ )
+)
+ (rule
+ sparqlPrefix
+ "28s"
+ (first SPARQL_PREFIX)
+ (follow
+  "("
+  "@base"
+  "@prefix"
+  ANON
+  BLANK_NODE_LABEL
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  SPARQL_BASE
+  SPARQL_PREFIX
+  "["
+ )
+ (seq SPARQL_PREFIX PNAME_NS IRIREF)
+)
+ (rule
+ _sparqlPrefix_comp
+ "28s.comp"
+ (first PNAME_NS)
+ (follow
+  "("
+  "@base"
+  "@prefix"
+  ANON
+  BLANK_NODE_LABEL
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  SPARQL_BASE
+  SPARQL_PREFIX
+  "["
+ )
+ (seq PNAME_NS IRIREF)
+)
+ (terminal
+ SPARQL_PREFIX
+ "28t"
+ (seq
+  (range "Pp")
+  (range "Rr")
+  (range "Ee")
+  (range "Ff")
+  (range "Ii")
+  (range "Xx")
+ )
+)
+ (rule
+ sparqlBase
+ "29s"
+ (first SPARQL_BASE)
+ (follow
+  "("
+  "@base"
+  "@prefix"
+  ANON
+  BLANK_NODE_LABEL
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  SPARQL_BASE
+  SPARQL_PREFIX
+  "["
+ )
+ (seq SPARQL_BASE IRIREF)
+)
+ (rule
+ _sparqlBase_comp
+ "29s.comp"
+ (first IRIREF)
+ (follow
+  "("
+  "@base"
+  "@prefix"
+  ANON
+  BLANK_NODE_LABEL
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  SPARQL_BASE
+  SPARQL_PREFIX
+  "["
+ )
+ (seq IRIREF)
+)
+ (terminal
+ SPARQL_BASE
+ "29t"
+ (seq
+  (range "Bb")
+  (range "Aa")
+  (range "Ss")
+  (range "Ee")
+ )
+)
+ (rule
+ RDFLiteral
+ "128s"
+ (first
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+ )
+ (follow
+  "("
+  ","
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "false"
+  "true"
+ )
+ (seq String _RDFLiteral_1)
+)
+ (rule
+ _RDFLiteral_1
+ "128s.1"
+ (first LANGTAG "^^" _eps)
+ (follow
+  "("
+  ","
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "false"
+  "true"
+ )
+ (alt _empty __RDFLiteral_1_1)
+)
+ (rule
+ __RDFLiteral_1_1
+ "128s.1.1"
+ (first LANGTAG "^^")
+ (follow
+  "("
+  ","
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "false"
+  "true"
+ )
+ (alt LANGTAG ___RDFLiteral_1_1_1)
+)
+ (rule
+ ___RDFLiteral_1_1_1
+ "128s.1.1.1"
+ (first "^^")
+ (follow
+  "("
+  ","
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "false"
+  "true"
+ )
+ (seq "^^" iri)
+)
+ (rule
+ _RDFLiteral_comp
+ "128s.comp"
+ (first LANGTAG "^^" _eps)
+ (follow
+  "("
+  ","
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "false"
+  "true"
+ )
+ (seq _RDFLiteral_1)
+)
+ (rule
+ BooleanLiteral
+ "133s"
+ (first "false" "true")
+ (follow
+  "("
+  ","
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "false"
+  "true"
+ )
+ (alt "true" "false")
+)
+ (rule
+ iri
+ "135s"
+ (first IRIREF PNAME_LN PNAME_NS)
+ (follow
+  "("
+  ","
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "a"
+  "false"
+  "true"
+ )
+ (alt IRIREF PrefixedName)
+)
+ (rule
+ PrefixedName
+ "136s"
+ (first PNAME_LN PNAME_NS)
+ (follow
+  "("
+  ","
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "a"
+  "false"
+  "true"
+ )
+ (alt PNAME_LN PNAME_NS)
+)
+ (rule
+ BlankNode
+ "137s"
+ (first ANON BLANK_NODE_LABEL)
+ (follow
+  "("
+  ","
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "a"
+  "false"
+  "true"
+ )
+ (alt BLANK_NODE_LABEL ANON)
+)
+ (terminal
+ PNAME_NS
+ "139s"
+ (seq (opt PN_PREFIX) ":")
+)
+ (terminal
+ PNAME_LN
+ "140s"
+ (seq PNAME_NS PN_LOCAL)
+)
+ (terminal
+ BLANK_NODE_LABEL
+ "141s"
+ (seq
+  "_:"
+  (alt PN_CHARS_U (range "0-9"))
+  (opt (seq (star (alt PN_CHARS ".")) PN_CHARS))
+ )
+)
+ (terminal
+ LANGTAG
+ "144s"
+ (seq
+  "@"
+  (plus (range "a-zA-Z"))
+  (star (seq "-" (plus (range "a-zA-Z0-9"))))
+ )
+)
+ (terminal
+ EXPONENT
+ "154s"
+ (seq
+  (range "eE")
+  (opt (range "+-"))
+  (plus (range "0-9"))
+ )
+)
+ (terminal
+ ECHAR
+ "159s"
+ (seq "\\" (range "tbnrf\\\"'"))
+)
+ (terminal
+ WS
+ "161s"
+ (alt
+  (hex "#x20")
+  (hex "#x9")
+  (hex "#xD")
+  (hex "#xA")
+ )
+)
+ (terminal ANON "162s" (seq "[" (star WS) "]"))
+ (terminal
+ PN_CHARS_BASE
+ "163s"
+ (alt
+  (range "A-Z")
+  (range "a-z")
+  (range "#x00C0-#x00D6")
+  (range "#x00D8-#x00F6")
+  (range "#x00F8-#x02FF")
+  (range "#x0370-#x037D")
+  (range "#x037F-#x1FFF")
+  (range "#x200C-#x200D")
+  (range "#x2070-#x218F")
+  (range "#x2C00-#x2FEF")
+  (range "#x3001-#xD7FF")
+  (range "#xF900-#xFDCF")
+  (range "#xFDF0-#xFFFD")
+  (range "#x10000-#xEFFFF")
+ )
+)
+ (terminal
+ PN_CHARS_U
+ "164s"
+ (alt PN_CHARS_BASE "_")
+)
+ (terminal
+ PN_CHARS
+ "166s"
+ (alt
+  PN_CHARS_U
+  "-"
+  (range "0-9")
+  (hex "#x00B7")
+  (range "#x0300-#x036F")
+  (range "#x203F-#x2040")
+ )
+)
+ (terminal
+ PN_PREFIX
+ "167s"
+ (seq
+  PN_CHARS_BASE
+  (opt (seq (star (alt PN_CHARS ".")) PN_CHARS))
+ )
+)
+ (terminal
+ PN_LOCAL
+ "168s"
+ (seq
+  (alt PN_CHARS_U ":" (range "0-9") PLX)
+  (opt
+   (seq
+    (star (alt PN_CHARS "." ":" PLX))
+    (alt PN_CHARS ":" PLX)
+   )
+  )
+ )
+)
+ (terminal
+ PLX
+ "169s"
+ (alt PERCENT PN_LOCAL_ESC)
+)
+ (terminal PERCENT "170s" (seq "%" HEX HEX))
+ (terminal
+ HEX
+ "171s"
+ (alt (range "0-9") (range "A-F") (range "a-f"))
+)
+ (terminal
+ PN_LOCAL_ESC
+ "172s"
+ (seq
+  "\\"
+  (alt
+   "_"
+   "~"
+   "."
+   "-"
+   "!"
+   "$"
+   "&"
+   "'"
+   "("
+   ")"
+   "*"
+   "+"
+   ","
+   ";"
+   "="
+   "/"
+   "?"
+   "#"
+   "@"
+   "%"
+  )
+ )
+)
+)

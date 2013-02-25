@@ -8,13 +8,13 @@ describe EBNF::Base do
   describe "#ruleParts" do
     {
       %{[2]     Prolog    ::=           BaseDecl? PrefixDecl*} =>
-        %{(Prolog "2" (kind rule) (seq (opt BaseDecl) (star PrefixDecl)))},
+        %{(rule Prolog "2" (seq (opt BaseDecl) (star PrefixDecl)))},
       %{[2] declaration ::= '@terminals' | '@pass'} =>
-        %{(declaration "2" (kind rule) (alt "@terminals" "@pass"))},
+        %{(rule declaration "2" (alt "@terminals" "@pass"))},
       %{[9] postfix     ::= primary ( [?*+] )?} =>
-        %{(postfix "9" (kind rule) (seq primary (opt (range "?*+"))))},
+        %{(rule postfix "9" (seq primary (opt (range "?*+"))))},
       %{[18] STRING2    ::= "'" (CHAR - "'")* "'"} =>
-        %{(STRING2 "18" (kind terminal) (seq "'" (star (diff CHAR "'")) "'"))},
+        %{(terminal STRING2 "18" (seq "'" (star (diff CHAR "'")) "'"))},
     }.each do |input, expected|
       it "given #{input.inspect} produces #{expected}" do
         ebnf(:ruleParts, input).to_sxp.should produce(expected, @debug)

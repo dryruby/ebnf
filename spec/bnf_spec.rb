@@ -8,11 +8,11 @@ describe EBNF::Base do
   describe "#make_bnf" do
     {
       %{[2]     Prolog    ::=           BaseDecl? PrefixDecl*} =>
-      [%{(_empty "0" (kind rule) (seq))},
-       %{(Prolog "2" (kind rule) (seq _Prolog_1 _Prolog_2))},
-       %{(_Prolog_1 "2.1" (kind rule) (alt _empty BaseDecl))},
-       %{(_Prolog_2 "2.2" (kind rule) (alt _empty __Prolog_2_star))},
-       %{(__Prolog_2_star "2.2*" (kind rule) (seq PrefixDecl _Prolog_2))}],
+      %{((rule _empty "0" (seq))
+         (rule Prolog "2" (seq _Prolog_1 _Prolog_2))
+         (rule _Prolog_1 "2.1" (alt _empty BaseDecl))
+         (rule _Prolog_2 "2.2" (alt _empty __Prolog_2_star))
+         (rule __Prolog_2_star "2.2*" (seq PrefixDecl _Prolog_2)))},
       %{
         [9] primary     ::= HEX
                         |   RANGE
@@ -24,12 +24,12 @@ describe EBNF::Base do
                         |   '(' expression ')'
         
       } =>
-      [%{(_empty "0" (kind rule) (seq))},
-       %{(primary "9" (kind rule) (alt HEX RANGE ENUM O_RANGE O_ENUM STRING1 STRING2 _primary_1))},
-       %{(_primary_1 "9.1" (kind rule) (seq "(" expression ")"))}],
+      %{((rule _empty "0" (seq))
+         (rule primary "9" (alt HEX RANGE ENUM O_RANGE O_ENUM STRING1 STRING2 _primary_1 ))
+         (rule _primary_1 "9.1" (seq "(" expression ")")))},
     }.each do |input, expected|
       it "parses #{input.inspect}" do
-        parse(input).make_bnf.ast.map(&:to_s).should produce(expected, @debug)
+        parse(input).make_bnf.ast.to_sxp.should produce(expected, @debug)
       end
     end
 

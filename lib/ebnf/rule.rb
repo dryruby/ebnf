@@ -60,7 +60,7 @@ module EBNF
     # Serializes this rule to an S-Expression
     # @return [String]
     def to_sxp
-      elements = [sym, id, [:kind, kind]]
+      elements = [kind, sym, id]
       elements << [:start, true] if start
       elements << first.sort_by(&:to_s).unshift(:first) if first
       elements << follow.sort_by(&:to_s).unshift(:follow) if follow
