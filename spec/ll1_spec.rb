@@ -7,15 +7,10 @@ require 'sxp'
 describe EBNF::Base do
   describe "#first_follow" do
     context "start" do
-      let!(:doc) {parse(%([1] ebnf        ::= (declaration | rule)*), :debug => true)}
-      before(:all) {doc.make_bnf}
       context "with legitimate start rule" do
         let!(:ebnf_doc) {
-          d = doc.dup
-          d.first_follow([:ebnf])
-          d
+          parse(%([1] ebnf        ::= (declaration | rule)*), :start => [:ebnf])
         }
-        subject {ebnf_doc.ast}
         let(:rule) {ebnf_doc.ast.detect {|r| r.sym == :ebnf}}
         it "should include rule" do
           rule.should_not be_nil
@@ -29,8 +24,9 @@ describe EBNF::Base do
       end
 
       context "with illegitimate start rule" do
-        subject {doc.dup}
-        specify {lambda {subject.first_follow([:foo])}.should raise_error("No rule found for start symbol foo")}
+        specify {
+          lambda {parse(%([1] ebnf        ::= (declaration | rule)*), :start => [:foo])
+        }.should raise_error("No rule found for start symbol foo")}
       end
     end
 
@@ -61,19 +57,11 @@ describe EBNF::Base do
           }
         ]
       }.each do |name, (input, expected)|
-        context name do
-          before(:each) {@debug = []}
-          subject {
-            c = parse(input, :debug => true)
-            c.make_bnf
-            c.first_follow([])
-            c
-          }
-          it "produces #{expected}" do
-            sin = subject.ast.to_sxp.gsub(/\s+/m, ' ')
-            sout = expected.gsub(/\s+/m, ' ').strip
-            sin.should produce(sout, @debug)
-          end
+        it name do
+          ebnf = parse(input)
+          sin = ebnf.ast.sort.to_sxp.gsub(/\s+/m, ' ')
+          sout = expected.gsub(/\s+/m, ' ').strip
+          sin.should produce(sout, @debug)
         end
       end
     end
@@ -131,27 +119,18 @@ describe EBNF::Base do
           }, [:turtleDoc]
         ]
       }.each do |name, (input, expected, start)|
-        context name do
-          before(:each) {@debug = []}
-          subject {
-            c = parse(input)
-            c.make_bnf
-            @debug.clear
-            c.first_follow(start)
-            c
-          }
-          it "produces #{expected}" do
-            sin = subject.ast.sort.to_sxp.gsub(/\s+/m, ' ')
-            sout = expected.gsub(/\s+/m, ' ').strip
-            sin.should produce(sout, @debug)
-          end
+        it name do
+          ebnf = parse(input, :start => start)
+          sin = ebnf.ast.sort.to_sxp.gsub(/\s+/m, ' ')
+          sout = expected.gsub(/\s+/m, ' ').strip
+          sin.should produce(sout, @debug)
         end
       end
     end
 
     context "follow" do
       {
-        "objectList" => [
+        "objectList (FF.3)" => [
           %{
             [1] rule1 ::= a b
             [2] a     ::= "foo"
@@ -163,23 +142,42 @@ describe EBNF::Base do
              (_rule1_comp "1.comp" (kind rule) (first "bar") (seq b))
              (a "2" (kind rule) (first "foo") (follow "bar") (seq "foo"))
              (b "3" (kind rule) (first "bar") (seq "bar")))
-          }, []
-        ]
-      }.each do |name, (input, expected, start)|
-        context name do
-          before(:each) {@debug = []}
-          subject {
-            c = parse(input)
-            c.make_bnf
-            @debug.clear
-            c.first_follow(start)
-            c
           }
-          it "produces #{expected}" do
-            sin = subject.ast.sort.to_sxp.gsub(/\s+/m, ' ')
-            sout = expected.gsub(/\s+/m, ' ').strip
-            sin.should produce(sout, @debug)
-          end
+        ],
+        "blankNodePropertyList (FF.4)" => [
+          %{
+            [7] predicateObjectList               ::= verb objectList
+            [14] blankNodePropertyList            ::= "[" predicateObjectList "]"
+          },
+          %{
+            ((_empty "0" (kind rule) (first _eps) (seq))
+            (predicateObjectList "7" (kind rule) (follow "]") (seq verb objectList))
+            (_predicateObjectList_comp "7.comp" (kind rule) (follow "]") (seq objectList))
+            (blankNodePropertyList "14" (kind rule) (first "[") (seq "[" predicateObjectList "]"))
+            (_blankNodePropertyList_comp "14.comp" (kind rule) (seq predicateObjectList "]"))
+            (__blankNodePropertyList_comp_comp "14.comp.comp" (kind rule) (first "]") (seq "]")))
+          }
+        ],
+        "collection (FF.6/7)" => [
+          %{
+            [15] collection                       ::= "(" object* ")"
+          },
+          %{
+            ((_empty "0" (kind rule) (first _eps) (seq))
+             (collection "15" (kind rule) (first "(") (seq "(" _collection_1 ")"))
+             (_collection_1 "15.1" (kind rule) (first _eps) (follow ")") (alt _empty __collection_1_star))
+             (__collection_1_star "15.1*" (kind rule) (follow ")")(seq object _collection_1))
+             (___collection_1_star_comp "15.1*.comp" (kind rule) (first _eps) (follow ")") (seq _collection_1))
+             (_collection_comp "15.comp" (kind rule) (first _eps) (seq _collection_1 ")"))
+             (__collection_comp_comp "15.comp.comp" (kind rule) (first ")") (seq ")")))
+          }
+        ]
+      }.each do |name, (input, expected)|
+        it name do
+          ebnf = parse(input)
+          sin = ebnf.ast.sort.to_sxp.gsub(/\s+/m, ' ')
+          sout = expected.gsub(/\s+/m, ' ').strip
+          sin.should produce(sout, @debug)
         end
       end
     end
@@ -189,6 +187,10 @@ describe EBNF::Base do
   def parse(value, options = {})
     @debug = []
     options = {:debug => @debug}.merge(options)
-    EBNF::Base.new(value, options)
+    ebnf = EBNF::Base.new(value, options)
+    ebnf.make_bnf
+    @debug.clear
+    ebnf.first_follow(options[:start] || [])
+    ebnf
   end
 end

@@ -110,10 +110,12 @@ module EBNF
             #    * if ε is in Fi(w' ), then add Fo(Aj) to Fo(Ai)
             #
             # If the comprehension of a sequence has an _eps first, then the follows of the rule also become the follows of the first member of the rule
-            if comp.first && comp.first.include?(:_eps) && rule.first
-              member = find_rule(rule.expr.fetch(1, nil))
-              depth {debug("FF.4") {"add follow #{rule.follow.inspect} to #{member.sym}"}}
-              follows += member.add_follow(rule.first) if member.kind == :rule
+            if comp.first && comp.first.include?(:_eps) && rule.first &&
+               (member = find_rule(rule.expr.fetch(1, nil))) &&
+               member.kind == :rule
+
+              depth {debug("FF.5") {"add follow #{rule.follow.inspect} to #{member.sym}"}}
+              follows += member.add_follow(rule.first)
             end
           end
 
@@ -122,7 +124,7 @@ module EBNF
              (member = find_rule(rule.expr.last)) &&
              member.kind == :rule
 
-            depth {debug("FF.5") {"add follow #{rule.follow.inspect} to #{member.sym}"}}
+            depth {debug("FF.6") {"add follow #{rule.follow.inspect} to #{member.sym}"}}
             follows += member.add_follow(rule.follow)
           end
 
@@ -130,7 +132,7 @@ module EBNF
           if rule.alt? && rule.follow
             rule.expr[1..-1].map {|s| find_rule(s)}.each do |mem|
               if mem && mem.kind == :rule
-                depth {debug("FF.6") {"add follow #{rule.first.inspect} to #{mem.sym}"}}
+                depth {debug("FF.7") {"add follow #{rule.first.inspect} to #{mem.sym}"}}
                 follows += mem.add_follow(rule.follow)
               end
             end
