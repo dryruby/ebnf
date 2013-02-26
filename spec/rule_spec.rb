@@ -109,6 +109,18 @@ describe EBNF::Rule do
          EBNF::Rule.new(:_rule_1, "0.1", [:alt, :_empty, :__rule_1_star]),
          EBNF::Rule.new(:__rule_1_star, "0.1*", [:seq, :foo, :_rule_1])]
       ],
+      "diff rule" => [
+        [:diff, "a", "b"],
+        [EBNF::Rule.new(:rule, "0", [:diff, "a", "b"], :kind => :terminal)]
+      ],
+      "hex rule" => [
+        [:hex, "#x00B7"],
+        [EBNF::Rule.new(:rule, "0", [:hex, "#x00B7"], :kind => :terminal)]
+      ],
+      "range rule" => [
+        [:range, "a", "b"],
+        [EBNF::Rule.new(:rule, "0", [:range, "a", "b"], :kind => :terminal)]
+      ],
       "ebnf[1]" => [
         [:star, [:alt, :declaration, :rule]],
         [EBNF::Rule.new(:rule, "0", [:alt, :_empty, :_rule_star]),
@@ -118,14 +130,16 @@ describe EBNF::Rule do
       "ebnf[9]" => [
         [:seq, :primary, [:opt, [:range, "?*+"]]],
         [EBNF::Rule.new(:rule, "0", [:seq, :primary, :_rule_1]),
-         EBNF::Rule.new(:_rule_1, "0.1", [:alt, :_empty, [:range, "?*+"]])]
+         EBNF::Rule.new(:_rule_1, "0.1", [:alt, :_empty, :__rule_1_1]),
+         EBNF::Rule.new(:__rule_1_1, "0.1.1", [:range, "?*+"], :kind => :terminal)]
       ],
       "IRIREF" => [
         [:seq, "<", [:star, [:alt, [:range, "^#x00-#x20<>\"{}|^`\\"], :UCHAR]], ">"],
         [EBNF::Rule.new(:rule, "0", [:seq, "<", :_rule_1, ">"]),
          EBNF::Rule.new(:_rule_1, "0.1", [:alt, :_empty, :__rule_1_star]),
          EBNF::Rule.new(:__rule_1_star, "0.1*", [:seq, :__rule_1_1, :_rule_1]),
-         EBNF::Rule.new(:__rule_1_1, "0.1.1", [:alt, [:range, "^#x00-#x20<>\"{}|^`\\"], :UCHAR])]
+         EBNF::Rule.new(:__rule_1_1, "0.1.1", [:alt, :___rule_1_1_1, :UCHAR]),
+         EBNF::Rule.new(:___rule_1_1_1, "0.1.1.1", [:range, "^#x00-#x20<>\"{}|^`\\"], :kind => :terminal)]
        ]
     }.each do |title, (expr, expected)|
       it title do

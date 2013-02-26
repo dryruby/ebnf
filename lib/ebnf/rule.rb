@@ -3,7 +3,11 @@ module EBNF
   class Rule
     # Operations which are flattened to seprate rules in to_bnf
     BNF_OPS = %w{
-      seq alt diff opt star plus
+      alt opt plus seq star
+    }.map(&:to_sym).freeze
+
+    TERM_OPS = %w{
+      diff hex range
     }.map(&:to_sym).freeze
 
     # @!attribute [rw] sym for rule
@@ -103,17 +107,17 @@ module EBNF
     #   * Transform (a rule (plus b)) into (a rule (seq b (star b)
     # @return [Array<Rule>]
     def to_bnf
-      new_rules = []
       return [self] unless kind == :rule
+      new_rules = []
+      rule_seq = 1
 
       # Look for rules containing recursive definition and rewrite to multiple rules. If `expr` contains elements which are in array form, where the first element of that array is a symbol, create a new rule for it.
-      if expr.any? {|e| e.is_a?(Array) && BNF_OPS.include?(e.first)}
+      if expr.any? {|e| e.is_a?(Array) && (BNF_OPS + TERM_OPS).include?(e.first)}
         #   * Transform (a [n] rule (op1 (op2))) into two rules:
         #     (a.1 [n.1] rule (op1 a.2))
         #     (a.2 [n.2] rule (op2))
         # duplicate ourselves for rewriting
         this = dup
-        rule_seq = 1
         new_rules << this
 
         expr.each_with_index do |e, index|
@@ -128,7 +132,7 @@ module EBNF
         # Return new rules after recursively applying #to_bnf
         new_rules = new_rules.map {|r| r.to_bnf}.flatten
       elsif expr.first == :opt
-        #   * Transform (a rule (opt b)) into (a rule (alt _empty "foo"))
+        #   * Transform (a rule (opt b)) into (a rule (alt _empty b))
         new_rules = Rule.new(sym, id, [:alt, :_empty, expr.last], :ebnf => @ebnf).to_bnf
       elsif expr.first == :star
         #   * Transform (a rule (star b)) into (a rule (alt _empty (seq b a)))
@@ -137,9 +141,16 @@ module EBNF
       elsif expr.first == :plus
         #   * Transform (a rule (plus b)) into (a rule (seq b (star b)
         new_rules = Rule.new(sym, id, [:seq, expr.last, [:star, expr.last]], :ebnf => @ebnf).to_bnf
-      else
+      elsif [:alt, :seq].include?(expr.first)
         # Otherwise, no further transformation necessary
         new_rules << self
+      elsif [:diff, :hex, :range].include?(expr.first)
+        # This rules are fine, the just need to be terminals
+        raise "Encountered #{expr.first.inspect}, which is a #{self.kind}, not :terminal" unless self.kind == :terminal
+        new_rules << self
+      else
+        # Some case we didn't think of
+        raise "Error trying to transform #{expr.inspect} to BNF"
       end
       
       return new_rules
