@@ -107,6 +107,10 @@ module EBNF
     # @return [Array<Rule>]
     attr_reader :ast
 
+    # Grammar errors, or errors found genering parse tables
+    # @!attribute [r] errors
+    # @return [Array<String>]
+
     # Parse the string or file input generating an abstract syntax tree
     # in S-Expressions (similar to SPARQL SSE)
     #
@@ -116,7 +120,7 @@ module EBNF
     #   Output debug information to an array or STDOUT.
     def initialize(input, options = {})
       @options = options
-      @lineno, @depth = 1, 0
+      @lineno, @depth, @errors = 1, 0, []
       terminal = false
       @ast = []
 
@@ -221,6 +225,30 @@ module EBNF
       ret
     end
 
+    # Progress output, less than debugging
+    def progress(*args)
+      return unless @options[:progress]
+      options = args.last.is_a?(Hash) ? args.pop : {}
+      depth = options[:depth] || @depth
+      args << yield if block_given?
+      message = "#{args.join(': ')}"
+      str = "[#{@lineno}]#{' ' * depth}#{message}"
+      @options[:debug] << str if @options[:debug].is_a?(Array)
+      $stderr.puts(str)
+    end
+
+    # Error output
+    def error(*args)
+      options = args.last.is_a?(Hash) ? args.pop : {}
+      depth = options[:depth] || @depth
+      args << yield if block_given?
+      message = "#{args.join(': ')}"
+      @errors << message
+      str = "[#{@lineno}]#{' ' * depth}#{message}"
+      @options[:debug] << str if @options[:debug].is_a?(Array)
+      $stderr.puts(str)
+    end
+
     ##
     # Progress output when debugging
     #
@@ -236,9 +264,6 @@ module EBNF
       return unless @options[:debug]
       options = args.last.is_a?(Hash) ? args.pop : {}
       depth = options[:depth] || @depth
-      message = args.pop
-      message = message.call if message.is_a?(Proc)
-      args << message if message
       args << yield if block_given?
       message = "#{args.join(': ')}"
       str = "[#{@lineno}]#{' ' * depth}#{message}"
