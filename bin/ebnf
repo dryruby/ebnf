@@ -21,15 +21,15 @@ options = {
 out = STDOUT
 
 OPT_ARGS = [
-  ["--dbg",             GetoptLong::NO_ARGUMENT,      "Turn on verbose debugging"],
+  ["--dbg",             GetoptLong::NO_ARGUMENT,      "Turn on debugging output"],
   ["--bnf",             GetoptLong::NO_ARGUMENT,      "Transform EBNF to BNF"],
   ["--evaluate","-e",   GetoptLong::REQUIRED_ARGUMENT,"Evaluate argument as a JSON-LD document"],
   ["--ll1",             GetoptLong::REQUIRED_ARGUMENT,"Generate First/Follow rules, argument is start symbol"],
   ["--format", "-f",    GetoptLong::REQUIRED_ARGUMENT,"Specify output format one of ttl, or sxp"],
   ["--output", "-o",    GetoptLong::REQUIRED_ARGUMENT,"Output to the specified file path"],
   ["--prefix", "-p",    GetoptLong::REQUIRED_ARGUMENT,"Prefix to use when generating Turtle"],
+  ["--progress", "-v",   GetoptLong::NO_ARGUMENT,     "Detail on execution"],
   ["--namespace", "-n", GetoptLong::REQUIRED_ARGUMENT,"Namespace to use when generating Turtle"],
-  ["--verbose", "-v",   GetoptLong::NO_ARGUMENT,      "Detail on execution"],
   ["--help", "-?",      GetoptLong::NO_ARGUMENT,      "This message"]
 ]
 def usage
@@ -60,7 +60,7 @@ opts.each do |opt, arg|
   when '--output'       then out = File.open(arg, "w")
   when '--prefix'       then options[:prefix] = arg
   when '--namespace'    then options[:namespace] = arg
-  when '--verbose'      then $verbose = true
+  when '--progress'     then options[:progress] = true
   when '--help'         then usage
   end
 end
@@ -69,7 +69,7 @@ input = File.open(ARGV[0]) if ARGV[0]
 
 ebnf = EBNF.parse(input || STDIN, options)
 ebnf.make_bnf if options[:bnf] || options[:ll1]
-ebnf.first_follow([options[:ll1]]) if options[:ll1]
+ebnf.first_follow(options[:ll1]) if options[:ll1]
 
 res = case options[:format]
 when :sxp     then ebnf.to_sxp
