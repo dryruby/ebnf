@@ -34,7 +34,7 @@ describe EBNF::Base do
     end
 
     context "EBNF Grammar" do
-      subject {parse(File.read(File.expand_path("../../etc/ebnf.bnf", __FILE__))).make_bnf}
+      subject {parse(File.read(File.expand_path("../../etc/ebnf.ebnf", __FILE__))).make_bnf}
       it "rule expressions should be flat, terminal or alt/seq" do
         subject.ast.each do |rule|
           case
@@ -48,7 +48,7 @@ describe EBNF::Base do
     end
 
     context "Turtle Grammar" do
-      subject {parse(File.read(File.expand_path("../../etc/turtle.bnf", __FILE__))).make_bnf}
+      subject {parse(File.read(File.expand_path("../../etc/turtle.ebnf", __FILE__))).make_bnf}
       it "rule expressions should be flat, terminal or alt/seq" do
         subject.ast.each do |rule|
           case

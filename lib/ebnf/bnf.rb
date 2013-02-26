@@ -7,6 +7,7 @@ module EBNF
     #   * Transform each rule into a set of rules that are just BNF, using {Rule#to_bnf}.
     # @return [ENBF] self
     def make_bnf
+      progress("make_bnf") {"Start: #{@ast.length} rules"}
       new_ast = [Rule.new(:_empty, "0", [:seq], :kind => :rule)]
 
       ast.each do |rule|
@@ -42,7 +43,7 @@ module EBNF
 
       # Sort AST by number
       @ast = compacted_ast
-    
+      progress("make_bnf") {"End: #{@ast.length} rules"}
       self
     end
   end

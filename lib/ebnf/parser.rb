@@ -183,6 +183,7 @@ module EBNF
             unless e2.to_s.empty?
               return [[:diff, e1, e2], s]
             else
+              error("diff", "Syntax Error")
               raise "Syntax Error"
             end
           end
@@ -288,7 +289,8 @@ module EBNF
       when /[\(\)]/
         [[m.to_sym], s[1..-1]]
       else
-        raise "unrecognized terminal: #{s.inspect}"
+        error("terminal", "unrecognized terminal: #{s.inspect}")
+        raise "Syntax Error"
       end
     end
   end

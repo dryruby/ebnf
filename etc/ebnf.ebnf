@@ -19,7 +19,7 @@
 
 [10] primary    ::= HEX
                 |   RANGE
-                |   ENUM 
+                |   ENUM
                 |   O_RANGE
                 |   O_ENUM
                 |   STRING1
@@ -38,7 +38,7 @@
 
 [15] O_RANGE    ::= '[^' CHAR '-' CHAR ']'
 
-[16] OENUM      ::= '[^' CHAR+ ']'
+[16] O_ENUM     ::= '[^' CHAR+ ']'
 
 [17] STRING1    ::= '"' (CHAR - '"')* '"'
 
