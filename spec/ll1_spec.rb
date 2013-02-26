@@ -44,7 +44,7 @@ describe EBNF::Base do
           %{
             ((rule _empty "0" (first _eps) (seq))
              (rule rule "1" (seq a b))
-             (rule _rule_comp "1.comp" (seq b)))
+             (rule _rule_1 "1.1" (seq b)))
           }
         ],
         "blankNodePropertyList" => [
@@ -52,8 +52,8 @@ describe EBNF::Base do
           %{
             ((rule _empty "0" (first _eps) (seq))
              (rule blankNodePropertyList "14" (first "[") (seq "[" predicateObjectList "]"))
-             (rule _blankNodePropertyList_comp "14.comp" (seq predicateObjectList "]"))
-             (rule __blankNodePropertyList_comp_comp "14.comp.comp" (first "]") (seq "]")))
+             (rule _blankNodePropertyList_1 "14.1" (seq predicateObjectList "]"))
+             (rule _blankNodePropertyList_2 "14.2" (first "]") (seq "]")))
           }
         ]
       }.each do |name, (input, expected)|
@@ -74,8 +74,8 @@ describe EBNF::Base do
           %{
             ((rule _empty "0" (first _eps) (seq))
              (rule base "5" (first "@base") (seq "@base" IRIREF "."))
-             (rule _base_comp "5.comp" (seq IRIREF "."))
-             (rule __base_comp_comp "5.comp.comp" (first ".") (seq ".")))
+             (rule _base_1 "5.1" (seq IRIREF "."))
+             (rule _base_2 "5.2" (first ".") (seq ".")))
           }, nil
         ],
         "sparqlPrefix (FF.1)" => [
@@ -88,7 +88,7 @@ describe EBNF::Base do
             ((rule _empty "0" (first _eps) (seq))
              (terminal IRIREF "18" (seq "<" (star (alt "range" UCHAR)) ">"))
              (rule sparqlBase "29s" (first SPARQL_BASE) (seq SPARQL_BASE IRIREF))
-             (rule _sparqlBase_comp "29s.comp" (first IRIREF) (seq IRIREF))
+             (rule _sparqlBase_1 "29s.1" (first IRIREF) (seq IRIREF))
              (terminal SPARQL_BASE "29t" (seq (range "Bb") (range "Aa") (range "Ss") (range "Ee"))))
           }, nil
         ],
@@ -109,12 +109,12 @@ describe EBNF::Base do
           %{
             ((rule _empty "0" (first _eps) (follow _eof) (seq))
              (rule turtleDoc "1" (start #t) (first _eps) (follow _eof)
-              (alt _empty _turtleDoc_star))
-             (rule _turtleDoc_star "1*" (follow _eof) (seq statement turtleDoc))
-             (rule __turtleDoc_star_comp "1*.comp" (first _eps) (follow _eof) (seq turtleDoc))
+              (alt _empty _turtleDoc_1))
+             (rule _turtleDoc_1 "1.1" (follow _eof) (seq statement turtleDoc))
+             (rule _turtleDoc_2 "1.2" (first _eps) (follow _eof) (seq turtleDoc))
              (rule statement "2" (alt directive _statement_1))
              (rule _statement_1 "2.1" (seq triples "."))
-             (rule __statement_1_comp "2.1.comp" (first ".") (seq ".")))
+             (rule _statement_2 "2.2" (first ".") (seq ".")))
           }, :turtleDoc
         ]
       }.each do |name, (input, expected, start)|
@@ -137,7 +137,7 @@ describe EBNF::Base do
           %{
             ((rule _empty "0" (first _eps) (seq))
              (rule rule1 "1" (first "foo") (seq a b))
-             (rule _rule1_comp "1.comp" (first "bar") (seq b))
+             (rule _rule1_1 "1.1" (first "bar") (seq b))
              (rule a "2" (first "foo") (follow "bar") (seq "foo"))
              (rule b "3" (first "bar") (seq "bar")))
           }
@@ -150,10 +150,10 @@ describe EBNF::Base do
           %{
             ((rule _empty "0" (first _eps) (seq))
              (rule predicateObjectList "7" (follow "]") (seq verb objectList))
-             (rule _predicateObjectList_comp "7.comp" (follow "]") (seq objectList))
+             (rule _predicateObjectList_1 "7.1" (follow "]") (seq objectList))
              (rule blankNodePropertyList "14" (first "[") (seq "[" predicateObjectList "]"))
-             (rule _blankNodePropertyList_comp "14.comp" (seq predicateObjectList "]"))
-             (rule __blankNodePropertyList_comp_comp "14.comp.comp" (first "]") (seq "]")))
+             (rule _blankNodePropertyList_1 "14.1" (seq predicateObjectList "]"))
+             (rule _blankNodePropertyList_2 "14.2" (first "]") (seq "]")))
           }
         ],
         "collection (FF.6/7)" => [
@@ -163,11 +163,11 @@ describe EBNF::Base do
           %{
             ((rule _empty "0" (first _eps) (follow ")") (seq))
              (rule collection "15" (first "(") (seq "(" _collection_1 ")"))
-             (rule _collection_1 "15.1" (first _eps) (follow ")") (alt _empty __collection_1_star))
-             (rule __collection_1_star "15.1*" (follow ")") (seq object _collection_1))
-             (rule ___collection_1_star_comp "15.1*.comp" (first _eps) (follow ")") (seq _collection_1))
-             (rule _collection_comp "15.comp" (first _eps) (seq _collection_1 ")"))
-             (rule __collection_comp_comp "15.comp.comp" (first ")") (seq ")")))
+             (rule _collection_1 "15.1" (first _eps) (follow ")") (alt _empty _collection_2))
+             (rule _collection_2 "15.2" (follow ")") (seq object _collection_1))
+             (rule _collection_3 "15.3" (first _eps) (seq _collection_1 ")"))
+             (rule _collection_4 "15.4" (first _eps) (follow ")") (seq _collection_1))
+             (rule _collection_5 "15.5" (first ")") (seq ")")))
           }
         ]
       }.each do |name, (input, expected)|

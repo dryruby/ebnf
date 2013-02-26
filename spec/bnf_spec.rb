@@ -11,8 +11,8 @@ describe EBNF::Base do
       %{((rule _empty "0" (seq))
          (rule Prolog "2" (seq _Prolog_1 _Prolog_2))
          (rule _Prolog_1 "2.1" (alt _empty BaseDecl))
-         (rule _Prolog_2 "2.2" (alt _empty __Prolog_2_star))
-         (rule __Prolog_2_star "2.2*" (seq PrefixDecl _Prolog_2)))},
+         (rule _Prolog_2 "2.2" (alt _empty _Prolog_3))
+         (rule _Prolog_3 "2.3" (seq PrefixDecl _Prolog_2)))},
       %{
         [9] primary     ::= HEX
                         |   RANGE

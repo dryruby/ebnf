@@ -18,6 +18,11 @@ module EBNF
     # @return [String]
     attr_accessor :id
 
+    # A comprehension is a sequence which contains all elements but the first of the original rule.
+    # @!attribute [rw] comprehension of this rule
+    # @return [Rule]
+    attr_accessor :comp
+
     # @!attribute [rw] kind of rule
     # @return [:rule, :terminal, or :pass]
     attr_accessor :kind
@@ -45,7 +50,7 @@ module EBNF
     # @param [Integer] id
     # @param [Symbol] sym
     # @param [Array] expr
-    # @param [EBNF] ebnf
+    # @param [EBNF] ebnf EBNF instance (used for messages)
     # @param [Hash{Symbol => Object}] option
     # @option options [Symbol] :kind
     # @option options [String] :ebnf
@@ -53,12 +58,29 @@ module EBNF
       @sym, @id = sym, id
       @expr = expr.is_a?(Array) ? expr : [:seq, expr]
       @ebnf = options[:ebnf]
+      @top_rule = options.fetch(:top_rule, self)
       @kind = case
       when options[:kind] then options[:kind]
       when sym.to_s == sym.to_s.upcase then :terminal
       when !BNF_OPS.include?(@expr.first) then :terminal
       else :rule
       end
+    end
+
+    # Build a new rule creating a symbol and numbering from the current rule
+    # Symbol and number creation is handled by the top-most rule in such a chain
+    #
+    # @param [Array] expr
+    # @param [Hash{Symbol => Object}] option
+    # @option options [Symbol] :kind
+    # @option options [String] :ebnf EBNF instance (used for messages)
+    def build(expr, options = {})
+      new_sym, new_id = (@top_rule ||self).send(:make_sym_id)
+      Rule.new(new_sym, new_id, expr, {
+        :kind => options[:kind],
+        :ebnf => @ebnf,
+        :top_rule => @top_rule || self,
+      }.merge(options))
     end
 
     # Serializes this rule to an S-Expression
@@ -109,7 +131,6 @@ module EBNF
     def to_bnf
       return [self] unless kind == :rule
       new_rules = []
-      rule_seq = 1
 
       # Look for rules containing recursive definition and rewrite to multiple rules. If `expr` contains elements which are in array form, where the first element of that array is a symbol, create a new rule for it.
       if expr.any? {|e| e.is_a?(Array) && (BNF_OPS + TERM_OPS).include?(e.first)}
@@ -122,25 +143,29 @@ module EBNF
 
         expr.each_with_index do |e, index|
           next unless e.is_a?(Array) && e.first.is_a?(Symbol)
-          new_sym, new_id = "_#{sym}_#{rule_seq}".to_sym, "#{id}.#{rule_seq}"
-          rule_seq += 1
-          this.expr[index] = new_sym
-          new_rule = Rule.new(new_sym, new_id, e, :ebnf => @ebnf)
+          new_rule = build(e)
+          this.expr[index] = new_rule.sym
           new_rules << new_rule
         end
 
         # Return new rules after recursively applying #to_bnf
         new_rules = new_rules.map {|r| r.to_bnf}.flatten
       elsif expr.first == :opt
+        this = dup
         #   * Transform (a rule (opt b)) into (a rule (alt _empty b))
-        new_rules = Rule.new(sym, id, [:alt, :_empty, expr.last], :ebnf => @ebnf).to_bnf
+        this.expr = [:alt, :_empty, expr.last]
+        new_rules = this.to_bnf
       elsif expr.first == :star
         #   * Transform (a rule (star b)) into (a rule (alt _empty (seq b a)))
-        new_rules = [Rule.new(sym, id, [:alt, :_empty, "_#{sym}_star".to_sym], :ebnf => @ebnf)] +
-          Rule.new("_#{sym}_star".to_sym, "#{id}*", [:seq, expr.last, sym], :ebnf => @ebnf).to_bnf
+        this = dup
+        new_rule = this.build([:seq, expr.last, this.sym])
+        this.expr = [:alt, :_empty, new_rule.sym]
+        new_rules = [this] + new_rule.to_bnf
       elsif expr.first == :plus
         #   * Transform (a rule (plus b)) into (a rule (seq b (star b)
-        new_rules = Rule.new(sym, id, [:seq, expr.last, [:star, expr.last]], :ebnf => @ebnf).to_bnf
+        this = dup
+        this.expr = [:seq, expr.last, [:star, expr.last]]
+        new_rules = this.to_bnf
       elsif [:alt, :seq].include?(expr.first)
         # Otherwise, no further transformation necessary
         new_rules << self
@@ -326,6 +351,13 @@ module EBNF
         end
       end +
       ']'
+    end
+
+    # Make a new symbol/number combination
+    def make_sym_id
+      @id_seq ||= 0
+      @id_seq += 1
+      ["_#{@sym}_#{@id_seq}".to_sym, "#{@id}.#{@id_seq}"]
     end
   end
 end

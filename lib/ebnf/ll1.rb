@@ -56,7 +56,8 @@ module EBNF
           new_expr = rule.expr[2..-1].unshift(:seq)
           unless ast.any? {|r| r.expr == new_expr}
             debug("first_follow") {"add comprehension rule for #{rule.sym} => #{new_expr.inspect}"}
-            new_rule = Rule.new("_#{rule.sym}_comp".to_sym, "#{rule.id}.comp", new_expr)
+            new_rule = rule.build(new_expr)
+            rule.comp = new_rule
             comprehensions << new_rule
           end
         end
@@ -102,7 +103,7 @@ module EBNF
             if rule.seq? &&
                rule.expr.fetch(1, nil) == first_rule &&
                first_rule.first.include?(:_eps) &&
-               (comp = find_comp(rule))
+               (comp = rule.comp)
 
               depth {debug("FF.2") {"add first #{first_rule.first.inspect} to #{comp.sym}"}}
               firsts += comp.add_first(first_rule.first)
@@ -110,7 +111,7 @@ module EBNF
           end
 
           # Only run these rules if the rule is a sequence having two or more elements, whos first element is also a sequence and first_rule is the comprehension of rule
-          if rule.seq? && (comp = find_comp(rule))
+          if rule.seq? && (comp = rule.comp)
              #if there is a rule of the form Aj → wAiw' , then
              #
             if (ai = find_rule(rule.expr[1])) && ai.kind == :rule && comp.first

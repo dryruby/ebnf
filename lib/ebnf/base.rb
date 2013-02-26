@@ -184,15 +184,6 @@ module EBNF
     end
 
     ##
-    # Find the comprehension of a rule
-    # Comprehensions are created in {#first_follow} then the rule is a sequence with more than 1 element. They are named automatically as "_sym_comp" where "sym" is the symbol of the source rule
-    # @param [Rule] source
-    # @return [Rule]
-    def find_comp(source)
-      (@comp ||= {})[source.sym] ||= source.seq? && source.expr.length > 2 && find_rule("_#{source.sym}_comp".to_sym)
-    end
-
-    ##
     # Write out syntax tree as Turtle
     # @param [String] prefix for language
     # @param [String] ns URI for language
