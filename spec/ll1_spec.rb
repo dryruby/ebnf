@@ -9,7 +9,7 @@ describe EBNF::Base do
     context "start" do
       context "with legitimate start rule" do
         let!(:ebnf_doc) {
-          parse(%([1] ebnf        ::= (declaration | rule)*), :start => [:ebnf])
+          parse(%([1] ebnf        ::= (declaration | rule)*), :start => :ebnf)
         }
         let(:rule) {ebnf_doc.ast.detect {|r| r.sym == :ebnf}}
         it "should include rule" do
@@ -25,7 +25,7 @@ describe EBNF::Base do
 
       context "with illegitimate start rule" do
         specify {
-          lambda {parse(%([1] ebnf        ::= (declaration | rule)*), :start => [:foo])
+          lambda {parse(%([1] ebnf        ::= (declaration | rule)*), :start => :foo)
         }.should raise_error("No rule found for start symbol foo")}
       end
     end
@@ -76,7 +76,7 @@ describe EBNF::Base do
              (rule base "5" (first "@base") (seq "@base" IRIREF "."))
              (rule _base_comp "5.comp" (seq IRIREF "."))
              (rule __base_comp_comp "5.comp.comp" (first ".") (seq ".")))
-          }, []
+          }, nil
         ],
         "sparqlPrefix (FF.1)" => [
           %{
@@ -90,7 +90,7 @@ describe EBNF::Base do
              (rule sparqlBase "29s" (first SPARQL_BASE) (seq SPARQL_BASE IRIREF))
              (rule _sparqlBase_comp "29s.comp" (first IRIREF) (seq IRIREF))
              (terminal SPARQL_BASE "29t" (seq (range "Bb") (range "Aa") (range "Ss") (range "Ee"))))
-          }, []
+          }, nil
         ],
         "declaration (FF.1)" => [
           %{
@@ -99,7 +99,7 @@ describe EBNF::Base do
           %{
             ((rule _empty "0" (first _eps) (seq))
              (rule declaration "2" (first "@pass" "@terminals") (alt "@terminals" "@pass")))
-          }, []
+          }, nil
         ],
         "turtleDoc (FF.2)" => [
           %{
@@ -115,7 +115,7 @@ describe EBNF::Base do
              (rule statement "2" (alt directive _statement_1))
              (rule _statement_1 "2.1" (seq triples "."))
              (rule __statement_1_comp "2.1.comp" (first ".") (seq ".")))
-          }, [:turtleDoc]
+          }, :turtleDoc
         ]
       }.each do |name, (input, expected, start)|
         it name do
@@ -180,14 +180,93 @@ describe EBNF::Base do
     end
 
   end
-  
+
+  describe "#build_tables" do
+    context "EBNF Grammar" do
+      let!(:ebnf) {
+        ebnf = parse(File.read(File.expand_path("../../etc/ebnf.ebnf", __FILE__)), :start => :ebnf)
+        ebnf.build_tables
+        ebnf
+      }
+      subject {ebnf}
+      context "#terminals" do
+        subject {ebnf.terminals}
+        let(:symbols) {subject.select {|t| t.is_a?(Symbol)}}
+        let(:other) {subject.reject {|t| t.is_a?(Symbol)}}
+        specify {should be_a(Array)}
+        it "has symbols which are terminals" do
+          symbols.each do |t|
+            ebnf.find_rule(t).should_not be_nil
+          end
+        end
+        it "includes all terminal rules (except CHAR)" do
+          ebnf.ast.
+            select {|r| r.kind == :terminal && r.sym != :CHAR}.
+            map(&:sym).
+            should =~ symbols
+        end
+        it "has strings otherwise" do
+          other.map(&:class).uniq.should == [String]
+        end
+        it "has strings used in all rules" do
+          rule_strings = ebnf.ast.
+            select {|r| r.kind == :rule}.
+            map(&:expr).flatten.
+            select {|t| t.is_a?(String)}.
+            uniq
+          rule_strings.should =~ other
+        end
+      end
+
+      [:first, :follow].each do |tab|
+        context "#tab" do
+          subject {ebnf.send(tab)}
+          let(:symbols) {subject.select {|t| t.is_a?(Symbol)}}
+          specify {should be_a(Hash)}
+          it "keys are all rule symbols" do
+            subject.keys.each do |sym|
+              r = ebnf.find_rule(sym)
+              r.should_not be_nil
+              r.kind.should == :rule
+            end
+          end
+          it "values should all be terminals" do
+            subject.values.flatten.compact.each do |t|
+              ebnf.terminals.should include(t) unless [:_eps, :_eof].include?(t)
+            end
+          end
+        end
+      end
+
+      context "#branch" do
+        subject {ebnf.branch}
+        let(:symbols) {subject.select {|t| t.is_a?(Symbol)}}
+        specify {should be_a(Hash)}
+        it "keys are all rule symbols" do
+          subject.keys.each do |sym|
+            r = ebnf.find_rule(sym)
+            r.should_not be_nil
+            r.kind.should == :rule
+          end
+        end
+        it "values should all be Hashs whos keys are terminals" do
+          values = subject.values
+          values.map(&:class).uniq.should == [Hash]
+          values.map(&:keys).flatten.uniq.each do |t|
+            ebnf.terminals.should include(t) unless [:_eps, :_eof, :_empty].include?(t)
+          end
+        end
+      end
+    end
+  end
+
   def parse(value, options = {})
     @debug = []
     options = {:debug => @debug}.merge(options)
     ebnf = EBNF::Base.new(value, options)
     ebnf.make_bnf
     @debug.clear
-    ebnf.first_follow(options[:start] || [])
+    ebnf.first_follow(options[:start])
     ebnf
   end
 end
