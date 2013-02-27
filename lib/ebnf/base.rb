@@ -110,6 +110,7 @@ module EBNF
     # Grammar errors, or errors found genering parse tables
     # @!attribute [r] errors
     # @return [Array<String>]
+    attr_accessor :errors
 
     # Parse the string or file input generating an abstract syntax tree
     # in S-Expressions (similar to SPARQL SSE)

@@ -212,8 +212,8 @@ module EBNF::LL1
             end
 
             if sequence.nil?
-              if prod_branch.has_key?(:"ebnf:empty")
-                debug("parse(production)", :level => 2) {"empty sequence for ebnf:empty"}
+              if prod_branch.has_key?(:_empty)
+                debug("parse(production)", :level => 2) {"empty sequence for _empty"}
               else
                 # If there is no sequence for this production, we're
                 # in error recovery, and _token_ has been advanced to
@@ -353,7 +353,7 @@ module EBNF::LL1
       # If this token can be used by the top production, return it
       # Otherwise, if the banch table allows empty, also return the token
       return token if !@recovering && (
-        (@branch[cur_prod] && @branch[cur_prod].has_key?(:"ebnf:empty")) ||
+        (@branch[cur_prod] && @branch[cur_prod].has_key?(:_empty)) ||
         first.any? {|t| token === t})
       
       # Otherwise, it's an error condition, and skip either until

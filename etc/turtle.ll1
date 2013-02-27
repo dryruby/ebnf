@@ -2,7 +2,8 @@
  _empty
  "0"
  (first _eps)
- (follow "("
+ (follow
+  "("
   ")"
   ","
   "."
@@ -46,11 +47,11 @@
   _eps
  )
  (follow _eof)
- (alt _empty _turtleDoc_star)
+ (alt _empty _turtleDoc_1)
 )
  (rule
- _turtleDoc_star
- "1*"
+ _turtleDoc_1
+ "1.1"
  (first
   "("
   "@base"
@@ -68,8 +69,8 @@
  (seq statement turtleDoc)
 )
  (rule
- __turtleDoc_star_comp
- "1*.comp"
+ _turtleDoc_2
+ "1.2"
  (first
   "("
   "@base"
@@ -146,8 +147,8 @@
  (seq triples ".")
 )
  (rule
- __statement_1_comp
- "2.1.comp"
+ _statement_2
+ "2.2"
  (first ".")
  (follow
   "("
@@ -213,8 +214,8 @@
  (seq "@prefix" PNAME_NS IRIREF ".")
 )
  (rule
- _prefixID_comp
- "4.comp"
+ _prefixID_1
+ "4.1"
  (first PNAME_NS)
  (follow
   "("
@@ -251,8 +252,8 @@
  (seq "@base" IRIREF ".")
 )
  (rule
- _base_comp
- "5.comp"
+ _base_1
+ "5.1"
  (first IRIREF)
  (follow
   "("
@@ -299,32 +300,32 @@
  (seq subject predicateObjectList)
 )
  (rule
- __triples_1_comp
- "6.1.comp"
- (first IRIREF PNAME_LN PNAME_NS "a")
- (follow ".")
- (seq predicateObjectList)
-)
- (rule
  _triples_2
  "6.2"
  (first "[")
  (follow ".")
- (seq blankNodePropertyList __triples_2_1)
+ (seq blankNodePropertyList _triples_3)
 )
  (rule
- __triples_2_1
- "6.2.1"
+ _triples_3
+ "6.3"
  (first IRIREF PNAME_LN PNAME_NS _eps "a")
  (follow ".")
  (alt _empty predicateObjectList)
 )
  (rule
- __triples_2_comp
- "6.2.comp"
+ _triples_4
+ "6.4"
+ (first IRIREF PNAME_LN PNAME_NS "a")
+ (follow ".")
+ (seq predicateObjectList)
+)
+ (rule
+ _triples_5
+ "6.5"
  (first IRIREF PNAME_LN PNAME_NS _eps "a")
  (follow ".")
- (seq __triples_2_1)
+ (seq _triples_3)
 )
  (rule
  predicateObjectList
@@ -342,83 +343,42 @@
  "7.1"
  (first ";" _eps)
  (follow "." "]")
- (alt _empty __predicateObjectList_1_star)
+ (alt _empty _predicateObjectList_3)
 )
  (rule
- __predicateObjectList_1_star
- "7.1*"
+ _predicateObjectList_2
+ "7.2"
+ (first ";")
+ (follow ";")
+ (seq ";" _predicateObjectList_4)
+)
+ (rule
+ _predicateObjectList_3
+ "7.3"
  (first ";")
  (follow "." "]")
  (seq
-  __predicateObjectList_1_1
+  _predicateObjectList_2
   _predicateObjectList_1
  )
 )
  (rule
- ___predicateObjectList_1_star_comp
- "7.1*.comp"
- (first ";" _eps)
- (follow "." "]")
- (seq _predicateObjectList_1)
-)
- (rule
- __predicateObjectList_1_1
- "7.1.1"
- (first ";")
- (follow ";")
- (seq ";" ___predicateObjectList_1_1_1)
-)
- (rule
- ___predicateObjectList_1_1_1
- "7.1.1.1"
+ _predicateObjectList_4
+ "7.4"
  (first IRIREF PNAME_LN PNAME_NS _eps "a")
  (follow ";")
- (alt
-  _empty
-  ____predicateObjectList_1_1_1_1
- )
+ (alt _empty _predicateObjectList_5)
 )
  (rule
- ____predicateObjectList_1_1_1_1
- "7.1.1.1.1"
+ _predicateObjectList_5
+ "7.5"
  (first IRIREF PNAME_LN PNAME_NS "a")
  (follow ";")
  (seq verb objectList)
 )
  (rule
- _____predicateObjectList_1_1_1_1_comp
- "7.1.1.1.1.comp"
- (first
-  "("
-  ANON
-  BLANK_NODE_LABEL
-  DECIMAL
-  DOUBLE
-  INTEGER
-  IRIREF
-  PNAME_LN
-  PNAME_NS
-  STRING_LITERAL_LONG_QUOTE
-  STRING_LITERAL_LONG_SINGLE_QUOTE
-  STRING_LITERAL_QUOTE
-  STRING_LITERAL_SINGLE_QUOTE
-  "["
-  "false"
-  "true"
- )
- (follow ";")
- (seq objectList)
-)
- (rule
- ___predicateObjectList_1_1_comp
- "7.1.1.comp"
- (first IRIREF PNAME_LN PNAME_NS _eps "a")
- (follow ";")
- (seq ___predicateObjectList_1_1_1)
-)
- (rule
- _predicateObjectList_comp
- "7.comp"
+ _predicateObjectList_6
+ "7.6"
  (first
   "("
   ANON
@@ -439,6 +399,44 @@
  )
  (follow "." "]")
  (seq objectList _predicateObjectList_1)
+)
+ (rule
+ _predicateObjectList_7
+ "7.7"
+ (first ";" _eps)
+ (follow "." "]")
+ (seq _predicateObjectList_1)
+)
+ (rule
+ _predicateObjectList_8
+ "7.8"
+ (first IRIREF PNAME_LN PNAME_NS _eps "a")
+ (follow ";")
+ (seq _predicateObjectList_4)
+)
+ (rule
+ _predicateObjectList_9
+ "7.9"
+ (first
+  "("
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "false"
+  "true"
+ )
+ (follow ";")
+ (seq objectList)
 )
  (rule
  objectList
@@ -469,32 +467,39 @@
  "8.1"
  (first "," _eps)
  (follow ";")
- (alt _empty __objectList_1_star)
+ (alt _empty _objectList_3)
 )
  (rule
- __objectList_1_star
- "8.1*"
- (first ",")
- (follow ";")
- (seq __objectList_1_1 _objectList_1)
-)
- (rule
- ___objectList_1_star_comp
- "8.1*.comp"
- (first "," _eps)
- (follow ";")
- (seq _objectList_1)
-)
- (rule
- __objectList_1_1
- "8.1.1"
+ _objectList_2
+ "8.2"
  (first ",")
  (follow ",")
  (seq "," object)
 )
  (rule
- ___objectList_1_1_comp
- "8.1.1.comp"
+ _objectList_3
+ "8.3"
+ (first ",")
+ (follow ";")
+ (seq _objectList_2 _objectList_1)
+)
+ (rule
+ _objectList_4
+ "8.4"
+ (first "," _eps)
+ (follow ";")
+ (seq _objectList_1)
+)
+ (rule
+ _objectList_5
+ "8.5"
+ (first "," _eps)
+ (follow ";")
+ (seq _objectList_1)
+)
+ (rule
+ _objectList_6
+ "8.6"
  (first
   "("
   ANON
@@ -515,13 +520,6 @@
  )
  (follow ",")
  (seq object)
-)
- (rule
- _objectList_comp
- "8.comp"
- (first "," _eps)
- (follow ";")
- (seq _objectList_1)
 )
  (rule
  verb
@@ -699,8 +697,8 @@
  (seq "[" predicateObjectList "]")
 )
  (rule
- _blankNodePropertyList_comp
- "14.comp"
+ _blankNodePropertyList_1
+ "14.1"
  (first IRIREF PNAME_LN PNAME_NS "a")
  (follow
   "("
@@ -725,8 +723,8 @@
  (seq predicateObjectList "]")
 )
  (rule
- __blankNodePropertyList_comp_comp
- "14.comp.comp"
+ _blankNodePropertyList_2
+ "14.2"
  (first "]")
  (follow
   "("
@@ -799,11 +797,11 @@
   "true"
  )
  (follow ")")
- (alt _empty __collection_1_star)
+ (alt _empty _collection_2)
 )
  (rule
- __collection_1_star
- "15.1*"
+ _collection_2
+ "15.2"
  (first
   "("
   ANON
@@ -826,33 +824,8 @@
  (seq object _collection_1)
 )
  (rule
- ___collection_1_star_comp
- "15.1*.comp"
- (first
-  "("
-  ANON
-  BLANK_NODE_LABEL
-  DECIMAL
-  DOUBLE
-  INTEGER
-  IRIREF
-  PNAME_LN
-  PNAME_NS
-  STRING_LITERAL_LONG_QUOTE
-  STRING_LITERAL_LONG_SINGLE_QUOTE
-  STRING_LITERAL_QUOTE
-  STRING_LITERAL_SINGLE_QUOTE
-  "["
-  _eps
-  "false"
-  "true"
- )
- (follow ")")
- (seq _collection_1)
-)
- (rule
- _collection_comp
- "15.comp"
+ _collection_3
+ "15.3"
  (first
   "("
   ANON
@@ -895,8 +868,33 @@
  (seq _collection_1 ")")
 )
  (rule
- __collection_comp_comp
- "15.comp.comp"
+ _collection_4
+ "15.4"
+ (first
+  "("
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
+  PNAME_LN
+  PNAME_NS
+  STRING_LITERAL_LONG_QUOTE
+  STRING_LITERAL_LONG_SINGLE_QUOTE
+  STRING_LITERAL_QUOTE
+  STRING_LITERAL_SINGLE_QUOTE
+  "["
+  _eps
+  "false"
+  "true"
+ )
+ (follow ")")
+ (seq _collection_1)
+)
+ (rule
+ _collection_5
+ "15.5"
  (first ")")
  (follow
   "("
@@ -1102,8 +1100,8 @@
  (seq SPARQL_PREFIX PNAME_NS IRIREF)
 )
  (rule
- _sparqlPrefix_comp
- "28s.comp"
+ _sparqlPrefix_1
+ "28s.1"
  (first PNAME_NS)
  (follow
   "("
@@ -1152,8 +1150,8 @@
  (seq SPARQL_BASE IRIREF)
 )
  (rule
- _sparqlBase_comp
- "29s.comp"
+ _sparqlBase_1
+ "29s.1"
  (first IRIREF)
  (follow
   "("
@@ -1233,11 +1231,11 @@
   "false"
   "true"
  )
- (alt _empty __RDFLiteral_1_1)
+ (alt _empty _RDFLiteral_2)
 )
  (rule
- __RDFLiteral_1_1
- "128s.1.1"
+ _RDFLiteral_2
+ "128s.2"
  (first LANGTAG "^^")
  (follow
   "("
@@ -1258,11 +1256,11 @@
   "false"
   "true"
  )
- (alt LANGTAG ___RDFLiteral_1_1_1)
+ (alt LANGTAG _RDFLiteral_3)
 )
  (rule
- ___RDFLiteral_1_1_1
- "128s.1.1.1"
+ _RDFLiteral_3
+ "128s.3"
  (first "^^")
  (follow
   "("
@@ -1286,8 +1284,8 @@
  (seq "^^" iri)
 )
  (rule
- _RDFLiteral_comp
- "128s.comp"
+ _RDFLiteral_4
+ "128s.4"
  (first LANGTAG "^^" _eps)
  (follow
   "("

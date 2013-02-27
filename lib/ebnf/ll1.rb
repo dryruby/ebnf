@@ -180,8 +180,18 @@ module EBNF
         "Non-Terminals: #{ast.count {|r| r.kind == :rule}}"
       }
 
-      @first = ast.select(&:first).inject({}) {|memo, r| memo[r.sym] = r.first; memo}
-      @follow = ast.select(&:follow).inject({}) {|memo, r| memo[r.sym] = r.follow; memo}
+      @first = ast.
+        select(&:first).
+        inject({}) {|memo, r|
+          memo[r.sym] = r.first.reject {|t| t == :_eps};
+          memo
+        }
+      @follow = ast.
+        select(&:follow).
+        inject({}) {|memo, r|
+          memo[r.sym] = r.first.reject {|t| t == :_eps};
+          memo
+        }
       @terminals = ast.map do |r|
         (r.first || []) + (r.follow || [])
       end.flatten.uniq
@@ -215,18 +225,18 @@ module EBNF
       ind0 = '  ' * indent
       ind1 = ind0 + '  '
       ind2 = ind1 + '  '
-    
+
       if table.is_a?(Hash)
         io.puts "#{ind0}#{name} = {"
         table.keys.sort_by(&:to_s).each do |prod|
           case table[prod]
           when Array
-            list = table[prod].map {|t| t.inspect}.join(",\n#{ind2}")
+            list = table[prod].map(&:inspect).join(",\n#{ind2}")
             io.puts "#{ind1}#{prod.inspect} => [\n#{ind2}#{list}],"
           when Hash
             io.puts "#{ind1}#{prod.inspect} => {"
             table[prod].keys.sort_by(&:to_s).each do |term|
-              list = table[prod][term].map {|t2| t2.inspect}.join(", ")
+              list = table[prod][term].map(&:inspect).join(", ")
               io.puts "#{ind2}#{term.inspect} => [#{list}],"
             end
             io.puts "#{ind1}},"
@@ -237,7 +247,7 @@ module EBNF
         io.puts "#{ind0}}.freeze\n"
       else
         io.puts "#{ind0}#{name} = [\n#{ind1}" +
-          table.sort.map {|prod| prod.inspect}.join(",\n#{ind1}") +
+          table.sort_by(&:to_s).map(&:inspect).join(",\n#{ind1}") +
           "\n#{ind0}].freeze\n"
       end
     end
@@ -279,7 +289,7 @@ module EBNF
               if branchDict.has_key?(f)
                 error("First/First Conflict: #{f} is also the condition for #{branchDict[f]}")
               end
-              debug("   alt") {"[#{prod}] => #{prod}"}
+              debug("   alt") {"[#{f}] => #{prod}"}
               branchDict[f] = [prod]
             end
           end
@@ -289,6 +299,7 @@ module EBNF
         debug("  Seq", rule)
         # Entries for each first element referencing the sequence
         (rule.first || []).each do |f|
+          debug("   seq") {"[#{f}] => #{rule.expr[1..-1].inspect}"}
           branchDict[f] = rule.expr[1..-1]
         end
       
