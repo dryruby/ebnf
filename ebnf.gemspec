@@ -29,6 +29,7 @@ Gem::Specification.new do |gem|
   gem.required_ruby_version = '>= 1.8.7'
   gem.requirements          = []
   gem.add_runtime_dependency     'sxp'
+  gem.add_runtime_dependency     'rdf'  # Required by sxp
   gem.add_development_dependency 'rspec',           '>= 2.12.0'
   gem.add_development_dependency 'yard' ,           '>= 0.8.3'
   gem.add_development_dependency 'rake'
