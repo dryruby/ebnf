@@ -256,13 +256,9 @@ describe EBNF::Base do
             ebnf.terminals.should include(t) unless [:_eps, :_eof, :_empty].include?(t)
           end
         end
-        it "values of terminal keys are symbols of rules" do
+        it "values of terminal keys are symbols of rules or strings" do
           symbols = subject.values.map(&:values).flatten.uniq
-          require 'debugger'; breakpoint
-          symbols.map(&:class).uniq.should == [Symbol]
-          symbols.each do |s|
-            subject.should have_key(s)
-          end
+          symbols.map(&:class).uniq.should =~ [Symbol, String]
         end
       end
     end

@@ -7,16 +7,16 @@ describe EBNF::LL1::Lexer do
   before(:all) do
 
     @terminals = [
-      [:ANON,                 ANON],
-      [nil,                   %r([\(\),.;\[\]a]|\^\^|@base|@prefix|true|false)],
-      [:BLANK_NODE_LABEL,     BLANK_NODE_LABEL],
-      [:IRIREF,               IRIREF],
-      [:DECIMAL,              DECIMAL],
-      [:DOUBLE,               DOUBLE],
-      [:INTEGER,              INTEGER],
-      [:LANGTAG,              LANGTAG],
-      [:PNAME_LN,             PNAME_LN],
-      [:PNAME_NS,             PNAME_NS],
+      [:ANON,                             ANON],
+      [nil,                               %r([\(\),.;\[\]a]|\^\^|@base|@prefix|true|false)],
+      [:BLANK_NODE_LABEL,                 BLANK_NODE_LABEL],
+      [:IRIREF,                           IRIREF],
+      [:DECIMAL,                          DECIMAL],
+      [:DOUBLE,                           DOUBLE],
+      [:INTEGER,                          INTEGER],
+      [:LANGTAG,                          LANGTAG],
+      [:PNAME_LN,                         PNAME_LN],
+      [:PNAME_NS,                         PNAME_NS],
       [:STRING_LITERAL_LONG_SINGLE_QUOTE, STRING_LITERAL_LONG_SINGLE_QUOTE],
       [:STRING_LITERAL_LONG_QUOTE,        STRING_LITERAL_LONG_QUOTE],
       [:STRING_LITERAL_QUOTE,             STRING_LITERAL_QUOTE],
@@ -24,7 +24,9 @@ describe EBNF::LL1::Lexer do
     ]
     
     @unescape_terms = [
-      :IRIREF, :STRING_LITERAL_QUOTE, :STRING_LITERAL_SINGLE_QUOTE, :STRING_LITERAL_LONG_SINGLE_QUOTE, :STRING_LITERAL_LONG_QUOTE
+      :IRIREF,
+      :STRING_LITERAL_QUOTE, :STRING_LITERAL_SINGLE_QUOTE,
+      :STRING_LITERAL_LONG_SINGLE_QUOTE, :STRING_LITERAL_LONG_QUOTE
     ]
   end
   
@@ -235,7 +237,7 @@ describe EBNF::LL1::Lexer do
     end
   end
 
-  EXPONENT             = /[eE][+-]?[0-9]+/
+  EXPONENT                         = /[eE][+-]?[0-9]+/
 
   ANON                             = /\[\s*\]/
   BLANK_NODE_LABEL                 = /_:(?:\w)*/
