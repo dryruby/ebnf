@@ -134,7 +134,7 @@ The [EBNF][] variant used here is based on [W3C][] [EBNF][] as defined in the
                         |  
                         )+
 
-# #  Acknowledgements
+##  Acknowledgements
 Much of this work, particularly the generic parser, is inspired by work originally done by
 Tim Berners-Lee's Python [predictive parser](http://www.w3.org/2000/10/swap/grammar/predictiveParser.py).
 
