@@ -134,6 +134,16 @@ The [EBNF][] variant used here is based on [W3C][] [EBNF][] as defined in the
                         |  
                         )+
 
+# #  Acknowledgements
+Much of this work, particularly the generic parser, is inspired by work originally done by
+Tim Berners-Lee's Python [predictive parser](http://www.w3.org/2000/10/swap/grammar/predictiveParser.py).
+
+The EBNF parser was inspired by Dan Connolly's
+[EBNF to Turtle processor](http://www.w3.org/2000/10/swap/grammar/ebnf2turtle.py),
+[EBNF to BNF Notation-3 rules](http://www.w3.org/2000/10/swap/grammar/ebnf2bnf.n3),
+and [First Follow Notation-3 rules](http://www.w3.org/2000/10/swap/grammar/first_follow.n3). 
+
+
 ## Documentation
 Full documentation available on [Rubydoc.info][EBNF doc].
 
