@@ -1,10 +1,10 @@
-# ebnf
+# EBNF
 
 [EBNF][] parser and generic parser generator.
 
 ## Description
 This is a [Ruby][] implementation of an [EBNF][] and [BNF][] parser and parser generator.
-It parses [EBNF][] grammars to [BNF][], generates [First/Follow][] and [Branch][] tables for
+It parses [EBNF][] grammars to [BNF][], generates [First/Follow and Branch][] tables for
 [LL(1)][] grammars, which can be used with the stream [Tokenizer][] and [LL(1) Parser][].
 
 Of note in this implementation is that the tokenizer and parser are streaming, so that they can
@@ -31,7 +31,7 @@ Generate [First/Follow][] rules for BNF grammars
 
     ebnf.first_follow(start_tokens)
 
-Generate [Branch][], terminal and [First/Follow][] tables as Ruby for parsing grammars
+Generate Terminal, [First/Follow and Branch][] tables as Ruby for parsing grammars
 
     ebnf.to_ruby
 
@@ -147,6 +147,11 @@ and [First Follow Notation-3 rules](http://www.w3.org/2000/10/swap/grammar/first
 ## Documentation
 Full documentation available on [Rubydoc.info][EBNF doc].
 
+## Future Work
+* Detect FIRST/FOLLOW and left-recursion conflicts.
+* Generate HTML output of parser results.
+* Better LL(1) parser tests
+
 ## Author
 * [Gregg Kellogg](http://github.com/gkellogg) - <http://greggkellogg.net/>
 
@@ -172,9 +177,8 @@ see <http://unlicense.org/> or the accompanying {file:UNLICENSE} file.
 [YARD-GS]:      http://rubydoc.info/docs/yard/file/docs/GettingStarted.md
 [PDD]:          http://lists.w3.org/Archives/Public/public-rdf-ruby/2010May/0013.html
 [EBNF]:         http://www.w3.org/TR/REC-xml/#sec-notation
-[EBNF doc]:     
+[EBNF doc]:     http://rubydoc.info/github/gkellogg/ebnf/master/frames
 [First/Follow]: http://en.wikipedia.org/wiki/LL_parser#Constructing_an_LL.281.29_parsing_table
-[Branch]:       
-[LL(1)]:        
+[LL(1)]:        http://www.csd.uwo.ca/~moreno//CS447/Lectures/Syntax.html/node14.html
 [LL(1) Parser]: http://en.wikipedia.org/wiki/LL_parser
-[Tokenizer]:    
+[Tokenizer]:    http://en.wikipedia.org/wiki/Lexical_analysis#Tokenizer

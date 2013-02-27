@@ -50,8 +50,7 @@ module EBNF
     # @param [Integer] id
     # @param [Symbol] sym
     # @param [Array] expr
-    # @param [EBNF] ebnf EBNF instance (used for messages)
-    # @param [Hash{Symbol => Object}] option
+    # @param [Hash{Symbol => Object}] options
     # @option options [Symbol] :kind
     # @option options [String] :ebnf
     def initialize(sym, id, expr, options = {})
@@ -71,7 +70,7 @@ module EBNF
     # Symbol and number creation is handled by the top-most rule in such a chain
     #
     # @param [Array] expr
-    # @param [Hash{Symbol => Object}] option
+    # @param [Hash{Symbol => Object}] options
     # @option options [Symbol] :kind
     # @option options [String] :ebnf EBNF instance (used for messages)
     def build(expr, options = {})

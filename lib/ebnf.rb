@@ -16,7 +16,7 @@ module EBNF
   # @param  [Hash{Symbol => Object}] options
   # @return [EBNF::Base]
   # @raise  [Exception] on invalid input
-  def self.parse(query, options = {})
-    query = ::EBNF::Base.new(query, options)
+  def self.parse(input, options = {})
+    query = ::EBNF::Base.new(input, options)
   end
 end
