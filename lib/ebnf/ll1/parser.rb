@@ -340,6 +340,34 @@ module EBNF::LL1
       end
     end
     
+    # Current ProdData element
+    def prod_data; @prod_data.last; end
+
+    # Add a single value to prod_data, allows for values to be an array
+    def add_prod_datum(sym, values)
+      case values
+      when Array
+        prod_data[sym] ||= []
+        debug("add_prod_datum(#{sym})") {"#{prod_data[sym].inspect} += #{values.inspect}"}
+        prod_data[sym] += values
+      when nil
+        return
+      else
+        prod_data[sym] ||= []
+        debug("add_prod_datum(#{sym})") {"#{prod_data[sym].inspect} << #{values.inspect}"}
+        prod_data[sym] << values
+      end
+    end
+    
+    # Add values to production data, values aranged as an array
+    def add_prod_data(sym, *values)
+      return if values.compact.empty?
+      
+      prod_data[sym] ||= []
+      prod_data[sym] += values
+      debug("add_prod_data(#{sym})") {"#{prod_data[sym].inspect} += #{values.inspect}"}
+    end
+    
     # Skip through the input stream until something is found that
     # is either valid based on the content of the production stack,
     # or can follow a production in the stack.
@@ -446,7 +474,6 @@ module EBNF::LL1
       if @options[:debug]
         return debug(node, message, {:level => 0}.merge(options))
       else
-        str = "[#{@lineno}]#{' ' * depth}#{node}: #{message}"
         $stderr.puts("[#{@lineno}]#{' ' * depth}#{node}: #{message}")
       end
     end
