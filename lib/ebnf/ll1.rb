@@ -101,12 +101,13 @@ module EBNF
             # Fi(A w' ) = Fi(A) \ { ε } ∪ Fi(w' ) for every nonterminal A with ε in Fi(A)
             # For each rule starting with eps, add the terminals for the comprehension of this rule
             if rule.seq? &&
-               rule.expr.fetch(1, nil) == first_rule &&
+               rule.expr.fetch(1, nil) == first_rule.sym &&
                first_rule.first.include?(:_eps) &&
                (comp = rule.comp)
 
               depth {debug("FF.2") {"add first #{first_rule.first.inspect} to #{comp.sym}"}}
               firsts += comp.add_first(first_rule.first)
+            else
             end
           end
 
@@ -195,7 +196,7 @@ module EBNF
       @terminals = ast.map do |r|
         (r.first || []) + (r.follow || [])
       end.flatten.uniq
-      @terminals = (@terminals - [:_eps, :_eof, :_empty]).sort_by(&:to_s)
+      @terminals = (@terminals - [:_eps, :_eof, :_empty]).sort_by(&:inspect)
 
       @branch = {}
       @already = []
@@ -228,14 +229,14 @@ module EBNF
 
       if table.is_a?(Hash)
         io.puts "#{ind0}#{name} = {"
-        table.keys.sort_by(&:to_s).each do |prod|
+        table.keys.sort_by(&:inspect).each do |prod|
           case table[prod]
           when Array
             list = table[prod].map(&:inspect).join(",\n#{ind2}")
             io.puts "#{ind1}#{prod.inspect} => [\n#{ind2}#{list}],"
           when Hash
             io.puts "#{ind1}#{prod.inspect} => {"
-            table[prod].keys.sort_by(&:to_s).each do |term|
+            table[prod].keys.sort_by(&:inspect).each do |term|
               list = table[prod][term].map(&:inspect).join(", ")
               io.puts "#{ind2}#{term.inspect} => [#{list}],"
             end
@@ -247,7 +248,7 @@ module EBNF
         io.puts "#{ind0}}.freeze\n"
       else
         io.puts "#{ind0}#{name} = [\n#{ind1}" +
-          table.sort_by(&:to_s).map(&:inspect).join(",\n#{ind1}") +
+          table.sort_by(&:inspect).map(&:inspect).join(",\n#{ind1}") +
           "\n#{ind0}].freeze\n"
       end
     end

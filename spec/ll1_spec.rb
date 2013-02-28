@@ -167,7 +167,7 @@ describe EBNF::Base do
              (rule _collection_2 "15.2" (follow ")") (seq object _collection_1))
              (rule _collection_3 "15.3" (first _eps) (seq _collection_1 ")"))
              (rule _collection_4 "15.4" (first _eps) (follow ")") (seq _collection_1))
-             (rule _collection_5 "15.5" (first ")") (seq ")")))
+             (rule _collection_5 "15.5" (first ")" _eps) (seq ")")))
           }
         ]
       }.each do |name, (input, expected)|
