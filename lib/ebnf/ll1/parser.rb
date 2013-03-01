@@ -257,13 +257,18 @@ module EBNF::LL1
         # If in recovery mode, continue popping until we find a term with a follow list
         while !pushed &&
               !todo_stack.empty? &&
-              ( todo_stack.last[:terms].to_a.empty? ||
-                (@recovering && @follow[todo_stack.last[:term]].nil?))
-          debug("parse(pop)", :level => 2) {"todo #{todo_stack.last.inspect}, depth #{depth}, recovering? #{@recovering.inspect}"}
-          prod = todo_stack.last[:prod]
-          @recovering = false if @follow[prod] # Stop recovering when we might have a match
-          todo_stack.pop
-          onFinish
+              ( (terms = todo_stack.last.fetch(:terms, [])).empty? ||
+                (@recovering && @follow.fetch(terms.last, []).none? {|t| token == t}))
+          debug("parse(pop)", :level => 2) {"todo #{todo_stack.last.inspect}, depth #{depth}"}
+          if terms.empty?
+            prod = todo_stack.last[:prod]
+            todo_stack.pop
+            onFinish
+          else
+            # Stop recovering when we a production which starts with the term
+            debug("parse(pop)", :level => 2) {"recovery complete"}
+            @recovering = false
+          end
         end
       end
 
@@ -311,13 +316,13 @@ module EBNF::LL1
     def onFinish
       prod = @productions.last
       handler = self.class.production_handlers[prod]
-      if handler
+      if handler && !@recovering
         # Pop production data element from stack, potentially allowing handler to use it
         data = @prod_data.pop
         handler.call(self, :finish, @prod_data.last, data, @parse_callback)
         progress("#{prod}(:finish):#{@prod_data.length}") {@prod_data.last}
       else
-        progress("#{prod}(:finish)", '')
+        progress("#{prod}(:finish)", "recovering: #{@recovering.inspect}")
       end
       @productions.pop
     end
@@ -408,7 +413,7 @@ module EBNF::LL1
         skipped = @lexer.shift
         progress("recovery") {"skip #{skipped.inspect}"}
       end
-      debug("recovery") {"found #{token.inspect}"}
+      debug("recovery") {"found #{token.inspect} in #{first.include?(token) ? 'first' : 'follows'}"}
       
       # If the token is a first, just return it. Otherwise, it is a follow
       # and we need to skip to the end of the production
