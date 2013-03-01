@@ -101,6 +101,17 @@ describe EBNF::Base do
              (rule declaration "2" (first "@pass" "@terminals") (alt "@terminals" "@pass")))
           }, nil
         ],
+        "Query (FF.1/6)" => [
+          %{
+            [2] Query        ::= 'BASE'? 'SELECT'
+          },
+          %{
+            ((rule _empty "0" (first _eps) (follow "SELECT") (seq))
+             (rule Query "2" (first "BASE" "SELECT") (seq _Query_1 "SELECT"))
+             (rule _Query_1 "2.1" (first "BASE" _eps) (follow "SELECT") (alt _empty "BASE"))
+             (rule _Query_2 "2.2" (first "SELECT") (seq "SELECT")))
+          }
+        ],
         "turtleDoc (FF.2)" => [
           %{
             [1] turtleDoc                         ::= statement* 
@@ -111,7 +122,7 @@ describe EBNF::Base do
              (rule turtleDoc "1" (start #t) (first _eps) (follow _eof)
               (alt _empty _turtleDoc_1))
              (rule _turtleDoc_1 "1.1" (follow _eof) (seq statement turtleDoc))
-             (rule _turtleDoc_2 "1.2" (first _eps) (follow _eof) (seq turtleDoc))
+             (rule _turtleDoc_2 "1.2" (follow _eof) (seq turtleDoc))
              (rule statement "2" (alt directive _statement_1))
              (rule _statement_1 "2.1" (seq triples "."))
              (rule _statement_2 "2.2" (first ".") (seq ".")))
@@ -140,7 +151,7 @@ describe EBNF::Base do
              (rule _rule1_1 "1.1" (first "bar") (seq b))
              (rule a "2" (first "foo") (follow "bar") (seq "foo"))
              (rule b "3" (first "bar") (seq "bar")))
-          }
+          }, nil
         ],
         "blankNodePropertyList (FF.4)" => [
           %{
@@ -154,9 +165,9 @@ describe EBNF::Base do
              (rule blankNodePropertyList "14" (first "[") (seq "[" predicateObjectList "]"))
              (rule _blankNodePropertyList_1 "14.1" (seq predicateObjectList "]"))
              (rule _blankNodePropertyList_2 "14.2" (first "]") (seq "]")))
-          }
+          }, nil
         ],
-        "collection (FF.6/7)" => [
+        "collection (FF.7/8)" => [
           %{
             [15] collection                       ::= "(" object* ")"
           },
@@ -165,14 +176,34 @@ describe EBNF::Base do
              (rule collection "15" (first "(") (seq "(" _collection_1 ")"))
              (rule _collection_1 "15.1" (first _eps) (follow ")") (alt _empty _collection_2))
              (rule _collection_2 "15.2" (follow ")") (seq object _collection_1))
-             (rule _collection_3 "15.3" (first _eps) (seq _collection_1 ")"))
-             (rule _collection_4 "15.4" (first _eps) (follow ")") (seq _collection_1))
-             (rule _collection_5 "15.5" (first ")" _eps) (seq ")")))
-          }
+             (rule _collection_3 "15.3" (first ")") (seq _collection_1 ")"))
+             (rule _collection_4 "15.4" (follow ")") (seq _collection_1))
+             (rule _collection_5 "15.5" (first ")") (seq ")")))
+          }, nil
+        ],
+        "turtleDoc (FF.?)" => [
+          %{
+            [1] turtleDoc ::= statement* 
+            [2] statement ::= directive | triples "." 
+            [3] directive ::= 'BASE'
+            [4] triples   ::= 'IRI'
+          },
+          %{
+            ((rule _empty "0" (first _eps) (follow _eof) (seq))
+             (rule turtleDoc "1" (start #t) (first "BASE" "IRI" _eps) (follow _eof)
+              (alt _empty _turtleDoc_1))
+             (rule _turtleDoc_1 "1.1" (first "BASE" "IRI") (follow _eof) (seq statement turtleDoc))
+             (rule _turtleDoc_2 "1.2" (follow _eof) (seq turtleDoc))
+             (rule statement "2" (first "BASE" "IRI") (alt directive _statement_1))
+             (rule _statement_1 "2.1" (first "IRI") (seq triples "."))
+             (rule _statement_2 "2.2" (first ".") (seq "."))
+             (rule directive "3" (first "BASE") (seq "BASE"))
+             (rule triples "4" (first "IRI") (follow ".") (seq "IRI")))
+          }, :turtleDoc
         ]
-      }.each do |name, (input, expected)|
+      }.each do |name, (input, expected, start)|
         it name do
-          ebnf = parse(input)
+          ebnf = parse(input, :start => start)
           sin = ebnf.ast.sort.to_sxp
           sin.should produce(expected, @debug)
         end

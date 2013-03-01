@@ -186,7 +186,7 @@ module EBNF
     # @param [Symbol, class] sym
     #   Symbol matching any start element, or if it is String, any start element which is a String
     # @return [Array<Symbol, String>] list of symbol (singular), or strings which are start symbol, or nil if there are none
-    def starts_with(sym)
+    def starts_with?(sym)
       if seq? && sym === (v = expr.fetch(1, nil))
         [v]
       elsif alt? && expr.any? {|e| sym === e}
@@ -194,6 +194,12 @@ module EBNF
       else
         nil
       end
+    end
+
+    # Do the firsts of this rule include the empty string?
+    # @return [Boolean]
+    def first_includes_eps?
+      @first && @first.include?(:_eps)
     end
 
     # Add terminal as proceding this rule

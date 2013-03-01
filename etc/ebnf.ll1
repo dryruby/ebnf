@@ -1,186 +1,33 @@
-((rule
- _empty
- "0"
- (first _eps)
- (follow
-  "("
-  ")"
-  "-"
-  "@pass"
-  "@terminals"
-  ENUM
-  HEX
-  O_ENUM
-  O_RANGE
-  RANGE
-  STRING1
-  STRING2
-  "["
-  _eof
-  "|"
- )
- (seq)
-)
+((rule _empty "0" (first _eps)
+       (follow "(" ")" "-" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 "[" _eof "|")
+       (seq))
  (pass @pass "0" (seq ()))
- (rule
- ebnf
- "1"
- (start #t)
- (first
-  "("
-  "@pass"
-  "@terminals"
-  ENUM
-  HEX
-  O_ENUM
-  O_RANGE
-  RANGE
-  STRING1
-  STRING2
-  "["
-  _eps
- )
- (follow _eof)
- (alt _empty _ebnf_2)
-)
- (rule
- _ebnf_1
- "1.1"
- (first
-  "("
-  "@pass"
-  "@terminals"
-  ENUM
-  HEX
-  O_ENUM
-  O_RANGE
-  RANGE
-  STRING1
-  STRING2
-  "["
- )
- (follow
-  "("
-  "@pass"
-  "@terminals"
-  ENUM
-  HEX
-  O_ENUM
-  O_RANGE
-  RANGE
-  STRING1
-  STRING2
-  "["
- )
- (alt declaration rule)
-)
- (rule
- _ebnf_2
- "1.2"
- (first
-  "("
-  "@pass"
-  "@terminals"
-  ENUM
-  HEX
-  O_ENUM
-  O_RANGE
-  RANGE
-  STRING1
-  STRING2
-  "["
- )
- (follow _eof)
- (seq _ebnf_1 ebnf)
-)
- (rule
- _ebnf_3
- "1.3"
- (first
-  "("
-  "@pass"
-  "@terminals"
-  ENUM
-  HEX
-  O_ENUM
-  O_RANGE
-  RANGE
-  STRING1
-  STRING2
-  "["
-  _eps
- )
- (follow _eof)
- (seq ebnf)
-)
- (rule
- declaration
- "2"
- (first
-  "("
-  "@pass"
-  "@terminals"
-  ENUM
-  HEX
-  O_ENUM
-  O_RANGE
-  RANGE
-  STRING1
-  STRING2
- )
- (follow
-  "("
-  "@pass"
-  "@terminals"
-  ENUM
-  HEX
-  O_ENUM
-  O_RANGE
-  RANGE
-  STRING1
-  STRING2
-  "["
- )
- (alt "@terminals" "@pass")
-)
- (rule
- rule
- "3"
- (first "[")
- (follow
-  "("
-  "@pass"
-  "@terminals"
-  ENUM
-  HEX
-  O_ENUM
-  O_RANGE
-  RANGE
-  STRING1
-  STRING2
-  "["
- )
- (seq lhs "::=" expression)
-)
- (rule
- _rule_1
- "3.1"
- (first "::=")
- (follow
-  "("
-  "@pass"
-  "@terminals"
-  ENUM
-  HEX
-  O_ENUM
-  O_RANGE
-  RANGE
-  STRING1
-  STRING2
-  "["
- )
- (seq "::=" expression)
-)
+ (rule ebnf "1" (start #t)
+       (first "(" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1STRING2 "[" _eps)
+       (follow _eof) (alt _empty _ebnf_2))
+ (rule _ebnf_1 "1.1"
+       (first "(" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 "[")
+       (follow "(" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 "[")
+       (alt declaration rule))
+ (rule _ebnf_2 "1.2"
+       (first "(" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 "[")
+       (follow _eof) (seq _ebnf_1 ebnf))
+ (rule _ebnf_3 "1.3"
+       (first "(" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 "[" _eps)
+       (follow _eof) (seq ebnf))
+ (rule declaration "2"
+       (first "(" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 )
+       (follow "(" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2
+               "[" )
+       (alt "@terminals" "@pass"))
+ (rule rule "3" (first "[")
+       (follow "(" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2
+               "[" )
+       (seq lhs "::=" expression))
+ (rule _rule_1 "3.1" (first "::=")
+       (follow "(" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2
+               "[" )
+       (seq "::=" expression))
  (rule
  _rule_2
  "3.2"

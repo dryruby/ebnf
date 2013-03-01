@@ -50,127 +50,145 @@ module EBNF
 
       # Comprehnsion rule, create shorter versions of all non-terminal sequences
       comprehensions = []
-      begin
-        comprehensions = []
-        ast.select {|r| r.seq? && r.kind == :rule && r.expr.length > 2}.each do |rule|
-          new_expr = rule.expr[2..-1].unshift(:seq)
-          unless ast.any? {|r| r.expr == new_expr}
-            debug("first_follow") {"add comprehension rule for #{rule.sym} => #{new_expr.inspect}"}
-            new_rule = rule.build(new_expr)
-            rule.comp = new_rule
-            comprehensions << new_rule
+      ittr = 0
+      depth do
+        begin
+          comprehensions = []
+          ast.select {|r| r.seq? && r.kind == :rule && r.expr.length > 2}.each do |rule|
+            new_expr = rule.expr[2..-1].unshift(:seq)
+            unless ast.any? {|r| r.expr == new_expr}
+              debug("FF.c") {"(#{ittr}) add comprehension rule for #{rule.sym} => #{new_expr.inspect}"}
+              new_rule = rule.build(new_expr)
+              rule.comp = new_rule
+              comprehensions << new_rule
+            end
           end
-        end
       
-        @ast += comprehensions
-        progress("first_follow") {"comprehensions #{comprehensions.length}"}
-      end while !comprehensions.empty?
+          @ast += comprehensions
+          progress("FF.c") {"(#{ittr}) comprehensions #{comprehensions.length}"}
+          ittr += 1
+        end while !comprehensions.empty?
 
-      # Fi(a w' ) = { a } for every terminal a
-      # For each rule who's expr's first element of a seq a terminal, or having any element of alt a terminal, add that terminal to the first set for this rule
-      each(:rule) do |rule|
-        each(:terminal) do |terminal|
-          rule.add_first([terminal.sym]) if rule.starts_with(terminal.sym)
-        end
-
-        # Add strings to first for strings which are start elements
-        start_strs = rule.starts_with(String)
-        rule.add_first(start_strs) if start_strs
-      end
-
-      # # Fi(ε) = { ε }
-      # Add _eps as a first of _empty
-      empty = ast.detect {|r| r.sym == :_empty}
-      empty.add_first([:_eps])
-
-      # Loop until no more first elements are added
-      firsts, follows = 0, 0
-      begin
-        firsts, follows = 0, 0
+        # Fi(a w' ) = { a } for every terminal a
+        # For each rule who's expr's first element of a seq a terminal, or having any element of alt a terminal, add that terminal to the first set for this rule
         each(:rule) do |rule|
-          each(:rule) do |first_rule|
-            next if first_rule == rule || first_rule.first.nil?
-
-            # Fi(A w' ) = Fi(A) for every nonterminal A with ε not in Fi(A)
-            # For each rule that starts with another rule having firsts, add  the firsts of that rule to this rule, unless it already has those terminals in its first
-            if rule.starts_with(first_rule.sym)
-              depth {debug("FF.1") {"add first #{first_rule.first.inspect} to #{rule.sym}"}}
-              firsts += rule.add_first(first_rule.first)
-            end
-
-            # Fi(A w' ) = Fi(A) \ { ε } ∪ Fi(w' ) for every nonterminal A with ε in Fi(A)
-            # For each rule starting with eps, add the terminals for the comprehension of this rule
-            if rule.seq? &&
-               rule.expr.fetch(1, nil) == first_rule.sym &&
-               first_rule.first.include?(:_eps) &&
-               (comp = rule.comp)
-
-              depth {debug("FF.2") {"add first #{first_rule.first.inspect} to #{comp.sym}"}}
-              firsts += comp.add_first(first_rule.first)
-            else
+          each(:terminal) do |terminal|
+            if rule.starts_with?(terminal.sym)
+              debug("FF.t") {"(0) add first #{terminal.sym} to #{rule.sym}"}
+              rule.add_first([terminal.sym])
             end
           end
 
-          # Only run these rules if the rule is a sequence having two or more elements, whos first element is also a sequence and first_rule is the comprehension of rule
-          if rule.seq? && (comp = rule.comp)
-             #if there is a rule of the form Aj → wAiw' , then
-             #
-            if (ai = find_rule(rule.expr[1])) && ai.kind == :rule && comp.first
-              #    * if the terminal a is in Fi(w' ), then add a to Fo(Ai)
-              #
-              # Add follow terminals based on the first terminals
-              # of a comprehension of this rule (having the same
-              # sequence other than the first rule in the sequence)
-              #
-              # @example
-              #   rule: (seq a b c)
-              #   first_rule: (seq b c)
-              #   if first_rule.first == [T]
-              #   => a.follow += [T]
-              depth {debug("FF.3") {"add follow #{comp.first.inspect} to #{ai.sym}"}}
-              follows += ai.add_follow(comp.first)
+          # Add strings to first for strings which are start elements
+          start_strs = rule.starts_with?(String)
+          if start_strs
+            debug("FF.t") {"(0) add firsts #{start_strs.join(", ")} to #{rule.sym}"}
+            rule.add_first(start_strs) 
+          end
+        end
+
+        # # Fi(ε) = { ε }
+        # Add _eps as a first of _empty
+        find_rule(:_empty).add_first([:_eps])
+
+        # Loop until no more first elements are added
+        firsts, follows, ittr = 0, 0, 0
+        begin
+          firsts, follows = 0, 0
+          each(:rule) do |rule|
+            each(:rule) do |first_rule|
+              next if first_rule == rule || first_rule.first.nil?
+
+              # Fi(A w' ) = Fi(A) for every nonterminal A with ε not in Fi(A)
+              # For each rule that starts with another rule having firsts which don't include _eps, add  the firsts of that rule to this rule, unless it already has those terminals in its first
+              if rule.starts_with?(first_rule.sym) && !first_rule.first_includes_eps?
+                debug("FF.1") {"(#{ittr}) add first #{first_rule.first.inspect} from #{first_rule.sym} to #{rule.sym}"}
+                firsts += rule.add_first(first_rule.first)
+              end
+
+              # Fi(A w' ) = Fi(A) \ { ε } ∪ Fi(w' ) for every nonterminal A with ε in Fi(A)
+              # For each rule starting with eps, add the terminals for the comprehension of this rule
+              if rule.seq? &&
+                 rule.expr.fetch(1, nil) == first_rule.sym &&
+                 first_rule.first_includes_eps? &&
+                 (comp = rule.comp)
+
+                debug("FF.2") {"(#{ittr}) add first #{comp.first.inspect} from #{comp.sym} to #{rule.sym}"}
+                firsts += rule.add_first(comp.first)
+              else
+              end
             end
 
-            # Follows of a rule are also follows of the comprehension of the rule.
-            if rule.follow
-              depth {debug("FF.4") {"add follow #{rule.follow.inspect} to #{comp.sym}"}}
-              follows += comp.add_follow(rule.follow)
+            # Only run these rules if the rule is a sequence having two or more elements, whos first element is also a sequence and first_rule is the comprehension of rule
+            if rule.seq? && (comp = rule.comp)
+               #if there is a rule of the form Aj → wAiw' , then
+               #
+              if (ai = find_rule(rule.expr[1])) && ai.kind == :rule && comp.first
+                #    * if the terminal a is in Fi(w' ), then add a to Fo(Ai)
+                #
+                # Add follow terminals based on the first terminals
+                # of a comprehension of this rule (having the same
+                # sequence other than the first rule in the sequence)
+                #
+                # @example
+                #   rule: (seq a b c)
+                #   first_rule: (seq b c)
+                #   if first_rule.first == [T]
+                #   => a.follow += [T]
+                debug("FF.3") {"(#{ittr}) add follow #{comp.first.inspect} from #{comp.sym} to #{ai.sym}"}
+                follows += ai.add_follow(comp.first)
+              end
+
+              # Follows of a rule are also follows of the comprehension of the rule.
+              if rule.follow
+                debug("FF.4") {"(#{ittr}) add follow #{rule.follow.inspect} to from #{rule.sym} #{comp.sym}"}
+                follows += comp.add_follow(rule.follow)
+              end
+
+              #    * if ε is in Fi(w' ), then add Fo(Aj) to Fo(Ai)
+              #
+              # If the comprehension of a sequence has an _eps first, then the follows of the rule also become the follows of the first member of the rule
+              if comp.first && comp.first.include?(:_eps) && rule.first &&
+                 (member = find_rule(rule.expr.fetch(1, nil))) &&
+                 member.kind == :rule
+
+                debug("FF.5") {"(#{ittr}) add follow #{rule.follow.inspect} from #{rule.sym} to #{member.sym}"}
+                follows += member.add_follow(rule.first)
+              end
             end
 
-            #    * if ε is in Fi(w' ), then add Fo(Aj) to Fo(Ai)
-            #
-            # If the comprehension of a sequence has an _eps first, then the follows of the rule also become the follows of the first member of the rule
-            if comp.first && comp.first.include?(:_eps) && rule.first &&
-               (member = find_rule(rule.expr.fetch(1, nil))) &&
+            # Firsts of elements of an alt are firsts of the alt
+            if rule.alt?
+              rule.expr[1..-1].map {|s| find_rule(s)}.compact.each do |mem|
+                debug("FF.6") {"(#{ittr}) add first #{mem.first.inspect} from #{mem.sym} to #{rule.sym}"}
+                rule.add_first(mem.first) if mem.first
+              end
+            end
+
+            # Follows of a rule are also follows of the last production in the rule
+            if rule.seq? && rule.follow &&
+               (member = find_rule(rule.expr.last)) &&
                member.kind == :rule
 
-              depth {debug("FF.5") {"add follow #{rule.follow.inspect} to #{member.sym}"}}
-              follows += member.add_follow(rule.first)
+              debug("FF.7") {"(#{ittr}) add follow #{rule.follow.inspect} to #{member.sym}"}
+              follows += member.add_follow(rule.follow)
             end
-          end
 
-          # Follows of a rule are also follows of the last production in the rule
-          if rule.seq? && rule.follow &&
-             (member = find_rule(rule.expr.last)) &&
-             member.kind == :rule
-
-            depth {debug("FF.6") {"add follow #{rule.follow.inspect} to #{member.sym}"}}
-            follows += member.add_follow(rule.follow)
-          end
-
-          # For alts, anything that follows the rule follows each member of the rule
-          if rule.alt? && rule.follow
-            rule.expr[1..-1].map {|s| find_rule(s)}.each do |mem|
-              if mem && mem.kind == :rule
-                depth {debug("FF.7") {"add follow #{rule.first.inspect} to #{mem.sym}"}}
-                follows += mem.add_follow(rule.follow)
+            # For alts, anything that follows the rule follows each member of the rule
+            if rule.alt? && rule.follow
+              rule.expr[1..-1].map {|s| find_rule(s)}.each do |mem|
+                if mem && mem.kind == :rule
+                  debug("FF.8") {"(#{ittr}) add follow #{rule.first.inspect} to #{mem.sym}"}
+                  follows += mem.add_follow(rule.follow)
+                end
               end
             end
           end
-        end
 
-        progress("first_follow") {"firsts #{firsts}, follows #{follows}"}
-      end while (firsts + follows) > 0
+          progress("first_follow") {"(#{ittr}) firsts #{firsts}, follows #{follows}"}
+          ittr += 1
+        end while (firsts + follows) > 0
+      end
     end
 
     ##
@@ -184,13 +202,13 @@ module EBNF
       @first = ast.
         select(&:first).
         inject({}) {|memo, r|
-          memo[r.sym] = r.first.reject {|t| t == :_eps};
+          memo[r.sym] = r.first if r.first
           memo
         }
       @follow = ast.
         select(&:follow).
         inject({}) {|memo, r|
-          memo[r.sym] = r.first.reject {|t| t == :_eps};
+          memo[r.sym] = r.first if r.first
           memo
         }
       @terminals = ast.map do |r|

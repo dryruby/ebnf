@@ -219,7 +219,7 @@ module EBNF
 
     # Progress output, less than debugging
     def progress(*args)
-      return unless @options[:progress]
+      return unless @options[:progress] || @options[:debug]
       options = args.last.is_a?(Hash) ? args.pop : {}
       depth = options[:depth] || @depth
       args << yield if block_given?
