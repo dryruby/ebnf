@@ -111,11 +111,11 @@ module EBNF
               if rule.seq? &&
                  rule.expr.fetch(1, nil) == first_rule.sym &&
                  first_rule.first_includes_eps? &&
-                 (comp = rule.comp)
+                 (comp = rule.comp) &&
+                 comp.first
 
                 debug("FF.2") {"(#{ittr}) add first #{comp.first.inspect} from #{comp.sym} to #{rule.sym}"}
                 firsts += rule.add_first(comp.first)
-              else
               end
             end
 
