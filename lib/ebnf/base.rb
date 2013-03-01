@@ -165,7 +165,7 @@ module EBNF
         require 'sxp'
         SXP::Generator.string(ast.sort)
       rescue LoadError
-        ast.to_sxp
+        ast.sort_by{|r| r.num.to_f}.to_sxp
       end
     end
     def to_s; to_sxp; end
