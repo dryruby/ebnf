@@ -1,4 +1,5 @@
-# EBNF
+# EBNF [![Build Status](https://secure.travis-ci.org/gkellogg/ebnf.png?branch=master)](http://travis-ci.org/gkellogg/ebnf)
+
 
 [EBNF][] parser and generic parser generator.
 
