@@ -114,9 +114,9 @@ module EBNF::LL1
     # Initializes a new lexer instance.
     #
     # @param  [String, #to_s]                 input
-    # @param  [Array<Array<Symbol, Regexp>>]  terminals
-    #   Array of symbol, regexp pairs used to match terminals.
-    #   If the symbol is nil, it defines a Regexp to match string terminals.
+    # @param  [Array<Set(#to_s, Regexp)>]  terminals
+    #   Array of symbol|string, regexp pairs used to match terminals.
+    #   If the symbol is nil or a string, it defines a Regexp to match string terminals.
     # @param  [Hash{Symbol => Object}]        options
     # @option options [Regexp]                :whitespace (WS)
     # @option options [Regexp]                :comment (COMMENT)
@@ -200,7 +200,7 @@ module EBNF::LL1
 
         token = match_token
 
-        if token.nil?
+        if token.to_s.empty?
           lexme = (scanner.rest.split(/#{@whitespace}|#{@comment}/).first rescue nil) || scanner.rest
           raise Error.new("Invalid token #{lexme[0..100].inspect}",
             :input => scanner.rest[0..100], :token => lexme, :lineno => lineno)
@@ -295,7 +295,7 @@ module EBNF::LL1
     # a string, if there is no type. If there is a type, then the value takes
     # on the native representation appropriate for that type.
     #
-    # @param  [Symbol] type
+    # @param  [Symbol, String] type
     # @param  [String] value
     #   Scanner instance with access to matched groups
     # @return [Token]
@@ -314,14 +314,14 @@ module EBNF::LL1
     # @see http://en.wikipedia.org/wiki/Lexical_analysis#Token
     class Token
       ##
-      # Initializes a new token instance.
+      # Initializes a new token instance. If type is a string or nil it is treated as nil, and used to denote a string, rather than a token
       #
-      # @param  [Symbol]                 type
+      # @param  [Symbol, String]         type
       # @param  [String]                 value
       # @param  [Hash{Symbol => Object}] options
       # @option options [Integer]        :lineno (nil)
       def initialize(type, value, options = {})
-        @type, @value = (type ? type.to_s.to_sym : nil), value
+        @type, @value = (type.is_a?(Symbol) ? type : nil), value
         @options = options.dup
         @lineno  = @options.delete(:lineno)
       end

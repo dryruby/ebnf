@@ -9,6 +9,7 @@ describe EBNF::LL1::Lexer do
     @terminals = [
       [:ANON,                             ANON],
       [nil,                               %r([\(\),.;\[\]a]|\^\^|@base|@prefix|true|false)],
+      ["SPARQL",                          %r(BASE|PREFIX)i],
       [:BLANK_NODE_LABEL,                 BLANK_NODE_LABEL],
       [:IRIREF,                           IRIREF],
       [:DECIMAL,                          DECIMAL],
@@ -176,7 +177,7 @@ describe EBNF::LL1::Lexer do
     end
 
     describe "string terminals" do
-      %w|^^ ( ) [ ] , ; . a true false @base @prefix|.each do |string|
+      %w|^^ ( ) [ ] , ; . a true false @base @prefix BaSe pReFiX|.each do |string|
         it "tokenizes the #{string.inspect} string" do
           tokenize(string) do |tokens|
             tokens.should have(1).element
