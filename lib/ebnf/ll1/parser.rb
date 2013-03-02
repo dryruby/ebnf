@@ -294,6 +294,34 @@ module EBNF::LL1
 
     def depth; (@productions || []).length; end
 
+    # Current ProdData element
+    def prod_data; @prod_data.last; end
+
+    # Add a single value to prod_data, allows for values to be an array
+    def add_prod_datum(sym, values)
+      case values
+      when Array
+        prod_data[sym] ||= []
+        debug("add_prod_datum(#{sym})") {"#{prod_data[sym].inspect} += #{values.inspect}"}
+        prod_data[sym] += values
+      when nil
+        return
+      else
+        prod_data[sym] ||= []
+        debug("add_prod_datum(#{sym})") {"#{prod_data[sym].inspect} << #{values.inspect}"}
+        prod_data[sym] << values
+      end
+    end
+    
+    # Add values to production data, values aranged as an array
+    def add_prod_data(sym, *values)
+      return if values.compact.empty?
+      
+      prod_data[sym] ||= []
+      prod_data[sym] += values
+      debug("add_prod_data(#{sym})") {"#{prod_data[sym].inspect} += #{values.inspect}"}
+    end
+    
   private
     # Start for production
     def onStart(prod)
@@ -343,34 +371,6 @@ module EBNF::LL1
       else
         error("#{parentProd}(:token)", "Token has no parent production", :production => prod)
       end
-    end
-    
-    # Current ProdData element
-    def prod_data; @prod_data.last; end
-
-    # Add a single value to prod_data, allows for values to be an array
-    def add_prod_datum(sym, values)
-      case values
-      when Array
-        prod_data[sym] ||= []
-        debug("add_prod_datum(#{sym})") {"#{prod_data[sym].inspect} += #{values.inspect}"}
-        prod_data[sym] += values
-      when nil
-        return
-      else
-        prod_data[sym] ||= []
-        debug("add_prod_datum(#{sym})") {"#{prod_data[sym].inspect} << #{values.inspect}"}
-        prod_data[sym] << values
-      end
-    end
-    
-    # Add values to production data, values aranged as an array
-    def add_prod_data(sym, *values)
-      return if values.compact.empty?
-      
-      prod_data[sym] ||= []
-      prod_data[sym] += values
-      debug("add_prod_data(#{sym})") {"#{prod_data[sym].inspect} += #{values.inspect}"}
     end
     
     # Skip through the input stream until something is found that
