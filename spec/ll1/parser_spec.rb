@@ -9,6 +9,7 @@ describe EBNF::LL1::Parser do
   end
 
   before(:all) {
+    ParserTest.start_production(:term) {"foo"}
     ParserTest.production(:term) {"foo"}
     ParserTest.terminal(:escape, /escape/) {"foo"}
     ParserTest.terminal(:unescape, /unescape/, :unescape => true) {"foo"}
@@ -16,6 +17,10 @@ describe EBNF::LL1::Parser do
 
   describe "ClassMethods" do
     describe "production" do
+      it "adds as a start_handler" do
+        ParserTest.start_handlers.keys.should == [:term]
+        ParserTest.start_handlers[:term].should be_a(Proc)
+      end
       it "adds as a production_handler" do
         ParserTest.production_handlers.keys.should == [:term]
         ParserTest.production_handlers[:term].should be_a(Proc)

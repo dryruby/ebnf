@@ -46,16 +46,20 @@ to each `terminal` and `production`. A trivial parser loop can be described as f
     class Parser
       include Meta
 
-      terminal(:SYMBOL, /([a-z]|[A-Z]|[0-9]|_)+/) do |parser, prod, token, input|
+      terminal(:SYMBOL, /([a-z]|[A-Z]|[0-9]|_)+/) do |prod, token, input|
         # Add data based on scanned token to input
         input[:symbol] = token.value
       end
 
-      production(:rule) do |parser, phase, input, current, callback|
-        # Process on start of production when phase == :start
+      start_production(:rule) do |input, current, callback|
+        # Process on start of production
         # Set state for entry into recursed rules through current
 
-        # Process on end of production when phase == :finish
+        # Callback to parser loop with callback
+      end
+
+      production(:rule) do |input, current, callback|
+        # Process on end of production
         # return results in input, retrieve results from recursed rules in current
 
         # Callback to parser loop with callback

@@ -20,43 +20,18 @@ module EBNF::LL1
 
     # DSL for creating terminals and productions
     module ClassMethods
+      def start_handlers; @@start_handlers || {}; end
       def production_handlers; @@production_handlers || {}; end
       def terminal_handlers; @@terminal_handlers || {}; end
       def patterns; @@patterns || []; end
       def unescape_terms; @@unescape_terms || []; end
 
       ##
-      # Defines a production called during different phases of parsing
-      # with data from previous production along with data defined for the
-      # current production
-      #
-      # @param [Symbol] term
-      #   Term which is a key in the branch table
-      # @yield [parse, phase, input, current]
-      # @yieldparam [Object] parse
-      #   Parser instance
-      # @yieldparam [Symbol] phase
-      #   Phase of parsing, one of :start, or :finish
-      # @yieldparam [Hash] input
-      #   A Hash containing input from the parent production
-      # @yieldparam [Hash] current
-      #   A Hash defined for the current production, during :start
-      #   may be initialized with data to pass to further productions,
-      #   during :finish, it contains data placed by earlier productions
-      # @yieldparam [Prod] block
-      #   Block passed to initialization for yielding to calling parser.
-      #   Should conform to the yield specs for #initialize
-      # Yield to generate a triple
-      def production(term, &block)
-        @@production_handlers ||= {}
-        @@production_handlers[term] = block
-      end
-
-      ##
       # Defines the pattern for a terminal node and a block to be invoked
       # when ther terminal is encountered. If the block is missing, the
       # value of the terminal will be placed on the input hash to be returned
-      # to a previous production.
+      # to a previous production. Block is called in an evaluation block from
+      # the enclosing parser.
       #
       # @param [Symbol, String] term
       #   Defines a terminal production, which appears as within a sequence in the branch table
@@ -65,16 +40,14 @@ module EBNF::LL1
       # @param [Hash] options
       # @option options [Boolean] :unescape
       #   Cause strings and codepoints to be unescaped.
-      # @yield [parser, term, token, input]
-      # @yieldparam [Object] parser
-      #   Parser instance
+      # @yield [term, token, input, block]
       # @yieldparam [Symbol] term
       #   A symbol indicating the production which referenced this terminal
       # @yieldparam [String] token
       #   The scanned token
       # @yieldparam [Hash] input
       #   A Hash containing input from the parent production
-      # @yieldparam [Prod] block
+      # @yieldparam [Proc] block
       #   Block passed to initialization for yielding to calling parser.
       #   Should conform to the yield specs for #initialize
       def terminal(term, regexp, options = {}, &block)
@@ -84,6 +57,71 @@ module EBNF::LL1
         @@terminal_handlers[term] = block if block_given?
         @@unescape_terms ||= []
         @@unescape_terms << term if options[:unescape]
+      end
+
+      ##
+      # Defines a production called at the beggining of a particular production
+      # with data from previous production along with data defined for the
+      # current production. Block is called in an evaluation block from
+      # the enclosing parser.
+      #
+      # @param [Symbol] term
+      #   Term which is a key in the branch table
+      # @yield [input, current, block]
+      # @yieldparam [Hash] input
+      #   A Hash containing input from the parent production
+      # @yieldparam [Hash] current
+      #   A Hash defined for the current production, during :start
+      #   may be initialized with data to pass to further productions,
+      #   during :finish, it contains data placed by earlier productions
+      # @yieldparam [Proc] block
+      #   Block passed to initialization for yielding to calling parser.
+      #   Should conform to the yield specs for #initialize
+      # Yield to generate a triple
+      def start_production(term, &block)
+        @@start_handlers ||= {}
+        @@start_handlers[term] = block
+      end
+
+      ##
+      # Defines a production called when production of associated
+      # terminals and non-terminals has completed
+      # with data from previous production along with data defined for the
+      # current production. Block is called in an evaluation block from
+      # the enclosing parser.
+      #
+      # @param [Symbol] term
+      #   Term which is a key in the branch table
+      # @yield [input, current, block]
+      # @yieldparam [Hash] input
+      #   A Hash containing input from the parent production
+      # @yieldparam [Hash] current
+      #   A Hash defined for the current production, during :start
+      #   may be initialized with data to pass to further productions,
+      #   during :finish, it contains data placed by earlier productions
+      # @yieldparam [Proc] block
+      #   Block passed to initialization for yielding to calling parser.
+      #   Should conform to the yield specs for #initialize
+      # Yield to generate a triple
+      def production(term, &block)
+        @@production_handlers ||= {}
+        @@production_handlers[term] = block
+      end
+
+      # Evaluate a handler, delegating to the specified object.
+      # This is necessary so that handlers can operate within the
+      # binding context of the parser in which they're invoked.
+      # @param [Object] object
+      # @return [Object]
+      def eval_with_binding(object)
+        @@delegate = object
+        object.instance_eval {yield}
+      end
+
+      private
+
+      def method_missing(method, *args, &block)
+        @@delegate.send method, *args, &block
       end
     end
 
@@ -325,29 +363,37 @@ module EBNF::LL1
   private
     # Start for production
     def onStart(prod)
-      handler = self.class.production_handlers[prod]
+      handler = self.class.start_handlers[prod]
       @productions << prod
       if handler
         # Create a new production data element, potentially allowing handler
         # to customize before pushing on the @prod_data stack
         progress("#{prod}(:start):#{@prod_data.length}") {@prod_data.last}
         data = {}
-        handler.call(self, :start, @prod_data.last, data, @parse_callback)
+        self.class.eval_with_binding(self) {
+          handler.call(@prod_data.last, data, @parse_callback)
+        }
         @prod_data << data
       else
+        # Make sure we push as many was we pop, even if there is no
+        # explicit start handler
+        @prod_data << {} if self.class.production_handlers[prod]
         progress("#{prod}(:start)") { get_token.inspect}
       end
-      #puts @prod_data.inspect
+      #puts "prod_data(s): " + @prod_data.inspect
     end
 
     # Finish of production
     def onFinish
+      #puts "prod_data(f): " + @prod_data.inspect
       prod = @productions.last
       handler = self.class.production_handlers[prod]
       if handler && !@recovering
         # Pop production data element from stack, potentially allowing handler to use it
         data = @prod_data.pop
-        handler.call(self, :finish, @prod_data.last, data, @parse_callback)
+        self.class.eval_with_binding(self) {
+          handler.call(@prod_data.last, data, @parse_callback)
+        }
         progress("#{prod}(:finish):#{@prod_data.length}") {@prod_data.last}
       else
         progress("#{prod}(:finish)", "recovering: #{@recovering.inspect}")
@@ -363,7 +409,9 @@ module EBNF::LL1
         # Allows catch-all for simple string terminals
         handler ||= self.class.terminal_handlers[nil] if prod.is_a?(String)
         if handler
-          handler.call(self, parentProd, token, @prod_data.last)
+          self.class.eval_with_binding(self) {
+            handler.call(parentProd, token, @prod_data.last)
+          }
           progress("#{prod}(:token)", "", :depth => (depth + 1)) {"#{token}: #{@prod_data.last}"}
         else
           progress("#{prod}(:token)", "", :depth => (depth + 1)) {token.to_s}
