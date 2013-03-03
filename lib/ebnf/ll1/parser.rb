@@ -121,7 +121,11 @@ module EBNF::LL1
       private
 
       def method_missing(method, *args, &block)
-        @@delegate.send method, *args, &block
+        if @@delegate ||= nil
+          @@delegate.send method, *args, &block
+        else
+          super
+        end
       end
     end
 
