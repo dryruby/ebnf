@@ -319,7 +319,11 @@ module EBNF::LL1
       # Continue popping contexts off of the stack
       while !todo_stack.empty?
         debug("parse(eof)", :level => 2) {"stack #{todo_stack.last.inspect}, depth #{depth}"}
-        if todo_stack.last[:terms].length > 0
+        # There can't be anything left to do, or if there is, it must be optional
+        last_terms = todo_stack.last[:terms]
+        if last_terms.length > 0 && last_terms.none? {|t|
+          @first.has_key?(t) && @first[t].include?(:_eps)
+        }
           error("parse(eof)",
             "End of input before end of production: stack #{todo_stack.last.inspect}, depth #{depth}"
           )
@@ -398,6 +402,7 @@ module EBNF::LL1
         self.class.eval_with_binding(self) {
           handler.call(@prod_data.last, data, @parse_callback)
         }
+        #require 'debugger'; breakpoint
         progress("#{prod}(:finish):#{@prod_data.length}") {@prod_data.last}
       else
         progress("#{prod}(:finish)", "recovering: #{@recovering.inspect}")
