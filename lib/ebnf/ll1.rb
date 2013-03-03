@@ -111,11 +111,10 @@ module EBNF
               if rule.seq? &&
                  rule.expr.fetch(1, nil) == first_rule.sym &&
                  first_rule.first_includes_eps? &&
-                 (comp = rule.comp) &&
-                 comp.first
+                 (comp = rule.comp)
 
-                to_add = (comp.first + first_rule.first - [:_eps]).uniq
-                debug("FF.2") {"(#{ittr}) add first #{to_add.inspect} from #{comp.sym} to #{rule.sym}"}
+                to_add = ((comp.first || []) + first_rule.first - [:_eps]).uniq
+                debug("FF.2") {"(#{ittr}) add first #{to_add.inspect} from #{comp.sym} and #{first_rule.sym} to #{rule.sym}"}
                 firsts += rule.add_first(to_add)
               end
             end
@@ -160,9 +159,9 @@ module EBNF
 
             # Firsts of elements of an alt are firsts of the alt
             if rule.alt?
-              rule.expr[1..-1].map {|s| find_rule(s)}.compact.each do |mem|
+              rule.expr[1..-1].map {|s| find_rule(s)}.compact.select(&:first).each do |mem|
                 debug("FF.6") {"(#{ittr}) add first #{mem.first.inspect} from #{mem.sym} to #{rule.sym}"}
-                rule.add_first(mem.first) if mem.first
+                rule.add_first(mem.first)
               end
             end
 
