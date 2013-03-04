@@ -181,7 +181,7 @@ describe EBNF::Base do
              (rule _collection_5 "15.5" (first ")") (seq ")")))
           }, nil
         ],
-        "turtleDoc (FF.?)" => [
+        "turtleDoc (FF.6)" => [
           %{
             [1] turtleDoc ::= statement* 
             [2] statement ::= directive | triples "." 
@@ -193,11 +193,11 @@ describe EBNF::Base do
              (rule turtleDoc "1" (start #t) (first "BASE" "IRI" _eps) (follow _eof)
               (alt _empty _turtleDoc_1))
              (rule _turtleDoc_1 "1.1" (first "BASE" "IRI") (follow _eof) (seq statement turtleDoc))
-             (rule _turtleDoc_2 "1.2" (follow _eof) (seq turtleDoc))
-             (rule statement "2" (first "BASE" "IRI") (alt directive _statement_1))
-             (rule _statement_1 "2.1" (first "IRI") (seq triples "."))
-             (rule _statement_2 "2.2" (first ".") (seq "."))
-             (rule directive "3" (first "BASE") (seq "BASE"))
+             (rule _turtleDoc_2 "1.2" (first "BASE" "IRI") (follow _eof) (seq turtleDoc))
+             (rule statement "2" (first "BASE" "IRI") (follow "BASE" "IRI") (alt directive _statement_1))
+             (rule _statement_1 "2.1" (first "IRI") (follow "BASE" "IRI") (seq triples "."))
+             (rule _statement_2 "2.2" (first ".") (follow "BASE" "IRI") (seq "."))
+             (rule directive "3" (first "BASE") (follow "BASE" "IRI") (seq "BASE"))
              (rule triples "4" (first "IRI") (follow ".") (seq "IRI")))
           }, :turtleDoc
         ]

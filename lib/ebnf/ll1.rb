@@ -101,9 +101,10 @@ module EBNF
 
               # Fi(A w' ) = Fi(A) for every nonterminal A with ε not in Fi(A)
               # For each rule that starts with another rule having firsts which don't include _eps, add  the firsts of that rule to this rule, unless it already has those terminals in its first.
-              if rule.starts_with?(first_rule.sym) && !first_rule.first_includes_eps?
+              # Note that it's simpler to promote all fi(A) to fi(A w') and exclude _eps, as this covers corner cases of the following rule.
+              if rule.starts_with?(first_rule.sym) && first_rule.first != [:_eps]
                 debug("FF.1") {"(#{ittr}) add first #{first_rule.first.inspect} from #{first_rule.sym} to #{rule.sym}"}
-                firsts += rule.add_first(first_rule.first)
+                firsts += rule.add_first(first_rule.first - [:_eps])
               end
 
               # Fi(A w' ) = Fi(A) \ { ε } ∪ Fi(w' ) for every nonterminal A with ε in Fi(A)
@@ -111,10 +112,12 @@ module EBNF
               if rule.seq? &&
                  rule.expr.fetch(1, nil) == first_rule.sym &&
                  first_rule.first_includes_eps? &&
-                 (comp = rule.comp)
+                 (comp = rule.comp) &&
+                 comp.first &&
+                 !(comp.first - [:_eps]).empty?
 
-                to_add = ((comp.first || []) + first_rule.first - [:_eps]).uniq
-                debug("FF.2") {"(#{ittr}) add first #{to_add.inspect} from #{comp.sym} and #{first_rule.sym} to #{rule.sym}"}
+                to_add = comp.first - [:_eps]
+                debug("FF.2") {"(#{ittr}) add first #{to_add.inspect} from #{comp.sym} to #{rule.sym}"}
                 firsts += rule.add_first(to_add)
               end
             end
