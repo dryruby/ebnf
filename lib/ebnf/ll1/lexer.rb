@@ -114,20 +114,20 @@ module EBNF::LL1
     # Initializes a new lexer instance.
     #
     # @param  [String, #to_s]                 input
-    # @param  [Array<Array<Symbol, Regexp>>]  terminals
+    # @param  [Array<Array<Symbol, Regexp>, Terminal>]  terminals
     #   Array of symbol, regexp pairs used to match terminals.
     #   If the symbol is nil, it defines a Regexp to match string terminals.
     # @param  [Hash{Symbol => Object}]        options
     # @option options [Regexp]                :whitespace (WS)
-    # @option options [Regexp]                :comment (COMMENT)
-    # @option options [Array<Symbol>]         :unescape_terms ([])
     #   Regular expression matching the beginning of terminals that may cross newlines
+    # @option options [Regexp]                :comment (COMMENT)
     def initialize(input = nil, terminals = nil, options = {})
       @options        = options.dup
       @whitespace     = @options[:whitespace]     || WS
       @comment        = @options[:comment]        || COMMENT
-      @unescape_terms = @options[:unescape_terms] || []
-      @terminals      = terminals
+      @terminals      = terminals.map do |term|
+        term.is_a?(Array) ? Terminal.new(*term) : term
+      end
 
       raise Error, "Terminal patterns not defined" unless @terminals && @terminals.length > 0
 
@@ -248,13 +248,6 @@ module EBNF::LL1
     # @return [StringScanner]
     attr_reader :scanner
 
-    # Perform string and codepoint unescaping
-    # @param [String] string
-    # @return [String]
-    def unescape(string)
-      self.class.unescape_string(self.class.unescape_codepoints(string))
-    end
-
     ##
     # Skip whitespace or comments, as defined through input options or defaults
     def skip_whitespace
@@ -270,20 +263,79 @@ module EBNF::LL1
     end
 
     ##
-    # Return the matched token
+    # Return the matched token.
+    #
+    # If the token was matched with a case-insensitive regexp,
+    # track this with the resulting {Token}, so that comparisons
+    # with that token are also case insensitive
     #
     # @return [Token]
     def match_token
-      @terminals.each do |(term, regexp)|
-        #STDERR.puts "match[#{term}] #{scanner.rest[0..100].inspect} against #{regexp.inspect}" #if term == :STRING_LITERAL_SINGLE_QUOTE
-        if matched = scanner.scan(regexp)
-          matched = unescape(matched) if @unescape_terms.include?(term)
-          #STDERR.puts "  unescape? #{@unescape_terms.include?(term).inspect}"
-          #STDERR.puts "  matched #{term.inspect}: #{matched.inspect}"
-          return token(term, matched)
+      @terminals.each do |term|
+        #STDERR.puts "match[#{term.type}] #{scanner.rest[0..100].inspect} against #{term.regexp.inspect}" #if term.type == :STRING_LITERAL_SINGLE_QUOTE
+        if matched = scanner.scan(term.regexp)
+          #STDERR.puts "  unescape? #{@unescape_terms.include?(term.type).inspect}"
+          #STDERR.puts "  matched #{term.type.inspect}: #{matched.inspect}"
+          return token(term.type, term.canonicalize(matched))
         end
       end
       nil
+    end
+
+    # Terminal class, representing the terminal identifier and
+    # matching regular expression. Optionally, a Terminal may include
+    # a map to turn case-insensitively matched terminals into their
+    # canonical form
+    class Terminal
+      attr_reader :type
+      attr_reader :regexp
+
+      # @param [Symbol, nil] type
+      # @param [Regexp] regexp
+      # @param [Hash{Symbol => Object}] options
+      # @option options [Hash{String => String}] :map ({})
+      #   A mapping from terminals, in lower-case form, to
+      #   their canonical value
+      # @option options [Boolean] :unescape
+      #   Cause strings and codepoints to be unescaped.
+      def initialize(type, regexp, options = {})
+        @type, @regexp, @options = type, regexp, options
+        @map = options.fetch(:map, {})
+      end
+      
+      # Map a terminal to it's canonical form. If there is no
+      # map, `value` is returned. `value` is unescaped if there
+      # is no canonical mapping, and the `:unescape` option is set.
+      #
+      # @param [String] value
+      #   value to canonicalize
+      # @return [String]
+      def canonicalize(value)
+        @map.fetch(value.downcase, unescape(value))
+      end
+
+      def ==(other)
+        case other
+        when Array
+          @type == other.first && @regexp == other.last
+        when Terminal
+          @type == other.type && @regexp == other.regexp
+        end
+      end
+
+      protected
+
+      # Perform string and codepoint unescaping if defined for this terminal
+      # @param [String] string
+      # @return [String]
+      def unescape(string)
+        if @options[:unescape]
+          Lexer.unescape_string(Lexer.unescape_codepoints(string))
+        else
+          string
+        end
+      end
+
     end
 
   protected
@@ -298,9 +350,10 @@ module EBNF::LL1
     # @param  [Symbol] type
     # @param  [String] value
     #   Scanner instance with access to matched groups
+    # @param  [Hash{Symbol => Object}] options
     # @return [Token]
-    def token(type, value)
-      Token.new(type, value, :lineno => lineno)
+    def token(type, value, options = {})
+      Token.new(type, value, options.merge(:lineno => lineno))
     end
 
     ##
@@ -313,19 +366,6 @@ module EBNF::LL1
     #
     # @see http://en.wikipedia.org/wiki/Lexical_analysis#Token
     class Token
-      ##
-      # Initializes a new token instance.
-      #
-      # @param  [Symbol]                 type
-      # @param  [String]                 value
-      # @param  [Hash{Symbol => Object}] options
-      # @option options [Integer]        :lineno (nil)
-      def initialize(type, value, options = {})
-        @type, @value = (type ? type.to_s.to_sym : nil), value
-        @options = options.dup
-        @lineno  = @options.delete(:lineno)
-      end
-
       ##
       # The token's symbol type.
       #
@@ -349,6 +389,20 @@ module EBNF::LL1
       #
       # @return [Hash]
       attr_reader :options
+
+      ##
+      # Initializes a new token instance.
+      #
+      # @param  [Symbol]                 type
+      # @param  [String]                 value
+      # @param  [Hash{Symbol => Object}] options
+      # @option options [Integer]        :lineno (nil)
+      def initialize(type, value, options = {})
+        @type = type.to_s.to_sym if type
+        @value = value.to_s
+        @options = options.dup
+        @lineno  = @options.delete(:lineno)
+      end
 
       ##
       # Returns the attribute named by `key`.
@@ -378,8 +432,10 @@ module EBNF::LL1
       # @return [Boolean]
       def ===(value)
         case value
-          when Symbol   then value == @type
-          when ::String then value.to_s == @value.to_s
+          when Symbol
+            value == @type
+          when ::String
+            @value == (@options[:case_insensitive] ? value.to_s.downcase : value.to_s)
           else value == @value
         end
       end

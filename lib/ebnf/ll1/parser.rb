@@ -24,7 +24,6 @@ module EBNF::LL1
       def production_handlers; @@production_handlers || {}; end
       def terminal_handlers; @@terminal_handlers || {}; end
       def patterns; @@patterns || []; end
-      def unescape_terms; @@unescape_terms || []; end
 
       ##
       # Defines the pattern for a terminal node and a block to be invoked
@@ -38,6 +37,9 @@ module EBNF::LL1
       # @param [Regexp] regexp
       #   Pattern used to scan for this terminal
       # @param [Hash] options
+      # @option options [Hash{String => String}] :map ({})
+      #   A mapping from terminals, in lower-case form, to
+      #   their canonical value
       # @option options [Boolean] :unescape
       #   Cause strings and codepoints to be unescaped.
       # @yield [term, token, input, block]
@@ -52,11 +54,10 @@ module EBNF::LL1
       #   Should conform to the yield specs for #initialize
       def terminal(term, regexp, options = {}, &block)
         @@patterns ||= []
-        @@patterns << [term, regexp]  # Passed in order to define evaulation sequence
+        # Passed in order to define evaulation sequence
+        @@patterns << EBNF::LL1::Lexer::Terminal.new(term, regexp, options)
         @@terminal_handlers ||= {}
         @@terminal_handlers[term] = block if block_given?
-        @@unescape_terms ||= []
-        @@unescape_terms << term if options[:unescape]
       end
 
       ##
@@ -205,12 +206,12 @@ module EBNF::LL1
       @branch  = options[:branch]
       @first  = options[:first] ||= {}
       @follow  = options[:follow] ||= {}
-      @lexer   = input.is_a?(Lexer) ? input : Lexer.new(input, self.class.patterns, @options.merge(:unescape_terms => self.class.unescape_terms))
+      @lexer   = input.is_a?(Lexer) ? input : Lexer.new(input, self.class.patterns, @options)
       @productions = []
       @parse_callback = block
       @recovering = false
       @error_log = []
-      terminals = self.class.patterns.map(&:first)  # Get defined terminals to help with branching
+      terminals = self.class.patterns.map(&:type)  # Get defined terminals to help with branching
 
       # Unrecoverable errors
       raise Error, "Branch table not defined" unless @branch && @branch.length > 0
@@ -490,7 +491,7 @@ module EBNF::LL1
     def error(node, message, options = {})
       message += ", found #{options[:token].representation.inspect}" if options[:token]
       message += " at line #{@lineno}" if @lineno
-      message += ", production = #{options[:production].inspect}" if options[:production] && @options[:debug]
+      message += ", production = #{options[:production].inspect}" if options[:production]
       @error_log << message unless @recovering
       @recovering = true
       debug(node, message, options.merge(:level => 0))

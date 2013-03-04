@@ -226,6 +226,10 @@ describe EBNF::LL1::Lexer do
         end
       end
     end
+
+    describe EBNF::LL1::Lexer::Terminal do
+      it "needs specs to check for canonicalization"
+    end
   end
 
   def tokenize(*inputs, &block)

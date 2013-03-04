@@ -35,11 +35,10 @@ describe EBNF::LL1::Parser do
       end
 
       it "adds patterns" do
-        ParserTest.patterns.should =~ [[:escape, /escape/], [:unescape, /unescape/]]
-      end
-
-      it "adds unescape_terms" do
-        ParserTest.unescape_terms.should =~ [:unescape]
+        ParserTest.patterns.should =~ [
+          EBNF::LL1::Lexer::Terminal.new(:escape, /escape/),
+          EBNF::LL1::Lexer::Terminal.new(:unescape, /unescape/, :unescape => true)
+        ]
       end
     end
   end
