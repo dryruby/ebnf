@@ -71,13 +71,16 @@ module EBNF::LL1
     # @return [String]
     # @see    http://www.w3.org/TR/rdf-sparql-query/#codepointEscape
     def self.unescape_codepoints(string)
+      string = string.dup
+      string.force_encoding(Encoding::ASCII_8BIT) if string.respond_to?(:force_encoding)
+
       # Decode \uXXXX and \UXXXXXXXX code points:
       string = string.gsub(UCHAR) do |c|
         s = [(c[2..-1]).hex].pack('U*')
         s.respond_to?(:force_encoding) ? s.force_encoding(Encoding::ASCII_8BIT) : s
       end
 
-      string.force_encoding(Encoding::UTF_8) if string.respond_to?(:force_encoding)      # Ruby 1.9+
+      string.force_encoding(Encoding::UTF_8) if string.respond_to?(:force_encoding) 
       string
     end
 
@@ -133,7 +136,7 @@ module EBNF::LL1
 
       @lineno = 1
       @scanner = Scanner.new(input) do |string|
-        string.force_encoding(Encoding::UTF_8) if string.respond_to?(:force_encoding)      # Ruby 1.9+
+        string.force_encoding(Encoding::UTF_8) if string.respond_to?(:force_encoding)
         string
       end
     end
@@ -209,7 +212,7 @@ module EBNF::LL1
         token
       end
     rescue ArgumentError, Encoding::CompatibilityError => e
-      raise Error.new("#{e.message} on line #{lineno + 1}",
+      raise Error.new(e.message,
         :input => (scanner.rest[0..100] rescue '??'), :token => lexme, :lineno => lineno)
     rescue Error
       raise
@@ -274,7 +277,6 @@ module EBNF::LL1
       @terminals.each do |term|
         #STDERR.puts "match[#{term.type}] #{scanner.rest[0..100].inspect} against #{term.regexp.inspect}" #if term.type == :STRING_LITERAL_SINGLE_QUOTE
         if matched = scanner.scan(term.regexp)
-          #STDERR.puts "  unescape? #{@unescape_terms.include?(term.type).inspect}"
           #STDERR.puts "  matched #{term.type.inspect}: #{matched.inspect}"
           return token(term.type, term.canonicalize(matched))
         end
