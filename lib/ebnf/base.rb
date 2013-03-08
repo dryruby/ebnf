@@ -135,10 +135,7 @@ module EBNF
           # Switch mode to parsing terminals
           terminal = true
         when /^@pass\s*(.*)$/m
-          rule = depth {ruleParts("[0] " + r)}
-          rule.kind = :pass
-          rule.orig = r
-          @ast << rule
+          # Ignore, as we can't use this for processing the EBNF grammar itself
         else
           rule = depth {ruleParts(r)}
 
