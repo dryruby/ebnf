@@ -1,0 +1,1673 @@
+((rule
+ _empty
+ "0"
+ (first _eps)
+ (follow
+  "#"
+  "("
+  ")"
+  "*/"
+  "-"
+  "/*"
+  "//"
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+  _eof
+  _pass_5
+  "|"
+ )
+ (seq)
+)
+ (rule
+ ebnf
+ "1"
+ (start #t)
+ (first
+  "("
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+  _eps
+ )
+ (follow _eof)
+ (alt _empty _ebnf_2)
+)
+ (rule
+ _ebnf_1
+ "1.1"
+ (first
+  "("
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+ )
+ (follow
+  "("
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+ )
+ (alt declaration rule)
+)
+ (rule
+ _ebnf_2
+ "1.2"
+ (first
+  "("
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+ )
+ (follow _eof)
+ (seq _ebnf_1 ebnf)
+)
+ (rule
+ _ebnf_3
+ "1.3"
+ (first
+  "("
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+  _eps
+ )
+ (follow _eof)
+ (seq ebnf)
+)
+ (rule
+ declaration
+ "2"
+ (first
+  "("
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+ )
+ (follow
+  "("
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+ )
+ (alt "@terminals" pass)
+)
+ (rule
+ rule
+ "3"
+ (first "[")
+ (follow
+  "("
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+ )
+ (seq lhs "::=" expression)
+)
+ (rule
+ _rule_1
+ "3.1"
+ (first "::=")
+ (follow
+  "("
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+ )
+ (seq "::=" expression)
+)
+ (rule
+ _rule_2
+ "3.2"
+ (first
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+ )
+ (follow
+  "("
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+ )
+ (seq expression)
+)
+ (rule
+ lhs
+ "4"
+ (first "[")
+ (follow "::=")
+ (seq "[" SYMBOL "]" SYMBOL)
+)
+ (rule
+ _lhs_1
+ "4.1"
+ (first SYMBOL)
+ (follow "::=")
+ (seq SYMBOL "]" SYMBOL)
+)
+ (rule
+ _lhs_2
+ "4.2"
+ (first "]")
+ (follow "::=")
+ (seq "]" SYMBOL)
+)
+ (rule
+ _lhs_3
+ "4.3"
+ (first SYMBOL)
+ (follow "::=")
+ (seq SYMBOL)
+)
+ (rule
+ expression
+ "5"
+ (first
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+ )
+ (follow
+  "("
+  ")"
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+ )
+ (seq alt)
+)
+ (rule
+ alt
+ "6"
+ (first
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+ )
+ (follow
+  "("
+  ")"
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+ )
+ (seq seq _alt_1)
+)
+ (rule
+ _alt_1
+ "6.1"
+ (first
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _eps
+  "|"
+ )
+ (follow
+  "("
+  ")"
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+ )
+ (alt _empty _alt_3)
+)
+ (rule
+ _alt_2
+ "6.2"
+ (first "|")
+ (follow
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "|"
+ )
+ (seq "|" seq)
+)
+ (rule
+ _alt_3
+ "6.3"
+ (first "|")
+ (follow
+  "("
+  ")"
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+ )
+ (seq _alt_2 _alt_1)
+)
+ (rule
+ _alt_4
+ "6.4"
+ (first
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _eps
+  "|"
+ )
+ (follow
+  "("
+  ")"
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+ )
+ (seq _alt_1)
+)
+ (rule
+ _alt_5
+ "6.5"
+ (first
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _eps
+  "|"
+ )
+ (follow
+  "("
+  ")"
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+ )
+ (seq _alt_1)
+)
+ (rule
+ _alt_6
+ "6.6"
+ (first
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+ )
+ (follow
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "|"
+ )
+ (seq seq)
+)
+ (rule
+ seq
+ "7"
+ (first
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+ )
+ (follow
+  "#"
+  "("
+  ")"
+  "*/"
+  "-"
+  "/*"
+  "//"
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+  _eof
+  _pass_5
+  "|"
+ )
+ (seq diff _seq_1)
+)
+ (rule
+ _seq_1
+ "7.1"
+ (first
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _eps
+ )
+ (follow
+  "#"
+  "("
+  ")"
+  "*/"
+  "-"
+  "/*"
+  "//"
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+  _eof
+  _pass_5
+  "|"
+ )
+ (alt _empty _seq_2)
+)
+ (rule
+ _seq_2
+ "7.2"
+ (first
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+ )
+ (follow
+  "#"
+  "("
+  ")"
+  "*/"
+  "-"
+  "/*"
+  "//"
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+  _eof
+  _pass_5
+  "|"
+ )
+ (seq diff _seq_1)
+)
+ (rule
+ _seq_3
+ "7.3"
+ (first
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _eps
+ )
+ (follow
+  "#"
+  "("
+  ")"
+  "*/"
+  "-"
+  "/*"
+  "//"
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+  _eof
+  _pass_5
+  "|"
+ )
+ (seq _seq_1)
+)
+ (rule
+ _seq_4
+ "7.4"
+ (first
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _eps
+ )
+ (follow
+  "#"
+  "("
+  ")"
+  "*/"
+  "-"
+  "/*"
+  "//"
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+  _eof
+  _pass_5
+  "|"
+ )
+ (seq _seq_1)
+)
+ (rule
+ diff
+ "8"
+ (first
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+ )
+ (follow
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+ )
+ (seq postfix _diff_1)
+)
+ (rule
+ _diff_1
+ "8.1"
+ (first
+  "("
+  "-"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _eps
+ )
+ (follow
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+ )
+ (alt _empty _diff_3)
+)
+ (rule
+ _diff_2
+ "8.2"
+ (first "-")
+ (follow
+  "("
+  "-"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+ )
+ (seq "-" postfix)
+)
+ (rule
+ _diff_3
+ "8.3"
+ (first "-")
+ (follow
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+ )
+ (seq _diff_2 _diff_1)
+)
+ (rule
+ _diff_4
+ "8.4"
+ (first
+  "("
+  "-"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _eps
+ )
+ (follow
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+ )
+ (seq _diff_1)
+)
+ (rule
+ _diff_5
+ "8.5"
+ (first
+  "("
+  "-"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _eps
+ )
+ (follow
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+ )
+ (seq _diff_1)
+)
+ (rule
+ _diff_6
+ "8.6"
+ (first
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+ )
+ (follow
+  "("
+  "-"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+ )
+ (seq postfix)
+)
+ (rule
+ postfix
+ "9"
+ (first
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+ )
+ (follow
+  "("
+  "-"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+ )
+ (seq primary _postfix_1)
+)
+ (rule
+ _postfix_1
+ "9.1"
+ (first
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _eps
+  _postfix_2
+ )
+ (follow
+  "("
+  "-"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+ )
+ (alt _empty _postfix_2)
+)
+ (terminal _postfix_2 "9.2" (range "?*+"))
+ (rule
+ _postfix_3
+ "9.3"
+ (first
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _eps
+  _postfix_2
+ )
+ (follow
+  "("
+  "-"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+ )
+ (seq _postfix_1)
+)
+ (rule
+ primary
+ "10"
+ (first
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+ )
+ (follow
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _postfix_2
+ )
+ (alt
+  HEX
+  RANGE
+  ENUM
+  O_RANGE
+  O_ENUM
+  STRING1
+  STRING2
+  _primary_1
+ )
+)
+ (rule
+ _primary_1
+ "10.1"
+ (first "(")
+ (follow
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _postfix_2
+ )
+ (seq "(" expression ")")
+)
+ (rule
+ _primary_2
+ "10.2"
+ (first
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+ )
+ (follow
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _postfix_2
+ )
+ (seq expression ")")
+)
+ (rule
+ _primary_3
+ "10.3"
+ (first ")")
+ (follow
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _postfix_2
+ )
+ (seq ")")
+)
+ (rule
+ pass
+ "11"
+ (first "@pass")
+ (follow
+  "("
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+ )
+ (seq "@pass" _pass_1)
+)
+ (rule
+ _pass_1
+ "11.1"
+ (first
+  "#"
+  "("
+  "/*"
+  "//"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _pass_5
+ )
+ (follow
+  "("
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+ )
+ (seq _pass_2 _pass_3)
+)
+ (terminal
+ _pass_10
+ "11.10"
+ (range "^\\r\\n")
+)
+ (rule
+ _pass_11
+ "11.11"
+ (first _pass_10)
+ (follow
+  "#"
+  "("
+  "/*"
+  "//"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _pass_5
+ )
+ (seq _pass_10 _pass_9)
+)
+ (rule
+ _pass_12
+ "11.12"
+ (first
+  "("
+  "*"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _eps
+  _pass_15
+ )
+ (follow "*/")
+ (alt _empty _pass_14)
+)
+ (rule
+ _pass_13
+ "11.13"
+ (first
+  "("
+  "*"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _pass_15
+ )
+ (follow
+  "("
+  "*"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _pass_15
+ )
+ (alt _pass_15 _pass_16)
+)
+ (rule
+ _pass_14
+ "11.14"
+ (first
+  "("
+  "*"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _pass_15
+ )
+ (follow "*/")
+ (seq _pass_13 _pass_12)
+)
+ (terminal _pass_15 "11.15" (range "^*"))
+ (rule
+ _pass_16
+ "11.16"
+ (first "*")
+ (follow
+  "("
+  "*"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _pass_15
+ )
+ (seq "*" _pass_17)
+)
+ (terminal _pass_17 "11.17" (range "^/"))
+ (rule
+ _pass_18
+ "11.18"
+ (first
+  "#"
+  "("
+  "/*"
+  "//"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _pass_5
+ )
+ (follow
+  "("
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+ )
+ (seq _pass_1)
+)
+ (rule
+ _pass_19
+ "11.19"
+ (first
+  "#"
+  "("
+  "/*"
+  "//"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _eps
+  _pass_5
+ )
+ (follow
+  "("
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+ )
+ (seq _pass_3)
+)
+ (rule
+ _pass_2
+ "11.2"
+ (first
+  "#"
+  "("
+  "/*"
+  "//"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _pass_5
+ )
+ (follow
+  "#"
+  "("
+  "/*"
+  "//"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _pass_5
+ )
+ (alt _pass_5 _pass_6 _pass_7)
+)
+ (rule
+ _pass_20
+ "11.20"
+ (first
+  "#"
+  "("
+  "/*"
+  "//"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _eps
+  _pass_5
+ )
+ (follow
+  "("
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+ )
+ (seq _pass_3)
+)
+ (rule
+ _pass_21
+ "11.21"
+ (first
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _eps
+  _pass_10
+ )
+ (follow
+  "#"
+  "("
+  "/*"
+  "//"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _pass_5
+ )
+ (seq _pass_9)
+)
+ (rule
+ _pass_22
+ "11.22"
+ (first
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _eps
+  _pass_10
+ )
+ (follow
+  "#"
+  "("
+  "/*"
+  "//"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _pass_5
+ )
+ (seq _pass_9)
+)
+ (rule
+ _pass_23
+ "11.23"
+ (first
+  "("
+  "*"
+  "*/"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _pass_15
+ )
+ (follow
+  "#"
+  "("
+  "/*"
+  "//"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _pass_5
+ )
+ (seq _pass_12 "*/")
+)
+ (rule
+ _pass_24
+ "11.24"
+ (first
+  "("
+  "*"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _eps
+  _pass_15
+ )
+ (follow "*/")
+ (seq _pass_12)
+)
+ (rule
+ _pass_25
+ "11.25"
+ (first _pass_17)
+ (follow
+  "("
+  "*"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _pass_15
+ )
+ (seq _pass_17)
+)
+ (rule
+ _pass_26
+ "11.26"
+ (first "*/")
+ (follow
+  "#"
+  "("
+  "/*"
+  "//"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _pass_5
+ )
+ (seq "*/")
+)
+ (rule
+ _pass_3
+ "11.3"
+ (first
+  "#"
+  "("
+  "/*"
+  "//"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _eps
+  _pass_5
+ )
+ (follow
+  "("
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+ )
+ (alt _empty _pass_4)
+)
+ (rule
+ _pass_4
+ "11.4"
+ (first
+  "#"
+  "("
+  "/*"
+  "//"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _pass_5
+ )
+ (follow
+  "("
+  "@pass"
+  "@terminals"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  "["
+ )
+ (seq _pass_2 _pass_3)
+)
+ (terminal
+ _pass_5
+ "11.5"
+ (range "#x20\\t\\r\\n")
+)
+ (rule
+ _pass_6
+ "11.6"
+ (first
+  "#"
+  "("
+  "//"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+ )
+ (follow
+  "#"
+  "("
+  "/*"
+  "//"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _pass_5
+ )
+ (seq _pass_8 _pass_9)
+)
+ (rule
+ _pass_7
+ "11.7"
+ (first "/*")
+ (follow
+  "#"
+  "("
+  "/*"
+  "//"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _pass_5
+ )
+ (seq "/*" _pass_12 "*/")
+)
+ (rule
+ _pass_8
+ "11.8"
+ (first
+  "#"
+  "("
+  "//"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+ )
+ (follow
+  "#"
+  "("
+  "//"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _pass_10
+ )
+ (alt "#" "//")
+)
+ (rule
+ _pass_9
+ "11.9"
+ (first
+  "("
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _eps
+  _pass_10
+ )
+ (follow
+  "#"
+  "("
+  "/*"
+  "//"
+  ENUM
+  HEX
+  O_ENUM
+  O_RANGE
+  RANGE
+  STRING1
+  STRING2
+  _pass_5
+ )
+ (alt _empty _pass_11)
+)
+ (terminal
+ SYMBOL
+ "12"
+ (plus
+  (alt
+   (range "a-z")
+   (range "A-Z")
+   (range "0-9")
+   "_"
+   "."
+  )
+ )
+)
+ (terminal
+ HEX
+ "13"
+ (seq
+  "#x"
+  (plus
+   (alt (range "0-9") (range "a-f") (range "A-F"))
+  )
+ )
+)
+ (terminal
+ RANGE
+ "14"
+ (seq "[" CHAR "-" CHAR "]")
+)
+ (terminal ENUM "15" (seq "[" (plus CHAR) "]"))
+ (terminal
+ O_RANGE
+ "16"
+ (seq "[^" CHAR "-" CHAR "]")
+)
+ (terminal
+ O_ENUM
+ "17"
+ (seq "[^" (plus CHAR) "]")
+)
+ (terminal
+ STRING1
+ "18"
+ (seq "\"" (star (diff CHAR "\"")) "\"")
+)
+ (terminal
+ STRING2
+ "19"
+ (seq "'" (star (diff CHAR "'")) "'")
+)
+ (terminal
+ CHAR
+ "20"
+ (alt
+  HEX
+  (seq "\\\\" (range "\\\\trn'\""))
+  (range "^\\t\\r\\n'\"")
+ )
+)
+)

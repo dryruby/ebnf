@@ -282,7 +282,7 @@ module EBNF::LL1
               debug("parse(token)") {"token #{token.inspect}, term #{term.inspect}"}
               onToken(term, token)
             elsif terminals.include?(term)
-              # If term is a terminal, then it is an error of token does not
+              # If term is a terminal, then it is an error if token does not
               # match it
               skip_until_valid(todo_stack)
             else
