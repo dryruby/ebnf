@@ -70,7 +70,7 @@ module EBNF
         end while !comprehensions.empty?
 
         # Fi(a w' ) = { a } for every terminal a
-        # For each rule who's expr's first element of a seq a terminal, or having any element of alt a terminal, add that terminal to the first set for this rule
+        # For each rule who's expr's first element of a seq is a terminal, or having any element of alt a terminal, add that terminal to the first set for this rule
         each(:rule) do |rule|
           each(:terminal) do |terminal|
             if rule.starts_with?(terminal.sym)
@@ -111,18 +111,18 @@ module EBNF
               # For each rule starting with eps, add the terminals for the comprehension of this rule
               if rule.seq? &&
                  rule.expr.fetch(1, nil) == first_rule.sym &&
-                 first_rule.first_includes_eps? &&
-                 (comp = rule.comp) &&
-                 comp.first &&
-                 !(comp.first - [:_eps]).empty?
+                 first_rule.first_includes_eps?
 
-                to_add = comp.first - [:_eps]
-                debug("FF.2") {"(#{ittr}) add first #{to_add.inspect} from #{comp.sym} to #{rule.sym}"}
-                firsts += rule.add_first(to_add)
+                comp = rule.comp || find_rule(:_empty)
+
+                unless comp.first.nil? || comp.first.empty?
+                  debug("FF.2") {"(#{ittr}) add first #{comp.first.inspect} from #{comp.sym} to #{rule.sym}"}
+                  firsts += rule.add_first(comp.first)
+                end
               end
             end
 
-            # Only run these rules if the rule is a sequence having two or more elements, whos first element is also a sequence and first_rule is the comprehension of rule
+            # Only run these rules if the rule is a sequence having two or more elements, who's first element is also a sequence and first_rule is the comprehension of rule
             if rule.seq? && (comp = rule.comp)
                #if there is a rule of the form Aj → wAiw' , then
                #

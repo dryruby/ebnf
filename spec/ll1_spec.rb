@@ -119,14 +119,26 @@ describe EBNF::Base do
           },
           %{
             ((rule _empty "0" (first _eps) (follow _eof) (seq))
-             (rule turtleDoc "1" (start #t) (first _eps) (follow _eof)
-              (alt _empty _turtleDoc_1))
+             (rule turtleDoc "1" (start #t) (first _eps) (follow _eof) (alt _empty _turtleDoc_1))
              (rule _turtleDoc_1 "1.1" (follow _eof) (seq statement turtleDoc))
-             (rule _turtleDoc_2 "1.2" (follow _eof) (seq turtleDoc))
+             (rule _turtleDoc_2 "1.2" (first _eps) (follow _eof) (seq turtleDoc))
              (rule statement "2" (alt directive _statement_1))
              (rule _statement_1 "2.1" (seq triples "."))
              (rule _statement_2 "2.2" (first ".") (seq ".")))
           }, :turtleDoc
+        ],
+        "SolutionModifier" => [
+          %{
+            [18]    SolutionModifier	  ::= _SolutionModifier_1 
+            [18.1]  _SolutionModifier_1 ::= _empty | GroupClause
+            [19]    GroupClause	        ::= 'GROUP'
+          },
+          %{
+            ((rule _empty "0" (first _eps) (seq))
+             (rule SolutionModifier "18" (first "GROUP" _eps) (seq _SolutionModifier_1))
+             (rule _SolutionModifier_1 "18.1" (first "GROUP" _eps) (alt _empty GroupClause))
+             (rule GroupClause "19" (first "GROUP") (seq "GROUP")))
+          }
         ]
       }.each do |name, (input, expected, start)|
         it name do
@@ -177,7 +189,7 @@ describe EBNF::Base do
              (rule _collection_1 "15.1" (first _eps) (follow ")") (alt _empty _collection_2))
              (rule _collection_2 "15.2" (follow ")") (seq object _collection_1))
              (rule _collection_3 "15.3" (first ")") (seq _collection_1 ")"))
-             (rule _collection_4 "15.4" (follow ")") (seq _collection_1))
+             (rule _collection_4 "15.4" (first _eps) (follow ")") (seq _collection_1))
              (rule _collection_5 "15.5" (first ")") (seq ")")))
           }, nil
         ],
@@ -193,7 +205,7 @@ describe EBNF::Base do
              (rule turtleDoc "1" (start #t) (first "BASE" "IRI" _eps) (follow _eof)
               (alt _empty _turtleDoc_1))
              (rule _turtleDoc_1 "1.1" (first "BASE" "IRI") (follow _eof) (seq statement turtleDoc))
-             (rule _turtleDoc_2 "1.2" (first "BASE" "IRI") (follow _eof) (seq turtleDoc))
+             (rule _turtleDoc_2 "1.2" (first "BASE" "IRI" _eps) (follow _eof) (seq turtleDoc))
              (rule statement "2" (first "BASE" "IRI") (follow "BASE" "IRI") (alt directive _statement_1))
              (rule _statement_1 "2.1" (first "IRI") (follow "BASE" "IRI") (seq triples "."))
              (rule _statement_2 "2.2" (first ".") (follow "BASE" "IRI") (seq "."))
