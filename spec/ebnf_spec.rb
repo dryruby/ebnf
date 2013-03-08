@@ -24,13 +24,6 @@ describe EBNF do
                         |   '(' expression ')'
         
       } => %{((rule primary "9" (alt HEX RANGE ENUM O_RANGE O_ENUM STRING1 STRING2 (seq "(" expression ")"))))},
-      %q{
-        @pass           ::= (
-                              [#x20#09#0d%0a]
-                            | ('/*' ([^*] | '*' [^/])* '*/')
-                            )+
-        
-      } => %q{((pass @pass "0" (plus (alt (range "#x20#09#0d%0a") (seq "/*" (star (alt (range "^*") (seq "*" (range "^/")))) "*/" )))))},
     }.each do |input, expected|
       it "parses #{input.inspect}" do
         @debug = []

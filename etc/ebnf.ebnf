@@ -1,7 +1,7 @@
 /* An EBNF grammar for EBNF */
 [1] ebnf        ::= (declaration | rule)*
 
-[2] declaration ::= '@terminals' | '@pass'
+[2] declaration ::= '@terminals' | pass
 
 [3] rule        ::= lhs '::=' expression
 
@@ -26,29 +26,37 @@
                 |   STRING2
                 |   '(' expression ')'
 
+[11] pass       ::= '@pass'
+                    (
+                      [#x20\t\r\n]
+                    | ( '#' | '//' ) [^\r\n]*
+                    | ('/*' ([^*] | '*' [^/])* '*/')
+                    )+
+
 @terminals
 
-[11] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | "_")+
+[12] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | "_" | ".")+
 
-[12] HEX        ::= '#x' ([0-9] | [a-f] | [A-F])+
+[13] HEX        ::= '#x' ([0-9] | [a-f] | [A-F])+
 
-[13] RANGE      ::= '[' CHAR '-' CHAR ']'
+[14] RANGE      ::= '[' CHAR '-' CHAR ']'
 
-[14] ENUM       ::= '[' CHAR+ ']'
+[15] ENUM       ::= '[' CHAR+ ']'
 
-[15] O_RANGE    ::= '[^' CHAR '-' CHAR ']'
+[16] O_RANGE    ::= '[^' CHAR '-' CHAR ']'
 
-[16] O_ENUM     ::= '[^' CHAR+ ']'
+[17] O_ENUM     ::= '[^' CHAR+ ']'
 
-[17] STRING1    ::= '"' (CHAR - '"')* '"'
+[18] STRING1    ::= '"' (CHAR - '"')* '"'
 
-[18] STRING2    ::= "'" (CHAR - "'")* "'"
+[19] STRING2    ::= "'" (CHAR - "'")* "'"
 
-[19] CHAR       ::= HEX
+[20] CHAR       ::= HEX
                 |   ('\\' [\\trn'"])
                 |   [^\t\r\n'"]
 
 @pass           ::= (
                       [#x20\t\r\n]
-                    |  
+                    #| ( '#' | '//' ) [^\r\n]*
+                    #| '/*' (( '*' [^/] )? | [^*] )* '*/'
                     )+
