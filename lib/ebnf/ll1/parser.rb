@@ -301,7 +301,7 @@ module EBNF::LL1
         while !pushed &&
               !todo_stack.empty? &&
               ( (terms = todo_stack.last.fetch(:terms, [])).empty? ||
-                (@recovering && @follow.fetch(terms.last, []).none? {|t| token == t}))
+                (@recovering && @follow.fetch(terms.last, []).none? {|t| (token || :_eps) == t}))
           debug("parse(pop)", :level => 2) {"todo #{todo_stack.last.inspect}, depth #{depth}"}
           if terms.empty?
             prod = todo_stack.last[:prod]
@@ -403,7 +403,6 @@ module EBNF::LL1
         self.class.eval_with_binding(self) {
           handler.call(@prod_data.last, data, @parse_callback)
         }
-        #require 'debugger'; breakpoint
         progress("#{prod}(:finish):#{@prod_data.length}") {@prod_data.last}
       else
         progress("#{prod}(:finish)", "recovering: #{@recovering.inspect}")
@@ -445,13 +444,13 @@ module EBNF::LL1
       # Otherwise, if the banch table allows empty, also return the token
       return token if !@recovering && (
         (@branch[cur_prod] && @branch[cur_prod].has_key?(:_empty)) ||
-        first.any? {|t| token === t})
+        first.any? {|t| (token || :_eps) === t})
       
       # Otherwise, it's an error condition, and skip either until
       # we find a valid token for this production, or until we find
       # something that can follow this production
       expected = first.map {|v| v.inspect}.join(", ")
-      error("skip_until_valid", "expected one of #{expected}",
+      error("skip_until_valid", "expected one of #{expected}, found #{token.inspect}",
         :production => cur_prod, :token => token)
 
       debug("recovery", "stack follows:")
