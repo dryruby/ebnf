@@ -18,6 +18,9 @@ module EBNF
           #debug("eachRule(ws)") { "[#{cur_lineno}] #{s.inspect}" }
         when s = scanner.scan(%r(/\*([^\*]|\*[^\/])*\*/)m)
           # Eat comments
+          debug("eachRule(comment)") { "[#{cur_lineno}] #{s.inspect}" }
+        when s = scanner.scan(%r((#|//).*$))
+          # Eat comments
           cur_lineno += s.count("\n")
           debug("eachRule(comment)") { "[#{cur_lineno}] #{s.inspect}" }
         when s = scanner.scan(%r(^@terminals))
@@ -32,7 +35,7 @@ module EBNF
           yield r unless r.empty?
           @lineno = cur_lineno
           r = s
-        when s = scanner.scan(/\[(?=\w+\])/)
+        when s = scanner.scan(/\[(?=[\w\.]+\])/)
           # Found rule start, if we've already collected a rule, yield it
           yield r unless r.empty?
           #debug("eachRule(rule)") { "[#{cur_lineno}] #{s.inspect}" }
@@ -268,7 +271,7 @@ module EBNF
         s.match(/(#\w+)(.*)$/)
         l, s = $1, $2
         [[:hex, l], s]
-      when /[[:alpha:]]/
+      when /[\w\.]/
         s.match(/(\w+)(.*)$/)
         l, s = $1, $2
         [l.to_sym, s]
@@ -290,7 +293,7 @@ module EBNF
         [[m.to_sym], s[1..-1]]
       else
         error("terminal", "unrecognized terminal: #{s.inspect}")
-        raise "Syntax Error"
+        raise "Syntax Error, unrecognized terminal: #{s.inspect}"
       end
     end
   end
