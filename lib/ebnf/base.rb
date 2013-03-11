@@ -146,12 +146,12 @@ module EBNF
       end
     end
 
-    # Iterate over each rule or terminal
+    # Iterate over each rule or terminal, except empty
     # @param [:termina, :rule] kind
     # @yield rule
     # @yieldparam [Rule] rule
     def each(kind, &block)
-      ast.each {|r| block.call(r) if r.kind == kind}
+      ast.each {|r| block.call(r) if r.kind == kind && r.sym != :_empty}
     end
 
     ##
@@ -201,10 +201,7 @@ module EBNF
         ]
       end.join("\n") +
 
-      ast.sort.
-        select {|a| [:rule, :terminal].include?(a.kind)}.
-        map(&:to_ttl).
-        join("\n")
+      ast.sort.map(&:to_ttl).join("\n")
     end
 
     def depth
@@ -223,7 +220,7 @@ module EBNF
       message = "#{args.join(': ')}"
       str = "[#{@lineno}]#{' ' * depth}#{message}"
       @options[:debug] << str if @options[:debug].is_a?(Array)
-      $stderr.puts(str)
+      $stderr.puts(str) if @options[:progress] || @options[:debug] == true
     end
 
     # Error output

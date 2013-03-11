@@ -113,7 +113,7 @@ module EBNF
         %{  rdfs:comment #{comment.inspect};},
       ]
       
-      statements += ttl_expr(expr, kind == :terminal ? "re" : "g", 1, false)
+      statements += ttl_expr(expr, terminal? ? "re" : "g", 1, false)
       "\n" + statements.join("\n")
     end
 
@@ -128,7 +128,7 @@ module EBNF
     #   * Transform (a rule (plus b)) into (a rule (seq b (star b)
     # @return [Array<Rule>]
     def to_bnf
-      return [self] unless kind == :rule
+      return [self] unless rule?
       new_rules = []
 
       # Look for rules containing recursive definition and rewrite to multiple rules. If `expr` contains elements which are in array form, where the first element of that array is a symbol, create a new rule for it.
@@ -170,7 +170,7 @@ module EBNF
         new_rules << self
       elsif [:diff, :hex, :range].include?(expr.first)
         # This rules are fine, the just need to be terminals
-        raise "Encountered #{expr.first.inspect}, which is a #{self.kind}, not :terminal" unless self.kind == :terminal
+        raise "Encountered #{expr.first.inspect}, which is a #{self.kind}, not :terminal" unless self.terminal?
         new_rules << self
       else
         # Some case we didn't think of
@@ -178,6 +178,42 @@ module EBNF
       end
       
       return new_rules
+    end
+
+    # Return the non-terminals for this rule. For seq, this is the first
+    # non-terminals in the seq. For alt, this is every non-terminal ni the alt
+    # @param [Array<Rule>] ast
+    #   The set of rules, used to turn symbols into rules
+    # @return [Array<Rule>]
+    def non_terminals(ast)
+      @non_terms ||= (alt? ? expr[1..-1] : expr[1,1]).map do |sym|
+        case sym
+        when Symbol
+          r = ast.detect {|r| r.sym == sym}
+          r if r && r.rule?
+        else
+          nil
+        end
+      end.compact
+    end
+
+    # Return the terminals for this rule. For seq, this is the first
+    # terminals or strings in the seq. For alt, this is every non-terminal ni the alt
+    # @param [Array<Rule>] ast
+    #   The set of rules, used to turn symbols into rules
+    # @return [Array<Rule>]
+    def terminals(ast)
+      @terms ||= (alt? ? expr[1..-1] : expr[1,1]).map do |sym|
+        case sym
+        when Symbol
+          r = ast.detect {|r| r.sym == sym}
+          r if r && r.terminal?
+        when String
+          sym
+        else
+          nil
+        end
+      end.compact
     end
 
     # Does this rule start with a sym? It does if expr is that sym,
@@ -203,27 +239,44 @@ module EBNF
     end
 
     # Add terminal as proceding this rule
-    # @param [Array<Rule>] terminals
+    # @param [Array<Rule, Symbol, String>] terminals
     # @return [Integer] if number of terminals added
     def add_first(terminals)
       @first ||= []
-      terminals -= @first  # Remove those already in first
+      terminals = terminals.map {|t| t.is_a?(Rule) ? t.sym : t} - @first
       @first += terminals
       terminals.length
     end
 
     # Add terminal as following this rule. Don't add _eps as a follow
     #
-    # @param [Array<Rule>] terminals
+    # @param [Array<Rule, Symbol, String>] terminals
     # @return [Integer] if number of terminals added
     def add_follow(terminals)
-      terminals -= @follow || []  # Remove those already in first
-      terminals -= [:_eps]  # Special case, don't add empty string as a follow terminal
+      # Remove terminals already in follows, and empty string
+      terminals = terminals.map {|t| t.is_a?(Rule) ? t.sym : t} - (@follow || []) - [:_eps]
       unless terminals.empty?
         @follow ||= []
         @follow += terminals
       end
       terminals.length
+    end
+
+    # Is this a terminal?
+    # @return [Boolean]
+    def terminal?
+      kind == :terminal
+    end
+
+    # Is this a rule?
+    # @return [Boolean]
+    def rule?
+      kind == :rule
+    end
+
+    # Is this rule of the form (alt ...)?
+    def alt?
+      expr.is_a?(Array) && expr.first == :alt
     end
 
     # Is this rule of the form (seq ...)?

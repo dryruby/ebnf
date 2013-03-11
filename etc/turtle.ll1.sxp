@@ -116,6 +116,7 @@
   SPARQL_BASE
   SPARQL_PREFIX
   "["
+  _eof
  )
  (alt directive _statement_1)
 )
@@ -143,6 +144,7 @@
   SPARQL_BASE
   SPARQL_PREFIX
   "["
+  _eof
  )
  (seq triples ".")
 )
@@ -162,6 +164,7 @@
   SPARQL_BASE
   SPARQL_PREFIX
   "["
+  _eof
  )
  (seq ".")
 )
@@ -186,6 +189,7 @@
   SPARQL_BASE
   SPARQL_PREFIX
   "["
+  _eof
  )
  (alt
   prefixID
@@ -210,6 +214,7 @@
   SPARQL_BASE
   SPARQL_PREFIX
   "["
+  _eof
  )
  (seq "@prefix" PNAME_NS IRIREF ".")
 )
@@ -229,6 +234,7 @@
   SPARQL_BASE
   SPARQL_PREFIX
   "["
+  _eof
  )
  (seq PNAME_NS IRIREF ".")
 )
@@ -248,6 +254,7 @@
   SPARQL_BASE
   SPARQL_PREFIX
   "["
+  _eof
  )
  (seq "@base" IRIREF ".")
 )
@@ -267,6 +274,7 @@
   SPARQL_BASE
   SPARQL_PREFIX
   "["
+  _eof
  )
  (seq IRIREF ".")
 )
@@ -342,7 +350,6 @@
  _predicateObjectList_1
  "7.1"
  (first ";" _eps)
- (follow "." "]")
  (alt _empty _predicateObjectList_3)
 )
  (rule
@@ -356,7 +363,6 @@
  _predicateObjectList_3
  "7.3"
  (first ";")
- (follow "." "]")
  (seq
   _predicateObjectList_2
   _predicateObjectList_1
@@ -404,7 +410,6 @@
  _predicateObjectList_7
  "7.7"
  (first ";" _eps)
- (follow "." "]")
  (seq _predicateObjectList_1)
 )
  (rule
@@ -459,42 +464,42 @@
   "false"
   "true"
  )
- (follow ";")
+ (follow "." ";" "]")
  (seq object _objectList_1)
 )
  (rule
  _objectList_1
  "8.1"
  (first "," _eps)
- (follow ";")
+ (follow "." ";" "]")
  (alt _empty _objectList_3)
 )
  (rule
  _objectList_2
  "8.2"
  (first ",")
- (follow ",")
+ (follow "," "." ";" "]")
  (seq "," object)
 )
  (rule
  _objectList_3
  "8.3"
  (first ",")
- (follow ";")
+ (follow "." ";" "]")
  (seq _objectList_2 _objectList_1)
 )
  (rule
  _objectList_4
  "8.4"
  (first "," _eps)
- (follow ";")
+ (follow "." ";" "]")
  (seq _objectList_1)
 )
  (rule
  _objectList_5
  "8.5"
  (first "," _eps)
- (follow ";")
+ (follow "." ";" "]")
  (seq _objectList_1)
 )
  (rule
@@ -518,7 +523,7 @@
   "false"
   "true"
  )
- (follow ",")
+ (follow "," "." ";" "]")
  (seq object)
 )
  (rule
@@ -606,7 +611,10 @@
  )
  (follow
   "("
+  ")"
   ","
+  "."
+  ";"
   ANON
   BLANK_NODE_LABEL
   DECIMAL
@@ -620,6 +628,7 @@
   STRING_LITERAL_QUOTE
   STRING_LITERAL_SINGLE_QUOTE
   "["
+  "]"
   "false"
   "true"
  )
@@ -647,7 +656,10 @@
  )
  (follow
   "("
+  ")"
   ","
+  "."
+  ";"
   ANON
   BLANK_NODE_LABEL
   DECIMAL
@@ -661,6 +673,7 @@
   STRING_LITERAL_QUOTE
   STRING_LITERAL_SINGLE_QUOTE
   "["
+  "]"
   "false"
   "true"
  )
@@ -676,7 +689,10 @@
  (first "[")
  (follow
   "("
+  ")"
   ","
+  "."
+  ";"
   ANON
   BLANK_NODE_LABEL
   DECIMAL
@@ -690,6 +706,7 @@
   STRING_LITERAL_QUOTE
   STRING_LITERAL_SINGLE_QUOTE
   "["
+  "]"
   "a"
   "false"
   "true"
@@ -702,7 +719,10 @@
  (first IRIREF PNAME_LN PNAME_NS "a")
  (follow
   "("
+  ")"
   ","
+  "."
+  ";"
   ANON
   BLANK_NODE_LABEL
   DECIMAL
@@ -716,6 +736,7 @@
   STRING_LITERAL_QUOTE
   STRING_LITERAL_SINGLE_QUOTE
   "["
+  "]"
   "a"
   "false"
   "true"
@@ -728,7 +749,10 @@
  (first "]")
  (follow
   "("
+  ")"
   ","
+  "."
+  ";"
   ANON
   BLANK_NODE_LABEL
   DECIMAL
@@ -742,6 +766,7 @@
   STRING_LITERAL_QUOTE
   STRING_LITERAL_SINGLE_QUOTE
   "["
+  "]"
   "a"
   "false"
   "true"
@@ -754,7 +779,10 @@
  (first "(")
  (follow
   "("
+  ")"
   ","
+  "."
+  ";"
   ANON
   BLANK_NODE_LABEL
   DECIMAL
@@ -768,6 +796,7 @@
   STRING_LITERAL_QUOTE
   STRING_LITERAL_SINGLE_QUOTE
   "["
+  "]"
   "a"
   "false"
   "true"
@@ -847,7 +876,10 @@
  )
  (follow
   "("
+  ")"
   ","
+  "."
+  ";"
   ANON
   BLANK_NODE_LABEL
   DECIMAL
@@ -861,6 +893,7 @@
   STRING_LITERAL_QUOTE
   STRING_LITERAL_SINGLE_QUOTE
   "["
+  "]"
   "a"
   "false"
   "true"
@@ -898,7 +931,10 @@
  (first ")")
  (follow
   "("
+  ")"
   ","
+  "."
+  ";"
   ANON
   BLANK_NODE_LABEL
   DECIMAL
@@ -912,6 +948,7 @@
   STRING_LITERAL_QUOTE
   STRING_LITERAL_SINGLE_QUOTE
   "["
+  "]"
   "a"
   "false"
   "true"
@@ -924,7 +961,10 @@
  (first DECIMAL DOUBLE INTEGER)
  (follow
   "("
+  ")"
   ","
+  "."
+  ";"
   ANON
   BLANK_NODE_LABEL
   DECIMAL
@@ -938,6 +978,7 @@
   STRING_LITERAL_QUOTE
   STRING_LITERAL_SINGLE_QUOTE
   "["
+  "]"
   "false"
   "true"
  )
@@ -953,12 +994,29 @@
   STRING_LITERAL_SINGLE_QUOTE
  )
  (follow
+  "("
+  ")"
+  ","
+  "."
+  ";"
+  ANON
+  BLANK_NODE_LABEL
+  DECIMAL
+  DOUBLE
+  INTEGER
+  IRIREF
   LANGTAG
+  PNAME_LN
+  PNAME_NS
   STRING_LITERAL_LONG_QUOTE
   STRING_LITERAL_LONG_SINGLE_QUOTE
   STRING_LITERAL_QUOTE
   STRING_LITERAL_SINGLE_QUOTE
+  "["
+  "]"
   "^^"
+  "false"
+  "true"
  )
  (alt
   STRING_LITERAL_QUOTE
@@ -1096,6 +1154,7 @@
   SPARQL_BASE
   SPARQL_PREFIX
   "["
+  _eof
  )
  (seq SPARQL_PREFIX PNAME_NS IRIREF)
 )
@@ -1115,6 +1174,7 @@
   SPARQL_BASE
   SPARQL_PREFIX
   "["
+  _eof
  )
  (seq PNAME_NS IRIREF)
 )
@@ -1146,6 +1206,7 @@
   SPARQL_BASE
   SPARQL_PREFIX
   "["
+  _eof
  )
  (seq SPARQL_BASE IRIREF)
 )
@@ -1165,6 +1226,7 @@
   SPARQL_BASE
   SPARQL_PREFIX
   "["
+  _eof
  )
  (seq IRIREF)
 )
@@ -1189,7 +1251,10 @@
  )
  (follow
   "("
+  ")"
   ","
+  "."
+  ";"
   ANON
   BLANK_NODE_LABEL
   DECIMAL
@@ -1203,6 +1268,7 @@
   STRING_LITERAL_QUOTE
   STRING_LITERAL_SINGLE_QUOTE
   "["
+  "]"
   "false"
   "true"
  )
@@ -1214,7 +1280,10 @@
  (first LANGTAG "^^" _eps)
  (follow
   "("
+  ")"
   ","
+  "."
+  ";"
   ANON
   BLANK_NODE_LABEL
   DECIMAL
@@ -1228,6 +1297,7 @@
   STRING_LITERAL_QUOTE
   STRING_LITERAL_SINGLE_QUOTE
   "["
+  "]"
   "false"
   "true"
  )
@@ -1239,7 +1309,10 @@
  (first LANGTAG "^^")
  (follow
   "("
+  ")"
   ","
+  "."
+  ";"
   ANON
   BLANK_NODE_LABEL
   DECIMAL
@@ -1253,6 +1326,7 @@
   STRING_LITERAL_QUOTE
   STRING_LITERAL_SINGLE_QUOTE
   "["
+  "]"
   "false"
   "true"
  )
@@ -1264,7 +1338,10 @@
  (first "^^")
  (follow
   "("
+  ")"
   ","
+  "."
+  ";"
   ANON
   BLANK_NODE_LABEL
   DECIMAL
@@ -1278,6 +1355,7 @@
   STRING_LITERAL_QUOTE
   STRING_LITERAL_SINGLE_QUOTE
   "["
+  "]"
   "false"
   "true"
  )
@@ -1289,7 +1367,10 @@
  (first LANGTAG "^^" _eps)
  (follow
   "("
+  ")"
   ","
+  "."
+  ";"
   ANON
   BLANK_NODE_LABEL
   DECIMAL
@@ -1303,6 +1384,7 @@
   STRING_LITERAL_QUOTE
   STRING_LITERAL_SINGLE_QUOTE
   "["
+  "]"
   "false"
   "true"
  )
@@ -1314,7 +1396,10 @@
  (first "false" "true")
  (follow
   "("
+  ")"
   ","
+  "."
+  ";"
   ANON
   BLANK_NODE_LABEL
   DECIMAL
@@ -1328,6 +1413,7 @@
   STRING_LITERAL_QUOTE
   STRING_LITERAL_SINGLE_QUOTE
   "["
+  "]"
   "false"
   "true"
  )
@@ -1339,7 +1425,10 @@
  (first IRIREF PNAME_LN PNAME_NS)
  (follow
   "("
+  ")"
   ","
+  "."
+  ";"
   ANON
   BLANK_NODE_LABEL
   DECIMAL
@@ -1353,6 +1442,7 @@
   STRING_LITERAL_QUOTE
   STRING_LITERAL_SINGLE_QUOTE
   "["
+  "]"
   "a"
   "false"
   "true"
@@ -1365,7 +1455,10 @@
  (first PNAME_LN PNAME_NS)
  (follow
   "("
+  ")"
   ","
+  "."
+  ";"
   ANON
   BLANK_NODE_LABEL
   DECIMAL
@@ -1379,6 +1472,7 @@
   STRING_LITERAL_QUOTE
   STRING_LITERAL_SINGLE_QUOTE
   "["
+  "]"
   "a"
   "false"
   "true"
@@ -1391,7 +1485,10 @@
  (first ANON BLANK_NODE_LABEL)
  (follow
   "("
+  ")"
   ","
+  "."
+  ";"
   ANON
   BLANK_NODE_LABEL
   DECIMAL
@@ -1405,6 +1502,7 @@
   STRING_LITERAL_QUOTE
   STRING_LITERAL_SINGLE_QUOTE
   "["
+  "]"
   "a"
   "false"
   "true"
