@@ -67,7 +67,7 @@ describe EBNF::Base do
 
     context "first" do
       {
-        "alt (FF.1)" => [
+        "alt (Fi.2.1)" => [
           %{
             [5] base                              ::= '@base' IRIREF "."
           },
@@ -78,7 +78,7 @@ describe EBNF::Base do
              (rule _base_2 "5.2" (first ".") (seq ".")))
           }, nil
         ],
-        "sparqlPrefix (FF.1)" => [
+        "sparqlPrefix (Fi.2.1/2.2)" => [
           %{
             [29s] sparqlBase                      ::= SPARQL_BASE IRIREF
             [18] IRIREF                           ::=  '<' ("range" | UCHAR)* '>'
@@ -106,7 +106,7 @@ describe EBNF::Base do
             [2] Query        ::= 'BASE'? 'SELECT'
           },
           %{
-            ((rule _empty "0" (first _eps) (follow "SELECT") (seq))
+            ((rule _empty "0" (first _eps) (seq))
              (rule Query "2" (first "BASE" "SELECT") (seq _Query_1 "SELECT"))
              (rule _Query_1 "2.1" (first "BASE" _eps) (follow "SELECT") (alt _empty "BASE"))
              (rule _Query_2 "2.2" (first "SELECT") (seq "SELECT")))
@@ -118,13 +118,13 @@ describe EBNF::Base do
             [2] statement                         ::= directive | triples "." 
           },
           %{
-            ((rule _empty "0" (first _eps) (follow _eof) (seq))
+            ((rule _empty "0" (first _eps) (seq))
              (rule turtleDoc "1" (start #t) (first _eps) (follow _eof) (alt _empty _turtleDoc_1))
              (rule _turtleDoc_1 "1.1" (follow _eof) (seq statement turtleDoc))
              (rule _turtleDoc_2 "1.2" (first _eps) (follow _eof) (seq turtleDoc))
-             (rule statement "2" (alt directive _statement_1))
-             (rule _statement_1 "2.1" (seq triples "."))
-             (rule _statement_2 "2.2" (first ".") (seq ".")))
+             (rule statement "2" (follow _eof) (alt directive _statement_1))
+             (rule _statement_1 "2.1" (follow _eof) (seq triples "."))
+             (rule _statement_2 "2.2" (first ".") (follow _eof) (seq ".")))
           }, :turtleDoc
         ],
         "SolutionModifier" => [
@@ -139,6 +139,18 @@ describe EBNF::Base do
              (rule _SolutionModifier_1 "18.1" (first "GROUP" _eps) (alt _empty GroupClause))
              (rule GroupClause "19" (first "GROUP") (seq "GROUP")))
           }
+        ],
+        "GroupGraphPattern" => [
+          %{
+            [54]  	GroupGraphPattern	  ::=  	'{' "E"? '}'
+          },
+          %[
+            ((rule _empty "0" (first _eps) (seq) )
+             (rule GroupGraphPattern "54" (first "{") (seq "{" _GroupGraphPattern_1 "}"))
+             (rule _GroupGraphPattern_1 "54.1" (first "E" _eps) (follow "}") (alt _empty "E"))
+             (rule _GroupGraphPattern_2 "54.2" (first "E" "}") (seq _GroupGraphPattern_1 "}"))
+             (rule _GroupGraphPattern_3 "54.3" (first "}") (seq "}")))
+          ]
         ]
       }.each do |name, (input, expected, start)|
         it name do
@@ -167,24 +179,41 @@ describe EBNF::Base do
         ],
         "blankNodePropertyList (FF.4)" => [
           %{
-            [7] predicateObjectList               ::= verb objectList
+            [7] predicateObjectList               ::= verb objectList ( ";" ( verb objectList)? )*
             [14] blankNodePropertyList            ::= "[" predicateObjectList "]"
           },
           %{
             ((rule _empty "0" (first _eps) (seq))
-             (rule predicateObjectList "7" (follow "]") (seq verb objectList))
-             (rule _predicateObjectList_1 "7.1" (follow "]") (seq objectList))
-             (rule blankNodePropertyList "14" (first "[") (seq "[" predicateObjectList "]"))
-             (rule _blankNodePropertyList_1 "14.1" (seq predicateObjectList "]"))
-             (rule _blankNodePropertyList_2 "14.2" (first "]") (seq "]")))
-          }, nil
+             (rule predicateObjectList "7" (follow "]")
+               (seq verb objectList _predicateObjectList_1))
+             (rule _predicateObjectList_1 "7.1" (first ";" _eps) (follow "]")
+               (alt _empty _predicateObjectList_3))
+             (rule _predicateObjectList_2 "7.2" (first ";") (follow ";" "]")
+               (seq ";" _predicateObjectList_4))
+             (rule _predicateObjectList_3 "7.3" (first ";") (follow "]")
+               (seq _predicateObjectList_2 _predicateObjectList_1 ))
+             (rule _predicateObjectList_4 "7.4" (first _eps) (follow ";" "]")
+               (alt _empty _predicateObjectList_5))
+             (rule _predicateObjectList_5 "7.5" (follow ";" "]")
+               (seq verb objectList))
+             (rule _predicateObjectList_6 "7.6" (follow "]")
+               (seq objectList _predicateObjectList_1))
+             (rule _predicateObjectList_7 "7.7" (first ";" _eps) (follow "]")
+               (seq _predicateObjectList_1))
+             (rule _predicateObjectList_8 "7.8" (first _eps) (follow ";" "]")
+               (seq _predicateObjectList_4))
+             (rule _predicateObjectList_9 "7.9" (follow ";" "]") (seq objectList))
+             (rule blankNodePropertyList "14" (start #t) (first "[") (follow _eof) (seq "[" predicateObjectList "]"))
+             (rule _blankNodePropertyList_1 "14.1" (follow _eof) (seq predicateObjectList "]") )
+             (rule _blankNodePropertyList_2 "14.2" (first "]") (follow _eof) (seq "]")))
+          }, :blankNodePropertyList
         ],
         "collection (FF.7/8)" => [
           %{
             [15] collection                       ::= "(" object* ")"
           },
           %{
-            ((rule _empty "0" (first _eps) (follow ")") (seq))
+            ((rule _empty "0" (first _eps) (seq))
              (rule collection "15" (first "(") (seq "(" _collection_1 ")"))
              (rule _collection_1 "15.1" (first _eps) (follow ")") (alt _empty _collection_2))
              (rule _collection_2 "15.2" (follow ")") (seq object _collection_1))
@@ -201,15 +230,15 @@ describe EBNF::Base do
             [4] triples   ::= 'IRI'
           },
           %{
-            ((rule _empty "0" (first _eps) (follow _eof) (seq))
+            ((rule _empty "0" (first _eps) (seq))
              (rule turtleDoc "1" (start #t) (first "BASE" "IRI" _eps) (follow _eof)
               (alt _empty _turtleDoc_1))
              (rule _turtleDoc_1 "1.1" (first "BASE" "IRI") (follow _eof) (seq statement turtleDoc))
              (rule _turtleDoc_2 "1.2" (first "BASE" "IRI" _eps) (follow _eof) (seq turtleDoc))
-             (rule statement "2" (first "BASE" "IRI") (follow "BASE" "IRI") (alt directive _statement_1))
-             (rule _statement_1 "2.1" (first "IRI") (follow "BASE" "IRI") (seq triples "."))
-             (rule _statement_2 "2.2" (first ".") (follow "BASE" "IRI") (seq "."))
-             (rule directive "3" (first "BASE") (follow "BASE" "IRI") (seq "BASE"))
+             (rule statement "2" (first "BASE" "IRI") (follow "BASE" "IRI" _eof) (alt directive _statement_1))
+             (rule _statement_1 "2.1" (first "IRI") (follow "BASE" "IRI" _eof) (seq triples "."))
+             (rule _statement_2 "2.2" (first ".") (follow "BASE" "IRI" _eof) (seq "."))
+             (rule directive "3" (first "BASE") (follow "BASE" "IRI" _eof) (seq "BASE"))
              (rule triples "4" (first "IRI") (follow ".") (seq "IRI")))
           }, :turtleDoc
         ]
@@ -224,85 +253,115 @@ describe EBNF::Base do
 
   end
 
-  describe "#build_tables" do
-    context "EBNF Grammar" do
-      let!(:ebnf) {
-        ebnf = parse(File.read(File.expand_path("../../etc/ebnf.ebnf", __FILE__)), :start => :ebnf)
-        ebnf.build_tables
-        ebnf
-      }
-      subject {ebnf}
-      context "#terminals" do
-        subject {ebnf.terminals}
-        let(:symbols) {subject.select {|t| t.is_a?(Symbol)}}
-        let(:other) {subject.reject {|t| t.is_a?(Symbol)}}
-        specify {should be_a(Array)}
-        it "has symbols which are terminals" do
-          symbols.each do |t|
-            ebnf.find_rule(t).should_not be_nil
-          end
-        end
-        it "includes all terminal rules (except CHAR)" do
-          ebnf.ast.
-            select {|r| r.kind == :terminal && r.sym != :CHAR}.
-            map(&:sym).
-            should =~ symbols
-        end
-        it "has strings otherwise" do
-          other.map(&:class).uniq.should == [String]
-        end
-        it "has strings used in all rules" do
-          rule_strings = ebnf.ast.
-            select {|r| r.kind == :rule}.
-            map(&:expr).flatten.
-            select {|t| t.is_a?(String)}.
-            uniq
-          rule_strings.should =~ other
+  shared_examples "#build_tables" do |source, start|
+    let!(:ebnf) {
+      ebnf = parse(source, :start => start)
+      ebnf.build_tables
+      ebnf
+    }
+    subject {ebnf}
+    context "#terminals" do
+      subject {ebnf.terminals}
+      let(:symbols) {subject.select {|t| t.is_a?(Symbol)}}
+      let(:other) {subject.reject {|t| t.is_a?(Symbol)}}
+      specify {should be_a(Array)}
+      it "has symbols which are terminals" do
+        symbols.each do |t|
+          ebnf.find_rule(t).should_not be_nil
         end
       end
-
-      [:first, :follow].each do |tab|
-        context "#tab" do
-          subject {ebnf.send(tab)}
-          let(:symbols) {subject.select {|t| t.is_a?(Symbol)}}
-          specify {should be_a(Hash)}
-          it "keys are all rule symbols" do
-            subject.keys.each do |sym|
-              r = ebnf.find_rule(sym)
-              r.should_not be_nil
-              r.kind.should == :rule
-            end
-          end
-          it "values should all be terminals" do
-            subject.values.flatten.compact.each do |t|
-              ebnf.terminals.should include(t) unless [:_eps, :_eof].include?(t)
-            end
-          end
-        end
+      it "has strings otherwise" do
+        other.map(&:class).uniq.should == [String]
       end
+      it "has strings used in all rules" do
+        rule_strings = ebnf.ast.
+          select {|r| r.rule?}.
+          map(&:expr).flatten.
+          select {|t| t.is_a?(String)}.
+          uniq
+        rule_strings.should =~ other
+      end
+    end
 
-      context "#branch" do
-        subject {ebnf.branch}
+    [:first, :follow].each do |tab|
+      context "#tab" do
+        subject {ebnf.send(tab)}
         let(:symbols) {subject.select {|t| t.is_a?(Symbol)}}
         specify {should be_a(Hash)}
         it "keys are all rule symbols" do
           subject.keys.each do |sym|
             r = ebnf.find_rule(sym)
             r.should_not be_nil
-            r.kind.should == :rule
+            r.should be_rule
           end
         end
-        it "values should all be Hashs whos keys are terminals" do
-          values = subject.values
-          values.map(&:class).uniq.should == [Hash]
-          values.map(&:keys).flatten.uniq.each do |t|
-            ebnf.terminals.should include(t) unless [:_eps, :_eof, :_empty].include?(t)
+        it "values should all be terminals" do
+          subject.values.flatten.compact.each do |t|
+            ebnf.terminals.should include(t) unless [:_eps, :_eof].include?(t)
           end
         end
-        it "values of terminal keys are symbols of rules or strings" do
-          symbols = subject.values.map(&:values).flatten.uniq
-          symbols.map(&:class).uniq.should =~ [Symbol, String]
+      end
+    end
+
+    context "#branch" do
+      subject {ebnf.branch}
+      let(:symbols) {subject.select {|t| t.is_a?(Symbol)}}
+      specify {should be_a(Hash)}
+      it "keys are all rule symbols" do
+        subject.keys.each do |sym|
+          r = ebnf.find_rule(sym)
+          r.should_not be_nil
+          r.should be_rule
         end
+      end
+      it "values should all be Hashs whos keys are terminals" do
+        values = subject.values
+        values.map(&:class).uniq.should == [Hash]
+        values.map(&:keys).flatten.uniq.each do |t|
+          ebnf.terminals.should include(t)
+        end
+      end
+      it "values of terminal keys are symbols of rules or strings" do
+        symbols = subject.values.map(&:values).flatten.uniq
+        symbols.map(&:class).uniq.should =~ [Symbol, String]
+      end
+    end
+  end
+
+  describe "EBNF Grammar" do
+    it_behaves_like "#build_tables",
+      File.read(File.expand_path("../../etc/ebnf.ebnf", __FILE__)),
+      :ebnf
+  end
+
+  describe "Turtle Grammar" do
+    it_behaves_like "#build_tables",
+      File.read(File.expand_path("../../etc/turtle.ebnf", __FILE__)),
+      :turtleDoc
+
+    let!(:ebnf) {
+      ebnf = parse(File.read(File.expand_path("../../etc/turtle.ebnf", __FILE__)), :start => :turtleDoc)
+      ebnf.build_tables
+      ebnf
+    }
+    subject {ebnf}
+
+    # Spot check some productions
+    {
+      :turtleDoc => [
+        ['@prefix', '@base', :IRIREF],
+        [:_eof]
+      ],
+      :_predicateObjectList_1 => [
+        [";", :_eps],
+        [".", "]"]
+      ]
+    }.each do |nt, (first, follow)|
+      context nt do
+        subject {ebnf.find_rule(nt)}
+        it {should_not be_nil}
+        its(:first) {(subject.first & first).should =~ first}
+        its(:follow) {(subject.follow & follow).should =~ follow}
       end
     end
   end

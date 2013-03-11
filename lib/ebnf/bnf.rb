@@ -19,8 +19,8 @@ module EBNF
 
       # Consolodate equivalent terminal rules
       to_rewrite = {}
-      new_ast.select {|r| r.kind == :terminal}.each do |src_rule|
-        new_ast.select {|r| r.kind == :terminal}.each do |dst_rule|
+      new_ast.select {|r| r.terminal?}.each do |src_rule|
+        new_ast.select {|r| r.terminal?}.each do |dst_rule|
           if src_rule.equivalent?(dst_rule) && src_rule != dst_rule
             debug("make_bnf") {"equivalent rules: #{src_rule.inspect} and #{dst_rule.inspect}"}
             (to_rewrite[src_rule] ||= []) << dst_rule

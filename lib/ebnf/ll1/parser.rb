@@ -439,18 +439,20 @@ module EBNF::LL1
       cur_prod = todo_stack.last[:prod]
       token = get_token
       first = @first[cur_prod] || []
-      
+      expected = @branch.fetch(cur_prod, {}).keys
+      expected << :_eps if first.include?(:_eps)  # Helps when testing
+
+      # If we've reached EOF, token is nil. This is fine, if _eof is in @follow
+      return if token.nil? && @follow.fetch(cur_prod, []).include?(:_eof)
+
       # If this token can be used by the top production, return it
       # Otherwise, if the banch table allows empty, also return the token
-      return token if !@recovering && (
-        (@branch[cur_prod] && @branch[cur_prod].has_key?(:_empty)) ||
-        first.any? {|t| (token || :_eps) === t})
-      
+      return token if !@recovering && (expected.any? {|t| (token || :_eps) === t})
+
       # Otherwise, it's an error condition, and skip either until
       # we find a valid token for this production, or until we find
       # something that can follow this production
-      expected = first.map {|v| v.inspect}.join(", ")
-      error("skip_until_valid", "expected one of #{expected}, found #{token.inspect}",
+      error("skip_until_valid", "expected one of #{expected.map(&:inspect).join(", ")}, found #{token.inspect}",
         :production => cur_prod, :token => token)
 
       debug("recovery", "stack follows:")
