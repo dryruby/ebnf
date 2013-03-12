@@ -82,20 +82,15 @@ module EBNF
       }.merge(options))
     end
 
-    # Serializes this rule to an S-Expression
-    # @return [String]
-    def to_sxp
+    # Return representation for building S-Expressions
+    # @return [Array]
+    def for_sxp
       elements = [kind, sym, id]
       elements << [:start, true] if start
       elements << first.sort_by(&:to_s).unshift(:first) if first
       elements << follow.sort_by(&:to_s).unshift(:follow) if follow
       elements << expr
-      begin
-        require 'sxp'
-        SXP::Generator.string(elements)
-      rescue LoadError
-        elements.to_sxp
-      end
+      elements
     end
     def to_s; to_sxp; end
     

@@ -158,12 +158,7 @@ module EBNF
     # Write out parsed syntax string as an S-Expression
     # @return [String]
     def to_sxp
-      begin
-        require 'sxp'
-        SXP::Generator.string(ast.sort)
-      rescue LoadError
-        ast.sort_by{|r| r.num.to_f}.to_sxp
-      end
+      SXP::Generator.string(ast.sort_by{|r| r.id.to_f}.map(&:for_sxp))
     end
     def to_s; to_sxp; end
 
