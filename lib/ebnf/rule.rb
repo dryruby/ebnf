@@ -92,7 +92,14 @@ module EBNF
       elements << expr
       elements
     end
-    def to_s; to_sxp; end
+
+    # Return SXP representation of this rule
+    # @return [String]
+    def to_sxp
+      for_sxp.to_sxp
+    end
+
+    alias_method :to_s, :to_sxp
     
     # Serializes this rule to an Turtle
     # @return [String]
