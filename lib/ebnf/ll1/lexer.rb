@@ -42,15 +42,15 @@ module EBNF::LL1
       '\\"'  => '"',    # \u0022 (quotation mark, double quote mark)
       "\\'"  => '\'',   # \u0027 (apostrophe-quote, single quote mark)
       '\\\\' => '\\'    # \u005C (backslash)
-    }
-    ESCAPE_CHAR4        = /\\u(?:[0-9A-Fa-f]{4,4})/           # \uXXXX
-    ESCAPE_CHAR8        = /\\U(?:[0-9A-Fa-f]{8,8})/           # \UXXXXXXXX
+    }.freeze
+    ESCAPE_CHAR4        = /\\u(?:[0-9A-Fa-f]{4,4})/.freeze    # \uXXXX
+    ESCAPE_CHAR8        = /\\U(?:[0-9A-Fa-f]{8,8})/.freeze    # \UXXXXXXXX
     ECHAR               = /\\./                               # More liberal unescaping
-    UCHAR               = /#{ESCAPE_CHAR4}|#{ESCAPE_CHAR8}/
-    COMMENT             = /#.*/
-    WS                  = / |\t|\r|\n/m
+    UCHAR               = /#{ESCAPE_CHAR4}|#{ESCAPE_CHAR8}/.freeze
+    COMMENT             = /#.*/.freeze
+    WS                  = / |\t|\r|\n/m.freeze
 
-    ML_START            = /\'\'\'|\"\"\"/                     # Beginning of terminals that may span lines
+    ML_START            = /\'\'\'|\"\"\"/.freeze              # Beginning of terminals that may span lines
 
     ##
     # @!attribute whitespace
