@@ -496,7 +496,6 @@ module EBNF::LL1
       @error_log << message unless @recovering
       @recovering = true
       debug(node, message, options.merge(:level => 0))
-      $stderr.puts("[#{@lineno}]#{' ' * depth}#{node}: #{message}")
     end
 
     ##
