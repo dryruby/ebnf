@@ -227,6 +227,15 @@ module EBNF::LL1
           todo_stack.last[:terms] = []
           cur_prod = todo_stack.last[:prod]
 
+          # If cur_prod is the starting production, we can reset the stack
+          # to the beginning to avoid excessive growth in the production
+          # stack
+          if cur_prod == prod
+            todo_stack = [{:prod => prod, :terms => []}]
+            @productions = []
+            @prod_data = [{}]
+          end
+
           # Get this first valid token appropriate for the stacked productions,
           # skipping invalid tokens until either a valid token is found (from @first),
           # or a token appearing in @follow appears.
@@ -239,11 +248,11 @@ module EBNF::LL1
             "prod #{cur_prod.inspect}, " + 
             "depth #{depth}"
           end
-          
+
           # Got an opened production
           onStart(cur_prod)
           break if token.nil?
-          
+
           if prod_branch = @branch[cur_prod]
             @recovering = false
             sequence = prod_branch[token.representation]
@@ -304,7 +313,6 @@ module EBNF::LL1
                 (@recovering && @follow.fetch(terms.last, []).none? {|t| (token || :_eps) == t}))
           debug("parse(pop)", :level => 2) {"todo #{todo_stack.last.inspect}, depth #{depth}"}
           if terms.empty?
-            prod = todo_stack.last[:prod]
             todo_stack.pop
             onFinish
           else
@@ -484,21 +492,6 @@ module EBNF::LL1
     end
 
     ##
-    # @param [String] node Relevant location associated with message
-    # @param [String] message Error string
-    # @param [Hash] options
-    # @option options [URI, #to_s] :production
-    # @option options [Token] :token
-    def error(node, message, options = {})
-      message += ", found #{options[:token].representation.inspect}" if options[:token]
-      message += " at line #{@lineno}" if @lineno
-      message += ", production = #{options[:production].inspect}" if options[:production]
-      @error_log << message unless @recovering
-      @recovering = true
-      debug(node, message, options.merge(:level => 0))
-    end
-
-    ##
     # Return the next token, entering error recovery if the token is invalid
     #
     # @return [Token]
@@ -522,6 +515,21 @@ module EBNF::LL1
     end
 
     ##
+    # @param [String] node Relevant location associated with message
+    # @param [String] message Error string
+    # @param [Hash] options
+    # @option options [URI, #to_s] :production
+    # @option options [Token] :token
+    def error(node, message, options = {})
+      message += ", found #{options[:token].representation.inspect}" if options[:token]
+      message += " at line #{@lineno}" if @lineno
+      message += ", production = #{options[:production].inspect}" if options[:production]
+      @error_log << message unless @recovering
+      @recovering = true
+      debug(node, message, options.merge(:level => 0))
+    end
+
+    ##
     # Progress output when parsing
     #   param [String] node Relevant location associated with message
     #   param [String] message ("")
@@ -535,35 +543,57 @@ module EBNF::LL1
       message = args.join(",")
       depth = options[:depth] || self.depth
       message += yield.to_s if block_given?
-      if @options[:debug]
-        return debug(node, message, {:level => 0}.merge(options))
-      else
-        $stderr.puts("[#{@lineno}]#{' ' * depth}#{node}: #{message}")
-      end
+      debug(node, message, options.merge(:level => 1))
     end
 
     ##
-    # Progress output when debugging
-    # @param [String] node Relevant location associated with message
-    # @param [String] message ("")
-    # @param [Hash] options
-    # @option options [Integer] :depth
-    #   Recursion depth for indenting output
+    # Progress output when debugging.
+    # Captures output to `@options[:debug]` if it is an array.
+    # Otherwise, if `@options[:debug]` is set, or
+    # `@options[:progress]` is set and `:level` <= 1, or
+    # `@options[:validate]` is set and `:level` == 0 output
+    # to standard error.
+    # 
+    # @overload debug(node, message)
+    #   @param [String] node Relevant location associated with message
+    #   @param [String] message ("")
+    #   @param [Hash] options
+    #   @option options [Integer] :depth
+    #     Recursion depth for indenting output
+    #   @option options [Integer] :level
+    #     Debug level, `0` for errors, `1` for progress, anything else
+    #     for debug output.
+    #
+    # @overload debug(message)
+    #   @param [String] node Relevant location associated with message
+    #   @param [Hash] options
+    #   @option options [Integer] :depth
+    #     Recursion depth for indenting output
+    #   @option options [Integer] :level
+    #     Debug level, `0` for errors, `1` for progress, anything else
+    #     for debug output.
     # @yieldreturn [String] added to message
-    def debug(node, message = "", options = {})
-      return unless @options[:debug]
-      debug_level = options.fetch(:level, 1)
-      return unless debug_level <= DEBUG_LEVEL
+    def debug(*args)
+      options = args.last.is_a?(Hash) ? args.pop : {}
+      debug_level = options.fetch(:level, 2)
+      return unless @options[:debug]  && debug_level <= DEBUG_LEVEL ||
+                    @options[:progress] && debug_level <= 1 ||
+                    @options[:validate] && debug_level == 0
       depth = options[:depth] || self.depth
-      message += yield if block_given?
-      str = "[#{@lineno}](#{debug_level})#{' ' * depth}#{node}: #{message}"
-      case @options[:debug]
-      when Array
-        @options[:debug] << str
-      when TrueClass
-        $stderr.puts str
-      when :yield
+      d_str = depth > 20 ? ' ' * 20 + '+' : ' ' * depth
+      args << yield if block_given?
+      message = "#{args.join(': ')}"
+      str = "[#{@lineno}](#{debug_level})#{d_str}#{message}"
+      @options[:debug] << str if @options[:debug].is_a?(Array)
+      case
+      when @options[:yield]
         @parse_callback.call(:trace, node, message, options)
+      when @options[:debug] == true
+        $stderr.puts str
+      when @options[:progress] && debug_level <= 1
+        $stderr.puts str
+      when @options[:validate] && debug_level == 0
+        $stderr.puts str
       end
     end
 
