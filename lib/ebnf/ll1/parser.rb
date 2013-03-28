@@ -193,6 +193,8 @@ module EBNF::LL1
     #   Show progress of parser productions
     # @option options [Boolean] :debug
     #   Detailed debug output
+    # @option options [Boolean] :reset_on_start
+    #   Reset the parser state if the start token set with `prod` is found in a production. This reduces the production stack depth growth, which is appropriate for some grammars.
     # @yield [context, *data]
     #   Yields for to return data to parser
     # @yieldparam [:statement, :trace] context
@@ -230,7 +232,7 @@ module EBNF::LL1
           # If cur_prod is the starting production, we can reset the stack
           # to the beginning to avoid excessive growth in the production
           # stack
-          if cur_prod == prod
+          if options[:reset_on_start] && cur_prod == prod
             todo_stack = [{:prod => prod, :terms => []}]
             @productions = []
             @prod_data = [{}]
