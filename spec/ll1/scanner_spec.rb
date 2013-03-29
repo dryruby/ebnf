@@ -17,14 +17,15 @@ describe EBNF::LL1::Scanner do
       scanner.eos?.should be_false
     end
     
-    it "passes input data to block" do
-      block_called = false
-      scanner = EBNF::LL1::Scanner.new(StringIO.new("foo")) do |string|
-        block_called = true
-        "bar"
-      end
-      scanner.rest.should == "bar"
-      block_called.should be_true
+    it "encodes input to UTF-8", :pending => !"".respond_to?(:force_encoding) do
+      f = mock("input")
+      f.should_receive(:read).and_return("ascii".force_encoding(Encoding::ASCII_8BIT))
+      f.should_receive(:gets).and_return("utf8".force_encoding(Encoding::UTF_8))
+      f.should_receive(:eof?).and_return(false, false, true)
+      scanner = EBNF::LL1::Scanner.new(f)
+      s = scanner.rest
+      s.should == "asciiutf8"
+      s.encoding.should == Encoding::UTF_8
     end
   end
   

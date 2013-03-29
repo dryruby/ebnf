@@ -135,10 +135,7 @@ module EBNF::LL1
       raise Error, "Terminal patterns not defined" unless @terminals && @terminals.length > 0
 
       @lineno = 1
-      @scanner = Scanner.new(input) do |string|
-        string.force_encoding(Encoding::UTF_8) if string.respond_to?(:force_encoding)
-        string
-      end
+      @scanner = Scanner.new(input)
     end
 
     ##

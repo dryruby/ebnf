@@ -24,12 +24,8 @@ module EBNF::LL1
     # @param [Hash{Symbol => Object}] options
     # @option options[Integer] :high_water (HIGH_WATER)
     # @option options[Integer] :low_water (LOW_WATER)
-    # @yield [string]
-    # @yieldparam [String] string data read from input file
-    # @yieldreturn [String] replacement read data, useful for decoding escapes.
     # @return [Scanner]
-    def initialize(input, options = {}, &block)
-      @block = block
+    def initialize(input, options = {})
       @options = options.merge(:high_water => HIGH_WATER, :low_water => LOW_WATER)
 
       if input.respond_to?(:read)
@@ -48,7 +44,7 @@ module EBNF::LL1
     # @return [String]
     def rest
       feed_me
-      super
+      encode_utf8 super
     end
     
     ##
@@ -82,7 +78,7 @@ module EBNF::LL1
     # @return [String]
     def scan(pattern)
       feed_me
-      super
+      encode_utf8 super
     end
     
   private
@@ -93,9 +89,13 @@ module EBNF::LL1
         diff = @options[:high_water] - rest_size
         string = @input.read(diff)
         string << @input.gets unless @input.eof?
-        string = @block.call(string) if @block
         self << string if string
       end
+    end
+
+    # Perform UTF-8 encoding of input
+    def encode_utf8(string)
+      string.respond_to?(:force_encoding) ? string.force_encoding(Encoding::UTF_8) : string
     end
   end
 end
