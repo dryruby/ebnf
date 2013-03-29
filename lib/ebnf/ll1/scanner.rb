@@ -87,8 +87,8 @@ module EBNF::LL1
       if rest_size < @options[:low_water] && @input && !@input.eof?
         # Read up to high-water mark ensuring we're at an end of line
         diff = @options[:high_water] - rest_size
-        string = @input.read(diff)
-        string << @input.gets unless @input.eof?
+        string = encode_utf8(@input.read(diff))
+        string << encode_utf8(@input.gets) unless @input.eof?
         self << string if string
       end
     end
