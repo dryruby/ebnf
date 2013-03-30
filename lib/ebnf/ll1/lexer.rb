@@ -53,12 +53,10 @@ module EBNF::LL1
     ML_START            = /\'\'\'|\"\"\"/.freeze              # Beginning of terminals that may span lines
 
     ##
-    # @!attribute whitespace
     # @return [Regexp] defines whitespace, defaults to WS
     attr_reader :whitespace
 
     ##
-    # @!attribute comment
     # @return [Regexp] defines single-line comment, defaults to COMMENT
     attr_reader :comment
 

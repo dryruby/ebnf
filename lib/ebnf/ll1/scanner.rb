@@ -13,7 +13,6 @@ module EBNF::LL1
     LOW_WATER  = 2048     # Hopefully large enough to deal with long multi-line comments
 
     ##
-    # @!attribute [r] input
     # @return [IO, StringIO]
     attr_reader :input
 

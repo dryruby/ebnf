@@ -10,40 +10,47 @@ module EBNF
       diff hex range
     }.map(&:to_sym).freeze
 
-    # @!attribute [rw] sym for rule
+    # Symbol of rule
+    #
     # @return [Symbol]
     attr_accessor :sym
 
-    # @!attribute [rw] id of rule
+    # ID of rule
     # @return [String]
     attr_accessor :id
 
     # A comprehension is a sequence which contains all elements but the first of the original rule.
-    # @!attribute [rw] comprehension of this rule
+    #
     # @return [Rule]
     attr_accessor :comp
 
-    # @!attribute [rw] kind of rule
+    # Kind of rule
+    #
     # @return [:rule, :terminal, or :pass]
     attr_accessor :kind
 
-    # @!attribute [rw] expr rule expression
+    # Rule expression
+    #
     # @return [Array]
     attr_accessor :expr
 
-    # @!attribute [rw] orig original rule
+    # Original EBNF
+    #
     # @return [String]
     attr_accessor :orig
 
-    # @!attribute [r] first terminals that immediately procede this rule
+    # Terminals that immediately procede this rule
+    #
     # @return [Array<Rule>]
     attr_reader :first
 
-    # @!attribute [r] follow terminals that immediately follow this rule
+    # Terminals that immediately follow this rule
+    #
     # @return [Array<Rule>]
     attr_reader :follow
 
-    # @!attribute [rw] start indicates that this is a starting rule
+    # Indicates that this is a starting rule
+    #
     # @return [Boolean]
     attr_accessor :start
 

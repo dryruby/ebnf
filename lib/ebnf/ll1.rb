@@ -6,29 +6,29 @@ module EBNF
 
     # Branch table, represented as a recursive hash.
     # The table is indexed by rule symbol, which in-turn references a hash of terminals (which are the first terminals of the production), which in turn reference the sequence of rules that follow, given that terminal as input
-    # @!attribute [r] branch
+    #
     # @return [Hash{Symbol => Hash{String, Symbol => Array<Symbol>}}]
     attr_reader :branch
 
     # First table
-    # @!attribute [r] first
+    #
     # @return [Hash{Symbol, String => Symbol}]
     attr_reader :first
 
     # Follow table
-    # @!attribute [r] first
+    #
     # @return [Hash{Symbol, String => Symbol}]
     attr_reader :follow
 
     # Terminal table
     # The list of terminals used in the grammar.
-    # @!attribute [r] terminals
+    #
     # @return [Array<String, Symbol>]
     attr_reader :terminals
 
     # Start symbol
     # The rule which starts the grammar
-    # @!attribute[r] start
+    #
     # @return [Symbol]
     attr_reader :start
 

@@ -103,12 +103,12 @@ module EBNF
     include Parser
 
     # Abstract syntax tree from parse
-    # @!attribute [r] ast
+    #
     # @return [Array<Rule>]
     attr_reader :ast
 
     # Grammar errors, or errors found genering parse tables
-    # @!attribute [r] errors
+    #
     # @return [Array<String>]
     attr_accessor :errors
 
