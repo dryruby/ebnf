@@ -481,6 +481,7 @@ module EBNF::LL1
       return if @options[:debug].is_a?(Integer) && debug_level > @options[:debug]
 
       depth = options[:depth] || self.depth
+      args << yield if block_given?
       @parse_callback.call(:trace, debug_level, @lineno, depth, *args)
     end
 
