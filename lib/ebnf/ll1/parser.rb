@@ -10,7 +10,6 @@ module EBNF::LL1
     DEBUG_LEVEL = 10
 
     ##
-    # @!attribute [r] lineno
     # @return [Integer] line number of current token
     attr_reader :lineno
 
@@ -20,10 +19,10 @@ module EBNF::LL1
 
     # DSL for creating terminals and productions
     module ClassMethods
-      def start_handlers; @@start_handlers || {}; end
-      def production_handlers; @@production_handlers || {}; end
-      def terminal_handlers; @@terminal_handlers || {}; end
-      def patterns; @@patterns || []; end
+      def start_handlers; @start_handlers || {}; end
+      def production_handlers; @production_handlers || {}; end
+      def terminal_handlers; @terminal_handlers || {}; end
+      def patterns; @patterns || []; end
 
       ##
       # Defines the pattern for a terminal node and a block to be invoked
@@ -53,11 +52,11 @@ module EBNF::LL1
       #   Block passed to initialization for yielding to calling parser.
       #   Should conform to the yield specs for #initialize
       def terminal(term, regexp, options = {}, &block)
-        @@patterns ||= []
+        @patterns ||= []
         # Passed in order to define evaulation sequence
-        @@patterns << EBNF::LL1::Lexer::Terminal.new(term, regexp, options)
-        @@terminal_handlers ||= {}
-        @@terminal_handlers[term] = block if block_given?
+        @patterns << EBNF::LL1::Lexer::Terminal.new(term, regexp, options)
+        @terminal_handlers ||= {}
+        @terminal_handlers[term] = block if block_given?
       end
 
       ##
@@ -80,8 +79,8 @@ module EBNF::LL1
       #   Should conform to the yield specs for #initialize
       # Yield to generate a triple
       def start_production(term, &block)
-        @@start_handlers ||= {}
-        @@start_handlers[term] = block
+        @start_handlers ||= {}
+        @start_handlers[term] = block
       end
 
       ##
@@ -105,8 +104,8 @@ module EBNF::LL1
       #   Should conform to the yield specs for #initialize
       # Yield to generate a triple
       def production(term, &block)
-        @@production_handlers ||= {}
-        @@production_handlers[term] = block
+        @production_handlers ||= {}
+        @production_handlers[term] = block
       end
 
       # Evaluate a handler, delegating to the specified object.
@@ -115,15 +114,15 @@ module EBNF::LL1
       # @param [Object] object
       # @return [Object]
       def eval_with_binding(object)
-        @@delegate = object
+        @delegate = object
         object.instance_eval {yield}
       end
 
       private
 
       def method_missing(method, *args, &block)
-        if @@delegate ||= nil
-          @@delegate.send method, *args, &block
+        if @delegate ||= nil
+          @delegate.send method, *args, &block
         else
           super
         end
@@ -137,29 +136,40 @@ module EBNF::LL1
     #
     # @example
     #   require 'rdf/ll1/parser'
-    #   
+    #
     #   class MyParser
     #     include EBNF::LL1::Parser
-    #     
+    #
     #     branch      MyParser::BRANCH
-    #     
+    #
     #     ##
-    #     # Defines a production called during different phases of parsing
+    #     # Defines a production called during before parsing a non-terminal
     #     # with data from previous production along with data defined for the
     #     # current production
     #     #
-    #     # Yield to generate a triple
-    #     production :object do |parser, phase, input, current|
-    #       object = current[:resource]
-    #       yield :statement, RDF::Statement.new(input[:subject], input[:predicate], object)
+    #     start_production :object do |input, current, callback|
+    #       # Note production as triples for blankNodePropertyList
+    #       # to set :subject instead of :resource
+    #       current[:triples] = true
     #     end
-    #     
+    #
+    #     ##
+    #     # Defines a production called during after parsing a non-terminal
+    #     # with data from previous production along with data defined for the
+    #     # current production
+    #     #
+    #     # callback to processor block
+    #     production :object do |input, current, callback|
+    #       object = current[:resource]
+    #       callback.call :statement, RDF::Statement.new(input[:subject], input[:predicate], object)
+    #     end
+    #
     #     ##
     #     # Defines the pattern for a terminal node
-    #     terminal :BLANK_NODE_LABEL, %r(_:(#{PN_LOCAL})) do |parser, production, token, input|
+    #     terminal :BLANK_NODE_LABEL, %r(_:(#{PN_LOCAL})) do |production, token, input|
     #       input[:BLANK_NODE_LABEL] = RDF::Node.new(token)
     #     end
-    #     
+    #
     #     ##
     #     # Iterates the given block for each RDF statement in the input.
     #     #
@@ -168,7 +178,7 @@ module EBNF::LL1
     #     # @return [void]
     #     def each_statement(&block)
     #       @callback = block
-    #   
+    #
     #       parse(START.to_sym) do |context, *data|
     #         case context
     #         when :statement
@@ -176,7 +186,7 @@ module EBNF::LL1
     #         end
     #       end
     #     end
-    #     
+    #
     #   end
     #
     # @param  [String, #to_s]          input
@@ -202,6 +212,9 @@ module EBNF::LL1
     # @yieldparam [Symbol] *data
     #   Data specific to the call
     # @return [EBNF::LL1::Parser]
+    # @raise [Exception] Raises exceptions for parsing errors
+    #   or errors raised during processing callbacks. Internal
+    #   errors are raised using {Error}.
     # @see http://cs.adelaide.edu.au/~charles/lt/Lectures/07-ErrorRecovery.pdf
     def parse(input = nil, prod = nil, options = {}, &block)
       @options = options.dup
@@ -242,12 +255,12 @@ module EBNF::LL1
           # skipping invalid tokens until either a valid token is found (from @first),
           # or a token appearing in @follow appears.
           token = skip_until_valid(todo_stack)
-          
+
           # At this point, token is either nil, in the first set of the production,
           # or in the follow set of this production or any previous production
           debug("parse(production)") do
-            "token #{token ? token.representation.inspect : 'nil'}, " + 
-            "prod #{cur_prod.inspect}, " + 
+            "token #{token ? token.representation.inspect : 'nil'}, " +
+            "prod #{cur_prod.inspect}, " +
             "depth #{depth}"
           end
 
@@ -258,16 +271,16 @@ module EBNF::LL1
           if prod_branch = @branch[cur_prod]
             @recovering = false
             sequence = prod_branch[token.representation]
-            debug("parse(production)", :level => 2) do
+            debug("parse(production)") do
               "token #{token.representation.inspect} " +
-              "prod #{cur_prod.inspect}, " + 
+              "prod #{cur_prod.inspect}, " +
               "prod_branch #{prod_branch.keys.inspect}, " +
               "sequence #{sequence.inspect}"
             end
 
             if sequence.nil?
               if prod_branch.has_key?(:_empty)
-                debug("parse(production)", :level => 2) {"empty sequence for _empty"}
+                debug("parse(production)") {"empty sequence for _empty"}
               else
                 # If there is no sequence for this production, we're
                 # in error recovery, and _token_ has been advanced to
@@ -281,8 +294,8 @@ module EBNF::LL1
               :production => cur_prod, :token => token)
           end
         end
-        
-        debug("parse(terms)", :level => 2) {"todo #{todo_stack.last.inspect}, depth #{depth}"}
+
+        debug("parse(terms)") {"todo #{todo_stack.last.inspect}, depth #{depth}"}
         while !todo_stack.last[:terms].to_a.empty?
           begin
             # Get the next term in this sequence
@@ -291,7 +304,7 @@ module EBNF::LL1
             if token = accept(term)
               @recovering = false
               debug("parse(token)") {"token #{token.inspect}, term #{term.inspect}"}
-              onToken(term, token)
+              onTerminal(term, token)
             elsif terminals.include?(term)
               # If term is a terminal, then it is an error if token does not
               # match it
@@ -299,13 +312,13 @@ module EBNF::LL1
             else
               # If it's not a string (a symbol), it is a non-terminal and we push the new state
               todo_stack << {:prod => term, :terms => nil}
-              debug("parse(push)", :level => 2) {"term #{term.inspect}, depth #{depth}"}
+              debug("parse(push)") {"term #{term.inspect}, depth #{depth}"}
               pushed = true
               break
             end
           end
         end
-        
+
         # After completing the last production in a sequence, pop down until we find a production
         #
         # If in recovery mode, continue popping until we find a term with a follow list
@@ -313,13 +326,13 @@ module EBNF::LL1
               !todo_stack.empty? &&
               ( (terms = todo_stack.last.fetch(:terms, [])).empty? ||
                 (@recovering && @follow.fetch(terms.last, []).none? {|t| (token || :_eps) == t}))
-          debug("parse(pop)", :level => 2) {"todo #{todo_stack.last.inspect}, depth #{depth}"}
+          debug("parse(pop)") {"todo #{todo_stack.last.inspect}, depth #{depth}"}
           if terms.empty?
             todo_stack.pop
             onFinish
           else
             # Stop recovering when we a production which starts with the term
-            debug("parse(pop)", :level => 2) {"recovery complete"}
+            debug("parse(pop)") {"recovery complete"}
             @recovering = false
           end
         end
@@ -329,7 +342,7 @@ module EBNF::LL1
 
       # Continue popping contexts off of the stack
       while !todo_stack.empty?
-        debug("parse(eof)", :level => 2) {"stack #{todo_stack.last.inspect}, depth #{depth}"}
+        debug("parse(eof)") {"stack #{todo_stack.last.inspect}, depth #{depth}"}
         # There can't be anything left to do, or if there is, it must be optional
         last_terms = todo_stack.last[:terms]
         if last_terms.length > 0 && last_terms.none? {|t|
@@ -342,10 +355,10 @@ module EBNF::LL1
         todo_stack.pop
         onFinish
       end
-      
+
       # When all is said and done, raise the error log
       unless @error_log.empty?
-        raise Error, @error_log.join("\n\t") 
+        raise Error, @error_log.join("\n\t")
       end
     end
 
@@ -369,17 +382,109 @@ module EBNF::LL1
         prod_data[sym] << values
       end
     end
-    
+
     # Add values to production data, values aranged as an array
     def add_prod_data(sym, *values)
       return if values.compact.empty?
-      
+
       prod_data[sym] ||= []
       prod_data[sym] += values
       debug("add_prod_data(#{sym})") {"#{prod_data[sym].inspect} += #{values.inspect}"}
     end
-    
-  private
+
+  protected
+
+    ##
+    # Error information, used as level `0` debug messages.
+    #
+    # @param [String] node Relevant location associated with message
+    # @param [String] message Error string
+    # @param [Hash] options
+    # @option options [URI, #to_s] :production
+    # @option options [Token] :token
+    # @see {#debug}
+    def error(node, message, options = {})
+      message += ", found #{options[:token].representation.inspect}" if options[:token]
+      message += " at line #{@lineno}" if @lineno
+      message += ", production = #{options[:production].inspect}" if options[:production]
+      @error_log << message unless @recovering
+      @recovering = true
+      debug(node, message, options.merge(:level => 0))
+    end
+
+    ##
+    # Warning information, used as level `1` debug messages.
+    #
+    # @param [String] node Relevant location associated with message
+    # @param [String] message Error string
+    # @param [Hash] options
+    # @option options [URI, #to_s] :production
+    # @option options [Token] :token
+    # @see {#debug}
+    def warn(node, message, options = {})
+      message += ", found #{options[:token].representation.inspect}" if options[:token]
+      message += " at line #{@lineno}" if @lineno
+      message += ", production = #{options[:production].inspect}" if options[:production]
+      @error_log << message unless @recovering
+      @recovering = true
+      debug(node, message, options.merge(:level => 1))
+    end
+
+    ##
+    # Progress output when parsing. Passed as level `2` debug messages.
+    #
+    # @overload progress(node, message, options)
+    #   @param [String] node Relevant location associated with message
+    #   @param [String] message ("")
+    #   @param [Hash] options
+    #   @option options [Integer] :depth
+    #       Recursion depth for indenting output
+    # @see {#debug}
+    def progress(node, *args)
+      return unless @options[:progress] || @options[:debug]
+      options = args.last.is_a?(Hash) ? args.pop : {}
+      message = args.join(",")
+      message += yield.to_s if block_given?
+      debug(node, message, options.merge(:level => 2))
+    end
+
+    ##
+    # Progress output when debugging.
+    #
+    # The call is ignored, unless `@options[:debug]` is set, in which
+    # case it yields tracing information as indicated. Additionally,
+    # if `@options[:debug]` is an Integer, the call is aborted if the
+    # `:level` option is less than than `:level`.
+    #
+    # @overload debug(node, message, options)
+    #   @param [Array<String>] args Relevant location associated with message
+    #   @param [Hash] options
+    #   @option options [Integer] :depth
+    #     Recursion depth for indenting output
+    #   @option options [Integer] :level
+    #     Level assigned to message, by convention, level `0` is for
+    #     errors, level `1` is for warnings, level `2` is for parser
+    #     progress information, and anything higher is for various levels
+    #     of debug information.
+    #
+    # @yield trace, level, lineno, depth, args
+    # @yieldparam [:trace] trace
+    # @yieldparam [Integer] level
+    # @yieldparam [Integer] lineno
+    # @yieldparam [Integer] depth Recursive depth of productions
+    # @yieldparam [Array<String>] args
+    # @yieldreturn [String] added to message
+    def debug(*args)
+      return unless @options[:debug] && @parse_callback
+      options = args.last.is_a?(Hash) ? args.pop : {}
+      debug_level = options.fetch(:level, 3)
+      return if @options[:debug].is_a?(Integer) && debug_level > @options[:debug]
+
+      depth = options[:depth] || self.depth
+      @parse_callback.call(:trace, debug_level, @lineno, depth, *args)
+    end
+
+private
     # Start for production
     def onStart(prod)
       handler = self.class.start_handlers[prod]
@@ -389,9 +494,13 @@ module EBNF::LL1
         # to customize before pushing on the @prod_data stack
         progress("#{prod}(:start):#{@prod_data.length}") {@prod_data.last}
         data = {}
-        self.class.eval_with_binding(self) {
-          handler.call(@prod_data.last, data, @parse_callback)
-        }
+        begin
+          self.class.eval_with_binding(self) {
+            handler.call(@prod_data.last, data, @parse_callback)
+          }
+        rescue Exception => e
+          error("start", "#{e.class}: #{e.message}", :production => prod)
+        end
         @prod_data << data
       else
         # Make sure we push as many was we pop, even if there is no
@@ -410,9 +519,13 @@ module EBNF::LL1
       if handler && !@recovering
         # Pop production data element from stack, potentially allowing handler to use it
         data = @prod_data.pop
-        self.class.eval_with_binding(self) {
-          handler.call(@prod_data.last, data, @parse_callback)
-        }
+        begin
+          self.class.eval_with_binding(self) {
+            handler.call(@prod_data.last, data, @parse_callback)
+          }
+        rescue Exception => e
+          error("finish", "#{e.class}: #{e.message}", :production => prod)
+        end
         progress("#{prod}(:finish):#{@prod_data.length}") {@prod_data.last}
       else
         progress("#{prod}(:finish)", "recovering: #{@recovering.inspect}")
@@ -420,26 +533,30 @@ module EBNF::LL1
       @productions.pop
     end
 
-    # A token
-    def onToken(prod, token)
+    # A terminal
+    def onTerminal(prod, token)
       unless @productions.empty?
         parentProd = @productions.last
         handler = self.class.terminal_handlers[prod]
         # Allows catch-all for simple string terminals
         handler ||= self.class.terminal_handlers[nil] if prod.is_a?(String)
         if handler
-          self.class.eval_with_binding(self) {
-            handler.call(parentProd, token, @prod_data.last)
-          }
-          progress("#{prod}(:token)", "", :depth => (depth + 1)) {"#{token}: #{@prod_data.last}"}
+          begin
+            self.class.eval_with_binding(self) {
+              handler.call(parentProd, token, @prod_data.last, @parse_callback)
+            }
+          rescue Exception => e
+            error("terminal", "#{e.class}: #{e.message}", :production => prod)
+          end
+          progress("#{prod}(:terminal)", "", :depth => (depth + 1)) {"#{token}: #{@prod_data.last}"}
         else
-          progress("#{prod}(:token)", "", :depth => (depth + 1)) {token.to_s}
+          progress("#{prod}(:terminal)", "", :depth => (depth + 1)) {token.to_s}
         end
       else
-        error("#{parentProd}(:token)", "Token has no parent production", :production => prod)
+        error("#{parentProd}(:terminal)", "Terminal has no parent production", :production => prod)
       end
     end
-    
+
     # Skip through the input stream until something is found that
     # is either valid based on the content of the production stack,
     # or can follow a production in the stack.
@@ -483,12 +600,12 @@ module EBNF::LL1
         progress("recovery") {"skip #{skipped.inspect}"}
       end
       debug("recovery") {"found #{token.inspect} in #{first.include?(token) ? 'first' : 'follows'}"}
-      
+
       # If the token is a first, just return it. Otherwise, it is a follow
       # and we need to skip to the end of the production
       unless first.any? {|t| token == t} || todo_stack.last[:terms].empty?
         debug("recovery") {"token in follows, skip past #{todo_stack.last[:terms].inspect}"}
-        todo_stack.last[:terms] = [] 
+        todo_stack.last[:terms] = []
       end
       token
     end
@@ -508,95 +625,12 @@ module EBNF::LL1
 
         # Retrieve next valid token
         t = @lexer.recover
-        debug("get_token", :level => 2) {"skipped to #{t.inspect}"}
+        debug("get_token") {"skipped to #{t.inspect}"}
         t
       end
       #progress("token") {token.inspect}
       @lineno = token.lineno if token
       token
-    end
-
-    ##
-    # @param [String] node Relevant location associated with message
-    # @param [String] message Error string
-    # @param [Hash] options
-    # @option options [URI, #to_s] :production
-    # @option options [Token] :token
-    def error(node, message, options = {})
-      message += ", found #{options[:token].representation.inspect}" if options[:token]
-      message += " at line #{@lineno}" if @lineno
-      message += ", production = #{options[:production].inspect}" if options[:production]
-      @error_log << message unless @recovering
-      @recovering = true
-      debug(node, message, options.merge(:level => 0))
-    end
-
-    ##
-    # Progress output when parsing
-    #   param [String] node Relevant location associated with message
-    #   param [String] message ("")
-    #   param [Hash] options
-    #   option options [Integer] :depth
-    #     Recursion depth for indenting output
-    #   yieldreturn [String] added to message
-    def progress(node, *args)
-      return unless @options[:progress] || @options[:debug]
-      options = args.last.is_a?(Hash) ? args.pop : {}
-      message = args.join(",")
-      depth = options[:depth] || self.depth
-      message += yield.to_s if block_given?
-      debug(node, message, options.merge(:level => 1))
-    end
-
-    ##
-    # Progress output when debugging.
-    # Captures output to `@options[:debug]` if it is an array.
-    # Otherwise, if `@options[:debug]` is set, or
-    # `@options[:progress]` is set and `:level` <= 1, or
-    # `@options[:validate]` is set and `:level` == 0 output
-    # to standard error.
-    # 
-    # @overload debug(node, message)
-    #   @param [String] node Relevant location associated with message
-    #   @param [String] message ("")
-    #   @param [Hash] options
-    #   @option options [Integer] :depth
-    #     Recursion depth for indenting output
-    #   @option options [Integer] :level
-    #     Debug level, `0` for errors, `1` for progress, anything else
-    #     for debug output.
-    #
-    # @overload debug(message)
-    #   @param [String] node Relevant location associated with message
-    #   @param [Hash] options
-    #   @option options [Integer] :depth
-    #     Recursion depth for indenting output
-    #   @option options [Integer] :level
-    #     Debug level, `0` for errors, `1` for progress, anything else
-    #     for debug output.
-    # @yieldreturn [String] added to message
-    def debug(*args)
-      options = args.last.is_a?(Hash) ? args.pop : {}
-      debug_level = options.fetch(:level, 2)
-      return unless @options[:debug]  && debug_level <= DEBUG_LEVEL ||
-                    @options[:progress] && debug_level <= 1 ||
-                    @options[:validate] && debug_level == 0
-      depth = options[:depth] || self.depth
-      d_str = depth > 20 ? ' ' * 20 + '+' : ' ' * depth
-      args << yield if block_given?
-      message = "#{args.join(': ')}"
-      str = "[#{@lineno}](#{debug_level})#{d_str}#{message}"
-      @options[:debug] << str if @options[:debug].is_a?(Array)
-      case
-      when @options[:yield]
-        @parse_callback.call(:trace, node, message, options)
-      when @options[:debug] == true
-        $stderr.puts str
-      when @options[:progress] && debug_level <= 1
-        $stderr.puts str
-      when @options[:validate] && debug_level == 0
-        $stderr.puts str
-      end
     end
 
     ##
