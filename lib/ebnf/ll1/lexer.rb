@@ -231,15 +231,16 @@ module EBNF::LL1
     #
     # @return [Token]
     def recover
-      until scanner.eos? do
-        begin
-          shift
-          return first
-        rescue Error, ArgumentError
-          # Ignore errors until something scans, or EOS.
-          scanner.pos = scanner.pos + 1
+       until scanner.eos? || tok = match_token
+        if scanner.skip_until(@whitespace).nil? # Skip past current "token"
+          # No whitespace at the end, must be and end of string
+          scanner.terminate
+        else
+          skip_whitespace
         end
       end
+      scanner.unscan if tok
+      first
     end
   protected
 
@@ -251,9 +252,10 @@ module EBNF::LL1
     def skip_whitespace
       # skip all white space, but keep track of the current line number
       while !scanner.eos?
-       if matched = scanner.scan(@whitespace)
+        if matched = scanner.scan(@whitespace)
           @lineno += matched.count("\n")
-        elsif (com = scanner.scan(@comment))
+        elsif (scanner.scan(@comment))
+          #
         else
           return
         end

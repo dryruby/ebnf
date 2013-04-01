@@ -4,31 +4,27 @@ require 'spec_helper'
 require 'ebnf'
 
 describe EBNF::LL1::Lexer do
-  before(:all) do
+  let!(:terminals) {[
+    [:ANON,                             ANON],
+    [nil,                               %r([\(\),.;\[\]a]|\^\^|@base|@prefix|true|false)],
+    [:BLANK_NODE_LABEL,                 BLANK_NODE_LABEL],
+    [:IRIREF,                           IRIREF],
+    [:DECIMAL,                          DECIMAL],
+    [:DOUBLE,                           DOUBLE],
+    [:INTEGER,                          INTEGER],
+    [:LANGTAG,                          LANGTAG],
+    [:PNAME,                            PNAME],
+    [:STRING_LITERAL_LONG_SINGLE_QUOTE, STRING_LITERAL_LONG_SINGLE_QUOTE],
+    [:STRING_LITERAL_LONG_QUOTE,        STRING_LITERAL_LONG_QUOTE],
+    [:STRING_LITERAL_QUOTE,             STRING_LITERAL_QUOTE],
+    [:STRING_LITERAL_SINGLE_QUOTE,      STRING_LITERAL_SINGLE_QUOTE],
+  ]}
 
-    @terminals = [
-      [:ANON,                             ANON],
-      [nil,                               %r([\(\),.;\[\]a]|\^\^|@base|@prefix|true|false)],
-      [:BLANK_NODE_LABEL,                 BLANK_NODE_LABEL],
-      [:IRIREF,                           IRIREF],
-      [:DECIMAL,                          DECIMAL],
-      [:DOUBLE,                           DOUBLE],
-      [:INTEGER,                          INTEGER],
-      [:LANGTAG,                          LANGTAG],
-      [:PNAME_LN,                         PNAME_LN],
-      [:PNAME_NS,                         PNAME_NS],
-      [:STRING_LITERAL_LONG_SINGLE_QUOTE, STRING_LITERAL_LONG_SINGLE_QUOTE],
-      [:STRING_LITERAL_LONG_QUOTE,        STRING_LITERAL_LONG_QUOTE],
-      [:STRING_LITERAL_QUOTE,             STRING_LITERAL_QUOTE],
-      [:STRING_LITERAL_SINGLE_QUOTE,      STRING_LITERAL_SINGLE_QUOTE],
-    ]
-    
-    @unescape_terms = [
-      :IRIREF,
-      :STRING_LITERAL_QUOTE, :STRING_LITERAL_SINGLE_QUOTE,
-      :STRING_LITERAL_LONG_SINGLE_QUOTE, :STRING_LITERAL_LONG_QUOTE
-    ]
-  end
+  let!(:unescape_terms) {[
+    :IRIREF,
+    :STRING_LITERAL_QUOTE, :STRING_LITERAL_SINGLE_QUOTE,
+    :STRING_LITERAL_LONG_SINGLE_QUOTE, :STRING_LITERAL_LONG_QUOTE
+  ]}
   
   describe ".unescape_codepoints" do
     # @see http://www.w3.org/TR/rdf-sparql-query/#codepointEscape
@@ -210,7 +206,7 @@ describe EBNF::LL1::Lexer do
           "\r\n" => 2,
         }
         inputs.each do |input, lineno|
-          lexer = EBNF::LL1::Lexer.tokenize(input, @terminals, :unescape_terms => @unescape_terms)
+          lexer = tokenize(input)
           lexer.to_a # consumes the input
           lexer.lineno.should == lineno
         end
@@ -220,9 +216,33 @@ describe EBNF::LL1::Lexer do
     describe "yielding tokens" do
       it "annotates tokens with the current line number" do
         results = %w(1 2 3 4)
-        EBNF::LL1::Lexer.tokenize("1\n2\n3\n4", @terminals, :unescape_terms => @unescape_terms).each_token do |token|
+        tokenize("1\n2\n3\n4").each_token do |token|
           token.type.should == :INTEGER
           token.value.should == results.shift
+        end
+      end
+    end
+
+    describe "#first/#shift/#recover" do
+      subject {tokenize("1\n2\n3\n4")}
+      it "returns tokens in first/shift sequence" do
+        %w{1 2 3 4}.each do |v|
+          subject.first.value.should == v
+          subject.shift
+        end
+        subject.first.should be_nil
+      end
+
+      context "with unrecognized token" do
+        subject {tokenize("< space > 'foo' 1")}
+
+        it "raises error with #first" do
+          lambda {subject.first}.should raise_error(EBNF::LL1::Lexer::Error, /Invalid token/)
+        end
+        
+        it "recovers to next token" do
+          subject.recover
+          subject.first.value.should == "'foo'"
         end
       end
     end
@@ -232,13 +252,15 @@ describe EBNF::LL1::Lexer do
     end
   end
 
-  def tokenize(*inputs, &block)
+  def tokenize(*inputs)
     options = inputs.last.is_a?(Hash) ? inputs.pop : {}
+    lexer = nil
     inputs.each do |input|
-      tokens = EBNF::LL1::Lexer.tokenize(input, @terminals, :unescape_terms => @unescape_terms)
-      tokens.should be_a(EBNF::LL1::Lexer)
-      block.call(tokens.to_a)
+      lexer = EBNF::LL1::Lexer.tokenize(input, terminals, :unescape_terms => unescape_terms)
+      lexer.should be_a(EBNF::LL1::Lexer)
+      yield lexer.to_a if block_given?
     end
+    lexer
   end
 
   EXPONENT                         = /[eE][+-]?[0-9]+/
@@ -250,8 +272,7 @@ describe EBNF::LL1::Lexer do
   DECIMAL                          = /[+-]?(?:[0-9]*\.[0-9]+)/
   DOUBLE                           = /[+-]?(?:[0-9]+\.[0-9]*#{EXPONENT}|\.?[0-9]+#{EXPONENT})/
   LANGTAG                          = /@[a-zA-Z]+(?:-[a-zA-Z0-9]+)*/
-  PNAME_LN                         = /\w*/
-  PNAME_NS                         = /\w*:/
+  PNAME                            = /\w*:\w*/
   STRING_LITERAL_QUOTE             = /'(?:[^\'\\\n\r])*'/
   STRING_LITERAL_SINGLE_QUOTE      = /"(?:[^\"\\\n\r])*"/
   STRING_LITERAL_LONG_SINGLE_QUOTE = /'''(?:(?:'|'')?(?:[^'\\]))*'''/m
