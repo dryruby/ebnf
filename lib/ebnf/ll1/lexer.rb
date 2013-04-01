@@ -472,7 +472,7 @@ module EBNF::LL1
       #
       # @return [String]
       def inspect
-        to_hash.inspect
+        "#{@value.inspect}#{'(' + @type.to_s + ')' if @type}"
       end
     end # class Token
 
