@@ -239,6 +239,7 @@ module EBNF::LL1
 
       while !todo_stack.empty?
         begin
+          @recovering = false
           pushed = false
           if todo_stack.last[:terms].nil?
             todo_stack.last[:terms] = []
@@ -269,9 +270,8 @@ module EBNF::LL1
 
             if token.nil?
               if  !(first_include?(cur_prod, :_eps) && follow_include?(cur_prod, :_eof))
-                # End of file, and production does not contain eps, or it does, but follow does not contain eof
-                raise Error.new("Unexpected end of input",
-                  :production => cur_prod)
+                # End of file, and production does not contain eps, or it does, but follow does not contain eof 
+                raise Error.new("Unexpected end of input", :production => cur_prod)
               else
                 debug("parse(production)") {"End of input prod #{cur_prod.inspect}"}
               end
@@ -486,7 +486,6 @@ module EBNF::LL1
       message += " at line #{@lineno}" if @lineno
       message += ", production = #{options[:production].inspect}" if options[:production]
       @error_log << message unless @recovering
-      @recovering = true
       debug(node, message, options.merge(:level => 1))
     end
 
@@ -568,7 +567,7 @@ module EBNF::LL1
         # Make sure we push as many was we pop, even if there is no
         # explicit start handler
         @prod_data << {} if self.class.production_handlers[prod]
-        progress("#{prod}(:start)") { get_token.inspect}
+        progress("#{prod}(:start)") { get_token.inspect + (@recovering ? ' recovering' : '')}
       end
       #puts "prod_data(s): " + @prod_data.inspect
     end
