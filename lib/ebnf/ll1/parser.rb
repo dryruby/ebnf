@@ -558,7 +558,7 @@ module EBNF::LL1
           self.class.eval_with_binding(self) {
             handler.call(@prod_data.last, data, @parse_callback)
           }
-        rescue Exception => e
+        rescue ArgumentError, Error => e
           error("start", "#{e.class}: #{e.message}", :production => prod)
           @recovering = false
         end
@@ -584,7 +584,7 @@ module EBNF::LL1
           self.class.eval_with_binding(self) {
             handler.call(@prod_data.last, data, @parse_callback)
           }
-        rescue Exception => e
+        rescue ArgumentError, Error => e
           error("finish", "#{e.class}: #{e.message}", :production => prod)
           @recovering = false
         end
@@ -607,7 +607,7 @@ module EBNF::LL1
             self.class.eval_with_binding(self) {
               handler.call(parentProd, token, @prod_data.last, @parse_callback)
             }
-          rescue Exception => e
+          rescue ArgumentError, Error => e
             error("terminal", "#{e.class}: #{e.message}", :production => prod)
             @recovering = false
           end
