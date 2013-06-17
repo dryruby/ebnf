@@ -499,12 +499,11 @@ module EBNF::LL1
     #   @option options [Integer] :depth
     #       Recursion depth for indenting output
     # @see {#debug}
-    def progress(node, *args)
+    def progress(node, *args, &block)
       return unless @options[:progress] || @options[:debug]
-      options = args.last.is_a?(Hash) ? args.pop : {}
-      message = args.join(",")
-      message += yield.to_s if block_given?
-      debug(node, message, options.merge(:level => 2))
+      args << {} unless args.last.is_a?(Hash)
+      args.last[:level] ||= 2
+      debug(node, *args, &block)
     end
 
     ##
