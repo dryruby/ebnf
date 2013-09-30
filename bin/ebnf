@@ -10,7 +10,6 @@ require "bundler/setup"
 require 'rubygems'
 require 'getoptlong'
 require 'ebnf'
-require 'sxp'
 
 def dump_tables(grammarFile, ebnf, output, options)
   ebnf.build_tables
