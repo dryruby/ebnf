@@ -134,8 +134,11 @@ module EBNF
         when /^@terminals/
           # Switch mode to parsing terminals
           terminal = true
-        when /^@pass\s*(.*)$/m
-          # Ignore, as we can't use this for processing the EBNF grammar itself
+        when /^@pass\s*::=\s*(.*)$/m
+          expr = expression($1).first
+          rule = Rule.new(nil, nil, expr, :kind => :pass)
+          rule.orig = expr
+          @ast << rule
         else
           rule = depth {ruleParts(r)}
 
