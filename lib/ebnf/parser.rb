@@ -61,7 +61,7 @@ module EBNF
       num_sym, expr = rule.split('::=', 2).map(&:strip)
       num, sym = num_sym.split(']', 2).map(&:strip)
       num = num[1..-1]
-      r = Rule.new(sym && sym.to_sym, num, ebnf(expr).first, :ebnf => self)
+      r = Rule.new(sym && sym.to_sym, num, expression(expr).first, :ebnf => self)
       debug("ruleParts") { r.inspect }
       r
     end
@@ -70,37 +70,37 @@ module EBNF
     # Parse a string into an expression tree and a remaining string
     #
     # @example
-    #     >>> ebnf("a b c")
+    #     >>> expression("a b c")
     #     ((seq, \[('id', 'a'), ('id', 'b'), ('id', 'c')\]), '')
     #     
-    #     >>> ebnf("a? b+ c*")
+    #     >>> expression("a? b+ c*")
     #     ((seq, \[(opt, ('id', 'a')), (plus, ('id', 'b')), ('*', ('id', 'c'))\]), '')
     #     
-    #     >>> ebnf(" | x xlist")
+    #     >>> expression(" | x xlist")
     #     ((alt, \[(seq, \[\]), (seq, \[('id', 'x'), ('id', 'xlist')\])\]), '')
     #     
-    #     >>> ebnf("a | (b - c)")
+    #     >>> expression("a | (b - c)")
     #     ((alt, \[('id', 'a'), (diff, \[('id', 'b'), ('id', 'c')\])\]), '')
     #     
-    #     >>> ebnf("a b | c d")
+    #     >>> expression("a b | c d")
     #     ((alt, \[(seq, \[('id', 'a'), ('id', 'b')\]), (seq, \[('id', 'c'), ('id', 'd')\])\]), '')
     #     
-    #     >>> ebnf("a | b | c")
+    #     >>> expression("a | b | c")
     #     ((alt, \[('id', 'a'), ('id', 'b'), ('id', 'c')\]), '')
     #     
-    #     >>> ebnf("a) b c")
+    #     >>> expression("a) b c")
     #     (('id', 'a'), ' b c')
     #     
-    #     >>> ebnf("BaseDecl? PrefixDecl*")
+    #     >>> expression("BaseDecl? PrefixDecl*")
     #     ((seq, \[(opt, ('id', 'BaseDecl')), ('*', ('id', 'PrefixDecl'))\]), '')
     #     
-    #     >>> ebnf("NCCHAR1 | diff | [0-9] | #x00B7 | [#x0300-#x036F] | \[#x203F-#x2040\]")
+    #     >>> expression("NCCHAR1 | diff | [0-9] | #x00B7 | [#x0300-#x036F] | \[#x203F-#x2040\]")
     #     ((alt, \[('id', 'NCCHAR1'), ("'", diff), (range, '0-9'), (hex, '#x00B7'), (range, '#x0300-#x036F'), (range, '#x203F-#x2040')\]), '')
     #     
     # @param [String] s
     # @return [Array]
-    def ebnf(s)
-      debug("ebnf") {"(#{s.inspect})"}
+    def expression(s)
+      debug("expression") {"(#{s.inspect})"}
       e, s = depth {alt(s)}
       debug {"=> alt returned #{[e, s].inspect}"}
       unless s.empty?
@@ -232,8 +232,8 @@ module EBNF
       elsif %w(range hex).map(&:to_sym).include?(t.first)
         [t, s]
       elsif t.first == :"("
-        e, s = depth {ebnf(s)}
-        debug {"=> ebnf returned #{[e, s].inspect}"}
+        e, s = depth {expression(s)}
+        debug {"=> expression returned #{[e, s].inspect}"}
         [e, s]
       else
         ["", s]

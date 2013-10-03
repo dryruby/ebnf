@@ -60,17 +60,47 @@ module EBNF
     # @param [Hash{Symbol => Object}] options
     # @option options [Symbol] :kind
     # @option options [String] :ebnf
+    # @option options [Array] :first
+    # @option options [Array] :follow
+    # option options [Boolean] :start
     def initialize(sym, id, expr, options = {})
       @sym, @id = sym, id
       @expr = expr.is_a?(Array) ? expr : [:seq, expr]
       @ebnf = options[:ebnf]
       @top_rule = options.fetch(:top_rule, self)
+      @first = options[:first]
+      @follow = options[:follow]
+      @start = options[:start]
       @kind = case
       when options[:kind] then options[:kind]
       when sym.to_s == sym.to_s.upcase then :terminal
       when !BNF_OPS.include?(@expr.first) then :terminal
       else :rule
       end
+    end
+
+    ##
+    # Return a rule from its SXP representation:
+    #
+    # @example inputs
+    #    (pass (plus (range "#x20\\t\\r\\n")))
+    #    (rule ebnf "1" (star (alt declaration rule)))
+    #    (terminal O_ENUM "17" (seq "[^" (plus CHAR) "]"))
+    #
+    # Also may have (first ...), (follow ...), or (start #t)
+    #
+    # @param [Array] sxp
+    # @return [Rule]
+    def self.from_sxp(sxp)
+      expr = sxp.detect {|e| e.is_a?(Array) && ![:first, :follow, :start].include?(e.first.to_sym)}
+      first = sxp.detect {|e| e.is_a?(Array) && e.first.to_sym == :first}
+      first = first[1..-1] if first
+      follow = sxp.detect {|e| e.is_a?(Array) && e.first.to_sym == :follow}
+      follow = follow[1..-1] if follow
+      start = sxp.any? {|e| e.is_a?(Array) && e.first.to_sym == :start}
+      sym = sxp[1] if sxp[1].is_a?(Symbol)
+      id = sxp[2] if sxp[2].is_a?(String)
+      Rule.new(sym, id, expr, :kind => sxp.first, :first => first, :follow => follow, :start => start)
     end
 
     # Build a new rule creating a symbol and numbering from the current rule

@@ -38,7 +38,7 @@ describe EBNF::Base do
       it "rule expressions should be flat, terminal or alt/seq" do
         subject.ast.each do |rule|
           case
-          when rule.terminal? then true
+          when !rule.rule? then true
           when !rule.expr.is_a?(Array) then true
           else
             "#{rule.sym}: #{rule.expr.first}".should match(/#{rule.sym}: (alt|seq)/)

@@ -1,6 +1,6 @@
-
-( 
+(
  (rule _empty "0" (first _eps) (seq))
+ (pass (plus (range "#x20\\t\\r\\n")))
  (rule ebnf "1"
   (start #t)
   (first "@pass" "@terminals" "[" _eps)
@@ -86,84 +86,84 @@
   (seq _seq_1))
  (rule diff "8"
   (first "(" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2)
-  (follow
- "(" ")" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 "[" _eof "|"  )
+  (follow "(" ")" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1
+   STRING2 "[" _eof "|" )
   (seq postfix _diff_1))
  (rule _diff_1 "8.1"
   (first "-" _eps)
-  (follow
- "(" ")" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 "[" _eof "|"  )
+  (follow "(" ")" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1
+   STRING2 "[" _eof "|" )
   (alt _empty _diff_3))
  (rule _diff_2 "8.2"
   (first "-")
-  (follow
- "(" ")" "-" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 "[" _eof "|"  )
+  (follow "(" ")" "-" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE
+   STRING1 STRING2 "[" _eof "|" )
   (seq "-" postfix))
  (rule _diff_3 "8.3"
   (first "-")
-  (follow
- "(" ")" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 "[" _eof "|"  )
+  (follow "(" ")" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1
+   STRING2 "[" _eof "|" )
   (seq _diff_2 _diff_1))
  (rule _diff_4 "8.4"
   (first "-" _eps)
-  (follow
- "(" ")" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 "[" _eof "|"  )
+  (follow "(" ")" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1
+   STRING2 "[" _eof "|" )
   (seq _diff_1))
  (rule _diff_5 "8.5"
   (first "-" _eps)
-  (follow
- "(" ")" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 "[" _eof "|"  )
+  (follow "(" ")" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1
+   STRING2 "[" _eof "|" )
   (seq _diff_1))
  (rule _diff_6 "8.6"
   (first "(" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2)
-  (follow
- "(" ")" "-" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 "[" _eof "|"  )
+  (follow "(" ")" "-" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE
+   STRING1 STRING2 "[" _eof "|" )
   (seq postfix))
  (rule postfix "9"
   (first "(" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2)
-  (follow
- "(" ")" "-" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 "[" _eof "|"  )
+  (follow "(" ")" "-" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE
+   STRING1 STRING2 "[" _eof "|" )
   (seq primary _postfix_1))
  (rule _postfix_1 "9.1"
   (first _eps _postfix_2)
-  (follow
- "(" ")" "-" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 "[" _eof "|"  )
+  (follow "(" ")" "-" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE
+   STRING1 STRING2 "[" _eof "|" )
   (alt _empty _postfix_2))
  (terminal _postfix_2 "9.2" (range "?*+"))
  (rule _postfix_3 "9.3"
   (first _eps _postfix_2)
-  (follow
- "(" ")" "-" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 "[" _eof "|"  )
+  (follow "(" ")" "-" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE
+   STRING1 STRING2 "[" _eof "|" )
   (seq _postfix_1))
  (rule primary "10"
   (first "(" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2)
-  (follow
- "(" ")" "-" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 "[" _eof _postfix_2 "|"  )
+  (follow "(" ")" "-" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE
+   STRING1 STRING2 "[" _eof _postfix_2 "|" )
   (alt HEX RANGE ENUM O_RANGE O_ENUM STRING1 STRING2 _primary_1))
  (rule _primary_1 "10.1"
   (first "(")
-  (follow
- "(" ")" "-" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 "[" _eof _postfix_2 "|"  )
+  (follow "(" ")" "-" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE
+   STRING1 STRING2 "[" _eof _postfix_2 "|" )
   (seq "(" expression ")"))
  (rule _primary_2 "10.2"
   (first "(" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2)
-  (follow
- "(" ")" "-" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 "[" _eof _postfix_2 "|"  )
+  (follow "(" ")" "-" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE
+   STRING1 STRING2 "[" _eof _postfix_2 "|" )
   (seq expression ")"))
  (rule _primary_3 "10.3"
   (first ")")
-  (follow
- "(" ")" "-" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 "[" _eof _postfix_2 "|"  )
+  (follow "(" ")" "-" "@pass" "@terminals" ENUM HEX O_ENUM O_RANGE RANGE
+   STRING1 STRING2 "[" _eof _postfix_2 "|" )
   (seq ")"))
  (rule pass "11"
   (first "@pass")
   (follow "@pass" "@terminals" "[" _eof)
   (seq "@pass" _pass_1))
- (terminal _pass_10 "11.10" (range "^\\r\\n"))
  (rule _pass_1 "11.1"
   (first "#" "/*" "//" _pass_5)
   (follow "@pass" "@terminals" "[" _eof)
   (seq _pass_2 _pass_3))
+ (terminal _pass_10 "11.10" (range "^\\r\\n"))
  (rule _pass_11 "11.11"
   (first _pass_10)
   (follow "#" "/*" "//" "@pass" "@terminals" "[" _eof _pass_5)

@@ -22,7 +22,7 @@ describe EBNF::Base do
     end
   end
   
-  describe "#ebnf" do
+  describe "#expression" do
     {
       "'abc' def" => %{((seq "abc" def) "")},
       %{[0-9]} => %{((range "0-9") "")},
@@ -46,7 +46,7 @@ describe EBNF::Base do
         %{((alt NCCHAR1 "-" (range "0-9") (hex "#x00B7") (range "#x0300-#x036F") (range "#x203F-#x2040")) "")}
     }.each do |input, expected|
       it "given #{input.inspect} produces #{expected}" do
-        ebnf(:ebnf, input).to_sxp.should produce(expected, @debug)
+        ebnf(:expression, input).to_sxp.should produce(expected, @debug)
       end
     end
   end
