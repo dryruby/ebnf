@@ -36,7 +36,7 @@ def dump_tables(grammarFile, ebnf, output, options)
 end
 
 options = {
-  :format => :sxp,
+  :output_format => :sxp,
   :prefix => "ttl",
   :namespace => "http://www.w3.org/ns/formats/Turtle#",
 }
@@ -49,6 +49,7 @@ OPT_ARGS = [
   ["--evaluate","-e",   GetoptLong::REQUIRED_ARGUMENT,"Evaluate argument as a JSON-LD document"],
   ["--ll1",             GetoptLong::REQUIRED_ARGUMENT,"Generate First/Follow rules, argument is start symbol"],
   ["--format", "-f",    GetoptLong::REQUIRED_ARGUMENT,"Specify output format one of ttl, sxp, or rb"],
+  ["--input-format",    GetoptLong::REQUIRED_ARGUMENT,"Specify input format one of ebnf or sxp"],
   ["--mod-name",        GetoptLong::REQUIRED_ARGUMENT,"Module name used when creating ruby tables"],
   ["--output", "-o",    GetoptLong::REQUIRED_ARGUMENT,"Output to the specified file path"],
   ["--prefix", "-p",    GetoptLong::REQUIRED_ARGUMENT,"Prefix to use when generating Turtle"],
@@ -79,7 +80,8 @@ opts.each do |opt, arg|
   when '--dbg'          then options[:debug] = true
   when '--bnf'          then options[:bnf] = true
   when '--evaluate'     then input = arg
-  when '--format'       then options[:format] = arg.to_sym
+  when '--input-format' then options[:format] = arg.to_sym
+  when '--format'       then options[:output_format] = arg.to_sym
   when '--ll1'          then options[:ll1] = arg.to_sym
   when '--mod-name'     then options[:mod_name] = arg
   when '--output'       then out = File.open(arg, "w")
@@ -90,7 +92,7 @@ opts.each do |opt, arg|
   end
 end
 
-if options[:format] == :rb && !options[:ll1]
+if options[:output_format] == :rb && !options[:ll1]
   STDERR.puts "outputing in .rb format requires -ll"
   exit(1)
 end
@@ -101,7 +103,7 @@ ebnf = EBNF.parse(input || STDIN, options)
 ebnf.make_bnf if options[:bnf] || options[:ll1]
 ebnf.first_follow(options[:ll1]) if options[:ll1]
 
-res = case options[:format]
+res = case options[:output_format]
 when :sxp     then ebnf.to_sxp
 when :ttl     then ebnf.to_ttl(options[:prefix], options[:namespace])
 when :rb      then dump_tables(ARGV[0], ebnf, out, options)

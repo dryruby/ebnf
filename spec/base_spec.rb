@@ -32,7 +32,13 @@ describe EBNF::Base do
         %{((rule _SolutionModifier_1 "18.1" (alt _empty GroupClause)))},
     }.each do |input, expected|
       it "parses #{input.inspect}" do
-        parse(input).ast.to_sxp.should produce(expected, @debug)
+        expect(parse(input).ast.to_sxp).to produce(expected, @debug)
+      end
+
+      it "parses generated SXP for #{input.inspect}" do
+        ast = parse(expected, :format => :sxp).ast
+        ast.each {|r| expect(r).to be_a(EBNF::Rule)}
+        expect(ast.to_sxp).to produce(expected, @debug)
       end
     end
   end
