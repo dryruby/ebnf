@@ -5,7 +5,8 @@
 
 [3] rule        ::= lhs '::=' expression
 
-[4] lhs         ::= '[' SYMBOL ']' SYMBOL
+# Rule identifier matches ENUM, but content should come from Symbol
+[4] lhs         ::= ENUM SYMBOL
 
 [5] expression  ::= alt
 
@@ -15,9 +16,10 @@
 
 [8] diff        ::= postfix ('-' postfix)*
 
-[9] postfix     ::= primary ( [?*+] )?
+[9] postfix     ::= primary POSTFIX?
 
 [10] primary    ::= HEX
+                |   SYMBOL
                 |   RANGE
                 |   ENUM
                 |   O_RANGE
@@ -26,12 +28,7 @@
                 |   STRING2
                 |   '(' expression ')'
 
-[11] pass       ::= '@pass'
-                    (
-                      [#x20\t\r\n]
-                    | ( '#' | '//' ) [^\r\n]*
-                    | ('/*' ([^*] | '*' [^/])* '*/')
-                    )+
+[11] pass       ::= '@pass' PASS
 
 @terminals
 
@@ -47,16 +44,20 @@
 
 [17] O_ENUM     ::= '[^' CHAR+ ']'
 
-[18] STRING1    ::= '"' (CHAR - '"')* '"'
+[18] STRING1    ::= '"' (CHAR | [\t'\[\]\(\)-])* '"'
 
-[19] STRING2    ::= "'" (CHAR - "'")* "'"
+[19] STRING2    ::= "'" (CHAR | [\t"\[\]\(\)-])* "'"
 
 [20] CHAR       ::= HEX
-                |   ('\\' [\\trn'"])
-                |   [^\t\r\n'"]
+                |   ('\\' [\\trn'"\[\]\(\)-])
+                |   [^\t\r\n'"\[\]\(\)-]
 
-@pass           ::= (
-                      [#x20\t\r\n]
-                    #| ( '#' | '//' ) [^\r\n]*
-                    #| '/*' (( '*' [^/] )? | [^*] )* '*/'
+# Should be able to do this inline, but not until terminal regular expressions are created automatically
+[21] POSTFIX    ::= [?*+]
+
+[22] PASS       ::= ( [#x20\t\r\n]
+                    | ( '#' | '//' ) [^\r\n]*
+                    | '/*' (( '*' [^/] )? | [^*] )* '*/'
                     )+
+
+@pass           ::= PASS

@@ -28,6 +28,7 @@ def dump_tables(grammarFile, ebnf, output, options)
   ebnf.outputTable(output, 'TERMINALS', ebnf.terminals, 1)
   ebnf.outputTable(output, 'FIRST', ebnf.first, 1)
   ebnf.outputTable(output, 'FOLLOW', ebnf.follow, 1)
+  ebnf.outputTable(output, 'PASS', [ebnf.pass], 1)
   unless output == STDOUT
     output.puts "end"
   end

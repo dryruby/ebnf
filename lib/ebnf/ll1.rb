@@ -21,12 +21,21 @@ module EBNF
     attr_reader :follow
 
     # Terminal table
+    #
     # The list of terminals used in the grammar.
     #
     # @return [Array<String, Symbol>]
     attr_reader :terminals
 
+    # Pass expression
+    #
+    # A Terminal symbol used for skipping whitespace and comments
+    #
+    # @return [Symbol, String]
+    attr_reader :pass
+
     # Start symbol
+    #
     # The rule which starts the grammar
     #
     # @return [Symbol]
@@ -69,7 +78,6 @@ module EBNF
 
           @ast += comprehensions
           progress("FF.c") {"(#{ittr}) comprehensions #{comprehensions.length}"}
-          #require 'debugger'; breakpoint
           ittr += 1
         end while !comprehensions.empty?
 
@@ -128,7 +136,6 @@ module EBNF
               end
 
               # If there is no comprehension of this rule (meaning, it is a sequence of one non-terminal), then the follows of the non-terminal include the follows of the rule. This handles rules with multiple sequences because it will have a comprehension that includes the last element in the sequence
-              #require 'debugger'; breakpoint if ai.sym == :_predicateObjectList_1 && aj.sym == :_predicateObjectList_7
               if !aj.comp && aj.follow
                 debug("Fo.2.1a") {"(#{ittr}) add follow #{aj.follow.inspect} from #{aj.sym} to #{ai.sym}"}
                 follows += ai.add_follow(aj.follow)
@@ -142,7 +149,6 @@ module EBNF
             end
 
             # Since the rules are of the form wAiw', and we've handled the case which is just Aiw', this leaves those cases that have rules prior to Ai. This basically says that the follows of a rule are added to the follows of the comprehension of the rule
-            #require 'debugger'; breakpoint if aj.sym == :_predicateObjectList_6 && aj.follow
             if aj.comp && aj.follow
               debug("Fo.2.3") {"(#{ittr}) add follow #{aj.follow.inspect} from #{aj.sym} to #{aj.comp.sym}"}
               follows += aj.comp.add_follow(aj.follow)
@@ -175,10 +181,25 @@ module EBNF
           memo[r.sym] = r.follow if r.follow
           memo
         }
-      @terminals = ast.map do |r|
-        (r.first || []) + (r.follow || [])
-      end.flatten.uniq
+      @terminals = ast.map {|r| Array(r.first) + Array(r.follow)}.flatten.uniq
       @terminals = (@terminals - [:_eps, :_eof]).sort_by{|t| t.to_s.sub(/^_/, '')}
+
+      # FIXME: assumes that this is a (seq :PASS), or similar
+      if pass = ast.detect {|r| r.pass?}
+        @pass = pass.expr.last
+      end
+
+      # If a generated terminal is found, this indicates an error, as this version does not automatically generate regular expressions for automatic terminals
+      @terminals.
+        select {|t| t.to_s.start_with?("_")}.
+        reject {|t| t.to_s.start_with?("_pass_")}.  # Concession to backwards compatibility
+        each do |term|
+
+        error("build_tables",
+              "terminal #{term} is automatically generated; " +
+              "regular expressions are not yet generated and parsing " +
+              "is not supported")
+      end
 
       @branch = {}
       @already = []

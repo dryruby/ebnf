@@ -103,7 +103,7 @@ module EBNF
       debug("expression") {"(#{s.inspect})"}
       e, s = depth {alt(s)}
       debug {"=> alt returned #{[e, s].inspect}"}
-      unless s.empty?
+      unless s.to_s.empty?
         t, ss = depth {terminal(s)}
         debug {"=> terminal returned #{[t, ss].inspect}"}
         return [e, ss] if t.is_a?(Array) && t.first == :")"
@@ -120,7 +120,7 @@ module EBNF
     def alt(s)
       debug("alt") {"(#{s.inspect})"}
       args = []
-      while !s.empty?
+      while !s.to_s.empty?
         e, s = depth {seq(s)}
         debug {"=> seq returned #{[e, s].inspect}"}
         if e.to_s.empty?
@@ -128,7 +128,7 @@ module EBNF
           e = [:seq, []] # empty sequence
         end
         args << e
-        unless s.empty?
+        unless s.to_s.empty?
           t, ss = depth {terminal(s)}
           break unless t[0] == :alt
           s = ss
@@ -148,7 +148,7 @@ module EBNF
     def seq(s)
       debug("seq") {"(#{s.inspect})"}
       args = []
-      while !s.empty?
+      while !s.to_s.empty?
         e, ss = depth {diff(s)}
         debug {"=> diff returned #{[e, ss].inspect}"}
         unless e.to_s.empty?
@@ -177,7 +177,7 @@ module EBNF
       e1, s = depth {postfix(s)}
       debug {"=> postfix returned #{[e1, s].inspect}"}
       unless e1.to_s.empty?
-        unless s.empty?
+        unless s.to_s.empty?
           t, ss = depth {terminal(s)}
           debug {"diff #{[t, ss].inspect}"}
           if t.is_a?(Array) && t.first == :diff
@@ -208,7 +208,7 @@ module EBNF
       e, s = depth {primary(s)}
       debug {"=> primary returned #{[e, s].inspect}"}
       return ["", s] if e.to_s.empty?
-      if !s.empty?
+      if !s.to_s.empty?
         t, ss = depth {terminal(s)}
         debug {"=> #{[t, ss].inspect}"}
         if t.is_a?(Array) && [:opt, :star, :plus].include?(t.first)
@@ -261,21 +261,21 @@ module EBNF
     def terminal(s)
       s = s.strip
       case m = s[0,1]
-      when '"', "'"
-        l, s = s[1..-1].split(m, 2)
+      when '"', "'" # STRING1 or STRING2 Terminated by line-end or whitespace
+        l, s = s[1..-1].split(m.rstrip, 2)
         [l, s]
-      when '['
-        l, s = s[1..-1].split(']', 2)
+      when '[' # ENUM, RANGE, O_ENUM, or O_RANGE
+        l, s = s[1..-1].split(/(?<=[^\\])\]/, 2)
         [[:range, l], s]
-      when '#'
+      when '#' # HEX
         s.match(/(#\w+)(.*)$/)
         l, s = $1, $2
         [[:hex, l], s]
-      when /[\w\.]/
+      when /[\w\.]/ # SYMBOL
         s.match(/(\w+)(.*)$/)
         l, s = $1, $2
         [l.to_sym, s]
-      when '@'
+      when '@' # @pass or @terminals
         s.match(/@(#\w+)(.*)$/)
         l, s = $1, $2
         [[:"@", l], s]
@@ -289,7 +289,7 @@ module EBNF
         [[:plus], s[1..-1]]
       when '*'
         [[:star], s[1..-1]]
-      when /[\(\)]/
+      when /[\(\)]/ # '(' or ')'
         [[m.to_sym], s[1..-1]]
       else
         error("terminal", "unrecognized terminal: #{s.inspect}")

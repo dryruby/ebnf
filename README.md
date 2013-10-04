@@ -81,63 +81,8 @@ to each `terminal` and `production`. A trivial parser loop can be described as f
         end
 
 ## EBNF Grammar
-The [EBNF][] variant used here is based on [W3C][] [EBNF][] as defined in the
+The [EBNF][] variant used here is based on [W3C][] [EBNF][] ({file:etc/ebnf.ebnf EBNF grammar}) as defined in the
 [XML 1.0 recommendation](http://www.w3.org/TR/REC-xml/), with minor extensions.
-
-    /* An EBNF grammar for EBNF */
-    [1] ebnf        ::= (declaration | rule)*
-
-    [2] declaration ::= '@terminals' | '@pass'
-
-    [3] rule        ::= lhs '::=' expression
-
-    [4] lhs         ::= '[' (SYMBOL | '.')+ ']' SYMBOL
-
-    [5] expression  ::= alt
-
-    [6] alt         ::= seq ('|' seq)*
-
-    [7] seq         ::= diff+
-
-    [8] diff        ::= postfix ('-' postfix)*
-
-    [9] postfix     ::= primary ( [?*+] )?
-
-    [10] primary    ::= HEX
-                    |   RANGE
-                    |   ENUM 
-                    |   O_RANGE
-                    |   O_ENUM
-                    |   STRING1
-                    |   STRING2
-                    |   '(' expression ')'
-
-    @terminals
-
-    [11] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | "_")+
-
-    [12] HEX        ::= '#x' ([0-9] | [a-f] | [A-F])+
-
-    [13] RANGE      ::= '[' CHAR '-' CHAR ']'
-
-    [14] ENUM       ::= '[' CHAR+ ']'
-
-    [15] O_RANGE    ::= '[^' CHAR '-' CHAR ']'
-
-    [16] OENUM      ::= '[^' CHAR+ ']'
-
-    [17] STRING1    ::= '"' (CHAR - '"')* '"'
-
-    [18] STRING2    ::= "'" (CHAR - "'")* "'"
-
-    [19] CHAR       ::= HEX
-                    |   ('\\' [\\trn'"])
-                    |   [^\t\r\n'"]
-
-    @pass           ::= (
-                          [#x20\t\r\n]
-                        |  
-                        )+
 
 ##  Acknowledgements
 Much of this work, particularly the generic parser, is inspired by work originally done by
@@ -147,7 +92,6 @@ The EBNF parser was inspired by Dan Connolly's
 [EBNF to Turtle processor](http://www.w3.org/2000/10/swap/grammar/ebnf2turtle.py),
 [EBNF to BNF Notation-3 rules](http://www.w3.org/2000/10/swap/grammar/ebnf2bnf.n3),
 and [First Follow Notation-3 rules](http://www.w3.org/2000/10/swap/grammar/first_follow.n3). 
-
 
 ## Documentation
 Full documentation available on [Rubydoc.info][EBNF doc].

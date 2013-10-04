@@ -1466,5 +1466,8 @@ module Branch
       :STRING_LITERAL_LONG_SINGLE_QUOTE,
       :STRING_LITERAL_LONG_QUOTE],
   }.freeze
+  PASS = [
+    nil
+  ].freeze
 end
 
