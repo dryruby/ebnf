@@ -277,10 +277,18 @@ module EBNF
       end
 
       if rule.alt?
+        # A First/Follow conflict appears when _eps is in the first
+        # of one rule and there is a token in the first and
+        # follow of the same rule
+        if rule.first.include?(:_eps) && !(overlap = ((rule.first & rule.follow) - [:eps])).empty?
+          error("First/Follow Conflict: #{overlap.first.inspect} is both first and follow of #{rule.sym}")
+        end
+
         # Add entries for each alternative, based on the alternative's first/seq
         rule.expr[1..-1].each do |prod|
           prod_rule = find_rule(prod)
           debug("  Alt", prod)
+
           @agenda << prod unless @already.include?(prod) || @agenda.include?(prod)
           if prod == :_empty
             debug("    empty")
@@ -290,9 +298,12 @@ module EBNF
             branchDict[prod] = [prod]
           else
             prod_rule.first.reject{|f| f == :_eps}.each do |f|
+              # A First/First conflict appears when there are two rules having
+              # the same first, so the parser can't know which one to choose.
               if branchDict.has_key?(f)
-                error("First/First Conflict: #{f} is also the condition for #{branchDict[f]}")
+                error("First/First Conflict: #{f.inspect} is also the condition for #{branchDict[f].first}")
               end
+
               debug("   alt") {"[#{f}] => #{prod}"}
               branchDict[f] = [prod]
             end

@@ -340,18 +340,17 @@ describe EBNF::Base do
             [1] s ::= e | e "a"
             [2] e ::= "b"?
           ),
-          %r{First/First Conflict: b is also the condition for \[:e\]},
+          %r{First/First Conflict: .* is also the condition for e},
           :s
         ],
-        # FIXME: should detect First/Follow conflicts
-        #"First/Follow Conflict" => [
-        #  %(
-        #    [1] s ::= a "a" "b"
-        #    [2] a ::= "a"?
-        #  ),
-        #  %r{First/Follow Conflict: b is also the condition for \[:e\]},
-        #  :s
-        #],
+        "First/Follow Conflict" => [
+          %(
+            [1] s ::= a "a" "b"
+            [2] a ::= "a"?
+          ),
+          %r{First/Follow Conflict: .* is both first and follow of a},
+          :s
+        ],
       }.each do |name, (input, expected, start)|
         it name do
           ebnf = parse(input, :start => start)
