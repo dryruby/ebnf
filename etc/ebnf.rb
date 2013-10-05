@@ -19,7 +19,7 @@ module Branch
       ")" => [],
       "@pass" => [],
       "@terminals" => [],
-      :ENUM => [],
+      :LHS => [],
       "|" => [:_alt_3],
     },
     :_alt_2 => {
@@ -51,6 +51,7 @@ module Branch
       "@terminals" => [],
       :ENUM => [],
       :HEX => [],
+      :LHS => [],
       :O_ENUM => [],
       :O_RANGE => [],
       :RANGE => [],
@@ -68,17 +69,17 @@ module Branch
     :ebnf => {
       "@pass" => [:_ebnf_2],
       "@terminals" => [:_ebnf_2],
-      :ENUM => [:_ebnf_2],
+      :LHS => [:_ebnf_2],
     },
     :_ebnf_1 => {
       "@pass" => [:declaration],
       "@terminals" => [:declaration],
-      :ENUM => [:rule],
+      :LHS => [:rule],
     },
     :_ebnf_2 => {
       "@pass" => [:_ebnf_1, :ebnf],
       "@terminals" => [:_ebnf_1, :ebnf],
-      :ENUM => [:_ebnf_1, :ebnf],
+      :LHS => [:_ebnf_1, :ebnf],
     },
     :expression => {
       "(" => [:alt],
@@ -91,11 +92,8 @@ module Branch
       :STRING2 => [:alt],
       :SYMBOL => [:alt],
     },
-    :lhs => {
-      :ENUM => [:ENUM, :SYMBOL],
-    },
     :pass => {
-      "@pass" => ["@pass", :PASS],
+      "@pass" => ["@pass", :expression],
     },
     :postfix => {
       "(" => [:primary, :_postfix_1],
@@ -116,6 +114,7 @@ module Branch
       "@terminals" => [],
       :ENUM => [],
       :HEX => [],
+      :LHS => [],
       :O_ENUM => [],
       :O_RANGE => [],
       :POSTFIX => [:POSTFIX],
@@ -140,7 +139,7 @@ module Branch
       "(" => ["(", :expression, ")"],
     },
     :rule => {
-      :ENUM => [:lhs, "::=", :expression],
+      :LHS => [:LHS, :expression],
     },
     :seq => {
       "(" => [:diff, :_seq_1],
@@ -160,6 +159,7 @@ module Branch
       "@terminals" => [],
       :ENUM => [:_seq_2],
       :HEX => [:_seq_2],
+      :LHS => [],
       :O_ENUM => [:_seq_2],
       :O_RANGE => [:_seq_2],
       :RANGE => [:_seq_2],
@@ -184,11 +184,11 @@ module Branch
     "(",
     ")",
     "-",
-    "::=",
     "@pass",
     "@terminals",
     :ENUM,
     :HEX,
+    :LHS,
     :O_ENUM,
     :O_RANGE,
     :POSTFIX,
@@ -271,21 +271,21 @@ module Branch
     :ebnf => [
       :_eps,
       "@terminals",
-      "@pass",
-      :ENUM],
+      :LHS,
+      "@pass"],
     :_ebnf_1 => [
       "@terminals",
-      "@pass",
-      :ENUM],
+      :LHS,
+      "@pass"],
     :_ebnf_2 => [
       "@terminals",
-      "@pass",
-      :ENUM],
+      :LHS,
+      "@pass"],
     :_ebnf_3 => [
       :_eps,
       "@terminals",
-      "@pass",
-      :ENUM],
+      :LHS,
+      "@pass"],
     :_empty => [
       :_eps],
     :expression => [
@@ -298,12 +298,18 @@ module Branch
       :STRING1,
       :STRING2,
       "("],
-    :lhs => [
-      :ENUM],
-    :_lhs_1 => [
-      :SYMBOL],
     :pass => [
       "@pass"],
+    :_pass_1 => [
+      :HEX,
+      :SYMBOL,
+      :RANGE,
+      :ENUM,
+      :O_RANGE,
+      :O_ENUM,
+      :STRING1,
+      :STRING2,
+      "("],
     :postfix => [
       :HEX,
       :SYMBOL,
@@ -345,10 +351,8 @@ module Branch
     :_primary_3 => [
       ")"],
     :rule => [
-      :ENUM],
+      :LHS],
     :_rule_1 => [
-      "::="],
-    :_rule_2 => [
       :HEX,
       :SYMBOL,
       :RANGE,
@@ -413,60 +417,55 @@ module Branch
       "("],
   }.freeze
   FOLLOW = {
-    nil => [
-      :_eof,
-      "@terminals",
-      "@pass",
-      :ENUM],
     :alt => [
       ")",
       :_eof,
       "@terminals",
-      "@pass",
-      :ENUM],
+      :LHS,
+      "@pass"],
     :_alt_1 => [
       ")",
       :_eof,
       "@terminals",
-      "@pass",
-      :ENUM],
+      :LHS,
+      "@pass"],
     :_alt_2 => [
       "|",
       ")",
       :_eof,
       "@terminals",
-      "@pass",
-      :ENUM],
+      :LHS,
+      "@pass"],
     :_alt_3 => [
       ")",
       :_eof,
       "@terminals",
-      "@pass",
-      :ENUM],
+      :LHS,
+      "@pass"],
     :_alt_4 => [
       ")",
       :_eof,
       "@terminals",
-      "@pass",
-      :ENUM],
+      :LHS,
+      "@pass"],
     :_alt_5 => [
       ")",
       :_eof,
       "@terminals",
-      "@pass",
-      :ENUM],
+      :LHS,
+      "@pass"],
     :_alt_6 => [
       "|",
       ")",
       :_eof,
       "@terminals",
-      "@pass",
-      :ENUM],
+      :LHS,
+      "@pass"],
     :declaration => [
       :_eof,
       "@terminals",
-      "@pass",
-      :ENUM],
+      :LHS,
+      "@pass"],
     :diff => [
       ")",
       "|",
@@ -480,6 +479,7 @@ module Branch
       :STRING1,
       :STRING2,
       "@terminals",
+      :LHS,
       "(",
       "@pass"],
     :_diff_1 => [
@@ -495,6 +495,7 @@ module Branch
       :STRING1,
       :STRING2,
       "@terminals",
+      :LHS,
       "(",
       "@pass"],
     :_diff_2 => [
@@ -511,6 +512,7 @@ module Branch
       :STRING1,
       :STRING2,
       "@terminals",
+      :LHS,
       "(",
       "@pass"],
     :_diff_3 => [
@@ -526,6 +528,7 @@ module Branch
       :STRING1,
       :STRING2,
       "@terminals",
+      :LHS,
       "(",
       "@pass"],
     :_diff_4 => [
@@ -541,6 +544,7 @@ module Branch
       :STRING1,
       :STRING2,
       "@terminals",
+      :LHS,
       "(",
       "@pass"],
     :_diff_5 => [
@@ -556,6 +560,7 @@ module Branch
       :STRING1,
       :STRING2,
       "@terminals",
+      :LHS,
       "(",
       "@pass"],
     :_diff_6 => [
@@ -572,6 +577,7 @@ module Branch
       :STRING1,
       :STRING2,
       "@terminals",
+      :LHS,
       "(",
       "@pass"],
     :ebnf => [
@@ -579,8 +585,8 @@ module Branch
     :_ebnf_1 => [
       :_eof,
       "@terminals",
-      "@pass",
-      :ENUM],
+      :LHS,
+      "@pass"],
     :_ebnf_2 => [
       :_eof],
     :_ebnf_3 => [
@@ -589,17 +595,18 @@ module Branch
       ")",
       :_eof,
       "@terminals",
-      "@pass",
-      :ENUM],
-    :lhs => [
-      "::="],
-    :_lhs_1 => [
-      "::="],
+      :LHS,
+      "@pass"],
     :pass => [
       :_eof,
       "@terminals",
-      "@pass",
-      :ENUM],
+      :LHS,
+      "@pass"],
+    :_pass_1 => [
+      :_eof,
+      "@terminals",
+      :LHS,
+      "@pass"],
     :postfix => [
       ")",
       "-",
@@ -614,6 +621,7 @@ module Branch
       :STRING1,
       :STRING2,
       "@terminals",
+      :LHS,
       "(",
       "@pass"],
     :_postfix_1 => [
@@ -630,6 +638,7 @@ module Branch
       :STRING1,
       :STRING2,
       "@terminals",
+      :LHS,
       "(",
       "@pass"],
     :_postfix_2 => [
@@ -646,6 +655,7 @@ module Branch
       :STRING1,
       :STRING2,
       "@terminals",
+      :LHS,
       "(",
       "@pass"],
     :primary => [
@@ -663,6 +673,7 @@ module Branch
       :STRING1,
       :STRING2,
       "@terminals",
+      :LHS,
       "(",
       "@pass"],
     :_primary_1 => [
@@ -680,6 +691,7 @@ module Branch
       :STRING1,
       :STRING2,
       "@terminals",
+      :LHS,
       "(",
       "@pass"],
     :_primary_2 => [
@@ -697,6 +709,7 @@ module Branch
       :STRING1,
       :STRING2,
       "@terminals",
+      :LHS,
       "(",
       "@pass"],
     :_primary_3 => [
@@ -714,58 +727,54 @@ module Branch
       :STRING1,
       :STRING2,
       "@terminals",
+      :LHS,
       "(",
       "@pass"],
     :rule => [
       :_eof,
       "@terminals",
-      "@pass",
-      :ENUM],
+      :LHS,
+      "@pass"],
     :_rule_1 => [
       :_eof,
       "@terminals",
-      "@pass",
-      :ENUM],
-    :_rule_2 => [
-      :_eof,
-      "@terminals",
-      "@pass",
-      :ENUM],
+      :LHS,
+      "@pass"],
     :seq => [
       ")",
       "|",
       :_eof,
       "@terminals",
-      "@pass",
-      :ENUM],
+      :LHS,
+      "@pass"],
     :_seq_1 => [
       ")",
       "|",
       :_eof,
       "@terminals",
-      "@pass",
-      :ENUM],
+      :LHS,
+      "@pass"],
     :_seq_2 => [
       ")",
       "|",
       :_eof,
       "@terminals",
-      "@pass",
-      :ENUM],
+      :LHS,
+      "@pass"],
     :_seq_3 => [
       ")",
       "|",
       :_eof,
       "@terminals",
-      "@pass",
-      :ENUM],
+      :LHS,
+      "@pass"],
     :_seq_4 => [
       ")",
       "|",
       :_eof,
       "@terminals",
-      "@pass",
-      :ENUM],
+      :LHS,
+      "@pass"],
   }.freeze
   PASS = [
     :PASS

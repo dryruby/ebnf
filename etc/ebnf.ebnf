@@ -3,22 +3,22 @@
 
 [2] declaration ::= '@terminals' | pass
 
-[3] rule        ::= lhs '::=' expression
+[3] rule        ::= LHS expression
 
-# Rule identifier matches ENUM, but content should come from Symbol
-[4] lhs         ::= ENUM SYMBOL
+# Use a terminal to match the identifier, rule name and assignment due to
+# confusion between the identifier ENUM
 
-[5] expression  ::= alt
+[4] expression  ::= alt
 
-[6] alt         ::= seq ('|' seq)*
+[5] alt         ::= seq ('|' seq)*
 
-[7] seq         ::= diff+
+[6] seq         ::= diff+
 
-[8] diff        ::= postfix ('-' postfix)*
+[7] diff        ::= postfix ('-' postfix)*
 
-[9] postfix     ::= primary POSTFIX?
+[8] postfix     ::= primary POSTFIX?
 
-[10] primary    ::= HEX
+[9] primary     ::= HEX
                 |   SYMBOL
                 |   RANGE
                 |   ENUM
@@ -28,9 +28,11 @@
                 |   STRING2
                 |   '(' expression ')'
 
-[11] pass       ::= '@pass' PASS
+[10] pass       ::= '@pass' expression
 
 @terminals
+
+[11] LHS        ::= ENUM SYMBOL "::="
 
 [12] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | "_" | ".")+
 
@@ -44,13 +46,13 @@
 
 [17] O_ENUM     ::= '[^' CHAR+ ']'
 
-[18] STRING1    ::= '"' (CHAR | [\t'\[\]\(\)-])* '"'
+[18] STRING1    ::= '"' (CHAR | [\t\'\[\]\(\)\-])* '"'
 
-[19] STRING2    ::= "'" (CHAR | [\t"\[\]\(\)-])* "'"
+[19] STRING2    ::= "'" (CHAR | [\t\"\[\]\(\)\-])* "'"
 
 [20] CHAR       ::= HEX
-                |   ('\\' [\\trn'"\[\]\(\)-])
-                |   [^\t\r\n'"\[\]\(\)-]
+                |   ('\\' [\\trn\'\"\[\]\(\)\-])
+                |   [^\t\r\n\'\"\[\]\(\)\-]
 
 # Should be able to do this inline, but not until terminal regular expressions are created automatically
 [21] POSTFIX    ::= [?*+]
@@ -60,4 +62,5 @@
                     | '/*' (( '*' [^/] )? | [^*] )* '*/'
                     )+
 
-@pass           ::= PASS
+# Should be able to do this inline, but not until terminal regular expressions are created automatically
+@pass           PASS
