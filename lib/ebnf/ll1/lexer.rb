@@ -47,12 +47,9 @@ module EBNF::LL1
     ESCAPE_CHAR8        = /\\U(?:[0-9A-Fa-f]{8,8})/.freeze    # \UXXXXXXXX
     ECHAR               = /\\./                               # More liberal unescaping
     UCHAR               = /#{ESCAPE_CHAR4}|#{ESCAPE_CHAR8}/.freeze
-    WS                  = /(\s|(?:#.*$))+/m.freeze
-
-    ML_START            = /\'\'\'|\"\"\"/.freeze              # Beginning of terminals that may span lines
 
     ##
-    # @return [Regexp] defines whitespace, including comments, defaults to WS
+    # @return [Regexp] defines whitespace, including comments, otherwise whitespace must be explicit in terminals
     attr_reader :whitespace
 
     ##
@@ -114,11 +111,11 @@ module EBNF::LL1
     #   Array of symbol, regexp pairs used to match terminals.
     #   If the symbol is nil, it defines a Regexp to match string terminals.
     # @param  [Hash{Symbol => Object}]        options
-    # @option options [Regexp]                :whitespace (WS)
+    # @option options [Regexp]                :whitespace
     #   Whitespace between tokens, including comments
     def initialize(input = nil, terminals = nil, options = {})
       @options        = options.dup
-      @whitespace     = @options[:whitespace]     || WS
+      @whitespace     = @options[:whitespace]
       @terminals      = terminals.map do |term|
         term.is_a?(Array) ? Terminal.new(*term) : term
       end
@@ -192,7 +189,7 @@ module EBNF::LL1
         token = match_token
 
         if token.nil?
-          lexme = (scanner.rest.split(@whitespace).first rescue nil) || scanner.rest
+          lexme = (scanner.rest.split(@whitespace || /\s/).first rescue nil) || scanner.rest
           raise Error.new("Invalid token #{lexme[0..100].inspect}",
             :input => scanner.rest[0..100], :token => lexme, :lineno => lineno)
         end
@@ -225,7 +222,7 @@ module EBNF::LL1
     # @return [Token]
     def recover
        until scanner.eos? || tok = match_token
-        if scanner.skip_until(@whitespace).nil? # Skip past current "token"
+        if scanner.skip_until(@whitespace || /\s/m).nil? # Skip past current "token"
           # No whitespace at the end, must be and end of string
           scanner.terminate
         else
@@ -244,7 +241,7 @@ module EBNF::LL1
     # Skip whitespace, as defined through input options or defaults
     def skip_whitespace
       # skip all white space, but keep track of the current line number
-      while !scanner.eos?
+      while @whitespace && !scanner.eos?
         if matched = scanner.scan(@whitespace)
           @lineno += matched.count("\n")
         else

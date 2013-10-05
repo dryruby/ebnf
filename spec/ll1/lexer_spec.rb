@@ -256,7 +256,9 @@ describe EBNF::LL1::Lexer do
     options = inputs.last.is_a?(Hash) ? inputs.pop : {}
     lexer = nil
     inputs.each do |input|
-      lexer = EBNF::LL1::Lexer.tokenize(input, terminals, :unescape_terms => unescape_terms)
+      lexer = EBNF::LL1::Lexer.tokenize(input, terminals,
+                                        :unescape_terms => unescape_terms,
+                                        :whitespace => WHITESPACE)
       lexer.should be_a(EBNF::LL1::Lexer)
       yield lexer.to_a if block_given?
     end
@@ -276,5 +278,6 @@ describe EBNF::LL1::Lexer do
   STRING_LITERAL_QUOTE             = /'(?:[^\'\\\n\r])*'/
   STRING_LITERAL_SINGLE_QUOTE      = /"(?:[^\"\\\n\r])*"/
   STRING_LITERAL_LONG_SINGLE_QUOTE = /'''(?:(?:'|'')?(?:[^'\\]))*'''/m
-  STRING_LITERAL_LONG_QUOTE        = /"""(?:(?:"|"")?(?:[^"\\]|#))*"""/m
+  STRING_LITERAL_LONG_QUOTE        = /"""(?:(?:"|"")?(?:[^"\\]|#))*"""/m 
+  WHITESPACE                       = /(\s|(?:#.*$))+/m.freeze
 end
