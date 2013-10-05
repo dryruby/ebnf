@@ -32,7 +32,6 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency     'rdf'  # Required by sxp
   gem.add_development_dependency 'rspec',           '>= 2.12.0'
   gem.add_development_dependency 'yard' ,           '>= 0.8.3'
-  gem.add_development_dependency 'fl-rocco',        '>= 1.0.0'
   gem.add_development_dependency 'rake'
   gem.post_install_message  = nil
 end
