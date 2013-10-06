@@ -6,7 +6,7 @@
  (rule expression "4" (seq alt))
  (rule alt "5" (seq seq (star (seq "|" seq))))
  (rule seq "6" (plus diff))
- (rule diff "7" (seq postfix (star (seq "-" postfix))))
+ (rule diff "7" (seq postfix (opt (seq "-" postfix))))
  (rule postfix "8" (seq primary (opt POSTFIX)))
  (rule primary "9"
   (alt HEX SYMBOL RANGE ENUM O_RANGE O_ENUM STRING1 STRING2 (seq "(" expression ")")))

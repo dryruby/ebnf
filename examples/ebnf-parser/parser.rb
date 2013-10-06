@@ -21,37 +21,38 @@ class EBNFParser
   attr_accessor :errors
 
   # Define rules for Terminals, placing results on the input stack, making them available to upstream non-Terminal rules.
-  # These terminals are matched in this order based on the FIRST terminals of a production
+  # Terminals are matched in the order of appearance
   terminal(:LHS, LHS) do |prod, token, input|
     input[:id], input[:symbol] = token.value.to_s.scan(/\[([^\]]+\])\s*(\w+)\s*::=/)
   end
 
   terminal(:SYMBOL, SYMBOL) do |prod, token, input|
-    input[:primary] = token.value.to_sym
+    input[:terminal] = token.value.to_sym
   end
 
   terminal(:RANGE, RANGE) do |prod, token, input|
-    input[:range] = token.value[1..-2]
+    input[:terminal] = [:range, token.value[1..-2]]
   end
 
   terminal(:ENUM, ENUM) do |prod, token, input|
-    input[:range] = token.value[1..-2]
+    input[:terminal] = [:range, token.value[1..-2]]
   end
 
   terminal(:O_RANGE, O_RANGE) do |prod, token, input|
-    input[:range] = token.value[1..-2]
+    input[:terminal] = [:range, token.value[1..-2]]
   end
 
   terminal(:O_ENUM, O_ENUM) do |prod, token, input|
-    input[:range] = token.value[1..-2]
+    input[:terminal] = [:range, token.value[1..-2]]
   end
 
-  terminal(:STRING1, STRING1) do |prod, token, input|
-    input[:primary] = token.value[1..-2]
+  # Strings have internal escape sequences expanded
+  terminal(:STRING1, STRING1, :unescape => true) do |prod, token, input|
+    input[:terminal] = token.value[1..-2]
   end
 
-  terminal(:STRING2, STRING2) do |prod, token, input|
-    input[:primary] = token.value[1..-2]
+  terminal(:STRING2, STRING2, :unescape => true) do |prod, token, input|
+    input[:terminal] = token.value[1..-2]
   end
 
   terminal(:POSTFIX, POSTFIX) do |prod, token, input|
@@ -63,7 +64,7 @@ class EBNFParser
     input[:terminal] = token.value
   end
 
-  # Define productions for non-Termainals. This can include start_production as well as production to hook into rule start and end.
+  # Define productions for non-Termainals. This can include `start_production` as well as `production` to hook into rule start and end.
 
   # Production for end of declaration non-terminal.
   # The `input` parameter includes information placed by previous productions at the same level, or at the start of the current production.
@@ -83,7 +84,57 @@ class EBNFParser
   production(:rule) do |input, current, callback|
     # current contains a declaration
     # Invoke callback
-    callback.call(:rule, current[:rule])
+    callback.call(:rule, current[:expression])
+  end
+
+  production(:expression) do |input, current, callback|
+    input[:expression] = current[:alt].first
+  end
+
+  production(:alt) do |input, current, callback|
+    breakpoint
+    (input[:alt] ||= []) <<  if Array(current[:seq]).length == 1
+      current[:seq].first
+    else
+      current[:seq].unshift(:seq)
+    end
+  end
+
+  production(:seq) do |input, current, callback|
+    breakpoint
+    (input[:seq] ||= []) <<  if Array(current[:diff]).length == 1
+      current[:diff].first
+    else
+      current[:diff].unshift(:diff)
+    end
+  end
+
+  production(:diff) do |input, current, callback|
+    (input[:diff] ||= []) <<  if Array(current[:postfix]).length == 1
+      current[:postfix].first
+    else
+      current[:postfix].unshift(:postfix)
+    end
+  end
+
+  # Production for end of postfix non-terminal.
+  # Places :postfix on the stack
+  production(:postfix) do |input, current, callback|
+    # Push result onto input stack, as the `diff` production can have some number of postfix values that are applied recursively
+    input[:postfix] =  case current[:postfix]
+    when "*" then [:star, current[:primary]]
+    when "+" then [:plus, current[:primary]]
+    when "?" then [:opt, current[:primary]]
+    else current[:primary]
+    end
+  end
+
+  # Production for end of primary non-terminal.
+  # Places :primary on the stack
+  #
+  # This may either be a terminal, or the result of an expression
+  production(:primary) do |input, current, callback|
+    input[:primary] = current[:terminal] || current[:expression]
   end
 
   # On start, yield ourselves if a block is given, otherwise, return this parser instance

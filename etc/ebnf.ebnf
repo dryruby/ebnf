@@ -14,7 +14,7 @@
 
 [6] seq         ::= diff+
 
-[7] diff        ::= postfix ('-' postfix)*
+[7] diff        ::= postfix ('-' postfix)?
 
 [8] postfix     ::= primary POSTFIX?
 

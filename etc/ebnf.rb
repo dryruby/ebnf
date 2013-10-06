@@ -46,7 +46,7 @@ module Branch
     :_diff_1 => {
       "(" => [],
       ")" => [],
-      "-" => [:_diff_3],
+      "-" => [:_diff_2],
       "@pass" => [],
       "@terminals" => [],
       :ENUM => [],
@@ -62,9 +62,6 @@ module Branch
     },
     :_diff_2 => {
       "-" => ["-", :postfix],
-    },
-    :_diff_3 => {
-      "-" => [:_diff_2, :_diff_1],
     },
     :ebnf => {
       "@pass" => [:_ebnf_2],
@@ -251,14 +248,9 @@ module Branch
     :_diff_2 => [
       "-"],
     :_diff_3 => [
-      "-"],
+      "-",
+      :_eps],
     :_diff_4 => [
-      :_eps,
-      "-"],
-    :_diff_5 => [
-      :_eps,
-      "-"],
-    :_diff_6 => [
       :HEX,
       :SYMBOL,
       :RANGE,
@@ -499,7 +491,6 @@ module Branch
       "(",
       "@pass"],
     :_diff_2 => [
-      "-",
       ")",
       "|",
       :_eof,
@@ -547,39 +538,6 @@ module Branch
       :LHS,
       "(",
       "@pass"],
-    :_diff_5 => [
-      ")",
-      "|",
-      :_eof,
-      :HEX,
-      :SYMBOL,
-      :RANGE,
-      :ENUM,
-      :O_RANGE,
-      :O_ENUM,
-      :STRING1,
-      :STRING2,
-      "@terminals",
-      :LHS,
-      "(",
-      "@pass"],
-    :_diff_6 => [
-      "-",
-      ")",
-      "|",
-      :_eof,
-      :HEX,
-      :SYMBOL,
-      :RANGE,
-      :ENUM,
-      :O_RANGE,
-      :O_ENUM,
-      :STRING1,
-      :STRING2,
-      "@terminals",
-      :LHS,
-      "(",
-      "@pass"],
     :ebnf => [
       :_eof],
     :_ebnf_1 => [
@@ -608,8 +566,8 @@ module Branch
       :LHS,
       "@pass"],
     :postfix => [
-      ")",
       "-",
+      ")",
       "|",
       :_eof,
       :HEX,
@@ -625,8 +583,8 @@ module Branch
       "(",
       "@pass"],
     :_postfix_1 => [
-      ")",
       "-",
+      ")",
       "|",
       :_eof,
       :HEX,
@@ -642,8 +600,8 @@ module Branch
       "(",
       "@pass"],
     :_postfix_2 => [
-      ")",
       "-",
+      ")",
       "|",
       :_eof,
       :HEX,
@@ -660,8 +618,8 @@ module Branch
       "@pass"],
     :primary => [
       :POSTFIX,
-      ")",
       "-",
+      ")",
       "|",
       :_eof,
       :HEX,
@@ -678,8 +636,8 @@ module Branch
       "@pass"],
     :_primary_1 => [
       :POSTFIX,
-      ")",
       "-",
+      ")",
       "|",
       :_eof,
       :HEX,
@@ -696,8 +654,8 @@ module Branch
       "@pass"],
     :_primary_2 => [
       :POSTFIX,
-      ")",
       "-",
+      ")",
       "|",
       :_eof,
       :HEX,
@@ -714,8 +672,8 @@ module Branch
       "@pass"],
     :_primary_3 => [
       :POSTFIX,
-      ")",
       "-",
+      ")",
       "|",
       :_eof,
       :HEX,

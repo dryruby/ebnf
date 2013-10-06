@@ -82,30 +82,20 @@
   (first "-" _eps)
   (follow "(" ")" "@pass" "@terminals" ENUM HEX LHS O_ENUM O_RANGE RANGE
    STRING1 STRING2 SYMBOL _eof "|" )
-  (alt _empty _diff_3))
+  (alt _empty _diff_2))
  (rule _diff_2 "7.2"
   (first "-")
-  (follow "(" ")" "-" "@pass" "@terminals" ENUM HEX LHS O_ENUM O_RANGE RANGE
+  (follow "(" ")" "@pass" "@terminals" ENUM HEX LHS O_ENUM O_RANGE RANGE
    STRING1 STRING2 SYMBOL _eof "|" )
   (seq "-" postfix))
  (rule _diff_3 "7.3"
-  (first "-")
+  (first "-" _eps)
   (follow "(" ")" "@pass" "@terminals" ENUM HEX LHS O_ENUM O_RANGE RANGE
    STRING1 STRING2 SYMBOL _eof "|" )
-  (seq _diff_2 _diff_1))
+  (seq _diff_1))
  (rule _diff_4 "7.4"
-  (first "-" _eps)
-  (follow "(" ")" "@pass" "@terminals" ENUM HEX LHS O_ENUM O_RANGE RANGE
-   STRING1 STRING2 SYMBOL _eof "|" )
-  (seq _diff_1))
- (rule _diff_5 "7.5"
-  (first "-" _eps)
-  (follow "(" ")" "@pass" "@terminals" ENUM HEX LHS O_ENUM O_RANGE RANGE
-   STRING1 STRING2 SYMBOL _eof "|" )
-  (seq _diff_1))
- (rule _diff_6 "7.6"
   (first "(" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 SYMBOL)
-  (follow "(" ")" "-" "@pass" "@terminals" ENUM HEX LHS O_ENUM O_RANGE RANGE
+  (follow "(" ")" "@pass" "@terminals" ENUM HEX LHS O_ENUM O_RANGE RANGE
    STRING1 STRING2 SYMBOL _eof "|" )
   (seq postfix))
  (rule postfix "8"

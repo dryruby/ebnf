@@ -32,6 +32,7 @@ describe EBNF::Base do
       %{a b c} => %{((seq a b c) "")},
       %{a? b c} => %{((seq (opt a) b c) "")},
       %(a - b) => %{((diff a b) "")},
+      %((a - b) - c) => %{((diff (diff a b) c) "")},
       %(a b c) => %{((seq a b c) "")},
       %(a b? c) => %{((seq a (opt b) c) "")},
       %(a | b | c) => %{((alt a b c) "")},
@@ -61,7 +62,7 @@ describe EBNF::Base do
       %{a b c}                   => %{(a " b c")},
       %{a? b c}                  => %{((opt a) " b c")},
       %{( [?*+] )?}              => %{((opt (range "?*+")) "")},
-      %(a - b)                   => %{((diff a b) "")}
+      %(a - b)                   => %{((diff a b) "")},
     }.each do |input, expected|
       it "given #{input.inspect} produces #{expected}" do
         ebnf(:diff, input).to_sxp.should produce(expected, @debug)

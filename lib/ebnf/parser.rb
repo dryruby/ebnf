@@ -71,31 +71,35 @@ module EBNF
     #
     # @example
     #     >>> expression("a b c")
-    #     ((seq, \[('id', 'a'), ('id', 'b'), ('id', 'c')\]), '')
+    #     ((seq a b c) '')
     #     
     #     >>> expression("a? b+ c*")
-    #     ((seq, \[(opt, ('id', 'a')), (plus, ('id', 'b')), ('*', ('id', 'c'))\]), '')
+    #     ((seq (opt a) (plus b) (star c)) '')
     #     
     #     >>> expression(" | x xlist")
-    #     ((alt, \[(seq, \[\]), (seq, \[('id', 'x'), ('id', 'xlist')\])\]), '')
+    #     ((alt (seq) (seq x xlist)) '')
     #     
     #     >>> expression("a | (b - c)")
-    #     ((alt, \[('id', 'a'), (diff, \[('id', 'b'), ('id', 'c')\])\]), '')
+    #     ((alt a (diff b c)) '')
     #     
     #     >>> expression("a b | c d")
-    #     ((alt, \[(seq, \[('id', 'a'), ('id', 'b')\]), (seq, \[('id', 'c'), ('id', 'd')\])\]), '')
+    #     ((alt (seq a b) (seq c d)) '')
     #     
     #     >>> expression("a | b | c")
-    #     ((alt, \[('id', 'a'), ('id', 'b'), ('id', 'c')\]), '')
+    #     ((alt a b c) '')
     #     
     #     >>> expression("a) b c")
-    #     (('id', 'a'), ' b c')
+    #     (a ' b c')
     #     
     #     >>> expression("BaseDecl? PrefixDecl*")
-    #     ((seq, \[(opt, ('id', 'BaseDecl')), ('*', ('id', 'PrefixDecl'))\]), '')
+    #     ((seq (opt BaseDecl) (star PrefixDecl)) '')
     #     
     #     >>> expression("NCCHAR1 | diff | [0-9] | #x00B7 | [#x0300-#x036F] | \[#x203F-#x2040\]")
-    #     ((alt, \[('id', 'NCCHAR1'), ("'", diff), (range, '0-9'), (hex, '#x00B7'), (range, '#x0300-#x036F'), (range, '#x203F-#x2040')\]), '')
+    #     ((alt NCCHAR1 diff
+    #           (range '0-9')
+    #           (hex '#x00B7')
+    #           (range '#x0300-#x036F')
+    #           (range, '#x203F-#x2040')) '')
     #     
     # @param [String] s
     # @return [Array]
@@ -114,7 +118,7 @@ module EBNF
     ##
     # Parse alt
     #     >>> alt("a | b | c")
-    #     ((alt, \[('id', 'a'), ('id', 'b'), ('id', 'c')\]), '')
+    #     ((alt a b c) '')
     # @param [String] s
     # @return [Array]
     def alt(s)
@@ -141,10 +145,10 @@ module EBNF
     # parse seq
     #
     #     >>> seq("a b c")
-    #     ((seq, \[('id', 'a'), ('id', 'b'), ('id', 'c')\]), '')
+    #     ((seq a b c) '')
     #     
     #     >>> seq("a b? c")
-    #     ((seq, \[('id', 'a'), (opt, ('id', 'b')), ('id', 'c')\]), '')
+    #     ((seq a (opt b) c) '')
     def seq(s)
       debug("seq") {"(#{s.inspect})"}
       args = []
@@ -171,7 +175,7 @@ module EBNF
     # parse diff
     # 
     #     >>> diff("a - b")
-    #     ((diff, \[('id', 'a'), ('id', 'b')\]), '')
+    #     ((diff a b) '')
     def diff(s)
       debug("diff") {"(#{s.inspect})"}
       e1, s = depth {postfix(s)}
@@ -199,10 +203,10 @@ module EBNF
     # parse postfix
     # 
     #     >>> postfix("a b c")
-    #     (('id', 'a'), ' b c')
+    #     (a ' b c')
     #     
     #     >>> postfix("a? b c")
-    #     ((opt, ('id', 'a')), ' b c')
+    #     ((opt, a) ' b c')
     def postfix(s)
       debug("postfix") {"(#{s.inspect})"}
       e, s = depth {primary(s)}
@@ -222,7 +226,7 @@ module EBNF
     # parse primary
     # 
     #     >>> primary("a b c")
-    #     (('id', 'a'), ' b c')
+    #     (a ' b c')
     def primary(s)
       debug("primary") {"(#{s.inspect})"}
       t, s = depth {terminal(s)}
@@ -248,21 +252,21 @@ module EBNF
     # 
     # @example
     #     >>> terminal("'abc' def")
-    #     (("'", 'abc'), ' def')
+    #     ('abc' ' def')
     #     
     #     >>> terminal("[0-9]")
-    #     ((range, '0-9'), '')
+    #     ((range '0-9') '')
     #     >>> terminal("#x00B7")
-    #     ((hex, '#x00B7'), '')
+    #     ((hex '#x00B7') '')
     #     >>> terminal ("\[#x0300-#x036F\]")
-    #     ((range, '#x0300-#x036F'), '')
+    #     ((range '#x0300-#x036F') '')
     #     >>> terminal("\[^<>'{}|^`\]-\[#x00-#x20\]")
-    #     ((range, "^<>'{}|^`"), '-\[#x00-#x20\]')
+    #     ((range "^<>'{}|^`") '-\[#x00-#x20\]')
     def terminal(s)
       s = s.strip
       case m = s[0,1]
       when '"', "'" # STRING1 or STRING2 Terminated by line-end or whitespace
-        l, s = s[1..-1].split(m.rstrip, 2)
+        l, s = s[1..-1].split(m.rstrip  , 2)
         [l, s]
       when '[' # ENUM, RANGE, O_ENUM, or O_RANGE
         l, s = s[1..-1].split(/(?<=[^\\])\]/, 2)
