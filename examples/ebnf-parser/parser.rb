@@ -23,7 +23,7 @@ class EBNFParser
   # Define rules for Terminals, placing results on the input stack, making them available to upstream non-Terminal rules.
   # Terminals are matched in the order of appearance
   terminal(:LHS, LHS) do |prod, token, input|
-    input[:id], input[:symbol] = token.value.to_s.scan(/\[([^\]]+\])\s*(\w+)\s*::=/)
+    input[:id], input[:symbol] = token.value.to_s.scan(/\[([^\]]+)\]\s*(\w+)\s*::=/).first
   end
 
   terminal(:SYMBOL, SYMBOL) do |prod, token, input|
@@ -84,37 +84,108 @@ class EBNFParser
   production(:rule) do |input, current, callback|
     # current contains a declaration
     # Invoke callback
-    callback.call(:rule, current[:expression])
+    callback.call(:rule, EBNF::Rule.new(current[:symbol], current[:id], current[:expression].last))
   end
 
   production(:expression) do |input, current, callback|
-    input[:expression] = current[:alt].first
+    (input[:expression] ||= [:expression]) << if current[:alt].length > 2
+      current[:alt]
+    else
+      current[:alt].last
+    end
   end
 
   production(:alt) do |input, current, callback|
-    breakpoint
-    (input[:alt] ||= []) <<  if Array(current[:seq]).length == 1
-      current[:seq].first
+    input[:alt] = if current[:alt]
+      current[:alt]
+    elsif current[:seq]
+      [:alt] << if Array(current[:seq]).length > 2
+        current[:seq]
+      else
+        current[:seq].last
+      end
+    end
+  end
+
+  # Because alt can refer to seq multiple times, we need to separate information from each sequence. To do this, we intercept the start of _alt_1 to reset the :seq input
+  start_production(:_alt_1) do |input, current, callback|
+    seq = Array(input[:seq])
+    (input[:alt] = [:alt]) << if seq.length > 2
+      seq
     else
-      current[:seq].unshift(:seq)
+      seq.last
+    end
+    input.delete(:seq)
+  end
+  production(:_alt_1) do |input, current, callback|
+    case Array(current[:seq]).length
+    when 0, 1
+      # No current value
+    when 2
+      (input[:alt] ||= [:alt]) << current[:seq].last
+    else
+      (input[:alt] ||= [:alt]) << current[:seq]
+    end
+
+    # Also recursive call to _alt_1
+    case Array(current[:alt]).length
+    when 0, 1
+      # No current value
+    when 2
+      (input[:alt] ||= [:alt]) << current[:alt].last
+    else
+      input[:alt] ||= [:alt]
+      input[:alt] += current[:alt][1..-1]
     end
   end
 
   production(:seq) do |input, current, callback|
-    breakpoint
-    (input[:seq] ||= []) <<  if Array(current[:diff]).length == 1
-      current[:diff].first
+    input[:seq] = if current[:seq]
+      current[:seq]
+    elsif current[:diff]
+      [:seq] << if Array(current[:diff]).length > 2
+        current[:seq]
+      else
+        current[:diff].last
+      end
+    end
+  end
+
+  # Because seq can refer to diff multiple times, we need to separate information from each sequence. To do this, we intercept the start of _seq_1 to reset the :diff input
+  start_production(:_seq_1) do |input, current, callback|
+    diff = Array(input[:diff])
+    (input[:seq] = [:seq]) << if diff.length > 2
+      diff
     else
-      current[:diff].unshift(:diff)
+      diff.last
+    end
+    input.delete(:diff)
+  end
+  production(:_seq_1) do |input, current, callback|
+    input[:seq] ||= [:seq]
+    case Array(current[:diff]).length
+    when 0, 1
+      # No current value
+    when 2
+      input[:seq] << current[:diff].last
+    else
+      input[:seq] << current[:diff]
+    end
+
+    # Also recursive call to _seq_1
+    case Array(current[:seq]).length
+    when 0, 1
+      # No current value
+    when 2
+      input[:seq] << current[:seq].last
+    else
+      input[:seq] ||= [:seq]
+      input[:seq] += current[:seq][1..-1]
     end
   end
 
   production(:diff) do |input, current, callback|
-    (input[:diff] ||= []) <<  if Array(current[:postfix]).length == 1
-      current[:postfix].first
-    else
-      current[:postfix].unshift(:postfix)
-    end
+    (input[:diff] ||= [:diff]) << current[:postfix]
   end
 
   # Production for end of postfix non-terminal.
@@ -134,7 +205,12 @@ class EBNFParser
   #
   # This may either be a terminal, or the result of an expression
   production(:primary) do |input, current, callback|
-    input[:primary] = current[:terminal] || current[:expression]
+    input[:primary] = if current[:expression]
+      v = current[:expression][1..-1]
+      v = v.first if v.length == 1
+    else
+      current[:terminal]
+    end
   end
 
   # On start, yield ourselves if a block is given, otherwise, return this parser instance
