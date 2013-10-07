@@ -6,6 +6,7 @@ $:.unshift(".")
 require 'rubygems'
 require 'getoptlong'
 require 'parser'
+require 'sxp'
 
 out = STDOUT
 
@@ -48,6 +49,9 @@ end
 
 input = File.open(ARGV[0]) if ARGV[0]
 
-ebnf = EBNFParser.new(input, options).each do |rule|
-  puts rule.inspect
-end
+# Collect rules
+rules = []
+EBNFParser.new(input, options).each {|r| rules << r}
+
+# Output rules as a formatted S-Expression
+SXP::Generator.write($stdout, rules.sort_by{|r| r.id.to_f}.map(&:for_sxp))
