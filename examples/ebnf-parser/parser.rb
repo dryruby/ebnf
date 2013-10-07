@@ -31,20 +31,20 @@ class EBNFParser
     input[:terminal] = token.value.to_sym
   end
 
-  # Terminals for RANGE, ENUM, O_RANGE and O_ENUM are all passed through as part of a (range) operator
-  terminal(:RANGE, RANGE) do |prod, token, input|
+  # Terminals for RANGE, ENUM, O_RANGE and O_ENUM are all passed through as part of a (range) operator. Unescape the values to remove EBNF escapes in the input.
+  terminal(:RANGE, RANGE, :unescape => true) do |prod, token, input|
     input[:terminal] = [:range, token.value[1..-2]]
   end
 
-  terminal(:ENUM, ENUM) do |prod, token, input|
+  terminal(:ENUM, ENUM, :unescape => true) do |prod, token, input|
     input[:terminal] = [:range, token.value[1..-2]]
   end
 
-  terminal(:O_RANGE, O_RANGE) do |prod, token, input|
+  terminal(:O_RANGE, O_RANGE, :unescape => true) do |prod, token, input|
     input[:terminal] = [:range, token.value[1..-2]]
   end
 
-  terminal(:O_ENUM, O_ENUM) do |prod, token, input|
+  terminal(:O_ENUM, O_ENUM, :unescape => true) do |prod, token, input|
     input[:terminal] = [:range, token.value[1..-2]]
   end
 
@@ -76,7 +76,7 @@ class EBNFParser
   production(:rule) do |input, current, callback|
     # current contains a declaration
     # Invoke callback
-    callback.call(:rule, EBNF::Rule.new(current[:symbol], current[:id], current[:expression].last))
+    callback.call(:rule, EBNF::Rule.new(current[:symbol].to_sym, current[:id], current[:expression].last))
   end
 
   # Production for end of expression non-terminal.
@@ -190,6 +190,12 @@ class EBNFParser
     end
   end
 
+  # Production for end of pass non-terminal
+  production(:pass) do |input, current, callback|
+    # Invoke callback
+    callback.call(:pass, current[:expression].last)
+  end
+
   # On start, yield ourselves if a block is given, otherwise, return this parser instance
   #
   # @param  [#read, #to_s]          input
@@ -202,20 +208,7 @@ class EBNFParser
   def initialize(input, options = {}, &block)
     @options = options.dup
     @input = input.respond_to?(:read) ? input.read : input.to_s
-    if block_given?
-      case block.arity
-        when 0 then instance_eval(&block)
-        else block.call(self)
-      end
-      close(@input)
-    end
-  end
 
-  # Return each rule
-  #
-  # @yield rule
-  # @yieldparam [EBNF::Rule] rule
-  def each(&block)
     parsing_terminals = false
     @ast = []
     parse(@input, START.to_sym, @options.merge(:branch => BRANCH,
@@ -229,7 +222,7 @@ class EBNFParser
         parsing_terminals = true
         next
       when :pass
-        rule = EBNF::Rule(:@pass, nil, data.first, :kind => :pass)
+        rule = EBNF::Rule.new(nil, nil, data.first, :kind => :pass)
       when :rule
         rule = data.first
         rule.kind = :terminal if parsing_terminals
@@ -242,7 +235,13 @@ class EBNFParser
         next
       end
       @ast << rule
-      yield rule
     end
+    @ast
+  end
+
+  # Output formatted S-Expression of grammar
+  def to_sxp
+    # Output rules as a formatted S-Expression
+    SXP::Generator.string(@ast.sort_by{|r| r.id.to_f}.map(&:for_sxp))
   end
 end

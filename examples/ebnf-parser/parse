@@ -50,8 +50,6 @@ end
 input = File.open(ARGV[0]) if ARGV[0]
 
 # Collect rules
-rules = []
-EBNFParser.new(input, options).each {|r| rules << r}
+ebnf = EBNFParser.new(input, options)
 
-# Output rules as a formatted S-Expression
-SXP::Generator.write($stdout, rules.sort_by{|r| r.id.to_f}.map(&:for_sxp))
+puts ebnf.to_sxp

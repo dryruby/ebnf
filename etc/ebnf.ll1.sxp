@@ -143,7 +143,10 @@
   (seq expression))
  (terminal LHS "11" (seq ENUM SYMBOL "::="))
  (terminal SYMBOL "12" (plus (alt (range "a-z") (range "A-Z") (range "0-9") "_" ".")))
- (terminal HEX "13" (seq "#x" (plus (alt (range "0-9") (range "a-f") (range "A-F")))))
+ (terminal HEX "13"
+  (seq "#x"
+   (alt (range "0-9") (range "a-f") (range "A-F"))
+   (alt (range "0-9") (range "a-f") (range "A-F"))) )
  (terminal RANGE "14" (seq "[" CHAR "-" CHAR "]"))
  (terminal ENUM "15" (seq "[" (plus CHAR) "]"))
  (terminal O_RANGE "16" (seq "[^" CHAR "-" CHAR "]"))

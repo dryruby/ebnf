@@ -13,8 +13,16 @@ file "meta.rb" => "../../etc/ebnf.ebnf" do |t|
 end
 
 desc "Generate literal documentation for parser"
-task :doc => "doc/parser.html"
+task :doc => %w(doc/parser.html doc/meta.html doc/terminals.html)
 
 file "doc/parser.html" => "parser.rb" do
   `rocco parser.rb -o doc/parser.html`
+end
+
+file "doc/meta.html" => "meta.rb" do
+  `rocco meta.rb -o doc/meta.html`
+end
+
+file "doc/terminals.html" => "terminals.rb" do
+  `rocco terminals.rb -o doc/terminals.html`
 end
