@@ -5,8 +5,13 @@
 --hide-void-return
 --markup markdown
 --readme README.md
+lib/**/*.rb
+examples/**/*.rb
 -
 AUTHORS
 CREDITS
 VERSION
 UNLICENSE
+etc/ebnf.ebnf
+examples/**/README.md
+examples/**/*.rb

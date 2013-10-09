@@ -10,7 +10,6 @@ require "bundler/setup"
 require 'rubygems'
 require 'getoptlong'
 require 'ebnf'
-require 'sxp'
 
 def dump_tables(grammarFile, ebnf, output, options)
   ebnf.build_tables
@@ -29,6 +28,7 @@ def dump_tables(grammarFile, ebnf, output, options)
   ebnf.outputTable(output, 'TERMINALS', ebnf.terminals, 1)
   ebnf.outputTable(output, 'FIRST', ebnf.first, 1)
   ebnf.outputTable(output, 'FOLLOW', ebnf.follow, 1)
+  ebnf.outputTable(output, 'PASS', [ebnf.pass], 1) if ebnf.pass
   unless output == STDOUT
     output.puts "end"
   end

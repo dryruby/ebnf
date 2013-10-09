@@ -47,18 +47,10 @@ module EBNF::LL1
     ESCAPE_CHAR8        = /\\U(?:[0-9A-Fa-f]{8,8})/.freeze    # \UXXXXXXXX
     ECHAR               = /\\./                               # More liberal unescaping
     UCHAR               = /#{ESCAPE_CHAR4}|#{ESCAPE_CHAR8}/.freeze
-    COMMENT             = /#.*/.freeze
-    WS                  = / |\t|\r|\n/m.freeze
-
-    ML_START            = /\'\'\'|\"\"\"/.freeze              # Beginning of terminals that may span lines
 
     ##
-    # @return [Regexp] defines whitespace, defaults to WS
+    # @return [Regexp] defines whitespace, including comments, otherwise whitespace must be explicit in terminals
     attr_reader :whitespace
-
-    ##
-    # @return [Regexp] defines single-line comment, defaults to COMMENT
-    attr_reader :comment
 
     ##
     # Returns a copy of the given `input` string with all `\uXXXX` and
@@ -119,13 +111,11 @@ module EBNF::LL1
     #   Array of symbol, regexp pairs used to match terminals.
     #   If the symbol is nil, it defines a Regexp to match string terminals.
     # @param  [Hash{Symbol => Object}]        options
-    # @option options [Regexp]                :whitespace (WS)
-    #   Regular expression matching the beginning of terminals that may cross newlines
-    # @option options [Regexp]                :comment (COMMENT)
+    # @option options [Regexp]                :whitespace
+    #   Whitespace between tokens, including comments
     def initialize(input = nil, terminals = nil, options = {})
       @options        = options.dup
-      @whitespace     = @options[:whitespace]     || WS
-      @comment        = @options[:comment]        || COMMENT
+      @whitespace     = @options[:whitespace]
       @terminals      = terminals.map do |term|
         term.is_a?(Array) ? Terminal.new(*term) : term
       end
@@ -199,7 +189,7 @@ module EBNF::LL1
         token = match_token
 
         if token.nil?
-          lexme = (scanner.rest.split(/#{@whitespace}|#{@comment}/).first rescue nil) || scanner.rest
+          lexme = (scanner.rest.split(@whitespace || /\s/).first rescue nil) || scanner.rest
           raise Error.new("Invalid token #{lexme[0..100].inspect}",
             :input => scanner.rest[0..100], :token => lexme, :lineno => lineno)
         end
@@ -232,7 +222,7 @@ module EBNF::LL1
     # @return [Token]
     def recover
        until scanner.eos? || tok = match_token
-        if scanner.skip_until(@whitespace).nil? # Skip past current "token"
+        if scanner.skip_until(@whitespace || /\s/m).nil? # Skip past current "token"
           # No whitespace at the end, must be and end of string
           scanner.terminate
         else
@@ -248,14 +238,12 @@ module EBNF::LL1
     attr_reader :scanner
 
     ##
-    # Skip whitespace or comments, as defined through input options or defaults
+    # Skip whitespace, as defined through input options or defaults
     def skip_whitespace
       # skip all white space, but keep track of the current line number
-      while !scanner.eos?
+      while @whitespace && !scanner.eos?
         if matched = scanner.scan(@whitespace)
           @lineno += matched.count("\n")
-        elsif (scanner.scan(@comment))
-          #
         else
           return
         end

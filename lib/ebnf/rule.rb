@@ -307,6 +307,12 @@ module EBNF
       kind == :terminal
     end
 
+    # Is this a pass?
+    # @return [Boolean]
+    def pass?
+      kind == :pass
+    end
+
     # Is this a rule?
     # @return [Boolean]
     def rule?

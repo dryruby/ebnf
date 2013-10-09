@@ -219,6 +219,10 @@ module EBNF::LL1
     # @see http://cs.adelaide.edu.au/~charles/lt/Lectures/07-ErrorRecovery.pdf
     def parse(input = nil, start = nil, options = {}, &block)
       @options = options.dup
+      @options[:debug] ||= case
+      when @options[:progress] then 2
+      when @options[:validate] then 1
+      end
       @branch  = options[:branch]
       @first  = options[:first] ||= {}
       @follow  = options[:follow] ||= {}

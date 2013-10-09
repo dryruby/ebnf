@@ -71,31 +71,35 @@ module EBNF
     #
     # @example
     #     >>> expression("a b c")
-    #     ((seq, \[('id', 'a'), ('id', 'b'), ('id', 'c')\]), '')
+    #     ((seq a b c) '')
     #     
     #     >>> expression("a? b+ c*")
-    #     ((seq, \[(opt, ('id', 'a')), (plus, ('id', 'b')), ('*', ('id', 'c'))\]), '')
+    #     ((seq (opt a) (plus b) (star c)) '')
     #     
     #     >>> expression(" | x xlist")
-    #     ((alt, \[(seq, \[\]), (seq, \[('id', 'x'), ('id', 'xlist')\])\]), '')
+    #     ((alt (seq) (seq x xlist)) '')
     #     
     #     >>> expression("a | (b - c)")
-    #     ((alt, \[('id', 'a'), (diff, \[('id', 'b'), ('id', 'c')\])\]), '')
+    #     ((alt a (diff b c)) '')
     #     
     #     >>> expression("a b | c d")
-    #     ((alt, \[(seq, \[('id', 'a'), ('id', 'b')\]), (seq, \[('id', 'c'), ('id', 'd')\])\]), '')
+    #     ((alt (seq a b) (seq c d)) '')
     #     
     #     >>> expression("a | b | c")
-    #     ((alt, \[('id', 'a'), ('id', 'b'), ('id', 'c')\]), '')
+    #     ((alt a b c) '')
     #     
     #     >>> expression("a) b c")
-    #     (('id', 'a'), ' b c')
+    #     (a ' b c')
     #     
     #     >>> expression("BaseDecl? PrefixDecl*")
-    #     ((seq, \[(opt, ('id', 'BaseDecl')), ('*', ('id', 'PrefixDecl'))\]), '')
+    #     ((seq (opt BaseDecl) (star PrefixDecl)) '')
     #     
     #     >>> expression("NCCHAR1 | diff | [0-9] | #x00B7 | [#x0300-#x036F] | \[#x203F-#x2040\]")
-    #     ((alt, \[('id', 'NCCHAR1'), ("'", diff), (range, '0-9'), (hex, '#x00B7'), (range, '#x0300-#x036F'), (range, '#x203F-#x2040')\]), '')
+    #     ((alt NCCHAR1 diff
+    #           (range '0-9')
+    #           (hex '#x00B7')
+    #           (range '#x0300-#x036F')
+    #           (range, '#x203F-#x2040')) '')
     #     
     # @param [String] s
     # @return [Array]
@@ -103,7 +107,7 @@ module EBNF
       debug("expression") {"(#{s.inspect})"}
       e, s = depth {alt(s)}
       debug {"=> alt returned #{[e, s].inspect}"}
-      unless s.empty?
+      unless s.to_s.empty?
         t, ss = depth {terminal(s)}
         debug {"=> terminal returned #{[t, ss].inspect}"}
         return [e, ss] if t.is_a?(Array) && t.first == :")"
@@ -114,13 +118,13 @@ module EBNF
     ##
     # Parse alt
     #     >>> alt("a | b | c")
-    #     ((alt, \[('id', 'a'), ('id', 'b'), ('id', 'c')\]), '')
+    #     ((alt a b c) '')
     # @param [String] s
     # @return [Array]
     def alt(s)
       debug("alt") {"(#{s.inspect})"}
       args = []
-      while !s.empty?
+      while !s.to_s.empty?
         e, s = depth {seq(s)}
         debug {"=> seq returned #{[e, s].inspect}"}
         if e.to_s.empty?
@@ -128,7 +132,7 @@ module EBNF
           e = [:seq, []] # empty sequence
         end
         args << e
-        unless s.empty?
+        unless s.to_s.empty?
           t, ss = depth {terminal(s)}
           break unless t[0] == :alt
           s = ss
@@ -141,14 +145,14 @@ module EBNF
     # parse seq
     #
     #     >>> seq("a b c")
-    #     ((seq, \[('id', 'a'), ('id', 'b'), ('id', 'c')\]), '')
+    #     ((seq a b c) '')
     #     
     #     >>> seq("a b? c")
-    #     ((seq, \[('id', 'a'), (opt, ('id', 'b')), ('id', 'c')\]), '')
+    #     ((seq a (opt b) c) '')
     def seq(s)
       debug("seq") {"(#{s.inspect})"}
       args = []
-      while !s.empty?
+      while !s.to_s.empty?
         e, ss = depth {diff(s)}
         debug {"=> diff returned #{[e, ss].inspect}"}
         unless e.to_s.empty?
@@ -171,13 +175,13 @@ module EBNF
     # parse diff
     # 
     #     >>> diff("a - b")
-    #     ((diff, \[('id', 'a'), ('id', 'b')\]), '')
+    #     ((diff a b) '')
     def diff(s)
       debug("diff") {"(#{s.inspect})"}
       e1, s = depth {postfix(s)}
       debug {"=> postfix returned #{[e1, s].inspect}"}
       unless e1.to_s.empty?
-        unless s.empty?
+        unless s.to_s.empty?
           t, ss = depth {terminal(s)}
           debug {"diff #{[t, ss].inspect}"}
           if t.is_a?(Array) && t.first == :diff
@@ -199,16 +203,16 @@ module EBNF
     # parse postfix
     # 
     #     >>> postfix("a b c")
-    #     (('id', 'a'), ' b c')
+    #     (a ' b c')
     #     
     #     >>> postfix("a? b c")
-    #     ((opt, ('id', 'a')), ' b c')
+    #     ((opt, a) ' b c')
     def postfix(s)
       debug("postfix") {"(#{s.inspect})"}
       e, s = depth {primary(s)}
       debug {"=> primary returned #{[e, s].inspect}"}
       return ["", s] if e.to_s.empty?
-      if !s.empty?
+      if !s.to_s.empty?
         t, ss = depth {terminal(s)}
         debug {"=> #{[t, ss].inspect}"}
         if t.is_a?(Array) && [:opt, :star, :plus].include?(t.first)
@@ -222,7 +226,7 @@ module EBNF
     # parse primary
     # 
     #     >>> primary("a b c")
-    #     (('id', 'a'), ' b c')
+    #     (a ' b c')
     def primary(s)
       debug("primary") {"(#{s.inspect})"}
       t, s = depth {terminal(s)}
@@ -248,34 +252,34 @@ module EBNF
     # 
     # @example
     #     >>> terminal("'abc' def")
-    #     (("'", 'abc'), ' def')
+    #     ('abc' ' def')
     #     
     #     >>> terminal("[0-9]")
-    #     ((range, '0-9'), '')
+    #     ((range '0-9') '')
     #     >>> terminal("#x00B7")
-    #     ((hex, '#x00B7'), '')
+    #     ((hex '#x00B7') '')
     #     >>> terminal ("\[#x0300-#x036F\]")
-    #     ((range, '#x0300-#x036F'), '')
+    #     ((range '#x0300-#x036F') '')
     #     >>> terminal("\[^<>'{}|^`\]-\[#x00-#x20\]")
-    #     ((range, "^<>'{}|^`"), '-\[#x00-#x20\]')
+    #     ((range "^<>'{}|^`") '-\[#x00-#x20\]')
     def terminal(s)
       s = s.strip
       case m = s[0,1]
-      when '"', "'"
-        l, s = s[1..-1].split(m, 2)
-        [l, s]
-      when '['
-        l, s = s[1..-1].split(']', 2)
-        [[:range, l], s]
-      when '#'
+      when '"', "'" # STRING1 or STRING2 Terminated by line-end or whitespace
+        l, s = s[1..-1].split(m.rstrip  , 2)
+        [LL1::Lexer.unescape_string(l), s]
+      when '[' # ENUM, RANGE, O_ENUM, or O_RANGE
+        l, s = s[1..-1].split(/(?<=[^\\])\]/, 2)
+        [[:range, LL1::Lexer.unescape_string(l)], s]
+      when '#' # HEX
         s.match(/(#\w+)(.*)$/)
         l, s = $1, $2
         [[:hex, l], s]
-      when /[\w\.]/
+      when /[\w\.]/ # SYMBOL
         s.match(/(\w+)(.*)$/)
         l, s = $1, $2
         [l.to_sym, s]
-      when '@'
+      when '@' # @pass or @terminals
         s.match(/@(#\w+)(.*)$/)
         l, s = $1, $2
         [[:"@", l], s]
@@ -289,7 +293,7 @@ module EBNF
         [[:plus], s[1..-1]]
       when '*'
         [[:star], s[1..-1]]
-      when /[\(\)]/
+      when /[\(\)]/ # '(' or ')'
         [[m.to_sym], s[1..-1]]
       else
         error("terminal", "unrecognized terminal: #{s.inspect}")
