@@ -132,7 +132,7 @@ module EBNF
       case @options[:format]
       when :sxp
         require 'sxp' unless defined?(SXP)
-        @ast = SXP.parse(input).map {|e| Rule.from_sxp(e)}
+        @ast = SXP::Reader::Basic.read(input).map {|e| Rule.from_sxp(e)}
       when :ebnf
         scanner = StringScanner.new(input)
 
