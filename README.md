@@ -24,7 +24,7 @@ Output rules and terminals as S-Expressions, Turtle or EBNF
     puts ebnf.to_ttl
     puts ebnf.to_ebnf
 
-Transform EBNF to BNF (generates `alt` or `seq` from `plus`, `star` or `opt`)
+Transform EBNF to BNF (generates sub-productions using `alt` or `seq` from `plus`, `star` or `opt`)
 
     ebnf.make_bnf
 
@@ -81,8 +81,11 @@ to each `terminal` and `production`. A trivial parser loop can be described as f
         end
 
 ## EBNF Grammar
-The [EBNF][] variant used here is based on [W3C][] [EBNF][] ({file:etc/ebnf.ebnf EBNF grammar}) as defined in the
+The [EBNF][] variant used here is based on [W3C](http://w3.org/) [EBNF][] (see {file:etc/ebnf.ebnf EBNF grammar}) as defined in the
 [XML 1.0 recommendation](http://www.w3.org/TR/REC-xml/), with minor extensions.
+
+## Example parser
+For an example parser built using this gem, see {file:examples/ebnf-parser/README EBNF Parser example}. This example creates a parser for the [EBNF][] grammar which generates the same Abstract Syntax Tree as the built-in parser in the gem.
 
 ##  Acknowledgements
 Much of this work, particularly the generic parser, is inspired by work originally done by

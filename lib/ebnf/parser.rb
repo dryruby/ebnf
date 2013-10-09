@@ -267,10 +267,10 @@ module EBNF
       case m = s[0,1]
       when '"', "'" # STRING1 or STRING2 Terminated by line-end or whitespace
         l, s = s[1..-1].split(m.rstrip  , 2)
-        [l, s]
+        [LL1::Lexer.unescape_string(l), s]
       when '[' # ENUM, RANGE, O_ENUM, or O_RANGE
         l, s = s[1..-1].split(/(?<=[^\\])\]/, 2)
-        [[:range, l], s]
+        [[:range, LL1::Lexer.unescape_string(l)], s]
       when '#' # HEX
         s.match(/(#\w+)(.*)$/)
         l, s = $1, $2

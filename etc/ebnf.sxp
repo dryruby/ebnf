@@ -21,16 +21,14 @@
  (terminal ENUM "15" (seq "[" (plus CHAR) "]"))
  (terminal O_RANGE "16" (seq "[^" CHAR "-" CHAR "]"))
  (terminal O_ENUM "17" (seq "[^" (plus CHAR) "]"))
- (terminal STRING1 "18" (seq "\"" (star (alt CHAR (range "\\t\\'\\[\\]\\(\\)\\-"))) "\""))
- (terminal STRING2 "19" (seq "'" (star (alt CHAR (range "\\t\\\"\\[\\]\\(\\)\\-"))) "'"))
+ (terminal STRING1 "18" (seq "\"" (star (alt CHAR (range "\t'[]()-"))) "\""))
+ (terminal STRING2 "19" (seq "'" (star (alt CHAR (range "\t\"[]()-"))) "'"))
  (terminal CHAR "20"
-  (alt HEX
-   (seq "\\\\" (range "\\\\trn\\'\\\"\\[\\]\\(\\)\\-"))
-   (range "^\\t\\r\\n\\'\\\"\\[\\]\\(\\)\\-")) )
+  (alt HEX (seq "\\" (range "\\trn'\"[]()-")) (range "^\t\r\n'\"[]()-")))
  (terminal POSTFIX "21" (range "?*+"))
  (terminal PASS "22"
   (plus
    (alt
-    (range "#x20\\t\\r\\n")
-    (seq (alt "#" "//") (star (range "^\\r\\n")))
+    (range "#x20\t\r\n")
+    (seq (alt "#" "//") (star (range "^\r\n")))
     (seq "/*" (star (alt (opt (seq "*" (range "^/"))) (range "^*"))) "*/")) )) )
