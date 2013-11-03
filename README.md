@@ -124,6 +124,8 @@ Full documentation available on [Rubydoc.info][EBNF doc].
 This is free and unencumbered public domain software. For more information,
 see <http://unlicense.org/> or the accompanying {file:UNLICENSE} file.
 
+A copy of the [Turtle EBNF][] and derived parser files are included in the repository, which are not covered under the UNLICENSE. These files are covered via the [W3C Document License](http://www.w3.org/Consortium/Legal/2002/copyright-documents-20021231).
+
 [Ruby]:         http://ruby-lang.org/
 [YARD]:         http://yardoc.org/
 [YARD-GS]:      http://rubydoc.info/docs/yard/file/docs/GettingStarted.md
@@ -134,3 +136,4 @@ see <http://unlicense.org/> or the accompanying {file:UNLICENSE} file.
 [LL(1)]:        http://www.csd.uwo.ca/~moreno//CS447/Lectures/Syntax.html/node14.html
 [LL(1) Parser]: http://en.wikipedia.org/wiki/LL_parser
 [Tokenizer]:    http://en.wikipedia.org/wiki/Lexical_analysis#Tokenizer
+[Turtle EBNF]:  http://dvcs.w3.org/hg/rdf/file/default/rdf-turtle/turtle.bnf
