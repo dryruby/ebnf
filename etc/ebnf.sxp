@@ -11,7 +11,7 @@
  (rule primary "9"
   (alt HEX SYMBOL RANGE ENUM O_RANGE O_ENUM STRING1 STRING2 (seq "(" expression ")")))
  (rule pass "10" (seq "@pass" expression))
- (terminal LHS "11" (seq ENUM SYMBOL "::="))
+ (terminal LHS "11" (seq (opt ENUM) SYMBOL "::="))
  (terminal SYMBOL "12" (plus (alt (range "a-z") (range "A-Z") (range "0-9") "_" ".")))
  (terminal HEX "13"
   (seq "#x"

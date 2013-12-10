@@ -5,7 +5,7 @@ module EBNFParserTerminals
   CHAR    = %r((?:#{HEX})|(?:\\[\\trn\'\"\[\]\(\)\-])|[^\t\r\n\'\"\[\]\(\)\-]).freeze
   RANGE   = %r(\[(?:#{CHAR})\-(?:#{CHAR})\]).freeze
   ENUM    = %r(\[#{CHAR}+\]).freeze
-  LHS     = %r(#{ENUM}\s*#{SYMBOL}\s*::=).freeze
+  LHS     = %r((?:#{ENUM}\s*)?#{SYMBOL}\s*::=).freeze
   O_RANGE = %r(\[^(?:#{CHAR})\-(?:#{CHAR})\]).freeze
   O_ENUM  = %r(\[^#{CHAR}+\]).freeze
   STRING1 = %r("(?:#{CHAR}|['\t\[\]\(\)\-])*").freeze

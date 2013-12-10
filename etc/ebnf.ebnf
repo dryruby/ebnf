@@ -32,7 +32,7 @@
 
     @terminals
 
-    [11] LHS        ::= ENUM SYMBOL "::="
+    [11] LHS        ::= ENUM? SYMBOL "::="
 
     [12] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | "_" | ".")+
 
