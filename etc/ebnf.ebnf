@@ -1,62 +1,66 @@
-/* An EBNF grammar for EBNF */
-[1] ebnf        ::= (declaration | rule)*
+    /* An EBNF grammar for EBNF */
+    [1] ebnf        ::= (declaration | rule)*
 
-[2] declaration ::= '@terminals' | pass
+    [2] declaration ::= '@terminals' | pass
 
-[3] rule        ::= lhs '::=' expression
+    [3] rule        ::= LHS expression
 
-[4] lhs         ::= '[' SYMBOL ']' SYMBOL
+    # Use a terminal to match the identifier, rule name and assignment due to
+    # confusion between the identifier ENUM
 
-[5] expression  ::= alt
+    [4] expression  ::= alt
 
-[6] alt         ::= seq ('|' seq)*
+    [5] alt         ::= seq ('|' seq)*
 
-[7] seq         ::= diff+
+    [6] seq         ::= diff+
 
-[8] diff        ::= postfix ('-' postfix)*
+    [7] diff        ::= postfix ('-' postfix)?
 
-[9] postfix     ::= primary ( [?*+] )?
+    [8] postfix     ::= primary POSTFIX?
 
-[10] primary    ::= HEX
-                |   RANGE
-                |   ENUM
-                |   O_RANGE
-                |   O_ENUM
-                |   STRING1
-                |   STRING2
-                |   '(' expression ')'
+    [9] primary     ::= HEX
+                    |   SYMBOL
+                    |   RANGE
+                    |   ENUM
+                    |   O_RANGE
+                    |   O_ENUM
+                    |   STRING1
+                    |   STRING2
+                    |   '(' expression ')'
 
-[11] pass       ::= '@pass'
-                    (
-                      [#x20\t\r\n]
-                    | ( '#' | '//' ) [^\r\n]*
-                    | ('/*' ([^*] | '*' [^/])* '*/')
-                    )+
+    [10] pass       ::= '@pass' expression
 
-@terminals
+    @terminals
 
-[12] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | "_" | ".")+
+    [11] LHS        ::= ENUM SYMBOL "::="
 
-[13] HEX        ::= '#x' ([0-9] | [a-f] | [A-F])+
+    [12] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | "_" | ".")+
 
-[14] RANGE      ::= '[' CHAR '-' CHAR ']'
+    [13] HEX        ::= '#x' ([0-9]|[a-f]|[A-F]) ([0-9]|[a-f]|[A-F]) 
 
-[15] ENUM       ::= '[' CHAR+ ']'
+    [14] RANGE      ::= '[' CHAR '-' CHAR ']'
 
-[16] O_RANGE    ::= '[^' CHAR '-' CHAR ']'
+    [15] ENUM       ::= '[' CHAR+ ']'
 
-[17] O_ENUM     ::= '[^' CHAR+ ']'
+    [16] O_RANGE    ::= '[^' CHAR '-' CHAR ']'
 
-[18] STRING1    ::= '"' (CHAR - '"')* '"'
+    [17] O_ENUM     ::= '[^' CHAR+ ']'
 
-[19] STRING2    ::= "'" (CHAR - "'")* "'"
+    [18] STRING1    ::= '"' (CHAR | [\t\'\[\]\(\)\-])* '"'
 
-[20] CHAR       ::= HEX
-                |   ('\\' [\\trn'"])
-                |   [^\t\r\n'"]
+    [19] STRING2    ::= "'" (CHAR | [\t\"\[\]\(\)\-])* "'"
 
-@pass           ::= (
-                      [#x20\t\r\n]
-                    #| ( '#' | '//' ) [^\r\n]*
-                    #| '/*' (( '*' [^/] )? | [^*] )* '*/'
-                    )+
+    [20] CHAR       ::= HEX
+                    |   ('\\' [\\trn\'\"\[\]\(\)\-])
+                    |   [^\t\r\n\'\"\[\]\(\)\-]
+
+    # Should be able to do this inline, but not until terminal regular expressions are created automatically
+    [21] POSTFIX    ::= [?*+]
+
+    [22] PASS       ::= ( [#x20\t\r\n]
+                        | ( '#' | '//' ) [^\r\n]*
+                        | '/*' (( '*' [^/] )? | [^*] )* '*/'
+                        )+
+
+    # Should be able to do this inline, but not until terminal regular expressions are created automatically
+    @pass           PASS

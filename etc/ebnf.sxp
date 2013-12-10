@@ -1,29 +1,34 @@
-
-( 
+(
+ (pass (seq PASS))
  (rule ebnf "1" (star (alt declaration rule)))
  (rule declaration "2" (alt "@terminals" pass))
- (rule rule "3" (seq lhs "::=" expression))
- (rule lhs "4" (seq "[" SYMBOL "]" SYMBOL))
- (rule expression "5" (seq alt))
- (rule alt "6" (seq seq (star (seq "|" seq))))
- (rule seq "7" (plus diff))
- (rule diff "8" (seq postfix (star (seq "-" postfix))))
- (rule postfix "9" (seq primary (opt (range "?*+"))))
- (rule primary "10"
-  (alt HEX RANGE ENUM O_RANGE O_ENUM STRING1 STRING2 (seq "(" expression ")")))
- (rule pass "11"
-  (seq "@pass"
-   (plus 
-    (alt 
-     (range "#x20\\t\\r\\n")
-     (seq (alt "#" "//") (star (range "^\\r\\n")))
-     (seq "/*" (star (alt (range "^*") (seq "*" (range "^/")))) "*/")))))
+ (rule rule "3" (seq LHS expression))
+ (rule expression "4" (seq alt))
+ (rule alt "5" (seq seq (star (seq "|" seq))))
+ (rule seq "6" (plus diff))
+ (rule diff "7" (seq postfix (opt (seq "-" postfix))))
+ (rule postfix "8" (seq primary (opt POSTFIX)))
+ (rule primary "9"
+  (alt HEX SYMBOL RANGE ENUM O_RANGE O_ENUM STRING1 STRING2 (seq "(" expression ")")))
+ (rule pass "10" (seq "@pass" expression))
+ (terminal LHS "11" (seq ENUM SYMBOL "::="))
  (terminal SYMBOL "12" (plus (alt (range "a-z") (range "A-Z") (range "0-9") "_" ".")))
- (terminal HEX "13" (seq "#x" (plus (alt (range "0-9") (range "a-f") (range "A-F")))))
+ (terminal HEX "13"
+  (seq "#x"
+   (alt (range "0-9") (range "a-f") (range "A-F"))
+   (alt (range "0-9") (range "a-f") (range "A-F"))) )
  (terminal RANGE "14" (seq "[" CHAR "-" CHAR "]"))
  (terminal ENUM "15" (seq "[" (plus CHAR) "]"))
  (terminal O_RANGE "16" (seq "[^" CHAR "-" CHAR "]"))
  (terminal O_ENUM "17" (seq "[^" (plus CHAR) "]"))
- (terminal STRING1 "18" (seq "\"" (star (diff CHAR "\"")) "\""))
- (terminal STRING2 "19" (seq "'" (star (diff CHAR "'")) "'"))
- (terminal CHAR "20" (alt HEX (seq "\\\\" (range "\\\\trn'\"")) (range "^\\t\\r\\n'\""))))
+ (terminal STRING1 "18" (seq "\"" (star (alt CHAR (range "\t'[]()-"))) "\""))
+ (terminal STRING2 "19" (seq "'" (star (alt CHAR (range "\t\"[]()-"))) "'"))
+ (terminal CHAR "20"
+  (alt HEX (seq "\\" (range "\\trn'\"[]()-")) (range "^\t\r\n'\"[]()-")))
+ (terminal POSTFIX "21" (range "?*+"))
+ (terminal PASS "22"
+  (plus
+   (alt
+    (range "#x20\t\r\n")
+    (seq (alt "#" "//") (star (range "^\r\n")))
+    (seq "/*" (star (alt (opt (seq "*" (range "^/"))) (range "^*"))) "*/")) )) )

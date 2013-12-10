@@ -30,9 +30,17 @@ describe EBNF::Base do
         %{((rule SolutionModifier "18" (seq _SolutionModifier_1 _SolutionModifier_2)))},
       %{[18.1]  _SolutionModifier_1 ::= _empty | GroupClause} =>
         %{((rule _SolutionModifier_1 "18.1" (alt _empty GroupClause)))},
+      %q{[18] STRING1    ::= '"' (CHAR | [\t\'\[\]\(\)\-])* '"'} =>
+        %q{((terminal STRING1 "18" (seq "\"" (star (alt CHAR (range "\t'[]()-"))) "\"")))}
     }.each do |input, expected|
       it "parses #{input.inspect}" do
-        parse(input).ast.to_sxp.should produce(expected, @debug)
+        expect(parse(input).ast.to_sxp).to produce(expected, @debug)
+      end
+
+      it "parses generated SXP for #{input.inspect}" do
+        ast = parse(expected, :format => :sxp).ast
+        ast.each {|r| expect(r).to be_a(EBNF::Rule)}
+        expect(ast.to_sxp).to produce(expected, @debug)
       end
     end
   end

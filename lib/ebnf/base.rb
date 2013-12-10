@@ -119,30 +119,44 @@ module EBNF
     # @param [Hash{Symbol => Object}] options
     # @option options [Boolean, Array] :debug
     #   Output debug information to an array or STDOUT.
+    # @option options [Symbol] :format (:ebnf)
+    #   Format of input, one of :ebnf, or :sxp
     def initialize(input, options = {})
-      @options = options
+      @options = {:format => :ebnf}.merge(options)
       @lineno, @depth, @errors = 1, 0, []
       terminal = false
       @ast = []
 
       input = input.respond_to?(:read) ? input.read : input.to_s
-      scanner = StringScanner.new(input)
 
-      eachRule(scanner) do |r|
-        debug("rule string") {r.inspect}
-        case r
-        when /^@terminals/
-          # Switch mode to parsing terminals
-          terminal = true
-        when /^@pass\s*(.*)$/m
-          # Ignore, as we can't use this for processing the EBNF grammar itself
-        else
-          rule = depth {ruleParts(r)}
+      case @options[:format]
+      when :sxp
+        require 'sxp' unless defined?(SXP)
+        @ast = SXP::Reader::Basic.read(input).map {|e| Rule.from_sxp(e)}
+      when :ebnf
+        scanner = StringScanner.new(input)
 
-          rule.kind = :terminal if terminal # Override after we've parsed @terminals
-          rule.orig = r
-          @ast << rule
+        eachRule(scanner) do |r|
+          debug("rule string") {r.inspect}
+          case r
+          when /^@terminals/
+            # Switch mode to parsing terminals
+            terminal = true
+          when /^@pass\s*(.*)$/m
+            expr = expression($1).first
+            rule = Rule.new(nil, nil, expr, :kind => :pass)
+            rule.orig = expr
+            @ast << rule
+          else
+            rule = depth {ruleParts(r)}
+
+            rule.kind = :terminal if terminal # Override after we've parsed @terminals
+            rule.orig = r
+            @ast << rule
+          end
         end
+      else
+        raise "unknown input format #{options[:format].inspect}"
       end
     end
 
@@ -158,6 +172,7 @@ module EBNF
     # Write out parsed syntax string as an S-Expression
     # @return [String]
     def to_sxp
+      require 'sxp' unless defined?(SXP)
       SXP::Generator.string(ast.sort_by{|r| r.id.to_f}.map(&:for_sxp))
     end
     def to_s; to_sxp; end

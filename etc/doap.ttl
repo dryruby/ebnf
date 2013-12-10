@@ -7,27 +7,26 @@
 @prefix ex:   <http://example.org/> .
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
 
-<http://rubygems.org/gems/rdf-turtle> a doap:Project, earl:TestSubject, earl:Software ;
-  doap:name          "RDF::Turtle" ;
-  doap:homepage      <http://ruby-rdf.github.com/rdf-turtle> ;
+<http://rubygems.org/gems/ebnf> a doap:Project, earl:TestSubject, earl:Software ;
+  doap:name          "ebnf" ;
+  doap:homepage      <http://gkellogg.github.com/ebnf> ;
   doap:license       <http://creativecommons.org/licenses/publicdomain/> ;
-  doap:shortdesc     "Turtle reader/writer for Ruby."@en ;
-  doap:description   "RDF::Turtle is an Turtle reader/writer for the RDF.rb library suite."@en ;
+  doap:shortdesc     "EBNF parser and parser generator"@en ;
+  doap:description   "EBNF is a Ruby parser for W3C EBNF and a parser generator for compliant LL(1) grammars."@en ;
   doap:created       "2011-08-29"^^xsd:date ;
   doap:programming-language "Ruby" ;
-  doap:implements    <http://www.w3.org/TR/turtle/> ;
+  doap:implements    <http://dbpedia.org/resource/Compiler-compiler> ;
   doap:category      <http://dbpedia.org/resource/Resource_Description_Framework>,
                      <http://dbpedia.org/resource/Ruby_(programming_language)> ;
-  doap:download-page <http://rubygems.org/gems/rdf-turtle> ;
+  doap:download-page <http://rubygems.org/gems/ebnf> ;
   doap:mailing-list  <http://lists.w3.org/Archives/Public/public-rdf-ruby/> ;
-  doap:bug-database  <http://github.com/ruby-rdf/rdf-turtle/issues> ;
+  doap:bug-database  <http://github.com/gkellogg/ebnf/issues> ;
   doap:blog          <http://greggkellogg.net/> ;
   doap:developer     <http://greggkellogg.net/foaf#me> ;
   doap:maintainer    <http://greggkellogg.net/foaf#me> ;
   doap:documenter    <http://greggkellogg.net/foaf#me> ;
   foaf:maker         <http://greggkellogg.net/foaf#me> ;
-  dc:title           "RDF::Turtle" ;
-  dc:description     "RDF::Turtle is an Turtle reader/writer for the RDF.rb library suite."@en ;
+  dc:title           "ebnf" ;
+  dc:description     "EBNF is a Ruby parser for W3C EBNF and a parser generator for compliant LL(1) grammars."@en ;
   dc:date            "2011-08-29"^^xsd:date ;
-  dc:creator         <http://greggkellogg.net/foaf#me> ;
-  dc:isPartOf        <http://rubygems.org/gems/rdf> .
+  dc:creator         <http://greggkellogg.net/foaf#me> .

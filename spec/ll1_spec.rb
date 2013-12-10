@@ -250,7 +250,6 @@ describe EBNF::Base do
         end
       end
     end
-
   end
 
   shared_examples "#build_tables" do |source, start|
@@ -324,6 +323,43 @@ describe EBNF::Base do
       it "values of terminal keys are symbols of rules or strings" do
         symbols = subject.values.map(&:values).flatten.uniq
         symbols.map(&:class).uniq.should =~ [Symbol, String]
+      end
+    end
+  end
+
+  describe "#build_tables" do
+    context "error reporting" do
+      {
+        "generated terminal" => [
+          "[1] implicit_terminal ::= [a-z]*",
+          %r{terminal _implicit_terminal_1 is automatically generated},
+          :implicit_terminal
+        ],
+        "First/First Conflict" => [
+          %(
+            [1] s ::= e | e "a"
+            [2] e ::= "b"?
+          ),
+          %r{First/First Conflict: .* is also the condition for e},
+          :s
+        ],
+        "First/Follow Conflict" => [
+          %(
+            [1] s ::= a "a" "b"
+            [2] a ::= "a"?
+          ),
+          %r{First/Follow Conflict: .* is both first and follow of a},
+          :s
+        ],
+      }.each do |name, (input, expected, start)|
+        it name do
+          ebnf = parse(input, :start => start)
+          expect {
+            ebnf.build_tables
+            expect(false).to produce(true, @debug)
+          }.to raise_error("Table creation failed with errors")
+          expect(ebnf.errors.to_s).to match(expected)
+        end
       end
     end
   end
