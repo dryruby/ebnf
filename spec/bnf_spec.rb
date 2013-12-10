@@ -29,7 +29,7 @@ describe EBNF::Base do
          (rule _primary_1 "9.1" (seq "(" expression ")")))},
     }.each do |input, expected|
       it "parses #{input.inspect}" do
-        parse(input).make_bnf.ast.to_sxp.should produce(expected, @debug)
+        expect(parse(input).make_bnf.ast.to_sxp).to produce(expected, @debug)
       end
     end
 
@@ -41,7 +41,7 @@ describe EBNF::Base do
           when !rule.rule? then true
           when !rule.expr.is_a?(Array) then true
           else
-            "#{rule.sym}: #{rule.expr.first}".should match(/#{rule.sym}: (alt|seq)/)
+            expect("#{rule.sym}: #{rule.expr.first}").to match(/#{rule.sym}: (alt|seq)/)
           end
         end
       end
@@ -55,7 +55,7 @@ describe EBNF::Base do
           when rule.terminal? then true
           when !rule.expr.is_a?(Array) then true
           else
-            "#{rule.sym}: #{rule.expr.first}".should match(/#{rule.sym}: (alt|seq)/)
+            expect("#{rule.sym}: #{rule.expr.first}").to match(/#{rule.sym}: (alt|seq)/)
           end
         end
       end

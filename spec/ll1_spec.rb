@@ -13,20 +13,22 @@ describe EBNF::Base do
         }
         let(:rule) {ebnf_doc.ast.detect {|r| r.sym == :ebnf}}
         it "should include rule" do
-          rule.should_not be_nil
+          expect(rule).not_to be_nil
         end
 
         context "start rule" do
           subject {rule}
-          its(:start) {rule.start.should be_true}
+          its(:start) {expect(rule.start).to be_true}
           its(:follow) {should include(:_eof)}
         end
       end
 
       context "with illegitimate start rule" do
         specify {
-          lambda {parse(%([1] ebnf        ::= (declaration | rule)*), :start => :foo)
-        }.should raise_error("No rule found for start symbol foo")}
+          expect {
+            parse(%([1] ebnf        ::= (declaration | rule)*), :start => :foo)
+          }.to raise_error("No rule found for start symbol foo")
+        }
       end
     end
 
@@ -60,7 +62,7 @@ describe EBNF::Base do
         it name do
           ebnf = parse(input)
           sin = ebnf.ast.sort.to_sxp
-          sin.should produce(expected, @debug)
+          expect(sin).to produce(expected, @debug)
         end
       end
     end
@@ -156,7 +158,7 @@ describe EBNF::Base do
         it name do
           ebnf = parse(input, :start => start)
           sin = ebnf.ast.sort.to_sxp
-          sin.should produce(expected, @debug)
+          expect(sin).to produce(expected, @debug)
         end
       end
     end
@@ -246,7 +248,7 @@ describe EBNF::Base do
         it name do
           ebnf = parse(input, :start => start)
           sin = ebnf.ast.sort.to_sxp
-          sin.should produce(expected, @debug)
+          expect(sin).to produce(expected, @debug)
         end
       end
     end
@@ -266,11 +268,11 @@ describe EBNF::Base do
       specify {should be_a(Array)}
       it "has symbols which are terminals" do
         symbols.each do |t|
-          ebnf.find_rule(t).should_not be_nil
+          expect(ebnf.find_rule(t)).not_to be_nil
         end
       end
       it "has strings otherwise" do
-        other.map(&:class).uniq.should == [String]
+        expect(other.map(&:class).uniq).to eq [String]
       end
       it "has strings used in all rules" do
         rule_strings = ebnf.ast.
@@ -278,7 +280,7 @@ describe EBNF::Base do
           map(&:expr).flatten.
           select {|t| t.is_a?(String)}.
           uniq
-        rule_strings.should =~ other
+        expect(rule_strings).to include(*other)
       end
     end
 
@@ -290,13 +292,13 @@ describe EBNF::Base do
         it "keys are all rule symbols" do
           subject.keys.each do |sym|
             r = ebnf.find_rule(sym)
-            r.should_not be_nil
-            r.should be_rule
+            expect(r).not_to be_nil
+            expect(r).to be_rule
           end
         end
         it "values should all be terminals" do
           subject.values.flatten.compact.each do |t|
-            ebnf.terminals.should include(t) unless [:_eps, :_eof].include?(t)
+            expect(ebnf.terminals).to include(t) unless [:_eps, :_eof].include?(t)
           end
         end
       end
@@ -309,26 +311,28 @@ describe EBNF::Base do
       it "keys are all rule symbols" do
         subject.keys.each do |sym|
           r = ebnf.find_rule(sym)
-          r.should_not be_nil
-          r.should be_rule
+          expect(r).not_to be_nil
+          expect(r).to be_rule
         end
       end
       it "values should all be Hashs whos keys are terminals" do
         values = subject.values
-        values.map(&:class).uniq.should == [Hash]
+        expect(values.map(&:class).uniq).to eq [Hash]
         values.map(&:keys).flatten.uniq.each do |t|
-          ebnf.terminals.should include(t)
+          expect(ebnf.terminals).to include(t)
         end
       end
       it "values of terminal keys are symbols of rules or strings" do
         symbols = subject.values.map(&:values).flatten.uniq
-        symbols.map(&:class).uniq.should =~ [Symbol, String]
+        expect(symbols.map(&:class).uniq).to include(Symbol, String)
       end
     end
   end
 
   describe "#build_tables" do
     context "error reporting" do
+      before(:each) {$stderr, @old_stderr = StringIO.new, $stderr}
+      after(:each) {$stderr = @old_stderr}
       {
         "generated terminal" => [
           "[1] implicit_terminal ::= [a-z]*",
@@ -396,8 +400,8 @@ describe EBNF::Base do
       context nt do
         subject {ebnf.find_rule(nt)}
         it {should_not be_nil}
-        its(:first) {(subject.first & first).should =~ first}
-        its(:follow) {(subject.follow & follow).should =~ follow}
+        its(:first) {expect(subject.first & first).to include(*first)}
+        its(:follow) {expect(subject.follow & follow).to include(*follow)}
       end
     end
   end

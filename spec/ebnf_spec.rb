@@ -27,7 +27,7 @@ describe EBNF do
     }.each do |input, expected|
       it "parses #{input.inspect}" do
         @debug = []
-        EBNF.parse(input).ast.to_sxp.should produce(expected, @debug)
+        expect(EBNF.parse(input).ast.to_sxp).to produce(expected, @debug)
       end
     end
   end

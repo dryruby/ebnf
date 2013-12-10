@@ -17,7 +17,7 @@ describe EBNF::Base do
         %{(terminal STRING2 "18" (seq "'" (star (diff CHAR "'")) "'"))},
     }.each do |input, expected|
       it "given #{input.inspect} produces #{expected}" do
-        ebnf(:ruleParts, input).to_sxp.should produce(expected, @debug)
+        expect(ebnf(:ruleParts, input).to_sxp).to produce(expected, @debug)
       end
     end
   end
@@ -47,7 +47,7 @@ describe EBNF::Base do
         %{((alt NCCHAR1 "-" (range "0-9") (hex "#x00B7") (range "#x0300-#x036F") (range "#x203F-#x2040")) "")}
     }.each do |input, expected|
       it "given #{input.inspect} produces #{expected}" do
-        ebnf(:expression, input).to_sxp.should produce(expected, @debug)
+        expect(ebnf(:expression, input).to_sxp).to produce(expected, @debug)
       end
     end
   end
@@ -65,7 +65,7 @@ describe EBNF::Base do
       %(a - b)                   => %{((diff a b) "")},
     }.each do |input, expected|
       it "given #{input.inspect} produces #{expected}" do
-        ebnf(:diff, input).to_sxp.should produce(expected, @debug)
+        expect(ebnf(:diff, input).to_sxp).to produce(expected, @debug)
       end
     end
   end

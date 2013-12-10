@@ -12,7 +12,7 @@ end
 
 RSpec::Matchers.define :produce do |expected, info|
   match do |actual|
-    normalize(actual).should == normalize(expected)
+    expect(normalize(actual)).to eq normalize(expected)
   end
   
   failure_message_for_should do |actual|
