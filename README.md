@@ -84,6 +84,8 @@ to each `terminal` and `production`. A trivial parser loop can be described as f
 The [EBNF][] variant used here is based on [W3C](http://w3.org/) [EBNF][] (see {file:etc/ebnf.ebnf EBNF grammar}) as defined in the
 [XML 1.0 recommendation](http://www.w3.org/TR/REC-xml/), with minor extensions.
 
+Parsing this grammar yields an S-Expression version: {file:etc/ebnf.ll1.sxp}.
+
 ## Example parser
 For an example parser built using this gem, see {file:examples/ebnf-parser/README EBNF Parser example}. This example creates a parser for the [EBNF][] grammar which generates the same Abstract Syntax Tree as the built-in parser in the gem.
 
