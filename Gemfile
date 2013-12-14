@@ -7,6 +7,6 @@ group :debug do
   gem "wirble"
   gem "debugger", :platform => :mri_19
   gem "byebug", :platform => :mri_20
-  gem "rocco", :platforms => :mri, :git => "git@github.com:rtomayko/rocco.git"
+  gem "rocco", :platforms => :mri, :git => "git://github.com/rtomayko/rocco.git"
   gem "redcarpet", :platforms => :mri
 end
