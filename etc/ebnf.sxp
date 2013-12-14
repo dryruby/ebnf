@@ -17,16 +17,16 @@
   (seq "#x"
    (alt (range "0-9") (range "a-f") (range "A-F"))
    (alt (range "0-9") (range "a-f") (range "A-F"))) )
- (terminal RANGE "14" (seq "[" CHAR "-" CHAR "]"))
- (terminal ENUM "15" (seq "[" (plus CHAR) "]"))
- (terminal O_RANGE "16" (seq "[^" CHAR "-" CHAR "]"))
- (terminal O_ENUM "17" (seq "[^" (plus CHAR) "]"))
- (terminal STRING1 "18" (seq "\"" (star (alt CHAR (range "\t'[]()-"))) "\""))
- (terminal STRING2 "19" (seq "'" (star (alt CHAR (range "\t\"[]()-"))) "'"))
- (terminal CHAR "20"
-  (alt HEX (seq "\\" (range "\\trn'\"[]()-")) (range "^\t\r\n'\"[]()-")))
- (terminal POSTFIX "21" (range "?*+"))
- (terminal PASS "22"
+ (terminal RANGE "14" (seq "[" R_CHAR "-" R_CHAR "]"))
+ (terminal ENUM "15" (seq "[" (plus R_CHAR) "]"))
+ (terminal O_RANGE "16" (seq "[^" R_CHAR "-" R_CHAR "]"))
+ (terminal O_ENUM "17" (seq "[^" (plus R_CHAR) "]"))
+ (terminal STRING1 "18" (seq "\"" (star (alt (diff CHAR "\"") "\t")) "\""))
+ (terminal STRING2 "19" (seq "'" (star (alt (diff CHAR "'") "\t")) "'"))
+ (terminal CHAR "20" (alt HEX (seq "\\" (range "\\trn\"'")) (range "^\t\r\n")))
+ (terminal R_CHAR "21" (diff CHAR "]"))
+ (terminal POSTFIX "22" (range "?*+"))
+ (terminal PASS "23"
   (plus
    (alt
     (range "#x20\t\r\n")

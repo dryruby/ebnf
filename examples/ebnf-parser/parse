@@ -13,7 +13,7 @@ out = STDOUT
 OPT_ARGS = [
   ["--dbg",             GetoptLong::NO_ARGUMENT,      "Turn on debugging output"],
   ["--evaluate","-e",   GetoptLong::REQUIRED_ARGUMENT,"Evaluate argument"],
-  ["--progress", "-v",  GetoptLong::NO_ARGUMENT,     "Detail on execution"],
+  ["--progress", "-v",  GetoptLong::NO_ARGUMENT,      "Detail on execution"],
   ["--help", "-?",      GetoptLong::NO_ARGUMENT,      "This message"]
 ]
 def usage
@@ -37,7 +37,6 @@ input = nil
 
 opts = GetoptLong.new(*OPT_ARGS.map {|o| o[0..-2]})
 
-require 'debugger'
 opts.each do |opt, arg|
   case opt
   when '--dbg'          then options[:debug] = true
