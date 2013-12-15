@@ -2,7 +2,7 @@
 # parse --- Process EBNF to generate AST S-Expression
 
 $:.unshift(File.expand_path("../../../lib", __FILE__))
-$:.unshift(".")
+$:.unshift(File.expand_path("..", __FILE__))
 require 'rubygems'
 require 'getoptlong'
 require 'parser'

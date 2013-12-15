@@ -5,6 +5,7 @@ require 'ebnf/rule'
 require 'ebnf/ll1/parser'
 require 'meta'
 require 'terminals'
+require 'sxp'
 
 class EBNFParser
   include EBNF::LL1::Parser
@@ -92,10 +93,25 @@ class EBNFParser
   end
 
   # Make sure we recognize string terminals, even though they're not actually used in processing
-  terminal(nil,                  %r(@terminals|@pass|[\[\]|\-\(\)]))
+  terminal(nil,                  %r(@terminals|@pass|[\[\]|\-\(\)])) do |prod, token, input|
+    input[:terminal] = token.value
+  end
 
   # ## Non-terminal productions
   # Define productions for non-Termainals. This can include `start_production` as well as `production` to hook into rule start and end. In some cases, we need to use sub-productions as generated when turning EBNF into BNF.
+
+  # Production for end of `declaration` non-terminal.
+  #
+  # Look for `@terminals` to change parser state to parsing terminals.
+  #
+  # `@pass` is ignored here.
+  #
+  #     [2] declaration ::= '@terminals' | pass
+  production(:declaration) do |input, current, callback|
+    # current contains a declaration.
+    # Invoke callback
+    callback.call(:terminal) if current[:terminal] == '@terminals'
+  end
 
   # Production for end of `rule` non-terminal.
   # The `input` parameter includes information placed by previous productions at the same level, or at the start of the current production.
@@ -106,7 +122,7 @@ class EBNFParser
   #
   #     [3] rule        ::= LHS expression
   production(:rule) do |input, current, callback|
-    # current contains a declaration.
+    # current contains an expression.
     # Invoke callback
     callback.call(:rule, EBNF::Rule.new(current[:symbol].to_sym, current[:id], current[:expression].last))
   end
@@ -299,7 +315,7 @@ class EBNFParser
         level, lineno, depth, *args = data
         message = "#{args.join(': ')}"
         d_str = depth > 100 ? ' ' * 100 + '+' : ' ' * depth
-        $stderr.puts "[#{lineno}](#{level})#{d_str}#{message}"
+        $stderr.puts "[#{lineno}](#{level})#{d_str}#{message}" if @options[:progress] || @options[:debug] == true
         next
       end
       @ast << rule
