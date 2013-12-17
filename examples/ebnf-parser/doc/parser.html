@@ -30,6 +30,7 @@
 <span class="nb">require</span> <span class="s1">&#39;ebnf/ll1/parser&#39;</span>
 <span class="nb">require</span> <span class="s1">&#39;meta&#39;</span>
 <span class="nb">require</span> <span class="s1">&#39;terminals&#39;</span>
+<span class="nb">require</span> <span class="s1">&#39;sxp&#39;</span>
 
 <span class="k">class</span> <span class="nc">EBNFParser</span>
   <span class="kp">include</span> <span class="ss">EBNF</span><span class="p">:</span><span class="ss">:LL1</span><span class="o">::</span><span class="no">Parser</span>
@@ -241,7 +242,9 @@
         <p>Make sure we recognize string terminals, even though they&rsquo;re not actually used in processing</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="kp">nil</span><span class="p">,</span>                  <span class="sr">%r(@terminals|@pass|[\[\]|\-\(\)])</span><span class="p">)</span></pre></div>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="kp">nil</span><span class="p">,</span>                  <span class="sr">%r(@terminals|@pass|[\[\]|\-\(\)])</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">prod</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">input</span><span class="o">|</span>
+    <span class="n">input</span><span class="o">[</span><span class="ss">:terminal</span><span class="o">]</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">value</span>
+  <span class="k">end</span></pre></div>
       </td>
     </tr>
     <tr id='section-Non-terminal_productions'>
@@ -262,6 +265,37 @@
         <div class="pilwrap">
           <a class="pilcrow" href="#section-17">&#182;</a>
         </div>
+        <p>Production for end of <code>declaration</code> non-terminal.</p>
+
+<p>Look for <code>@terminals</code> to change parser state to parsing terminals.</p>
+
+<p><code>@pass</code> is ignored here.</p>
+
+<pre><code>[2] declaration ::= &rsquo;@terminals' | pass
+</code></pre>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:declaration</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">input</span><span class="p">,</span> <span class="n">current</span><span class="p">,</span> <span class="n">callback</span><span class="o">|</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-18'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-18">&#182;</a>
+        </div>
+        <p>current contains a declaration.
+Invoke callback</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="n">callback</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="ss">:terminal</span><span class="p">)</span> <span class="k">if</span> <span class="n">current</span><span class="o">[</span><span class="ss">:terminal</span><span class="o">]</span> <span class="o">==</span> <span class="s1">&#39;@terminals&#39;</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-19'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-19">&#182;</a>
+        </div>
         <p>Production for end of <code>rule</code> non-terminal.
 The <code>input</code> parameter includes information placed by previous productions at the same level, or at the start of the current production.
 The <code>current</code> parameter, is the result of child productions placing information onto their input.
@@ -276,12 +310,12 @@ The <code>callback</code> parameter provides access to a callback defined in the
         <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:rule</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">input</span><span class="p">,</span> <span class="n">current</span><span class="p">,</span> <span class="n">callback</span><span class="o">|</span></pre></div>
       </td>
     </tr>
-    <tr id='section-18'>
+    <tr id='section-20'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-18">&#182;</a>
+          <a class="pilcrow" href="#section-20">&#182;</a>
         </div>
-        <p>current contains a declaration.
+        <p>current contains an expression.
 Invoke callback</p>
       </td>
       <td class=code>
@@ -289,10 +323,10 @@ Invoke callback</p>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-19'>
+    <tr id='section-21'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-19">&#182;</a>
+          <a class="pilcrow" href="#section-21">&#182;</a>
         </div>
         <p>Production for end of <code>expression</code> non-terminal.
 Passes through the optimized value of the alt production as follows:</p>
@@ -310,10 +344,10 @@ Passes through the optimized value of the alt production as follows:</p>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-20'>
+    <tr id='section-22'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-20">&#182;</a>
+          <a class="pilcrow" href="#section-22">&#182;</a>
         </div>
         <p>Production for end of <code>alt</code> non-terminal.
 Passes through the optimized value of the seq production as follows:</p>
@@ -324,7 +358,7 @@ Passes through the optimized value of the seq production as follows:</p>
 
 <p>Note that this also may just pass through from <code>_alt_1</code></p>
 
-<pre><code>[5] alt         ::= seq (&rsquo;|&lsquo; seq)*
+<pre><code>[5] alt         ::= seq (&lsquo;|&rsquo; seq)*
 </code></pre>
       </td>
       <td class=code>
@@ -337,10 +371,10 @@ Passes through the optimized value of the seq production as follows:</p>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-21'>
+    <tr id='section-23'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-21">&#182;</a>
+          <a class="pilcrow" href="#section-23">&#182;</a>
         </div>
         <p>Because <code>alt</code> can refer to <code>seq</code> multiple times, we need to separate information from each sequence. To do this, we intercept the start of <code>_alt_1</code> to reset the <code>:seq</code> input and record the existing optimized <code>seq</code> value</p>
 
@@ -360,10 +394,10 @@ Passes through the optimized value of the seq production as follows:</p>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-22'>
+    <tr id='section-24'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-22">&#182;</a>
+          <a class="pilcrow" href="#section-24">&#182;</a>
         </div>
         <p>After <code>_alt_1</code> sub-production, add any optimized seq value and append recursive alt calls</p>
       </td>
@@ -372,10 +406,10 @@ Passes through the optimized value of the seq production as follows:</p>
     <span class="n">input</span><span class="o">[</span><span class="ss">:alt</span><span class="o">]</span> <span class="o">||=</span> <span class="o">[</span><span class="ss">:alt</span><span class="o">]</span></pre></div>
       </td>
     </tr>
-    <tr id='section-23'>
+    <tr id='section-25'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-23">&#182;</a>
+          <a class="pilcrow" href="#section-25">&#182;</a>
         </div>
         <p>Add optimized value of <code>seq,</code> if any</p>
       </td>
@@ -385,10 +419,10 @@ Passes through the optimized value of the seq production as follows:</p>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-24'>
+    <tr id='section-26'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-24">&#182;</a>
+          <a class="pilcrow" href="#section-26">&#182;</a>
         </div>
         <p>Also recursive call to <code>_alt_1</code></p>
       </td>
@@ -397,10 +431,10 @@ Passes through the optimized value of the seq production as follows:</p>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-25'>
+    <tr id='section-27'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-25">&#182;</a>
+          <a class="pilcrow" href="#section-27">&#182;</a>
         </div>
         <p>Production for end of <code>seq</code> non-terminal.
 Passes through the optimized value of the <code>diff</code> production as follows:</p>
@@ -424,10 +458,10 @@ Passes through the optimized value of the <code>diff</code> production as follow
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-26'>
+    <tr id='section-28'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-26">&#182;</a>
+          <a class="pilcrow" href="#section-28">&#182;</a>
         </div>
         <p>Because <code>seq</code> can refer to <code>diff</code>multiple times, we need to separate information from each sequence. To do this, we intercept the start of <code>_seq_1</code> to reset the <code>:diff</code> input and record the existing optimized <code>seq</code> value</p>
 
@@ -447,10 +481,10 @@ Passes through the optimized value of the <code>diff</code> production as follow
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-27'>
+    <tr id='section-29'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-27">&#182;</a>
+          <a class="pilcrow" href="#section-29">&#182;</a>
         </div>
         <p>After <code>_seq_1</code> sub-production, add any optimized <code>diff</code> value and append recursive <code>seq</code> calls</p>
       </td>
@@ -459,10 +493,10 @@ Passes through the optimized value of the <code>diff</code> production as follow
     <span class="n">input</span><span class="o">[</span><span class="ss">:seq</span><span class="o">]</span> <span class="o">||=</span> <span class="o">[</span><span class="ss">:seq</span><span class="o">]</span></pre></div>
       </td>
     </tr>
-    <tr id='section-28'>
+    <tr id='section-30'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-28">&#182;</a>
+          <a class="pilcrow" href="#section-30">&#182;</a>
         </div>
         <p>Add optimized value of <code>diff</code>, if any</p>
       </td>
@@ -472,10 +506,10 @@ Passes through the optimized value of the <code>diff</code> production as follow
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-29'>
+    <tr id='section-31'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-29">&#182;</a>
+          <a class="pilcrow" href="#section-31">&#182;</a>
         </div>
         <p>Also recursive call to <code>_seq_1</code></p>
       </td>
@@ -484,26 +518,78 @@ Passes through the optimized value of the <code>diff</code> production as follow
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-30'>
+    <tr id='section-32'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-30">&#182;</a>
+          <a class="pilcrow" href="#section-32">&#182;</a>
         </div>
         <p><code>Diff</code> production returns concatenated postfix values</p>
 
-<pre><code>[7] diff        ::= postfix (&rsquo;&ndash;&lsquo; postfix)?
+<pre><code>[7] diff        ::= postfix (&lsquo;&ndash;&rsquo; postfix)?
 </code></pre>
       </td>
       <td class=code>
         <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:diff</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">input</span><span class="p">,</span> <span class="n">current</span><span class="p">,</span> <span class="n">callback</span><span class="o">|</span>
-    <span class="p">(</span><span class="n">input</span><span class="o">[</span><span class="ss">:diff</span><span class="o">]</span> <span class="o">||=</span> <span class="o">[</span><span class="ss">:diff</span><span class="o">]</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">current</span><span class="o">[</span><span class="ss">:postfix</span><span class="o">]</span>
+    <span class="n">input</span><span class="o">[</span><span class="ss">:diff</span><span class="o">]</span> <span class="o">=</span> <span class="k">if</span> <span class="n">current</span><span class="o">[</span><span class="ss">:diff</span><span class="o">]</span>
+      <span class="n">current</span><span class="o">[</span><span class="ss">:diff</span><span class="o">]</span>
+    <span class="k">elsif</span> <span class="n">postfix</span> <span class="o">=</span> <span class="n">current</span><span class="o">[</span><span class="ss">:postfix</span><span class="o">]</span>
+      <span class="o">[</span><span class="ss">:diff</span><span class="o">]</span> <span class="o">&lt;&lt;</span> <span class="n">postfix</span>
+    <span class="k">end</span>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-31'>
+    <tr id='section-33'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-31">&#182;</a>
+          <a class="pilcrow" href="#section-33">&#182;</a>
+        </div>
+        <p>Because <code>diff</code> can refer to <code>postfix</code>multiple times, we need to separate information from each sequence. To do this, we intercept the start of <code>_diff_1</code> to reset the <code>:postfix</code> input and record the existing optimized <code>postfix</code> value</p>
+
+<p>The generated sub-productions for <code>_diff_1</code> are:</p>
+
+<pre><code>(rule _diff_1 &ldquo;7.1&rdquo;
+ (first &ldquo;&ndash;&rdquo; _eps)
+ (follow &ldquo;(&rdquo; &ldquo;)&rdquo; &ldquo;@pass&rdquo; &ldquo;@terminals&rdquo; ENUM HEX LHS O_ENUM O_RANGE RANGE
+  STRING1 STRING2 SYMBOL _eof &ldquo;|&rdquo; )
+ (alt _empty _diff_2))
+</code></pre>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">start_production</span><span class="p">(</span><span class="ss">:_diff_1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">input</span><span class="p">,</span> <span class="n">current</span><span class="p">,</span> <span class="n">callback</span><span class="o">|</span>
+    <span class="n">postfix</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">(</span><span class="n">input</span><span class="o">[</span><span class="ss">:postfix</span><span class="o">]</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">input</span><span class="o">[</span><span class="ss">:diff</span><span class="o">]</span> <span class="o">=</span> <span class="o">[</span><span class="ss">:diff</span><span class="o">]</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">postfix</span><span class="o">.</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="o">?</span> <span class="n">postfix</span> <span class="p">:</span> <span class="n">postfix</span><span class="o">.</span><span class="n">last</span><span class="p">)</span>
+    <span class="n">input</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="ss">:postfix</span><span class="p">)</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-34'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-34">&#182;</a>
+        </div>
+        <p>After <code>_diff_1</code> sub-production, add any optimized <code>diff</code> value and append recursive <code>seq</code> calls</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:_diff_1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">input</span><span class="p">,</span> <span class="n">current</span><span class="p">,</span> <span class="n">callback</span><span class="o">|</span>
+    <span class="n">input</span><span class="o">[</span><span class="ss">:diff</span><span class="o">]</span> <span class="o">||=</span> <span class="o">[</span><span class="ss">:diff</span><span class="o">]</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-35'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-35">&#182;</a>
+        </div>
+        <p>Add optimized value of <code>postfix</code>, if any</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="n">input</span><span class="o">[</span><span class="ss">:diff</span><span class="o">]</span> <span class="o">&lt;&lt;</span> <span class="n">current</span><span class="o">[</span><span class="ss">:postfix</span><span class="o">]</span> <span class="k">if</span> <span class="n">current</span><span class="o">[</span><span class="ss">:postfix</span><span class="o">]</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-36'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-36">&#182;</a>
         </div>
         <p>Production for end of <code>postfix</code> non-terminal.
 Either returns the <code>primary</code> production value, or as modified by the <code>postfix</code>.</p>
@@ -515,10 +601,10 @@ Either returns the <code>primary</code> production value, or as modified by the 
         <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:postfix</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">input</span><span class="p">,</span> <span class="n">current</span><span class="p">,</span> <span class="n">callback</span><span class="o">|</span></pre></div>
       </td>
     </tr>
-    <tr id='section-32'>
+    <tr id='section-37'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-32">&#182;</a>
+          <a class="pilcrow" href="#section-37">&#182;</a>
         </div>
         <p>Push result onto input stack, as the <code>diff</code> production can have some number of <code>postfix</code> values that are applied recursively</p>
       </td>
@@ -532,10 +618,10 @@ Either returns the <code>primary</code> production value, or as modified by the 
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-33'>
+    <tr id='section-38'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-33">&#182;</a>
+          <a class="pilcrow" href="#section-38">&#182;</a>
         </div>
         <p>Production for end of <code>primary</code> non-terminal.
 Places <code>:primary</code> on the stack</p>
@@ -550,7 +636,7 @@ Places <code>:primary</code> on the stack</p>
                 |   O_ENUM
                 |   STRING1
                 |   STRING2
-                |   &rsquo;(&lsquo; expression &rsquo;)&lsquo;
+                |   &lsquo;(&rsquo; expression &lsquo;)&rsquo;
 </code></pre>
       </td>
       <td class=code>
@@ -564,24 +650,24 @@ Places <code>:primary</code> on the stack</p>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-34'>
+    <tr id='section-39'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-34">&#182;</a>
+          <a class="pilcrow" href="#section-39">&#182;</a>
         </div>
         <p>Production for end of pass non-terminal.</p>
 
-<pre><code>[10] pass       ::= &rsquo;@pass' expression
+<pre><code>[10] pass       ::= &lsquo;@pass&rsquo; expression
 </code></pre>
       </td>
       <td class=code>
         <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:pass</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">input</span><span class="p">,</span> <span class="n">current</span><span class="p">,</span> <span class="n">callback</span><span class="o">|</span></pre></div>
       </td>
     </tr>
-    <tr id='section-35'>
+    <tr id='section-40'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-35">&#182;</a>
+          <a class="pilcrow" href="#section-40">&#182;</a>
         </div>
         <p>Invoke callback</p>
       </td>
@@ -634,7 +720,7 @@ Places <code>:primary</code> on the stack</p>
         <span class="n">level</span><span class="p">,</span> <span class="n">lineno</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span> <span class="o">=</span> <span class="n">data</span>
         <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">args</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;: &#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">d_str</span> <span class="o">=</span> <span class="n">depth</span> <span class="o">&gt;</span> <span class="mi">100</span> <span class="o">?</span> <span class="s1">&#39; &#39;</span> <span class="o">*</span> <span class="mi">100</span> <span class="o">+</span> <span class="s1">&#39;+&#39;</span> <span class="p">:</span> <span class="s1">&#39; &#39;</span> <span class="o">*</span> <span class="n">depth</span>
-        <span class="vg">$stderr</span><span class="o">.</span><span class="n">puts</span> <span class="s2">&quot;[</span><span class="si">#{</span><span class="n">lineno</span><span class="si">}</span><span class="s2">](</span><span class="si">#{</span><span class="n">level</span><span class="si">}</span><span class="s2">)</span><span class="si">#{</span><span class="n">d_str</span><span class="si">}#{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="vg">$stderr</span><span class="o">.</span><span class="n">puts</span> <span class="s2">&quot;[</span><span class="si">#{</span><span class="n">lineno</span><span class="si">}</span><span class="s2">](</span><span class="si">#{</span><span class="n">level</span><span class="si">}</span><span class="s2">)</span><span class="si">#{</span><span class="n">d_str</span><span class="si">}#{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="vi">@options</span><span class="o">[</span><span class="ss">:progress</span><span class="o">]</span> <span class="o">||</span> <span class="vi">@options</span><span class="o">[</span><span class="ss">:debug</span><span class="o">]</span> <span class="o">==</span> <span class="kp">true</span>
         <span class="k">next</span>
       <span class="k">end</span>
       <span class="vi">@ast</span> <span class="o">&lt;&lt;</span> <span class="n">rule</span>
@@ -643,10 +729,10 @@ Places <code>:primary</code> on the stack</p>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-37'>
+    <tr id='section-42'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-37">&#182;</a>
+          <a class="pilcrow" href="#section-42">&#182;</a>
         </div>
         <p>Output formatted S-Expression of grammar</p>
       </td>
@@ -654,10 +740,10 @@ Places <code>:primary</code> on the stack</p>
         <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">to_sxp</span></pre></div>
       </td>
     </tr>
-    <tr id='section-38'>
+    <tr id='section-43'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-38">&#182;</a>
+          <a class="pilcrow" href="#section-43">&#182;</a>
         </div>
         <p>Output rules as a formatted S-Expression</p>
 

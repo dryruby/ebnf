@@ -570,7 +570,7 @@ module EBNF::LL1
         # Make sure we push as many was we pop, even if there is no
         # explicit start handler
         @prod_data << {} if self.class.production_handlers[prod]
-        progress("#{prod}(:start)") { get_token.inspect + (@recovering ? ' recovering' : '')}
+        progress("#{prod}(:start:#{@prod_data.length})") { get_token.inspect + (@recovering ? ' recovering' : '')}
       end
       #puts "prod_data(s): " + @prod_data.inspect
     end
@@ -593,7 +593,7 @@ module EBNF::LL1
         end
         progress("#{prod}(:finish):#{@prod_data.length}") {@prod_data.last}
       else
-        progress("#{prod}(:finish)") { "recovering" if @recovering }
+        progress("#{prod}(:finish):#{@prod_data.length}") { "recovering" if @recovering }
       end
       @productions.pop
     end

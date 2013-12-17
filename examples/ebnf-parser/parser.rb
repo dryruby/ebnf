@@ -231,7 +231,34 @@ class EBNFParser
   #
   #     [7] diff        ::= postfix ('-' postfix)?
   production(:diff) do |input, current, callback|
-    (input[:diff] ||= [:diff]) << current[:postfix]
+    input[:diff] = if current[:diff]
+      current[:diff]
+    elsif postfix = current[:postfix]
+      [:diff] << postfix
+    end
+  end
+
+  # Because `diff` can refer to `postfix `multiple times, we need to separate information from each sequence. To do this, we intercept the start of `_diff_1` to reset the `:postfix` input and record the existing optimized `postfix` value
+  #
+  # The generated sub-productions for `_diff_1` are:
+  #
+  #     (rule _diff_1 "7.1"
+  #      (first "-" _eps)
+  #      (follow "(" ")" "@pass" "@terminals" ENUM HEX LHS O_ENUM O_RANGE RANGE
+  #       STRING1 STRING2 SYMBOL _eof "|" )
+  #      (alt _empty _diff_2))
+  start_production(:_diff_1) do |input, current, callback|
+    postfix = Array(input[:postfix])
+    (input[:diff] = [:diff]) << (postfix.length > 2 ? postfix : postfix.last)
+    input.delete(:postfix)
+  end
+
+  # After `_diff_1` sub-production, add any optimized `diff` value and append recursive `seq` calls
+  production(:_diff_1) do |input, current, callback|
+    input[:diff] ||= [:diff]
+
+    # Add optimized value of `postfix`, if any
+    input[:diff] << current[:postfix] if current[:postfix]
   end
 
   # Production for end of `postfix` non-terminal.
