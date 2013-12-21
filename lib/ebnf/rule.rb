@@ -122,7 +122,8 @@ module EBNF
     # Return representation for building S-Expressions
     # @return [Array]
     def for_sxp
-      elements = [kind, sym, id]
+      elements = [kind, sym]
+      elements << id if id
       elements << [:start, true] if start
       elements << first.sort_by(&:to_s).unshift(:first) if first
       elements << follow.sort_by(&:to_s).unshift(:follow) if follow

@@ -507,12 +507,5 @@ module EBNF::LL1
         super(message.to_s)
       end
     end # class Error
-    
-    unless "".respond_to?(:force_encoding)
-      # Compatibility with 1.9 Encoding
-      module Encoding
-        class CompatibilityError < StandardError; end
-      end
-    end
   end # class Lexer
 end # module EBNF

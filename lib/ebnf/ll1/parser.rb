@@ -281,8 +281,8 @@ module EBNF::LL1
               end
             elsif prod_branch = @branch[cur_prod]
               sequence = prod_branch.fetch(token.representation) do
-                raise Error.new("#{token.inspect} does not match production #{cur_prod.inspect}",
-                  :production => cur_prod)
+                raise Error.new("Expected one of #{@first[cur_prod].inspect}",
+                  :token => token, :production => cur_prod)
               end
               debug("parse(production)") do
                 "token #{token.representation.inspect} " +
@@ -292,7 +292,7 @@ module EBNF::LL1
               end
               todo_stack.last[:terms] += sequence
             else
-              raise Error.new("No branches found for #{cur_prod.inspect}",
+              raise Error.new("Unexpected",
                 :production => cur_prod, :token => token)
             end
           end
@@ -309,8 +309,8 @@ module EBNF::LL1
             elsif terminals.include?(term) 
               # If term is a terminal, then it is an error if token does not
               # match it
-              raise Error.new("#{get_token.inspect} does not match terminal #{term.inspect}",
-                :production => cur_prod)
+              raise Error.new("Expected #{term.inspect}",
+                :token => get_token, :production => cur_prod)
             else
               token = get_token
 
@@ -339,12 +339,12 @@ module EBNF::LL1
           if e.is_a?(Lexer::Error)
             # Skip to the next valid terminal
             @lexer.recover
-            error("parse(#{e.class})", "With input '#{e.input}': #{e.message}, skipped to #{(get_token(:recover) || :eof).inspect}",
+            error("parse(#{e.class})", "With input '#{e.input}': #{e.message}",
                   :production => @productions.last)
           else
             # Otherwise, the terminal is fine, just not for this production.
             @lexer.shift
-            error("parse(#{e.class})", "#{e.message}, skipped to #{(get_token(:recover) || :eof).inspect}",
+            error("parse(#{e.class})", "#{e.message}",
                   :production => @productions.last, :token => e.token)
           end
 
@@ -422,7 +422,7 @@ module EBNF::LL1
 
       # When all is said and done, raise the error log
       unless @error_log.empty?
-        raise Error, @error_log.join("\n\t")
+        raise Error, @error_log.join("\n")
       end
     end
 
@@ -468,12 +468,14 @@ module EBNF::LL1
     # @option options [Token] :token
     # @see {#debug}
     def error(node, message, options = {})
-      message += ", found #{options[:token].inspect}" if options[:token]
-      message += " at line #{@lineno}" if @lineno
-      message += ", production = #{options[:production].inspect}" if options[:production]
-      @error_log << message unless @recovering
+      m = "ERROR "
+      m += "[line: #{@lineno}] " if @lineno
+      m += message
+      m += " (found #{options[:token].inspect})" if options[:token]
+      m += ", production = #{options[:production].inspect}" if options[:production]
+      @error_log << m unless @recovering
       @recovering = true
-      debug(node, message, options.merge(:level => 0))
+      debug(node, m, options.merge(:level => 0))
     end
 
     ##
@@ -486,11 +488,13 @@ module EBNF::LL1
     # @option options [Token] :token
     # @see {#debug}
     def warn(node, message, options = {})
-      message += ", with token #{options[:token].inspect}" if options[:token]
-      message += " at line #{@lineno}" if @lineno
-      message += ", production = #{options[:production].inspect}" if options[:production]
-      @error_log << message unless @recovering
-      debug(node, message, options.merge(:level => 1))
+      m = "WARNING "
+      m += "[line: #{@lineno}] " if @lineno
+      m += message
+      m += " (found #{options[:token].inspect})" if options[:token]
+      m += ", production = #{options[:production].inspect}" if options[:production]
+      @error_log << m unless @recovering
+      debug(node, m, options.merge(:level => 1))
     end
 
     ##
@@ -570,7 +574,7 @@ module EBNF::LL1
         # Make sure we push as many was we pop, even if there is no
         # explicit start handler
         @prod_data << {} if self.class.production_handlers[prod]
-        progress("#{prod}(:start)") { get_token.inspect + (@recovering ? ' recovering' : '')}
+        progress("#{prod}(:start:#{@prod_data.length})") { get_token.inspect + (@recovering ? ' recovering' : '')}
       end
       #puts "prod_data(s): " + @prod_data.inspect
     end
@@ -593,7 +597,7 @@ module EBNF::LL1
         end
         progress("#{prod}(:finish):#{@prod_data.length}") {@prod_data.last}
       else
-        progress("#{prod}(:finish)") { "recovering" if @recovering }
+        progress("#{prod}(:finish):#{@prod_data.length}") { "recovering" if @recovering }
       end
       @productions.pop
     end
@@ -611,7 +615,7 @@ module EBNF::LL1
               handler.call(parentProd, token, @prod_data.last, @parse_callback)
             }
           rescue ArgumentError, Error => e
-            error("terminal", "#{e.class}: #{e.message}", :production => prod)
+            error("terminal", "#{e.class}: #{e.message}", :token => token, :production => prod)
             @recovering = false
           end
           progress("#{prod}(:terminal)", "", :depth => (depth + 1)) {"#{token}: #{@prod_data.last}"}
@@ -619,7 +623,7 @@ module EBNF::LL1
           progress("#{prod}(:terminal)", "", :depth => (depth + 1)) {token.to_s}
         end
       else
-        error("#{parentProd}(:terminal)", "Terminal has no parent production", :production => prod)
+        error("#{parentProd}(:terminal)", "Terminal has no parent production", :token => token, :production => prod)
       end
     end
 
@@ -729,7 +733,7 @@ module EBNF::LL1
       def initialize(message, options = {})
         @production = options[:production]
         @token      = options[:token]
-        @lineno     = options[:lineno]
+        @lineno     = options[:lineno] || (@token.lineno if @token.respond_to?(:lineno))
         super(message.to_s)
       end
     end # class Error

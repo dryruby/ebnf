@@ -34,12 +34,9 @@ describe EBNF::Rule do
     }.each do |title, (expr, expected)|
       it title do
         res = subject.send(:ttl_expr, expr, "g", 0, false)
-        res.each {|r| r.should be_a(String)}
-          
-        res.
-          join("\n").
-          gsub(/\s+/, ' ').
-          should produce(expected, debug)
+        res.each {|r| expect(r).to be_a(String)}
+
+        expect(res.join("\n").gsub(/\s+/, ' ')).to produce(expected, debug)
       end
     end
   end
@@ -72,7 +69,7 @@ describe EBNF::Rule do
       ],
     }.each do |title, (input, expected)|
       it title do
-        subject.send(:cclass, input).should produce(expected, debug)
+        expect(subject.send(:cclass, input)).to produce(expected, debug)
       end
     end
   end
@@ -143,7 +140,7 @@ describe EBNF::Rule do
        ]
     }.each do |title, (expr, expected)|
       it title do
-        EBNF::Rule.new(:rule, "0", expr).to_bnf.should == expected
+        expect(EBNF::Rule.new(:rule, "0", expr).to_bnf).to eq expected
       end
     end
 
@@ -152,7 +149,7 @@ describe EBNF::Rule do
         subject.expr = [:do, :re, [:me, :fa, :do], :do]
         rsrc = EBNF::Rule.new(:do, "0", [])
         rdst = EBNF::Rule.new(:DO, "0", [])
-        subject.rewrite(rsrc, rdst).expr.should == [:DO, :re, [:me, :fa, :do], :DO]
+        expect(subject.rewrite(rsrc, rdst).expr).to eq [:DO, :re, [:me, :fa, :do], :DO]
       end
     end
   end

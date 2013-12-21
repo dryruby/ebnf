@@ -37,8 +37,8 @@ describe EBNF::LL1::Lexer do
         %q(a\\u003Ab)     => %Q(a\x3Ab),
       }
       inputs.each do |input, output|
-        output.force_encoding(Encoding::UTF_8) if output.respond_to?(:force_encoding) # Ruby 1.9+
-        EBNF::LL1::Lexer.unescape_codepoints(input).should == output
+        output.force_encoding(Encoding::UTF_8)
+        expect(EBNF::LL1::Lexer.unescape_codepoints(input)).to eq output
       end
     end
 
@@ -49,8 +49,8 @@ describe EBNF::LL1::Lexer do
         %q(\\U000EFFFF)   => %Q(\xF3\xAF\xBF\xBF),
       }
       inputs.each do |input, output|
-        output.force_encoding(Encoding::UTF_8) if output.respond_to?(:force_encoding) # Ruby 1.9+
-        EBNF::LL1::Lexer.unescape_codepoints(input).should == output
+        output.force_encoding(Encoding::UTF_8)
+        expect(EBNF::LL1::Lexer.unescape_codepoints(input)).to eq output
       end
     end
 
@@ -63,7 +63,7 @@ describe EBNF::LL1::Lexer do
         "resumé" => 'resum\\u00E9',
       }.each_pair do |unescaped, escaped|
         it "unescapes #{unescaped.inspect}" do
-          EBNF::LL1::Lexer.unescape_codepoints(escaped).should == unescaped
+          expect(EBNF::LL1::Lexer.unescape_codepoints(escaped)).to eq unescaped
         end
       end
     end
@@ -75,7 +75,7 @@ describe EBNF::LL1::Lexer do
     context "escape sequences" do
       EBNF::LL1::Lexer::ESCAPE_CHARS.each do |escaped, unescaped|
         it "unescapes #{unescaped.inspect}" do
-          EBNF::LL1::Lexer.unescape_string(escaped).should == unescaped
+          expect(EBNF::LL1::Lexer.unescape_string(escaped)).to eq unescaped
         end
       end
     end
@@ -90,7 +90,7 @@ describe EBNF::LL1::Lexer do
         "tab:\t" => 'tab:\\t',
       }.each_pair do |unescaped, escaped|
         it "unescapes #{unescaped.inspect}" do
-          EBNF::LL1::Lexer.unescape_string(escaped).should == unescaped
+          expect(EBNF::LL1::Lexer.unescape_string(escaped)).to eq unescaped
         end
       end
     end
@@ -100,73 +100,73 @@ describe EBNF::LL1::Lexer do
     describe "numeric literals" do
       it "tokenizes unsigned integer literals" do
         tokenize(%q(42)) do |tokens|
-          tokens.should have(1).element
-          tokens.first.type.should  == :INTEGER
-          tokens.first.value.should == "42"
+          expect(tokens).to have(1).element
+          expect(tokens.first.type).to eq :INTEGER
+          expect(tokens.first.value).to eq "42"
         end
       end
 
       it "tokenizes positive integer literals" do
         tokenize(%q(+42)) do |tokens|
-          tokens.should have(1).element
-          tokens.last.type.should  == :INTEGER
-          tokens.last.value.should == "+42"
+          expect(tokens).to have(1).element
+          expect(tokens.last.type).to eq :INTEGER
+          expect(tokens.first.value).to eq "+42"
         end
       end
 
       it "tokenizes negative integer literals" do
         tokenize(%q(-42)) do |tokens|
-          tokens.should have(1).element
-          tokens.last.type.should  == :INTEGER
-          tokens.last.value.should == "-42"
+          expect(tokens).to have(1).element
+          expect(tokens.last.type).to eq :INTEGER
+          expect(tokens.first.value).to eq "-42"
         end
       end
 
       it "tokenizes unsigned decimal literals" do
         tokenize(%q(3.1415)) do |tokens|
-          tokens.should have(1).element
-          tokens.first.type.should  == :DECIMAL
-          tokens.first.value.should == "3.1415"
+          expect(tokens).to have(1).element
+          expect(tokens.first.type).to eq :DECIMAL
+          expect(tokens.first.value).to eq "3.1415"
         end
       end
 
       it "tokenizes positive decimal literals" do
         tokenize(%q(+3.1415)) do |tokens|
-          tokens.should have(1).element
-          tokens.last.type.should  == :DECIMAL
-          tokens.last.value.should == "+3.1415"
+          expect(tokens).to have(1).element
+          expect(tokens.last.type).to eq :DECIMAL
+          expect(tokens.first.value).to eq "+3.1415"
         end
       end
 
       it "tokenizes negative decimal literals" do
         tokenize(%q(-3.1415)) do |tokens|
-          tokens.should have(1).element
-          tokens.last.type.should  == :DECIMAL
-          tokens.last.value.should == "-3.1415"
+          expect(tokens).to have(1).element
+          expect(tokens.last.type).to eq :DECIMAL
+          expect(tokens.first.value).to eq "-3.1415"
         end
       end
 
       it "tokenizes unsigned double literals" do
         tokenize(%q(1e6)) do |tokens|
-          tokens.should have(1).element
-          tokens.first.type.should  == :DOUBLE
-          tokens.first.value.should == "1e6"
+          expect(tokens).to have(1).element
+          expect(tokens.first.type).to eq :DOUBLE
+          expect(tokens.first.value).to eq "1e6"
         end
       end
 
       it "tokenizes positive double literals" do
         tokenize(%q(+1e6)) do |tokens|
-          tokens.should have(1).element
-          tokens.last.type.should  == :DOUBLE
-          tokens.last.value.should == "+1e6"
+          expect(tokens).to have(1).element
+          expect(tokens.last.type).to eq :DOUBLE
+          expect(tokens.first.value).to eq "+1e6"
         end
       end
 
       it "tokenizes negative double literals" do
         tokenize(%q(-1e6)) do |tokens|
-          tokens.should have(1).element
-          tokens.last.type.should  == :DOUBLE
-          tokens.last.value.should == "-1e6"
+          expect(tokens).to have(1).element
+          expect(tokens.last.type).to eq :DOUBLE
+          expect(tokens.first.value).to eq "-1e6"
         end
       end
     end
@@ -175,9 +175,9 @@ describe EBNF::LL1::Lexer do
       %w|^^ ( ) [ ] , ; . a true false @base @prefix|.each do |string|
         it "tokenizes the #{string.inspect} string" do
           tokenize(string) do |tokens|
-            tokens.should have(1).element
-            tokens.first.type.should  == nil
-            tokens.first.value.should == string
+            expect(tokens).to have(1).element
+            expect(tokens.first.type).to eq nil
+            expect(tokens.first.value).to eq string
           end
         end
       end
@@ -186,13 +186,13 @@ describe EBNF::LL1::Lexer do
     describe "comments" do
       it "ignores the remainder of the current line" do
         tokenize("# :foo :bar", "# :foo :bar\n", "# :foo :bar\r\n") do |tokens|
-          tokens.should have(0).elements
+          expect(tokens).to have(0).elements
         end
       end
 
       it "ignores leading whitespace" do
         tokenize(" # :foo :bar", "\n# :foo :bar", "\r\n# :foo :bar") do |tokens|
-          tokens.should have(0).elements
+          expect(tokens).to have(0).elements
         end
       end
     end
@@ -208,7 +208,7 @@ describe EBNF::LL1::Lexer do
         inputs.each do |input, lineno|
           lexer = tokenize(input)
           lexer.to_a # consumes the input
-          lexer.lineno.should == lineno
+          expect(lexer.lineno).to eq lineno
         end
       end
     end
@@ -217,8 +217,8 @@ describe EBNF::LL1::Lexer do
       it "annotates tokens with the current line number" do
         results = %w(1 2 3 4)
         tokenize("1\n2\n3\n4").each_token do |token|
-          token.type.should == :INTEGER
-          token.value.should == results.shift
+          expect(token.type).to eq :INTEGER
+          expect(token.value).to eq results.shift
         end
       end
     end
@@ -227,22 +227,22 @@ describe EBNF::LL1::Lexer do
       subject {tokenize("1\n2\n3\n4")}
       it "returns tokens in first/shift sequence" do
         %w{1 2 3 4}.each do |v|
-          subject.first.value.should == v
+          expect(subject.first.value).to eq v
           subject.shift
         end
-        subject.first.should be_nil
+        expect(subject.first).to be_nil
       end
 
       context "with unrecognized token" do
         subject {tokenize("< space > 'foo' 1")}
 
         it "raises error with #first" do
-          lambda {subject.first}.should raise_error(EBNF::LL1::Lexer::Error, /Invalid token/)
+          expect {subject.first}.to raise_error(EBNF::LL1::Lexer::Error, /Invalid token/)
         end
         
         it "recovers to next token" do
           subject.recover
-          subject.first.value.should == "'foo'"
+          expect(subject.first.value).to eq "'foo'"
         end
       end
     end
@@ -259,7 +259,7 @@ describe EBNF::LL1::Lexer do
       lexer = EBNF::LL1::Lexer.tokenize(input, terminals,
                                         :unescape_terms => unescape_terms,
                                         :whitespace => WHITESPACE)
-      lexer.should be_a(EBNF::LL1::Lexer)
+      expect(lexer).to be_a(EBNF::LL1::Lexer)
       yield lexer.to_a if block_given?
     end
     lexer

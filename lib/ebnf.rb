@@ -4,6 +4,7 @@ module EBNF
   autoload :LL1,      "ebnf/ll1"
   autoload :Parser,   "ebnf/parser"
   autoload :Rule,     "ebnf/rule"
+  autoload :Writer,   "ebnf/writer"
   autoload :VERSION,  "ebnf/version"
 
   ##

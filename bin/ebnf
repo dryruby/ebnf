@@ -48,7 +48,7 @@ OPT_ARGS = [
   ["--bnf",             GetoptLong::NO_ARGUMENT,      "Transform EBNF to BNF"],
   ["--evaluate","-e",   GetoptLong::REQUIRED_ARGUMENT,"Evaluate argument as a JSON-LD document"],
   ["--ll1",             GetoptLong::REQUIRED_ARGUMENT,"Generate First/Follow rules, argument is start symbol"],
-  ["--format", "-f",    GetoptLong::REQUIRED_ARGUMENT,"Specify output format one of ttl, sxp, or rb"],
+  ["--format", "-f",    GetoptLong::REQUIRED_ARGUMENT,"Specify output format one of ebnf, ttl, sxp, or rb"],
   ["--input-format",    GetoptLong::REQUIRED_ARGUMENT,"Specify input format one of ebnf or sxp"],
   ["--mod-name",        GetoptLong::REQUIRED_ARGUMENT,"Module name used when creating ruby tables"],
   ["--output", "-o",    GetoptLong::REQUIRED_ARGUMENT,"Output to the specified file path"],
@@ -104,6 +104,7 @@ ebnf.make_bnf if options[:bnf] || options[:ll1]
 ebnf.first_follow(options[:ll1]) if options[:ll1]
 
 res = case options[:output_format]
+when :ebnf    then ebnf.to_s
 when :sxp     then ebnf.to_sxp
 when :ttl     then ebnf.to_ttl(options[:prefix], options[:namespace])
 when :rb      then dump_tables(ARGV[0], ebnf, out, options)

@@ -175,7 +175,13 @@ module EBNF
       require 'sxp' unless defined?(SXP)
       SXP::Generator.string(ast.sort_by{|r| r.id.to_f}.map(&:for_sxp))
     end
-    def to_s; to_sxp; end
+
+    ##
+    # Output formatted EBNF
+    # @return [String]
+    def to_s
+      Writer.string(*ast)
+    end
 
     def dup
       new_obj = super

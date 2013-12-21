@@ -7,51 +7,51 @@ describe EBNF::LL1::Scanner do
   describe ".new" do
     it "initializes with a StringIO" do
       scanner = EBNF::LL1::Scanner.new(StringIO.new("line1\nline2\n"))
-      scanner.rest.should == "line1\nline2\n"
-      scanner.eos?.should be_false
+      expect(scanner.rest).to eq "line1\nline2\n"
+      expect(scanner).not_to be_eos
     end
     
     it "initializes with a string" do
       scanner = EBNF::LL1::Scanner.new("line1\nline2\n")
-      scanner.rest.should == "line1\nline2\n"
-      scanner.eos?.should be_false
+      expect(scanner.rest).to eq "line1\nline2\n"
+      expect(scanner).not_to be_eos
     end
     
     it "encodes input to UTF-8", :pending => !"".respond_to?(:force_encoding) do
-      f = mock("input")
-      f.should_receive(:read).and_return("ascii".force_encoding(Encoding::ASCII_8BIT))
-      f.should_receive(:gets).and_return("utf8".force_encoding(Encoding::UTF_8))
-      f.should_receive(:eof?).and_return(false, false, true)
+      f = double("input")
+      expect(f).to receive(:read).and_return("ascii".force_encoding(Encoding::ASCII_8BIT))
+      expect(f).to receive(:gets).and_return("utf8".force_encoding(Encoding::UTF_8))
+      expect(f).to receive(:eof?).and_return(false, false, true)
       scanner = EBNF::LL1::Scanner.new(f)
       s = scanner.rest
-      s.should == "asciiutf8"
-      s.encoding.should == Encoding::UTF_8
+      expect(s).to eq "asciiutf8"
+      expect(s.encoding).to eq Encoding::UTF_8
     end
   end
   
   describe "#eos?" do
     it "returns true if at both eos and eof" do
       scanner = EBNF::LL1::Scanner.new(StringIO.new(""))
-      scanner.eos?.should be_true
+      expect(scanner).to be_eos
     end
   end
   
   describe "#rest" do
     it "returns remaining scanner contents if not at eos" do
       scanner = EBNF::LL1::Scanner.new(StringIO.new("foo\n"))
-      scanner.rest.should == "foo\n"
+      expect(scanner.rest).to eq "foo\n"
     end
     
     it "returns next line from file if at eos" do
       scanner = EBNF::LL1::Scanner.new(StringIO.new("\nfoo\n"))
-      scanner.rest.should == "\nfoo\n"
+      expect(scanner.rest).to eq "\nfoo\n"
       scanner.scan(/\s*/m)
-      scanner.rest.should == "foo\n"
+      expect(scanner.rest).to eq "foo\n"
     end
     
     it "returns \"\" if at eos and eof" do
       scanner = EBNF::LL1::Scanner.new(StringIO.new(""))
-      scanner.rest.should == ""
+      expect(scanner.rest).to eq ""
     end
   end
   
@@ -59,17 +59,17 @@ describe EBNF::LL1::Scanner do
     context "simple terminals" do
       it "returns a word" do
         scanner = EBNF::LL1::Scanner.new(StringIO.new("foo bar"))
-        scanner.scan(/\w+/).should == "foo"
+        expect(scanner.scan(/\w+/)).to eq "foo"
       end
       
       it "returns a STRING_LITERAL_QUOTE" do
         scanner = EBNF::LL1::Scanner.new(StringIO.new("'string' foo"))
-        scanner.scan(/'((?:[^\x27\x5C\x0A\x0D])*)'/).should == "'string'"
+        expect(scanner.scan(/'((?:[^\x27\x5C\x0A\x0D])*)'/)).to eq "'string'"
       end
       
       it "returns a STRING_LITERAL_LONG_SINGLE_QUOTE" do
         scanner = EBNF::LL1::Scanner.new(StringIO.new("'''\nstring\nstring''' foo"))
-        scanner.scan(/'''((?:(?:'|'')?(?:[^'\\])+)*)'''/m).should == "'''\nstring\nstring'''"
+        expect(scanner.scan(/'''((?:(?:'|'')?(?:[^'\\])+)*)'''/m)).to eq "'''\nstring\nstring'''"
       end
       
       it "scans a multi-line string" do
@@ -78,7 +78,7 @@ describe EBNF::LL1::Scanner do
           '''
         )
         scanner = EBNF::LL1::Scanner.new(StringIO.new(string))
-        scanner.scan(/'''((?:(?:'|'')?(?:[^'\\])+)*)'''/m).should_not be_empty
+        expect(scanner.scan(/'''((?:(?:'|'')?(?:[^'\\])+)*)'''/m)).not_to be_empty
       end
       
       it "scans a longer multi-line string" do
@@ -87,7 +87,7 @@ describe EBNF::LL1::Scanner do
           '''
         )
         scanner = EBNF::LL1::Scanner.new(StringIO.new(string))
-        scanner.scan(/'''((?:(?:'|'')?(?:[^'\\])+)*)'''/m).should_not be_empty
+        expect(scanner.scan(/'''((?:(?:'|'')?(?:[^'\\])+)*)'''/m)).not_to be_empty
       end
     end
   end

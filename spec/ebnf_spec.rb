@@ -22,12 +22,21 @@ describe EBNF do
                         |   STRING1
                         |   STRING2
                         |   '(' expression ')'
-        
       } => %{((rule primary "9" (alt HEX RANGE ENUM O_RANGE O_ENUM STRING1 STRING2 (seq "(" expression ")"))))},
+      %{
+        primary     ::= HEX
+                    |   RANGE
+                    |   ENUM 
+                    |   O_RANGE
+                    |   O_ENUM
+                    |   STRING1
+                    |   STRING2
+                    |   '(' expression ')'
+      } => %{((rule primary (alt HEX RANGE ENUM O_RANGE O_ENUM STRING1 STRING2 (seq "(" expression ")"))))},
     }.each do |input, expected|
       it "parses #{input.inspect}" do
         @debug = []
-        EBNF.parse(input).ast.to_sxp.should produce(expected, @debug)
+        expect(EBNF.parse(input).ast.to_sxp).to produce(expected, @debug)
       end
     end
   end

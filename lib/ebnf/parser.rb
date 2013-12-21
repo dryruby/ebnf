@@ -35,7 +35,7 @@ module EBNF
           yield r unless r.empty?
           @lineno = cur_lineno
           r = s
-        when s = scanner.scan(/\[(?=[\w\.]+\])/)
+        when s = scanner.scan(/(?:\[[\w\.]+\])\s*[\w\.]+\s*::=/)
           # Found rule start, if we've already collected a rule, yield it
           yield r unless r.empty?
           #debug("eachRule(rule)") { "[#{cur_lineno}] #{s.inspect}" }
@@ -53,13 +53,14 @@ module EBNF
     end
   
     ##
-    # Parse a rule into a rule number, a symbol and an expression
+    # Parse a rule into an optional rule number, a symbol and an expression
     #
     # @param [String] rule
     # @return [Rule]
     def ruleParts(rule)
       num_sym, expr = rule.split('::=', 2).map(&:strip)
       num, sym = num_sym.split(']', 2).map(&:strip)
+      num, sym = "", num if sym.nil?
       num = num[1..-1]
       r = Rule.new(sym && sym.to_sym, num, expression(expr).first, :ebnf => self)
       debug("ruleParts") { r.inspect }
