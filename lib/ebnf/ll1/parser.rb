@@ -674,7 +674,7 @@ module EBNF::LL1
       if recover
         # Recover from lexer error so that we can not bail out too early
         @lexer.recover
-        error("get_token", "With input '#{e.input}': #{e.message}}")
+        error("get_token", "With input '#{e.input}': #{e.message}}", token: e.token, lineno: e.lineno)
         retry
       end
       raise
