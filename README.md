@@ -102,14 +102,16 @@ and [First Follow Notation-3 rules](http://www.w3.org/2000/10/swap/grammar/first
 Full documentation available on [Rubydoc.info][EBNF doc].
 
 ## Future Work
-* Detect FIRST/FOLLOW and left-recursion conflicts.
 * Generate HTML output of parser results.
 * Better LL(1) parser tests
+* Either generate [Packrat parser][Packrat] for a [Parsing Regular Expression Grammar][PEG], or integrate with [Treetop][] or similar.
 
 ## Author
 * [Gregg Kellogg](http://github.com/gkellogg) - <http://greggkellogg.net/>
 
 ## Contributing
+This repository uses [Git Flow](https://github.com/nvie/gitflow) to mange development and release activity. All submissions _must_ be on a feature branch based on the _develop_ branch to ease staging and integration.
+
 * Do your best to adhere to the existing coding conventions and idioms.
 * Don't use hard tabs, and don't leave trailing whitespace on any line.
 * Do document every method you add using [YARD][] annotations. Read the
@@ -139,3 +141,6 @@ A copy of the [Turtle EBNF][] and derived parser files are included in the repos
 [LL(1) Parser]: http://en.wikipedia.org/wiki/LL_parser
 [Tokenizer]:    http://en.wikipedia.org/wiki/Lexical_analysis#Tokenizer
 [Turtle EBNF]:  http://dvcs.w3.org/hg/rdf/file/default/rdf-turtle/turtle.bnf
+[Packrat]:      http://pdos.csail.mit.edu/~baford/packrat/thesis/
+[PEG]:          http://en.wikipedia.org/wiki/Parsing_expression_grammar
+[Treetop]:      http://rubygems.org/gems/treetop
