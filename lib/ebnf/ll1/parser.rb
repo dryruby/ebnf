@@ -274,15 +274,14 @@ module EBNF::LL1
 
             if token.nil?
               if  !(first_include?(cur_prod, :_eps) && follow_include?(cur_prod, :_eof))
-                # End of file, and production does not contain eps, or it does, but follow does not contain eof 
-                raise Error.new("Unexpected end of input", :lineno => lineno, :production => cur_prod)
+                # End of file, and production does not contain eps, or it does, but follow does not contain eof
+                error("parse(production)", "Unexpected end of input", lineno: lineno, production: cur_prod, raise: true)
               else
                 debug("parse(production)") {"End of input prod #{cur_prod.inspect}"}
               end
             elsif prod_branch = @branch[cur_prod]
               sequence = prod_branch.fetch(token.representation) do
-                raise Error.new("Expected one of #{@first[cur_prod].inspect}",
-                                :token => token, :production => cur_prod)
+                error("parse(production)", "Expected one of #{@first[cur_prod].inspect}", token: token, production: cur_prod, raise: true)
               end
               debug("parse(production)") do
                 "token #{token.representation.inspect} " +
@@ -292,7 +291,7 @@ module EBNF::LL1
               end
               todo_stack.last[:terms] += sequence
             else
-              raise Error.new("Unexpected", :production => cur_prod, :token => token)
+              error("parse(production)", "Unexpected", token: token, production: cur_prod, raise: true)
             end
           end
 
@@ -308,7 +307,7 @@ module EBNF::LL1
             elsif terminals.include?(term) 
               # If term is a terminal, then it is an error if token does not
               # match it
-              raise Error.new("Expected #{term.inspect}", :token => get_token, :production => cur_prod)
+              error("parse(token)", "Expected #{term.inspect}", token: get_token, production: cur_prod, raise: true)
             else
               token = get_token
 
@@ -338,13 +337,12 @@ module EBNF::LL1
             # Skip to the next valid terminal
             @lexer.recover
             error("parse(#{e.class})", "With input '#{e.input}': #{e.message}",
-                  :production => @productions.last)
-            e = Error.new(e.message, token: e.token, lineno: e.lineno)
+                  production: @productions.last, token: e.token)
           else
             # Otherwise, the terminal is fine, just not for this production.
             @lexer.shift
             error("parse(#{e.class})", "#{e.message}",
-                  :production => @productions.last, :token => e.token)
+                  production: @productions.last, token: e.token)
           end
 
           # Get the list of follows for this sequence, this production and the stacked productions.
@@ -389,7 +387,6 @@ module EBNF::LL1
           end
 
           @recovering = false
-          raise e if @options[:validate]
         ensure
           # After completing the last production in a sequence, pop down until we find a production
           #
@@ -468,14 +465,18 @@ module EBNF::LL1
     # @option options [Token] :token
     # @see {#debug}
     def error(node, message, options = {})
+      lineno = @lineno || (options[:token].lineno if options[:token])
       m = "ERROR "
-      m += "[line: #{@lineno}] " if @lineno
+      m += "[line: #{lineno}] " if lineno
       m += message
       m += " (found #{options[:token].inspect})" if options[:token]
       m += ", production = #{options[:production].inspect}" if options[:production]
       @error_log << m unless @recovering
       @recovering = true
       debug(node, m, options.merge(:level => 0))
+      if options[:raise] || @options[:validate]
+        raise Error.new(m, lineno: lineno, token: options[:token], production: options[:production])
+      end
     end
 
     ##
