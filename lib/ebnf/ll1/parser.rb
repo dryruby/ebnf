@@ -465,7 +465,7 @@ module EBNF::LL1
     # @option options [Token] :token
     # @see {#debug}
     def error(node, message, options = {})
-      lineno = @lineno || (options[:token].lineno if options[:token])
+      lineno = @lineno || (options[:token].lineno if options[:token].respond_to?(:lineno))
       m = "ERROR "
       m += "[line: #{lineno}] " if lineno
       m += message
