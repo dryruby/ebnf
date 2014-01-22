@@ -161,11 +161,14 @@ module EBNF
     # Transform EBNF rule to BNF rules:
     #
     #   * Transform (a [n] rule (op1 (op2))) into two rules:
-    #     (a [n] rule (op1 a.2))
+    #     (a [n] rule (op1 _a_1))
     #     (_a_1 [n.1] rule (op2))
-    #   * Transform (a rule (opt b)) into (a rule (alt _empty "foo"))
+    #   * Transform (a rule (opt b)) into (a rule (alt _empty b))
     #   * Transform (a rule (star b)) into (a rule (alt _empty (seq b a)))
     #   * Transform (a rule (plus b)) into (a rule (seq b (star b)
+    #
+    # Transformation includes information used to re-construct non-transformed
+    # AST representation
     # @return [Array<Rule>]
     def to_bnf
       return [self] unless rule?
