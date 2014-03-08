@@ -183,6 +183,13 @@ module EBNF
       Writer.string(*ast)
     end
 
+    ##
+    # Output formatted EBNF as HTML
+    # @return [String]
+    def to_html
+      Writer.html(*ast)
+    end
+
     def dup
       new_obj = super
       new_obj.instance_variable_set(:@ast, @ast.dup)

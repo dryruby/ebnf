@@ -39,11 +39,27 @@ module EBNF
     end
 
     ##
+    # Write formatted rules to an IO like object as HTML
+    #
+    # @param  [Object] out
+    # @param  [Array<Rule>] rules
+    # @return [Object]
+    def self.html(*rules)
+      require 'stringio' unless defined?(StringIO)
+      buf = StringIO.new
+      Writer.new(rules, out: buf, html: true)
+      buf.string
+    end
+
+    ##
     # @param [Array<Rule>] rules
     # @param [Hash{Symbol => Object}] options
     # @option options [Symbol] :format
     # @option options [#write] :out ($stdout)
+    # @option options [Boolean] :html (false)
+    #   Format as HTML
     def initialize(rules, options = {})
+      @options = options.dup
       out = options.fetch(:out, $stdio)
       #fmt = options.fetch(:format, :ebnf)
 
@@ -57,6 +73,17 @@ module EBNF
         lhs_length += max_id + 3
       end
       rhs_length = LINE_LENGTH - lhs_length
+
+      if @options[:html]
+        # Output as formatted HTML
+        require 'haml'
+        html = Haml::Engine.new(HAML_DESC).render(self, rules: rules) do |rule|
+          formatted_expr = format(rule.expr)
+          formatted_expr.length > rhs_length ? format(rule.expr, "\n") : formatted_expr
+        end
+        out.write html
+        return
+      end
 
       # Format each rule, considering the available rhs size
       rules.each do |rule|
@@ -78,24 +105,36 @@ module EBNF
     protected
     # Format the expression part of a rule
     def format(expr, sep = nil)
-      return expr.to_s if expr.is_a?(Symbol)
-      return %("#{escape(expr)}") if expr.is_a?(String)
+      return (@options[:html] ? %(<a href="#grammar-production-#{expr}">#{expr}</a>) : expr.to_s) if expr.is_a?(Symbol)
+      return (@options[:html] ? %("<code class="grammar-literal">#{escape(expr)}</code>") : %("#{escape(expr)}")) if expr.is_a?(String)
+      parts = {
+        alt:    (@options[:html] ? "<code>|</code> " : "| "),
+        diff:   (@options[:html] ? "<code>-</code> " : "| "),
+        star:   (@options[:html] ? "<code>*</code> " : "*"),
+        plus:   (@options[:html] ? "<code>+</code> " : "+"),
+        opt:    (@options[:html] ? "<code>?</code> " : "?")
+      }
+      lbrac  =  (@options[:html] ? "<code>[</code> " : "[")
+      rbrac  =  (@options[:html] ? "<code>]</code> " : "]")
+      lparen = (@options[:html] ? "<code>(</code> " : "(")
+      rparen = (@options[:html] ? "<code>)</code> " : ")")
+      dash   = (@options[:html] ? "<code>-</code> " : "-")
 
       case expr.first
       when :alt, :diff
-        this_sep = (sep ? sep : " ") + {alt: "| ", diff: "- "}[expr.first.to_sym]
+        this_sep = (sep ? sep : " ") + parts[expr.first.to_sym]
         expr[1..-1].map {|e| format(e)}.join(this_sep)
       when :star, :plus, :opt
         raise "Expected star expression to have a single operand" unless expr.length == 2
-        char = {star: "*", plus: "+", opt: "?"}[expr.first.to_sym]
+        char = parts[expr.first.to_sym]
         r = format(expr[1])
         (r.start_with?("(") || Array(expr[1]).length == 1) ? "#{r}#{char}" : "(#{r})#{char}"
       when :range
         parts = expr.last.split(/(?!\\)-/, 2)
-        "[" + parts.map {|e| format(e)[1..-2]}.join("-") + "]"
+        lbrac + parts.map {|e| format(e)[1..-2]}.join(dash) + rbrac
       when :seq
         this_sep = (sep ? sep : " ")
-        expr[1..-1].map {|e| r = format(e); Array(e).length > 2 ? "(#{r})" : r}.join(this_sep)
+        expr[1..-1].map {|e| r = format(e); Array(e).length > 2 ? "#{lparen}#{r}#{rparen}" : r}.join(this_sep)
       else
         raise "Unknown operator: #{expr.first}"
       end
@@ -121,5 +160,22 @@ module EBNF
       end
       buffer
     end
+
+    HAML_DESC = %q(
+      %table.grammar
+        %tbody#grammar-productions
+          - rules.each do |rule|
+            %tr{id: "grammar-production-#{rule.sym}"}
+              - if rule.pass?
+                %td{colspan: 3}
+                  %code<="@pass"
+              - else
+                %td<= "[#{rule.id}]"
+                %td<
+                  %code<= rule.sym
+                %td<= "::="
+              %td
+                != yield rule
+    ).gsub(/^      /, '')
   end
 end
