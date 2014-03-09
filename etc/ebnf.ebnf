@@ -6,7 +6,7 @@
     [3] rule        ::= LHS expression
 
     # Use a terminal to match the identifier, rule name and assignment due to
-    # confusion between the identifier ENUM
+    # confusion between the identifier RANGE
 
     [4] expression  ::= alt
 
@@ -21,9 +21,7 @@
     [9] primary     ::= HEX
                     |   SYMBOL
                     |   RANGE
-                    |   ENUM
                     |   O_RANGE
-                    |   O_ENUM
                     |   STRING1
                     |   STRING2
                     |   '(' expression ')'
@@ -32,36 +30,38 @@
 
     @terminals
 
-    [11] LHS        ::= ENUM? SYMBOL "::="
+    [11] LHS        ::= ('[' SYMBOL+ ']')? SYMBOL "::="
 
     [12] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | "_" | ".")+
 
-    [13] HEX        ::= '#x' ([0-9]|[a-f]|[A-F]) ([0-9]|[a-f]|[A-F]) 
+    [13] HEX        ::= '#x' ([0-9]|[a-f]|[A-F])+
 
-    [14] RANGE      ::= '[' R_CHAR '-' R_CHAR ']'
+    # Range is any combination of R_CHAR '-' R_CHAR or R_CHAR+
+    [14] RANGE      ::= '[' ((R_BEGIN (HEX | R_CHAR)) | (HEX | R_CHAR))+ ']'
 
-    [15] ENUM       ::= '[' R_CHAR+ ']'
+    # Range is any combination of R_CHAR '-' R_CHAR or R_CHAR+ preceded by ^
+    [15] O_RANGE    ::= '[^' ((R_BEGIN (HEX | R_CHAR)) | (HEX | R_CHAR))+ ']'
 
-    [16] O_RANGE    ::= '[^' R_CHAR '-' R_CHAR ']'
+    # Strings are unescaped Unicode, excepting control characters and hash (#)
+    [16] STRING1    ::= '"' (CHAR - '"')* '"'
 
-    [17] O_ENUM     ::= '[^' R_CHAR+ ']'
+    [17] STRING2    ::= "'" (CHAR - "'"))* "'"
 
-    [18] STRING1    ::= '"' ((CHAR - '"') | "\t")* '"'
+    [18] CHAR       ::= HEX
+                      | [#x20#x21#x22]
+                      | [#x24-#x00FFFFFF]
 
-    [19] STRING2    ::= "'" ((CHAR - "'") | "\t")* "'"
+    [19] R_CHAR     ::= CHAR - ']'
 
-    [20] CHAR       ::= HEX
-                      | ('\\' [\\trn"'])
-                      | [^\t\r\n]
-
-    [21] R_CHAR     ::= CHAR - "]"
+    [20] R_BEGIN    ::= (HEX | R_CHAR) "-"
 
     # Should be able to do this inline, but not until terminal regular expressions are created automatically
-    [22] POSTFIX    ::= [?*+]
+    [21] POSTFIX    ::= [?*+]
 
-    [23] PASS       ::= ( [#x20\t\r\n]
-                        | ( '#' | '//' ) [^\r\n]*
+    [22] PASS       ::= ( [#00-#20]
+                        | ( '#' | '//' ) [^#0A#0D]*
                         | '/*' (( '*' [^/] )? | [^*] )* '*/'
+                        | '(*' (( '*' [^)] )? | [^*] )* '*)'
                         )+
 
     # Should be able to do this inline, but not until terminal regular expressions are created automatically

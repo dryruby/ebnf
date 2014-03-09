@@ -315,7 +315,7 @@ describe EBNF::Base do
           expect(r).to be_rule
         end
       end
-      it "values should all be Hashs whos keys are terminals" do
+      it "values should all be Hash's whose keys are terminals" do
         values = subject.values
         expect(values.map(&:class).uniq).to eq [Hash]
         values.map(&:keys).flatten.uniq.each do |t|
