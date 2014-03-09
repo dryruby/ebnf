@@ -67,9 +67,9 @@ module EBNF
       max_id = rules.max_by {|r| r.id.to_s.length}.id.to_s.length
       max_sym = rules.max_by {|r| r.sym.to_s.length}.sym.to_s.length
       lhs_length = max_sym + 3
-      lhs_fmt = "%-#{max_sym}{sym} ::= "
+      lhs_fmt = "%<sym>-#{max_sym}s ::= "
       if max_id > 0
-        lhs_fmt = "%-#{max_id+2}{id} " + lhs_fmt
+        lhs_fmt = "%<id>-#{max_id+2}s " + lhs_fmt
         lhs_length += max_id + 3
       end
       rhs_length = LINE_LENGTH - lhs_length
