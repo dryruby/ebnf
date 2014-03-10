@@ -31,7 +31,9 @@ describe EBNF::Base do
       %{[18.1]  _SolutionModifier_1 ::= _empty | GroupClause} =>
         %{((rule _SolutionModifier_1 "18.1" (alt _empty GroupClause)))},
       %q{[18] STRING1    ::= '"' (CHAR | [\t\'\[\]\(\)\-])* '"'} =>
-        %q{((terminal STRING1 "18" (seq "\"" (star (alt CHAR (range "\t'[]()-"))) "\"")))}
+        %q{((terminal STRING1 "18" (seq "\"" (star (alt CHAR (range "\t'[]()-"))) "\"")))},
+      %q{[161s] WS ::= #x20 | #x9 | #xD | #xA} =>
+        %q{((terminal WS "161s" (alt (hex "#x20") (hex "#x9") (hex "#xD") (hex "#xA"))))},
     }.each do |input, expected|
       it "parses #{input.inspect}" do
         expect(parse(input).ast.to_sxp).to produce(expected, @debug)

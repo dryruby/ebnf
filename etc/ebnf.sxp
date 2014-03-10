@@ -27,7 +27,7 @@
  (terminal PASS "22"
   (plus
    (alt
-    (range "#00-#20")
-    (seq (alt "#" "//") (star (range "^#0A#0D")))
+    (range "#x00-#x20")
+    (seq (alt "#" "//") (star (range "^#x0A#x0D")))
     (seq "/*" (star (alt (opt (seq "*" (range "^/"))) (range "^*"))) "*/")
     (seq "(*" (star (alt (opt (seq "*" (range "^)"))) (range "^*"))) "*)")) )) )

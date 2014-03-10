@@ -42,7 +42,6 @@ module EBNF
     ##
     # Write formatted rules to an IO like object as HTML
     #
-    # @param  [Object] out
     # @param  [Array<Rule>] rules
     # @return [Object]
     def self.html(*rules)
@@ -110,13 +109,17 @@ module EBNF
       if expr.is_a?(String)
         if expr.length == 1
           return format_char(expr)
+        elsif expr =~ /\A#x\h+/
+          return (@options[:html] ? %(<code class="grammar-char-escape">#{expr}</code>) : expr)
+        elsif expr =~ /"/
+          return (@options[:html] ? %('<code class="grammar-literal">#{escape(expr, "'")}</code>') : %('#{escape(expr, "'")}'))
         else
-          return (@options[:html] ? %("<code class="grammar-literal">#{escape(expr)}</code>") : %("#{escape(expr)}"))
+          return (@options[:html] ? %("<code class="grammar-literal">#{escape(expr, '"')}</code>") : %("#{escape(expr, '"')}"))
         end
       end
       parts = {
         alt:    (@options[:html] ? "<code>|</code> " : "| "),
-        diff:   (@options[:html] ? "<code>-</code> " : "| "),
+        diff:   (@options[:html] ? "<code>-</code> " : "- "),
         star:   (@options[:html] ? "<code>*</code> " : "*"),
         plus:   (@options[:html] ? "<code>+</code> " : "+"),
         opt:    (@options[:html] ? "<code>?</code> " : "?")
@@ -133,6 +136,8 @@ module EBNF
         char = parts[expr.first.to_sym]
         r = format(expr[1])
         (r.start_with?("(") || Array(expr[1]).length == 1) ? "#{r}#{char}" : "(#{r})#{char}"
+      when :hex
+        (@options[:html] ? %(<code class="grammar-char-escape">#{expr.last}</code>) : expr.last)
       when :range
         format_range(expr.last)
       when :seq
@@ -146,10 +151,9 @@ module EBNF
     # Format a single-character string, prefering hex for non-main ASCII
     def format_char(c)
       case c.ord
-      when 0x22         then (@options[:html] ? %(&quot;<code class="grammar-literal">"</code>&quot;) : %{'"'})
-      when 0x23         then (@options[:html] ? %(<code class="grammar-char-escape">#x23</code>&quot;) : %{#x23})
-      when (0x30..0x7e) then (@options[:html] ? %("<code class="grammar-literal">#{c}</code>") : %{"#{c}"})
-      else                   (@options[:html] ? %(<code class="grammar-char-escape">#{escape_hex(c)}</code>&quot;) : escape_hex(c))
+      when 0x22         then (@options[:html] ? %('<code class="grammar-literal">"</code>') : %{'"'})
+      when (0x23..0x7e) then (@options[:html] ? %("<code class="grammar-literal">#{c}</code>") : %{"#{c}"})
+      else                   (@options[:html] ? %(<code class="grammar-char-escape">#{escape_hex(c)}</code>) : escape_hex(c))
       end
     end
 
@@ -160,29 +164,29 @@ module EBNF
       dash   = (@options[:html] ? "<code>-</code> " : "-")
 
       buffer = lbrac
-      scanner = StringScanner.new(string)
-      while !scanner.eos?
+      s = StringScanner.new(string)
+      while !s.eos?
         case
-        when s.match(/\A\w+/)
-          buffer << (@options[:html] ? %(<code class="grammar-literal>#{s.matched}</code>") : s.matched)
-        when s.match(/\A#x\h+/)
-          buffer << (@options[:html] ? %(<code class="grammar-char-escape>#{s.matched}</code>") : s.matched)
-        when s.match("-")
+        when s.scan(/\A[!"\u0024-\u007e]+/)
+          buffer << (@options[:html] ? %(<code class="grammar-literal">#{s.matched}</code>) : s.matched)
+        when s.scan(/\A#x\h+/)
+          buffer << (@options[:html] ? %(<code class="grammar-char-escape">#{s.matched}</code>) : s.matched)
+        when s.scan(/\A-/)
           buffer << dash
         else
-          buffer << (@options[:html] ? %(<code class="grammar-char-escape">#{escape_hex(s.getch)}</code>&quot;) : escape_hex(s.getch))
+          buffer << (@options[:html] ? %(<code class="grammar-char-escape">#{escape_hex(s.getch)}</code>) : escape_hex(s.getch))
         end
       end
       buffer + rbrac
     end
 
     # Escape a string, using as many UTF-8 characters as possible
-    def escape(string)
+    def escape(string, quote = '"')
       buffer = ""
       string.each_char do |c|
         buffer << case (u = c.ord)
         when (0x00..0x1f) then "#x%02X" % u
-        when 0x23         then "#x%02X" % u
+        when quote.ord    then "#x%02X" % u
         else                   c
         end
       end
@@ -191,9 +195,9 @@ module EBNF
 
     def escape_hex(u)
       fmt = case u.ord
-      when 0x0000..0x00ff then "#%02X"
-      when 0x0100..0xffff then "#%04X"
-      else                     "#x08X"
+      when 0x0000..0x00ff then "#x%02X"
+      when 0x0100..0xffff then "#x%04X"
+      else                     "#x%08X"
       end
       sprintf(fmt, u.ord)
     end

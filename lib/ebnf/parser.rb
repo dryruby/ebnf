@@ -22,7 +22,7 @@ module EBNF
         when s = scanner.scan(%r(\(\*([^\*]|\*[^\)])*\*\))m)
           # Eat comments (* .. *)
           debug("eachRule(comment)") { "[#{cur_lineno}] #{s.inspect}" }
-        when s = scanner.scan(%r((#|//).*$))
+        when s = scanner.scan(%r((#(?!x)|//).*$))
           # Eat comments
           cur_lineno += s.count("\n")
           debug("eachRule(comment)") { "[#{cur_lineno}] #{s.inspect}" }
@@ -276,7 +276,7 @@ module EBNF
         l, s = s[1..-1].split(/(?<=[^\\])\]/, 2)
         [[:range, LL1::Lexer.unescape_string(l)], s]
       when '#' # HEX
-        s.match(/(#\w+)(.*)$/)
+        s.match(/(#x\h+)(.*)$/)
         l, s = $1, $2
         [[:hex, l], s]
       when /[\w\.]/ # SYMBOL

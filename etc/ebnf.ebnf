@@ -58,8 +58,8 @@
     # Should be able to do this inline, but not until terminal regular expressions are created automatically
     [21] POSTFIX    ::= [?*+]
 
-    [22] PASS       ::= ( [#00-#20]
-                        | ( '#' | '//' ) [^#0A#0D]*
+    [22] PASS       ::= ( [#x00-#x20]
+                        | ( '#' | '//' ) [^#x0A#x0D]*
                         | '/*' (( '*' [^/] )? | [^*] )* '*/'
                         | '(*' (( '*' [^)] )? | [^*] )* '*)'
                         )+
