@@ -17,9 +17,12 @@ module EBNF
           cur_lineno += s.count("\n")
           #debug("eachRule(ws)") { "[#{cur_lineno}] #{s.inspect}" }
         when s = scanner.scan(%r(/\*([^\*]|\*[^\/])*\*/)m)
-          # Eat comments
+          # Eat comments /* .. */
           debug("eachRule(comment)") { "[#{cur_lineno}] #{s.inspect}" }
-        when s = scanner.scan(%r((#|//).*$))
+        when s = scanner.scan(%r(\(\*([^\*]|\*[^\)])*\*\))m)
+          # Eat comments (* .. *)
+          debug("eachRule(comment)") { "[#{cur_lineno}] #{s.inspect}" }
+        when s = scanner.scan(%r((#(?!x)|//).*$))
           # Eat comments
           cur_lineno += s.count("\n")
           debug("eachRule(comment)") { "[#{cur_lineno}] #{s.inspect}" }
@@ -266,18 +269,18 @@ module EBNF
     def terminal(s)
       s = s.strip
       case m = s[0,1]
-      when '"', "'" # STRING1 or STRING2 Terminated by line-end or whitespace
-        l, s = s[1..-1].split(m.rstrip  , 2)
+      when '"', "'" # STRING1 or STRING2
+        l, s = s[1..-1].split(m.rstrip, 2)
         [LL1::Lexer.unescape_string(l), s]
-      when '[' # ENUM, RANGE, O_ENUM, or O_RANGE
+      when '[' # RANGE, O_RANGE
         l, s = s[1..-1].split(/(?<=[^\\])\]/, 2)
         [[:range, LL1::Lexer.unescape_string(l)], s]
       when '#' # HEX
-        s.match(/(#\w+)(.*)$/)
+        s.match(/(#x\h+)(.*)$/)
         l, s = $1, $2
         [[:hex, l], s]
       when /[\w\.]/ # SYMBOL
-        s.match(/(\w+)(.*)$/)
+        s.match(/([\w\.]+)(.*)$/)
         l, s = $1, $2
         [l.to_sym, s]
       when '@' # @pass or @terminals

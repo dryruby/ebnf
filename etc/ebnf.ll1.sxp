@@ -18,15 +18,15 @@
   (alt "@terminals" pass))
  (rule rule "3" (first LHS) (follow "@pass" "@terminals" LHS _eof) (seq LHS expression))
  (rule _rule_1 "3.1"
-  (first "(" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 SYMBOL)
+  (first "(" HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
   (follow "@pass" "@terminals" LHS _eof)
   (seq expression))
  (rule expression "4"
-  (first "(" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 SYMBOL)
+  (first "(" HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
   (follow ")" "@pass" "@terminals" LHS _eof)
   (seq alt))
  (rule alt "5"
-  (first "(" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 SYMBOL)
+  (first "(" HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
   (follow ")" "@pass" "@terminals" LHS _eof)
   (seq seq _alt_1))
  (rule _alt_1 "5.1"
@@ -50,115 +50,114 @@
   (follow ")" "@pass" "@terminals" LHS _eof)
   (seq _alt_1))
  (rule _alt_6 "5.6"
-  (first "(" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 SYMBOL)
+  (first "(" HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
   (follow ")" "@pass" "@terminals" LHS _eof "|")
   (seq seq))
  (rule seq "6"
-  (first "(" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 SYMBOL)
+  (first "(" HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
   (follow ")" "@pass" "@terminals" LHS _eof "|")
   (seq diff _seq_1))
  (rule _seq_1 "6.1"
-  (first "(" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 SYMBOL _eps)
+  (first "(" HEX O_RANGE RANGE STRING1 STRING2 SYMBOL _eps)
   (follow ")" "@pass" "@terminals" LHS _eof "|")
   (alt _empty _seq_2))
  (rule _seq_2 "6.2"
-  (first "(" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 SYMBOL)
+  (first "(" HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
   (follow ")" "@pass" "@terminals" LHS _eof "|")
   (seq diff _seq_1))
  (rule _seq_3 "6.3"
-  (first "(" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 SYMBOL _eps)
+  (first "(" HEX O_RANGE RANGE STRING1 STRING2 SYMBOL _eps)
   (follow ")" "@pass" "@terminals" LHS _eof "|")
   (seq _seq_1))
  (rule _seq_4 "6.4"
-  (first "(" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 SYMBOL _eps)
+  (first "(" HEX O_RANGE RANGE STRING1 STRING2 SYMBOL _eps)
   (follow ")" "@pass" "@terminals" LHS _eof "|")
   (seq _seq_1))
  (rule diff "7"
-  (first "(" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 SYMBOL)
-  (follow "(" ")" "@pass" "@terminals" ENUM HEX LHS O_ENUM O_RANGE RANGE
-   STRING1 STRING2 SYMBOL _eof "|" )
+  (first "(" HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
+  (follow "(" ")" "@pass" "@terminals" HEX LHS O_RANGE RANGE STRING1 STRING2
+   SYMBOL _eof "|" )
   (seq postfix _diff_1))
  (rule _diff_1 "7.1"
   (first "-" _eps)
-  (follow "(" ")" "@pass" "@terminals" ENUM HEX LHS O_ENUM O_RANGE RANGE
-   STRING1 STRING2 SYMBOL _eof "|" )
+  (follow "(" ")" "@pass" "@terminals" HEX LHS O_RANGE RANGE STRING1 STRING2
+   SYMBOL _eof "|" )
   (alt _empty _diff_2))
  (rule _diff_2 "7.2"
   (first "-")
-  (follow "(" ")" "@pass" "@terminals" ENUM HEX LHS O_ENUM O_RANGE RANGE
-   STRING1 STRING2 SYMBOL _eof "|" )
+  (follow "(" ")" "@pass" "@terminals" HEX LHS O_RANGE RANGE STRING1 STRING2
+   SYMBOL _eof "|" )
   (seq "-" postfix))
  (rule _diff_3 "7.3"
   (first "-" _eps)
-  (follow "(" ")" "@pass" "@terminals" ENUM HEX LHS O_ENUM O_RANGE RANGE
-   STRING1 STRING2 SYMBOL _eof "|" )
+  (follow "(" ")" "@pass" "@terminals" HEX LHS O_RANGE RANGE STRING1 STRING2
+   SYMBOL _eof "|" )
   (seq _diff_1))
  (rule _diff_4 "7.4"
-  (first "(" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 SYMBOL)
-  (follow "(" ")" "@pass" "@terminals" ENUM HEX LHS O_ENUM O_RANGE RANGE
-   STRING1 STRING2 SYMBOL _eof "|" )
+  (first "(" HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
+  (follow "(" ")" "@pass" "@terminals" HEX LHS O_RANGE RANGE STRING1 STRING2
+   SYMBOL _eof "|" )
   (seq postfix))
  (rule postfix "8"
-  (first "(" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 SYMBOL)
-  (follow "(" ")" "-" "@pass" "@terminals" ENUM HEX LHS O_ENUM O_RANGE RANGE
-   STRING1 STRING2 SYMBOL _eof "|" )
+  (first "(" HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
+  (follow "(" ")" "-" "@pass" "@terminals" HEX LHS O_RANGE RANGE STRING1
+   STRING2 SYMBOL _eof "|" )
   (seq primary _postfix_1))
  (rule _postfix_1 "8.1"
   (first POSTFIX _eps)
-  (follow "(" ")" "-" "@pass" "@terminals" ENUM HEX LHS O_ENUM O_RANGE RANGE
-   STRING1 STRING2 SYMBOL _eof "|" )
+  (follow "(" ")" "-" "@pass" "@terminals" HEX LHS O_RANGE RANGE STRING1
+   STRING2 SYMBOL _eof "|" )
   (alt _empty POSTFIX))
  (rule _postfix_2 "8.2"
   (first POSTFIX _eps)
-  (follow "(" ")" "-" "@pass" "@terminals" ENUM HEX LHS O_ENUM O_RANGE RANGE
-   STRING1 STRING2 SYMBOL _eof "|" )
+  (follow "(" ")" "-" "@pass" "@terminals" HEX LHS O_RANGE RANGE STRING1
+   STRING2 SYMBOL _eof "|" )
   (seq _postfix_1))
  (rule primary "9"
-  (first "(" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 SYMBOL)
-  (follow "(" ")" "-" "@pass" "@terminals" ENUM HEX LHS O_ENUM O_RANGE POSTFIX
-   RANGE STRING1 STRING2 SYMBOL _eof "|" )
-  (alt HEX SYMBOL RANGE ENUM O_RANGE O_ENUM STRING1 STRING2 _primary_1))
+  (first "(" HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
+  (follow "(" ")" "-" "@pass" "@terminals" HEX LHS O_RANGE POSTFIX RANGE
+   STRING1 STRING2 SYMBOL _eof "|" )
+  (alt HEX SYMBOL RANGE O_RANGE STRING1 STRING2 _primary_1))
  (rule _primary_1 "9.1"
   (first "(")
-  (follow "(" ")" "-" "@pass" "@terminals" ENUM HEX LHS O_ENUM O_RANGE POSTFIX
-   RANGE STRING1 STRING2 SYMBOL _eof "|" )
+  (follow "(" ")" "-" "@pass" "@terminals" HEX LHS O_RANGE POSTFIX RANGE
+   STRING1 STRING2 SYMBOL _eof "|" )
   (seq "(" expression ")"))
  (rule _primary_2 "9.2"
-  (first "(" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 SYMBOL)
-  (follow "(" ")" "-" "@pass" "@terminals" ENUM HEX LHS O_ENUM O_RANGE POSTFIX
-   RANGE STRING1 STRING2 SYMBOL _eof "|" )
+  (first "(" HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
+  (follow "(" ")" "-" "@pass" "@terminals" HEX LHS O_RANGE POSTFIX RANGE
+   STRING1 STRING2 SYMBOL _eof "|" )
   (seq expression ")"))
  (rule _primary_3 "9.3"
   (first ")")
-  (follow "(" ")" "-" "@pass" "@terminals" ENUM HEX LHS O_ENUM O_RANGE POSTFIX
-   RANGE STRING1 STRING2 SYMBOL _eof "|" )
+  (follow "(" ")" "-" "@pass" "@terminals" HEX LHS O_RANGE POSTFIX RANGE
+   STRING1 STRING2 SYMBOL _eof "|" )
   (seq ")"))
  (rule pass "10"
   (first "@pass")
   (follow "@pass" "@terminals" LHS _eof)
   (seq "@pass" expression))
  (rule _pass_1 "10.1"
-  (first "(" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 SYMBOL)
+  (first "(" HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
   (follow "@pass" "@terminals" LHS _eof)
   (seq expression))
- (terminal LHS "11" (seq (opt ENUM) SYMBOL "::="))
+ (terminal LHS "11" (seq (opt (seq "[" (plus SYMBOL) "]")) SYMBOL "::="))
  (terminal SYMBOL "12" (plus (alt (range "a-z") (range "A-Z") (range "0-9") "_" ".")))
- (terminal HEX "13"
-  (seq "#x"
-   (alt (range "0-9") (range "a-f") (range "A-F"))
-   (alt (range "0-9") (range "a-f") (range "A-F"))) )
- (terminal RANGE "14" (seq "[" R_CHAR "-" R_CHAR "]"))
- (terminal ENUM "15" (seq "[" (plus R_CHAR) "]"))
- (terminal O_RANGE "16" (seq "[^" R_CHAR "-" R_CHAR "]"))
- (terminal O_ENUM "17" (seq "[^" (plus R_CHAR) "]"))
- (terminal STRING1 "18" (seq "\"" (star (alt (diff CHAR "\"") "\t")) "\""))
- (terminal STRING2 "19" (seq "'" (star (alt (diff CHAR "'") "\t")) "'"))
- (terminal CHAR "20" (alt HEX (seq "\\" (range "\\trn\"'")) (range "^\t\r\n")))
- (terminal R_CHAR "21" (diff CHAR "]"))
- (terminal POSTFIX "22" (range "?*+"))
- (terminal PASS "23"
+ (terminal HEX "13" (seq "#x" (plus (alt (range "0-9") (range "a-f") (range "A-F")))))
+ (terminal RANGE "14"
+  (seq "[" (plus (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR))) "]"))
+ (terminal O_RANGE "15"
+  (seq "[^" (plus (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR))) "]"))
+ (terminal STRING1 "16" (seq "\"" (star (diff CHAR "\"")) "\""))
+ (terminal STRING2 "17" (seq "'" (diff CHAR "'")))
+ (terminal CHAR "18" (alt HEX (range "#x20#x21#x22") (range "#x24-#x00FFFFFF")))
+ (terminal R_CHAR "19" (diff CHAR "]"))
+ (terminal R_BEGIN "20" (seq (alt HEX R_CHAR) "-"))
+ (terminal POSTFIX "21" (range "?*+"))
+ (terminal PASS "22"
   (plus
    (alt
-    (range "#x20\t\r\n")
-    (seq (alt "#" "//") (star (range "^\r\n")))
-    (seq "/*" (star (alt (opt (seq "*" (range "^/"))) (range "^*"))) "*/")) )) )
+    (range "#x00-#x20")
+    (seq (alt "#" "//") (star (range "^#x0A#x0D")))
+    (seq "/*" (star (alt (opt (seq "*" (range "^/"))) (range "^*"))) "*/")
+    (seq "(*" (star (alt (opt (seq "*" (range "^)"))) (range "^*"))) "*)")) )) )

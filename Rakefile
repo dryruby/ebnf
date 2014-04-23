@@ -41,7 +41,7 @@ namespace :doc do
 end
 
 desc 'Create versions of ebnf files in etc'
-task :etc => %w{etc/ebnf.sxp etc/ebnf.ll1.sxp etc/ebnf.rb etc/turtle.sxp etc/turtle.ll1.sxp etc/turtle.rb}
+task :etc => %w{etc/ebnf.sxp etc/ebnf.ll1.sxp etc/ebnf.html etc/ebnf.rb etc/turtle.sxp etc/turtle.ll1.sxp etc/turtle.rb}
 
 rule ".sxp" => %w{.ebnf} do |t|
   puts "build #{t.name}"
@@ -54,6 +54,10 @@ end
 
 file "etc/ebnf.rb" => "etc/ebnf.ebnf" do
   %x(bin/ebnf --ll1 ebnf -f rb -o etc/ebnf.rb etc/ebnf.ebnf)
+end
+
+file "etc/ebnf.html" => "etc/ebnf.ebnf" do
+  %x(bin/ebnf --format html -o etc/ebnf.html etc/ebnf.ebnf)
 end
 
 file "etc/turtle.ll1.sxp" => "etc/turtle.ebnf" do

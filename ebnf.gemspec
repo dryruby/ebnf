@@ -28,18 +28,12 @@ Gem::Specification.new do |gem|
 
   gem.required_ruby_version = '>= 1.9.2'
   gem.requirements          = []
-  gem.add_runtime_dependency     'sxp'
-  gem.add_runtime_dependency     'rdf'  # Required by sxp
-  gem.add_development_dependency 'rspec',           '>= 2.12.0'
-  gem.add_development_dependency 'yard' ,           '>= 0.8.3'
+  gem.add_runtime_dependency     'sxp',             '~> 0.1', '>= 0.1.3'
+  gem.add_runtime_dependency     'rdf',             '~> 1.1' # Required by sxp
+  gem.add_runtime_dependency     'haml',            '~> 4.0' # For HTML formatted Output
+  gem.add_development_dependency 'rspec',           '~> 2.14'
+  gem.add_development_dependency 'yard',            '~> 0.8'
   gem.add_development_dependency 'rake'
-
-  # Rubinius has it's own dependencies
-  if RUBY_ENGINE == "rbx" && RUBY_VERSION >= "2.1.0"
-    gem.add_runtime_dependency     "rubysl-bigdecimal"
-    gem.add_runtime_dependency     "rubysl-rational"
-    gem.add_development_dependency "rubysl-prettyprint"
-  end
 
   gem.post_install_message  = nil
 end

@@ -9,26 +9,25 @@
  (rule diff "7" (seq postfix (opt (seq "-" postfix))))
  (rule postfix "8" (seq primary (opt POSTFIX)))
  (rule primary "9"
-  (alt HEX SYMBOL RANGE ENUM O_RANGE O_ENUM STRING1 STRING2 (seq "(" expression ")")))
+  (alt HEX SYMBOL RANGE O_RANGE STRING1 STRING2 (seq "(" expression ")")))
  (rule pass "10" (seq "@pass" expression))
- (terminal LHS "11" (seq (opt ENUM) SYMBOL "::="))
+ (terminal LHS "11" (seq (opt (seq "[" (plus SYMBOL) "]")) SYMBOL "::="))
  (terminal SYMBOL "12" (plus (alt (range "a-z") (range "A-Z") (range "0-9") "_" ".")))
- (terminal HEX "13"
-  (seq "#x"
-   (alt (range "0-9") (range "a-f") (range "A-F"))
-   (alt (range "0-9") (range "a-f") (range "A-F"))) )
- (terminal RANGE "14" (seq "[" R_CHAR "-" R_CHAR "]"))
- (terminal ENUM "15" (seq "[" (plus R_CHAR) "]"))
- (terminal O_RANGE "16" (seq "[^" R_CHAR "-" R_CHAR "]"))
- (terminal O_ENUM "17" (seq "[^" (plus R_CHAR) "]"))
- (terminal STRING1 "18" (seq "\"" (star (alt (diff CHAR "\"") "\t")) "\""))
- (terminal STRING2 "19" (seq "'" (star (alt (diff CHAR "'") "\t")) "'"))
- (terminal CHAR "20" (alt HEX (seq "\\" (range "\\trn\"'")) (range "^\t\r\n")))
- (terminal R_CHAR "21" (diff CHAR "]"))
- (terminal POSTFIX "22" (range "?*+"))
- (terminal PASS "23"
+ (terminal HEX "13" (seq "#x" (plus (alt (range "0-9") (range "a-f") (range "A-F")))))
+ (terminal RANGE "14"
+  (seq "[" (plus (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR))) "]"))
+ (terminal O_RANGE "15"
+  (seq "[^" (plus (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR))) "]"))
+ (terminal STRING1 "16" (seq "\"" (star (diff CHAR "\"")) "\""))
+ (terminal STRING2 "17" (seq "'" (diff CHAR "'")))
+ (terminal CHAR "18" (alt HEX (range "#x20#x21#x22") (range "#x24-#x00FFFFFF")))
+ (terminal R_CHAR "19" (diff CHAR "]"))
+ (terminal R_BEGIN "20" (seq (alt HEX R_CHAR) "-"))
+ (terminal POSTFIX "21" (range "?*+"))
+ (terminal PASS "22"
   (plus
    (alt
-    (range "#x20\t\r\n")
-    (seq (alt "#" "//") (star (range "^\r\n")))
-    (seq "/*" (star (alt (opt (seq "*" (range "^/"))) (range "^*"))) "*/")) )) )
+    (range "#x00-#x20")
+    (seq (alt "#" "//") (star (range "^#x0A#x0D")))
+    (seq "/*" (star (alt (opt (seq "*" (range "^/"))) (range "^*"))) "*/")
+    (seq "(*" (star (alt (opt (seq "*" (range "^)"))) (range "^*"))) "*)")) )) )
