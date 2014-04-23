@@ -57,7 +57,23 @@ module EBNF::LL1
       feed_me
       super
     end
-    
+
+    ##
+    # Returns true if the scan pointer is at the end of the string
+    #
+    # @return [Boolean]
+    def eos?
+      feed_me
+      super
+    end
+
+    ##
+    # Set the scan pointer to the end of the string and clear matching data
+    def terminate
+      feed_me
+      super
+    end
+
     ##
     # Tries to match with `pattern` at the current position.
     #
