@@ -26,14 +26,15 @@ Gem::Specification.new do |gem|
   gem.test_files            = %w()
   gem.has_rdoc              = false
 
-  gem.required_ruby_version = '>= 1.9.2'
+  gem.required_ruby_version = '>= 1.9.3'
   gem.requirements          = []
   gem.add_runtime_dependency     'sxp',             '~> 0.1', '>= 0.1.3'
   gem.add_runtime_dependency     'rdf',             '~> 1.1' # Required by sxp
   gem.add_runtime_dependency     'haml',            '~> 4.0' # For HTML formatted Output
-  gem.add_development_dependency 'rspec',           '~> 2.14'
+  gem.add_development_dependency 'rspec',           '~> 3.0'
+  gem.add_development_dependency 'rspec-its',       '~> 1.0'
   gem.add_development_dependency 'yard',            '~> 0.8'
-  gem.add_development_dependency 'rake'
+  gem.add_development_dependency 'rake',            '~> 10.4'
 
   gem.post_install_message  = nil
 end
