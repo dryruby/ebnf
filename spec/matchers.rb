@@ -15,7 +15,7 @@ RSpec::Matchers.define :produce do |expected, info|
     expect(normalize(actual)).to eq normalize(expected)
   end
   
-  failure_message_for_should do |actual|
+  failure_message do |actual|
     "Expected: #{normalize(expected)}\n" +
     "Actual  : #{normalize(actual)}\n" +
     "Raw     : #{expected}\n" +

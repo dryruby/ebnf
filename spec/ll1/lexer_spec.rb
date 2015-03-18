@@ -100,7 +100,7 @@ describe EBNF::LL1::Lexer do
     describe "numeric literals" do
       it "tokenizes unsigned integer literals" do
         tokenize(%q(42)) do |tokens|
-          expect(tokens).to have(1).element
+          expect(tokens.length).to eql 1
           expect(tokens.first.type).to eq :INTEGER
           expect(tokens.first.value).to eq "42"
         end
@@ -108,7 +108,7 @@ describe EBNF::LL1::Lexer do
 
       it "tokenizes positive integer literals" do
         tokenize(%q(+42)) do |tokens|
-          expect(tokens).to have(1).element
+          expect(tokens.length).to eql 1
           expect(tokens.last.type).to eq :INTEGER
           expect(tokens.first.value).to eq "+42"
         end
@@ -116,7 +116,7 @@ describe EBNF::LL1::Lexer do
 
       it "tokenizes negative integer literals" do
         tokenize(%q(-42)) do |tokens|
-          expect(tokens).to have(1).element
+          expect(tokens.length).to eql 1
           expect(tokens.last.type).to eq :INTEGER
           expect(tokens.first.value).to eq "-42"
         end
@@ -124,7 +124,7 @@ describe EBNF::LL1::Lexer do
 
       it "tokenizes unsigned decimal literals" do
         tokenize(%q(3.1415)) do |tokens|
-          expect(tokens).to have(1).element
+          expect(tokens.length).to eql 1
           expect(tokens.first.type).to eq :DECIMAL
           expect(tokens.first.value).to eq "3.1415"
         end
@@ -132,7 +132,7 @@ describe EBNF::LL1::Lexer do
 
       it "tokenizes positive decimal literals" do
         tokenize(%q(+3.1415)) do |tokens|
-          expect(tokens).to have(1).element
+          expect(tokens.length).to eql 1
           expect(tokens.last.type).to eq :DECIMAL
           expect(tokens.first.value).to eq "+3.1415"
         end
@@ -140,7 +140,7 @@ describe EBNF::LL1::Lexer do
 
       it "tokenizes negative decimal literals" do
         tokenize(%q(-3.1415)) do |tokens|
-          expect(tokens).to have(1).element
+          expect(tokens.length).to eql 1
           expect(tokens.last.type).to eq :DECIMAL
           expect(tokens.first.value).to eq "-3.1415"
         end
@@ -148,7 +148,7 @@ describe EBNF::LL1::Lexer do
 
       it "tokenizes unsigned double literals" do
         tokenize(%q(1e6)) do |tokens|
-          expect(tokens).to have(1).element
+          expect(tokens.length).to eql 1
           expect(tokens.first.type).to eq :DOUBLE
           expect(tokens.first.value).to eq "1e6"
         end
@@ -156,7 +156,7 @@ describe EBNF::LL1::Lexer do
 
       it "tokenizes positive double literals" do
         tokenize(%q(+1e6)) do |tokens|
-          expect(tokens).to have(1).element
+          expect(tokens.length).to eql 1
           expect(tokens.last.type).to eq :DOUBLE
           expect(tokens.first.value).to eq "+1e6"
         end
@@ -164,7 +164,7 @@ describe EBNF::LL1::Lexer do
 
       it "tokenizes negative double literals" do
         tokenize(%q(-1e6)) do |tokens|
-          expect(tokens).to have(1).element
+          expect(tokens.length).to eql 1
           expect(tokens.last.type).to eq :DOUBLE
           expect(tokens.first.value).to eq "-1e6"
         end
@@ -175,7 +175,7 @@ describe EBNF::LL1::Lexer do
       %w|^^ ( ) [ ] , ; . a true false @base @prefix|.each do |string|
         it "tokenizes the #{string.inspect} string" do
           tokenize(string) do |tokens|
-            expect(tokens).to have(1).element
+            expect(tokens.length).to eql 1
             expect(tokens.first.type).to eq nil
             expect(tokens.first.value).to eq string
           end
@@ -186,13 +186,13 @@ describe EBNF::LL1::Lexer do
     describe "comments" do
       it "ignores the remainder of the current line" do
         tokenize("# :foo :bar", "# :foo :bar\n", "# :foo :bar\r\n") do |tokens|
-          expect(tokens).to have(0).elements
+          expect(tokens.length).to eql 0
         end
       end
 
       it "ignores leading whitespace" do
         tokenize(" # :foo :bar", "\n# :foo :bar", "\r\n# :foo :bar") do |tokens|
-          expect(tokens).to have(0).elements
+          expect(tokens.length).to eql 0
         end
       end
     end

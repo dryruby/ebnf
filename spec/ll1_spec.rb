@@ -18,7 +18,7 @@ describe EBNF::Base do
 
         context "start rule" do
           subject {rule}
-          its(:start) {expect(rule.start).to be_true}
+          its(:start) {expect(rule.start).to be_truthy}
           its(:follow) {should include(:_eof)}
         end
       end
