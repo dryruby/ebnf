@@ -263,7 +263,9 @@ module EBNF::LL1
         #STDERR.puts "match[#{term.type}] #{scanner.rest[0..100].inspect} against #{term.regexp.inspect}" #if term.type == :STRING_LITERAL_SINGLE_QUOTE
         if matched = scanner.scan(term.regexp)
           #STDERR.puts "  matched #{term.type.inspect}: #{matched.inspect}"
-          return token(term.type, term.canonicalize(matched))
+          tok = token(term.type, term.canonicalize(matched))
+          @lineno += matched.count("\n")
+          return tok
         end
       end
       nil

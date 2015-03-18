@@ -22,14 +22,14 @@ out = STDOUT
 OPT_ARGS = [
   ["--dbg",             GetoptLong::NO_ARGUMENT,      "Turn on debugging output"],
   ["--bnf",             GetoptLong::NO_ARGUMENT,      "Transform EBNF to BNF"],
-  ["--evaluate","-e",   GetoptLong::REQUIRED_ARGUMENT,"Evaluate argument as a JSON-LD document"],
+  ["--evaluate","-e",   GetoptLong::REQUIRED_ARGUMENT,"Evaluate argument as an EBNF document"],
   ["--ll1",             GetoptLong::REQUIRED_ARGUMENT,"Generate First/Follow rules, argument is start symbol"],
   ["--format", "-f",    GetoptLong::REQUIRED_ARGUMENT,"Specify output format one of ebnf, html, ttl, sxp, or rb"],
   ["--input-format",    GetoptLong::REQUIRED_ARGUMENT,"Specify input format one of ebnf or sxp"],
   ["--mod-name",        GetoptLong::REQUIRED_ARGUMENT,"Module name used when creating ruby tables"],
   ["--output", "-o",    GetoptLong::REQUIRED_ARGUMENT,"Output to the specified file path"],
   ["--prefix", "-p",    GetoptLong::REQUIRED_ARGUMENT,"Prefix to use when generating Turtle"],
-  ["--progress", "-v",  GetoptLong::NO_ARGUMENT,     "Detail on execution"],
+  ["--progress", "-v",  GetoptLong::NO_ARGUMENT,      "Detail on execution"],
   ["--namespace", "-n", GetoptLong::REQUIRED_ARGUMENT,"Namespace to use when generating Turtle"],
   ["--help", "-?",      GetoptLong::NO_ARGUMENT,      "This message"]
 ]

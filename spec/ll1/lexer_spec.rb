@@ -197,8 +197,8 @@ describe EBNF::LL1::Lexer do
       end
     end
 
-    describe "white space" do
-      it "tracks the current line number" do
+    describe "line numbers" do
+      it "for white space" do
         inputs = {
           ""     => 1,
           "\n"   => 2,
@@ -210,6 +210,28 @@ describe EBNF::LL1::Lexer do
           lexer.to_a # consumes the input
           expect(lexer.lineno).to eq lineno
         end
+      end
+
+      it "tracks line numbers for STRING_LITERAL_LONG_QUOTE" do
+        input = %(
+        :Test a rdfs:Class ;
+          rdfs:subClassOf mf:ManifestEntry;
+          rdfs:label "Superclass of all CSVW tests" ;
+          rdfs:comment """
+            All CSVW tests have an input file referenced using `mf:action`. Positive
+            and Negative Evaluation Tests also have a result file referenced using
+            `mf:result` . Other tests may take different inputs and options as defined
+            for each test class.
+          """ ;
+          :b :c .
+        )
+        expect(tokenize(input).to_a.map(&:lineno)).to include(
+          2, 2, 2, 2,
+          3, 3, 3,
+          4, 4, 4,
+          5, 5, 10,
+          11, 11, 11
+        )
       end
     end
 
