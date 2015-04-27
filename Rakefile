@@ -41,11 +41,20 @@ namespace :doc do
 end
 
 desc 'Create versions of ebnf files in etc'
-task :etc => %w{etc/ebnf.sxp etc/ebnf.ll1.sxp etc/ebnf.html etc/ebnf.rb etc/turtle.sxp etc/turtle.ll1.sxp etc/turtle.rb}
+task :etc => %w{
+    etc/ebnf.sxp etc/ebnf.ll1.sxp etc/ebnf.html etc/ebnf.rb
+    etc/turtle.sxp etc/turtle.ll1.sxp etc/turtle.html etc/turtle.rb
+    etc/sparql.sxp etc/sparql.ll1.sxp etc/sparql.html etc/sparql.rb
+  }
 
 rule ".sxp" => %w{.ebnf} do |t|
   puts "build #{t.name}"
   %x(bin/ebnf -o #{t.name} #{t.source})
+end
+
+rule ".html" => %w{.ebnf} do |t|
+  puts "build #{t.name}"
+  %x(bin/ebnf --format html -o #{t.name} #{t.source})
 end
 
 file "etc/ebnf.ll1.sxp" => "etc/ebnf.ebnf" do
@@ -56,14 +65,18 @@ file "etc/ebnf.rb" => "etc/ebnf.ebnf" do
   %x(bin/ebnf --ll1 ebnf -f rb -o etc/ebnf.rb etc/ebnf.ebnf)
 end
 
-file "etc/ebnf.html" => "etc/ebnf.ebnf" do
-  %x(bin/ebnf --format html -o etc/ebnf.html etc/ebnf.ebnf)
-end
-
 file "etc/turtle.ll1.sxp" => "etc/turtle.ebnf" do
   %x(bin/ebnf --ll1 turtleDoc -o etc/turtle.ll1.sxp etc/turtle.ebnf)
 end
 
 file "etc/turtle.rb" => "etc/turtle.ebnf" do
   %x(bin/ebnf --ll1 turtleDoc -f rb -o etc/turtle.rb etc/turtle.ebnf)
+end
+
+file "etc/sparql.ll1.sxp" => "etc/sparql.ebnf" do
+  %x(bin/ebnf --ll1 QueryUnit --ll1 UpdateUnit -o etc/sparql.ll1.sxp etc/sparql.ebnf)
+end
+
+file "etc/sparql.rb" => "etc/sparql.ebnf" do
+  %x(bin/ebnf --ll1 QueryUnit --ll1 UpdateUnit -f rb -o etc/sparql.rb etc/sparql.ebnf)
 end

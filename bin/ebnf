@@ -58,7 +58,7 @@ opts.each do |opt, arg|
   when '--evaluate'     then input = arg
   when '--input-format' then options[:format] = arg.to_sym
   when '--format'       then options[:output_format] = arg.to_sym
-  when '--ll1'          then options[:ll1] = arg.to_sym
+  when '--ll1'          then (options[:ll1] ||= []) <<arg.to_sym
   when '--mod-name'     then options[:mod_name] = arg
   when '--output'       then out = File.open(arg, "w")
   when '--prefix'       then options[:prefix] = arg
@@ -77,7 +77,7 @@ input = File.open(ARGV[0]) if ARGV[0]
 
 ebnf = EBNF.parse(input || STDIN, options)
 ebnf.make_bnf if options[:bnf] || options[:ll1]
-ebnf.first_follow(options[:ll1]) if options[:ll1]
+ebnf.first_follow(*options[:ll1]) if options[:ll1]
 
 res = case options[:output_format]
 when :ebnf    then ebnf.to_s
