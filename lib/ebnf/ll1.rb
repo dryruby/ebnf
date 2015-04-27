@@ -46,15 +46,18 @@ module EBNF
     #
     # @return [EBNF] self
     # @see http://en.wikipedia.org/wiki/LL_parser#Constructing_an_LL.281.29_parsing_table
-    # @param [Symbol] start
+    # @param [Array<Symbol>] starts
     #   Set of symbols which are start rules
-    def first_follow(start)
+    def first_follow(*starts)
       # Add _eof to follow all start rules
-      if @start = start
-        start_rule = find_rule(@start)
-        raise "No rule found for start symbol #{@start}" unless start_rule
-        start_rule.add_follow([:_eof])
-        start_rule.start = true
+      @starts = starts
+      if @start = starts.first
+        starts.each do |start|
+          start_rule = find_rule(start)
+          raise "No rule found for start symbol #{start}" unless start_rule
+          start_rule.add_follow([:_eof])
+          start_rule.start = true
+        end
       end
 
       # Comprehnsion rule, create shorter versions of all non-terminal sequences. This is necessary as the FF rules reference w', which is a comprehension.
@@ -204,10 +207,12 @@ module EBNF
       @branch = {}
       @already = []
       @agenda = []
-      do_production(@start)
-      while !@agenda.empty?
-        x = @agenda.shift
-        do_production(x)
+      @starts.each do |start|
+        do_production(start)
+        while !@agenda.empty?
+          x = @agenda.shift
+          do_production(x)
+        end
       end
 
       if !@errors.empty?
