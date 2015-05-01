@@ -36,6 +36,10 @@ Generate Terminal, [First/Follow and Branch][] tables as Ruby for parsing gramma
 
     ebnf.to_ruby
 
+Generate formatted grammar using HTML (requires [Haml][Haml] gem)
+
+    ebnf.to_html
+
 ### Creating terminal definitions and parser rules to parse generated grammars
 
 The parser is initialized to callbacks invoked on entry and exit
@@ -80,6 +84,7 @@ to each `terminal` and `production`. A trivial parser loop can be described as f
           raise RDF::ReaderError, e.message if validate?
         end
 
+
 ## EBNF Grammar
 The [EBNF][] variant used here is based on [W3C](http://w3.org/) [EBNF][] (see {file:etc/ebnf.ebnf EBNF grammar}) as defined in the
 [XML 1.0 recommendation](http://www.w3.org/TR/REC-xml/), with minor extensions.
@@ -102,7 +107,6 @@ and [First Follow Notation-3 rules](http://www.w3.org/2000/10/swap/grammar/first
 Full documentation available on [Rubydoc.info][EBNF doc].
 
 ## Future Work
-* Generate HTML output of parser results.
 * Better LL(1) parser tests
 * Either generate [Packrat parser][Packrat] for a [Parsing Regular Expression Grammar][PEG], or integrate with [Treetop][] or similar.
 
@@ -144,3 +148,4 @@ A copy of the [Turtle EBNF][] and derived parser files are included in the repos
 [Packrat]:      http://pdos.csail.mit.edu/~baford/packrat/thesis/
 [PEG]:          http://en.wikipedia.org/wiki/Parsing_expression_grammar
 [Treetop]:      http://rubygems.org/gems/treetop
+[Haml]:         http://rubygems.org/gems/haml
