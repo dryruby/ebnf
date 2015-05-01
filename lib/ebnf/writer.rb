@@ -76,13 +76,17 @@ module EBNF
 
       if @options[:html]
         # Output as formatted HTML
-        require 'haml'
-        html = Haml::Engine.new(HAML_DESC).render(self, rules: rules) do |rule|
-          formatted_expr = format(rule.expr)
-          formatted_expr.length > rhs_length ? format(rule.expr, "\n") : formatted_expr
+        begin
+          require 'haml'
+          html = Haml::Engine.new(HAML_DESC).render(self, rules: rules) do |rule|
+            formatted_expr = format(rule.expr)
+            formatted_expr.length > rhs_length ? format(rule.expr, "\n") : formatted_expr
+          end
+          out.write html
+          return
+        rescue LoadError
+          $stderr.puts "Generating HTML requires haml gem to be loaded"
         end
-        out.write html
-        return
       end
 
       # Format each rule, considering the available rhs size
