@@ -3,11 +3,17 @@ source "https://rubygems.org"
 gemspec :name => ""
 gem 'sxp',            git: "git://github.com/gkellogg/sxp-ruby.git"
 
-group :debug do
+group :development do
   gem "wirble"
-  gem "byebug", platform: :mri_21
+  gem "byebug", platforms: :mri_21
+  gem 'psych',      platforms: [:mri, :rbx]
   gem "rocco", platforms: :mri, git: "git://github.com/rtomayko/rocco.git"
-  gem "redcarpet", platforms: :mri
+  gem "redcarpet", platforms: :ruby
+end
+
+group :development, :test do
+  gem 'simplecov',  require: false
+  gem 'coveralls',  require: false
 end
 
 platforms :rbx do
