@@ -7,8 +7,8 @@ group :development do
   gem "wirble"
   gem "byebug", platforms: :mri_21
   gem 'psych',      platforms: [:mri, :rbx]
-  gem "rocco", platforms: :mri, git: "git://github.com/rtomayko/rocco.git"
-  gem "redcarpet", platforms: :ruby
+  gem "rocco", platforms: [:mri_20, :mri_21, :mri_22], git: "git://github.com/rtomayko/rocco.git"
+  gem "redcarpet", platforms: :mri
 end
 
 group :development, :test do
