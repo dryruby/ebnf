@@ -1,3 +1,4 @@
+# coding: utf-8
 require 'strscan'    unless defined?(StringScanner)
 
 module EBNF::LL1
@@ -9,8 +10,8 @@ module EBNF::LL1
   #
   # FIXME: Only implements the subset required by the Lexer for now.
   class Scanner < StringScanner
-    HIGH_WATER = 10240
-    LOW_WATER  = 2048     # Hopefully large enough to deal with long multi-line comments
+    HIGH_WATER = 512 * 1024     # Hopefully large enough to deal with long multi-line comments
+    LOW_WATER  = 4 * 1024
 
     ##
     # @return [IO, StringIO]
@@ -25,7 +26,7 @@ module EBNF::LL1
     # @option options[Integer] :low_water (LOW_WATER)
     # @return [Scanner]
     def initialize(input, options = {})
-      @options = options.merge(:high_water => HIGH_WATER, :low_water => LOW_WATER)
+      @options = options.merge(high_water: HIGH_WATER, low_water: LOW_WATER)
 
       if input.respond_to?(:read)
         @input = input
@@ -95,16 +96,22 @@ module EBNF::LL1
       feed_me
       encode_utf8 super
     end
-    
+
+    ##
+    # Ensures that the input buffer is full to the high water mark, or end of file. Useful when matching tokens that may be longer than the low water mark
+    def ensure_buffer_full
+      # Read up to high-water mark ensuring we're at an end of line
+      diff = @options[:high_water] - rest_size
+      string = encode_utf8(@input.read(diff))
+      string << encode_utf8(@input.gets) unless @input.eof?
+      self << string if string
+    end
+
   private
     # Maintain low-water mark
     def feed_me
       if rest_size < @options[:low_water] && @input && !@input.eof?
-        # Read up to high-water mark ensuring we're at an end of line
-        diff = @options[:high_water] - rest_size
-        string = encode_utf8(@input.read(diff))
-        string << encode_utf8(@input.gets) unless @input.eof?
-        self << string if string
+        ensure_buffer_full
       end
     end
 

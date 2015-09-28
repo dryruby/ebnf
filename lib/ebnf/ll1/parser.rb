@@ -206,6 +206,8 @@ module EBNF::LL1
     #   Detailed debug output
     # @option options [Boolean] :reset_on_start
     #   Reset the parser state if the start token set with `prod` is found in a production. This reduces the production stack depth growth, which is appropriate for some grammars.
+    # @option options[Integer] :high_water passed to lexer
+    # @option options[Integer] :low_water passed to lexer
     # @yield [context, *data]
     #   Yields for to return data to parser
     # @yieldparam [:statement, :trace] context

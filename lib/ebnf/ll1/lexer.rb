@@ -113,6 +113,8 @@ module EBNF::LL1
     # @param  [Hash{Symbol => Object}]        options
     # @option options [Regexp]                :whitespace
     #   Whitespace between tokens, including comments
+    # @option options[Integer] :high_water passed to scanner
+    # @option options[Integer] :low_water passed to scanner
     def initialize(input = nil, terminals = nil, options = {})
       @options        = options.dup
       @whitespace     = @options[:whitespace]
@@ -123,7 +125,7 @@ module EBNF::LL1
       raise Error, "Terminal patterns not defined" unless @terminals && @terminals.length > 0
 
       @lineno = 1
-      @scanner = Scanner.new(input)
+      @scanner = Scanner.new(input, options)
     end
 
     ##
@@ -261,6 +263,10 @@ module EBNF::LL1
     def match_token
       @terminals.each do |term|
         #STDERR.puts "match[#{term.type}] #{scanner.rest[0..100].inspect} against #{term.regexp.inspect}" #if term.type == :STRING_LITERAL_SINGLE_QUOTE
+        if term.partial_regexp && scanner.match?(term.partial_regexp) && !scanner.match?(term.regexp)
+          scanner.ensure_buffer_full
+        end
+
         if matched = scanner.scan(term.regexp)
           #STDERR.puts "  matched #{term.type.inspect}: #{matched.inspect}"
           tok = token(term.type, term.canonicalize(matched))
@@ -278,6 +284,7 @@ module EBNF::LL1
     class Terminal
       attr_reader :type
       attr_reader :regexp
+      attr_reader :partial_regexp
 
       # @param [Symbol, nil] type
       # @param [Regexp] regexp
@@ -287,8 +294,11 @@ module EBNF::LL1
       #   their canonical value
       # @option options [Boolean] :unescape
       #   Cause strings and codepoints to be unescaped.
+      # @option options [Regexp] :partial_regexp
+      #   A regular expression matching the beginning of this terminal; useful for terminals that match things longer than the scanner low water mark.
       def initialize(type, regexp, options = {})
         @type, @regexp, @options = type, regexp, options
+        @partial_regexp = options[:partial_regexp]
         @map = options.fetch(:map, {})
       end
       
@@ -326,8 +336,6 @@ module EBNF::LL1
       end
 
     end
-
-  protected
 
     ##
     # Constructs a new token object annotated with the current line number.
