@@ -36,7 +36,7 @@ describe EBNF::Base do
         %q{((terminal WS "161s" (alt (hex "#x20") (hex "#x9") (hex "#xD") (hex "#xA"))))},
     }.each do |input, expected|
       it "parses #{input.inspect}" do
-        expect(parse(input).ast.to_sxp).to produce(expected, @debug)
+        expect(parse(input).to_sxp).to produce(expected, @debug)
       end
 
       it "parses generated SXP for #{input.inspect}" do
@@ -45,6 +45,10 @@ describe EBNF::Base do
         expect(ast.to_sxp).to produce(expected, @debug)
       end
     end
+  end
+
+  describe "#dup" do
+    specify {expect(parse(%{[2]     Prolog    ::=           BaseDecl? PrefixDecl*}).dup).to be_a(EBNF::Base)}
   end
 
   def parse(value, options = {})

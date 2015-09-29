@@ -327,6 +327,15 @@ describe EBNF::Base do
         expect(symbols.map(&:class).uniq).to include(Symbol, String)
       end
     end
+
+    describe "EBNF::Base#to_ruby" do
+      it "writes tables to output" do
+        output = StringIO.new
+        ebnf.to_ruby(output)
+        output.rewind
+        expect(output.read).not_to be_empty
+      end
+    end
   end
 
   describe "#build_tables" do

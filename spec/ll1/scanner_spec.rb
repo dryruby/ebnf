@@ -91,4 +91,20 @@ describe EBNF::LL1::Scanner do
       end
     end
   end
+  
+  describe "#skip" do
+    it "skips input" do
+      scanner = EBNF::LL1::Scanner.new(StringIO.new("foo\n"))
+      scanner.skip(/^f/)
+      expect(scanner.rest).to eq "oo\n"
+    end
+  end
+  
+  describe "#terminate" do
+    it "skips to end of input" do
+      scanner = EBNF::LL1::Scanner.new(StringIO.new("foo\n"))
+      scanner.terminate
+      expect(scanner).to be_eos
+    end
+  end
 end

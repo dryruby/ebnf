@@ -27,6 +27,11 @@ describe EBNF::Base do
       %{((rule _empty "0" (seq))
          (rule primary "9" (alt HEX RANGE ENUM O_RANGE O_ENUM STRING1 STRING2 _primary_1 ))
          (rule _primary_1 "9.1" (seq "(" expression ")")))},
+      %{
+        [1]  R1 ::= 1 2
+        [2]  R2 ::= 1 2
+      } =>
+      %{ ((rule _empty "0" (seq)))}  
     }.each do |input, expected|
       it "parses #{input.inspect}" do
         expect(parse(input).make_bnf.ast.to_sxp).to produce(expected, @debug)

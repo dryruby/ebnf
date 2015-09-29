@@ -54,5 +54,7 @@ describe EBNF::LL1::Parser do
         subject.parse("foo", nil, :branch => {:a => {:b => ["c"]}})
       }.to raise_error(EBNF::LL1::Parser::Error, "Starting production not defined")
     end
+
+    it "should parse EBNF grammar and invoke rules"
   end
 end

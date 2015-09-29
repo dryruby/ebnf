@@ -142,7 +142,7 @@ module EBNF
     # Serializes this rule to an Turtle
     # @return [String]
     def to_ttl
-      @ebnf.debug("to_ttl") {inspect}
+      @ebnf.debug("to_ttl") {inspect} if @ebnf
       comment = orig.strip.
         gsub(/"""/, '\"\"\"').
         gsub("\\", "\\\\").
