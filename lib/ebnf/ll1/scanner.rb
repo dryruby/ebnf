@@ -117,7 +117,11 @@ module EBNF::LL1
 
     # Perform UTF-8 encoding of input
     def encode_utf8(string)
-      string.respond_to?(:force_encoding) ? string.force_encoding(Encoding::UTF_8) : string
+      if string && string.encoding != Encoding::UTF_8
+        string = string.dup if string.frozen?
+        string.force_encoding(Encoding::UTF_8)
+      end
+      string
     end
   end
 end
