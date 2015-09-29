@@ -33,7 +33,7 @@ module EBNF::LL1
         super("")
         feed_me
       else
-        super(input.to_s)
+        super(encode_utf8 input.to_s)
       end
     end
 
