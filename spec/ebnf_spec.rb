@@ -38,6 +38,11 @@ describe EBNF do
         @debug = []
         expect(EBNF.parse(input).ast.to_sxp).to produce(expected, @debug)
       end
+
+      it "creates turtle" do
+        ebnf = EBNF.parse(input)
+        expect(ebnf.to_ttl("ex", "http://example.org/")).not_to be_empty
+      end
     end
   end
 end

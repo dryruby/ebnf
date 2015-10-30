@@ -45,7 +45,7 @@
     # Strings are unescaped Unicode, excepting control characters and hash (#)
     [16] STRING1    ::= '"' (CHAR - '"')* '"'
 
-    [17] STRING2    ::= "'" (CHAR - "'"))* "'"
+    [17] STRING2    ::= "'" (CHAR - "'")* "'"
 
     [18] CHAR       ::= HEX
                       | [#x20#x21#x22]

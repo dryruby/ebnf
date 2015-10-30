@@ -19,7 +19,7 @@
  (terminal O_RANGE "15"
   (seq "[^" (plus (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR))) "]"))
  (terminal STRING1 "16" (seq "\"" (star (diff CHAR "\"")) "\""))
- (terminal STRING2 "17" (seq "'" (diff CHAR "'")))
+ (terminal STRING2 "17" (seq "'" (star (diff CHAR "'")) "'"))
  (terminal CHAR "18" (alt HEX (range "#x20#x21#x22") (range "#x24-#x00FFFFFF")))
  (terminal R_CHAR "19" (diff CHAR "]"))
  (terminal R_BEGIN "20" (seq (alt HEX R_CHAR) "-"))

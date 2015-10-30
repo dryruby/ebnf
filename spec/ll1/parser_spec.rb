@@ -55,4 +55,16 @@ describe EBNF::LL1::Parser do
       }.to raise_error(EBNF::LL1::Parser::Error, "Starting production not defined")
     end
   end
+
+  require_relative "data/parser"
+
+  describe EBNFParser do
+    let(:input) {File.expand_path("../../../etc/ebnf.ebnf", __FILE__)}
+    let(:sxp) {File.read File.expand_path("../../../etc/ebnf.sxp", __FILE__)}
+    let(:parser) {EBNFParser.new(File.open(input))}
+
+    it "parses EBNF Grammar" do
+      expect(parser.to_sxp).to produce(sxp, [])
+    end
+  end
 end

@@ -140,7 +140,14 @@ describe EBNF::Rule do
        ]
     }.each do |title, (expr, expected)|
       it title do
-        expect(EBNF::Rule.new(:rule, "0", expr).to_bnf).to eq expected
+        rule = EBNF::Rule.new(:rule, "0", expr)
+        expect(rule.to_bnf).to eq expected
+        case expr.first
+        when :seq, :alt
+          expect(rule).to be_starts_with(expr[1])
+        else
+          expect(rule).not_to be_starts_with(expr[1])
+        end
       end
     end
 
