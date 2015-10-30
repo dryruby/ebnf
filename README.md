@@ -1,7 +1,11 @@
-# EBNF [![Build Status](https://secure.travis-ci.org/gkellogg/ebnf.png?branch=master)](http://travis-ci.org/gkellogg/ebnf)
-
+# EBNF 
 
 [EBNF][] parser and generic parser generator.
+
+[![Gem Version](https://badge.fury.io/rb/ebnf.png)](http://badge.fury.io/rb/ebnf)
+[![Build Status](https://secure.travis-ci.org/gkellogg/ebnf.png?branch=master)](http://travis-ci.org/gkellogg/ebnf)
+[![Coverage Status](https://coveralls.io/repos/gkellogg/ebnf/badge.svg)](https://coveralls.io/r/gkellogg/ebnf)
+[![Dependency Status](https://gemnasium.com/gkellogg/ebnf.png)](https://gemnasium.com/gkellogg/ebnf)
 
 ## Description
 This is a [Ruby][] implementation of an [EBNF][] and [BNF][] parser and parser generator.

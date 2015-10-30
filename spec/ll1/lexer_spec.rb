@@ -14,8 +14,8 @@ describe EBNF::LL1::Lexer do
     [:INTEGER,                          INTEGER],
     [:LANGTAG,                          LANGTAG],
     [:PNAME,                            PNAME],
-    [:STRING_LITERAL_LONG_SINGLE_QUOTE, STRING_LITERAL_LONG_SINGLE_QUOTE],
-    [:STRING_LITERAL_LONG_QUOTE,        STRING_LITERAL_LONG_QUOTE],
+    [:STRING_LITERAL_LONG_SINGLE_QUOTE, STRING_LITERAL_LONG_SINGLE_QUOTE, {partial_regexp: /'''/}],
+    [:STRING_LITERAL_LONG_QUOTE,        STRING_LITERAL_LONG_QUOTE, {partial_regexp: /"""/}],
     [:STRING_LITERAL_QUOTE,             STRING_LITERAL_QUOTE],
     [:STRING_LITERAL_SINGLE_QUOTE,      STRING_LITERAL_SINGLE_QUOTE],
   ]}
@@ -212,26 +212,39 @@ describe EBNF::LL1::Lexer do
         end
       end
 
-      it "tracks line numbers for STRING_LITERAL_LONG_QUOTE" do
-        input = %(
-        :Test a rdfs:Class ;
-          rdfs:subClassOf mf:ManifestEntry;
-          rdfs:label "Superclass of all CSVW tests" ;
-          rdfs:comment """
-            All CSVW tests have an input file referenced using `mf:action`. Positive
-            and Negative Evaluation Tests also have a result file referenced using
-            `mf:result` . Other tests may take different inputs and options as defined
-            for each test class.
-          """ ;
-          :b :c .
-        )
-        expect(tokenize(input).to_a.map(&:lineno)).to include(
-          2, 2, 2, 2,
-          3, 3, 3,
-          4, 4, 4,
-          5, 5, 10,
-          11, 11, 11
-        )
+      context "STRING_LITERAL_LONG_QUOTE" do
+        it "tracks line numbers" do
+          input = %(
+          :Test a rdfs:Class ;
+            rdfs:subClassOf mf:ManifestEntry;
+            rdfs:label "Superclass of all CSVW tests" ;
+            rdfs:comment """
+              All CSVW tests have an input file referenced using `mf:action`. Positive
+              and Negative Evaluation Tests also have a result file referenced using
+              `mf:result` . Other tests may take different inputs and options as defined
+              for each test class.
+            """ ;
+            :b :c .
+          )
+          expect(tokenize(input).to_a.map(&:lineno)).to include(
+            2, 2, 2, 2,
+            3, 3, 3,
+            4, 4, 4,
+            5, 5, 10,
+            11, 11, 11
+          )
+        end
+      end
+
+      it "matches input longer than low water mark when buffer is low" do
+        input = StringIO.new %("""123456789 123456789 """ """123456789 123456789 """)
+        lexer = EBNF::LL1::Lexer.new(input, terminals,
+                                     unescape_terms: unescape_terms,
+                                     whitespace:     WHITESPACE,
+                                     low_water:      20,
+                                     high_water:     40)
+        expect(lexer.shift.type).to eq :STRING_LITERAL_LONG_QUOTE
+        expect(lexer.shift.type).to eq :STRING_LITERAL_LONG_QUOTE
       end
     end
 
@@ -279,8 +292,8 @@ describe EBNF::LL1::Lexer do
     lexer = nil
     inputs.each do |input|
       lexer = EBNF::LL1::Lexer.tokenize(input, terminals,
-                                        :unescape_terms => unescape_terms,
-                                        :whitespace => WHITESPACE)
+                                        unescape_terms: unescape_terms,
+                                        whitespace:     WHITESPACE)
       expect(lexer).to be_a(EBNF::LL1::Lexer)
       yield lexer.to_a if block_given?
     end
