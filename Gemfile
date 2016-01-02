@@ -2,12 +2,13 @@ source "https://rubygems.org"
 
 gemspec :name => ""
 gem 'sxp',            git: "git://github.com/gkellogg/sxp-ruby.git"
+gem 'rdf',            git: "git://github.com/ruby-rdf/rdf.git", branch: "feature/keyword-arguments"
 
 group :development do
   gem "wirble"
-  gem "byebug", platforms: :mri_21
+  gem "byebug", platforms: :mri
   gem 'psych',      platforms: [:mri, :rbx]
-  gem "rocco", platforms: [:mri_20, :mri_21], git: "git://github.com/rtomayko/rocco.git"
+  gem "rocco", platforms: :mri, git: "git://github.com/rtomayko/rocco.git"
   gem "redcarpet", platforms: :mri
 end
 
