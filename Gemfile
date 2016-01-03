@@ -2,7 +2,7 @@ source "https://rubygems.org"
 
 gemspec :name => ""
 gem 'sxp',            git: "git://github.com/gkellogg/sxp-ruby.git"
-gem 'rdf',            git: "git://github.com/ruby-rdf/rdf.git", branch: "feature/keyword-arguments"
+gem 'rdf',            git: "git://github.com/ruby-rdf/rdf.git", branch: "develop"
 
 group :development do
   gem "wirble"
