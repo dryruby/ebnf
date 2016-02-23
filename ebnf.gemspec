@@ -7,7 +7,7 @@ Gem::Specification.new do |gem|
 
   gem.name                  = "ebnf"
   gem.homepage              = "http://github.com/gkellogg/ebnf"
-  gem.license               = 'Public Domain' if gem.respond_to?(:license=)
+  gem.license               = 'Unlicense'
   gem.summary               = "EBNF parser and parser generator."
   gem.description           = %q{EBNF is a Ruby parser for W3C EBNF and a parser generator for compliant LL(1) grammars.}
 
