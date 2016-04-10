@@ -1,15 +1,15 @@
 source "https://rubygems.org"
 
 gemspec :name => ""
-gem 'sxp',            git: "git://github.com/gkellogg/sxp-ruby.git", branch: "develop"
-gem 'rdf',            git: "git://github.com/ruby-rdf/rdf.git", branch: "develop"
+gem 'sxp',            github: "gkellogg/sxp-ruby",  branch: "develop"
+gem 'rdf',            github: "ruby-rdf/rdf",       branch: "develop"
 
 group :development do
   gem "wirble"
-  gem "byebug", platforms: :mri
+  gem "byebug",     platforms: :mri
   gem 'psych',      platforms: [:mri, :rbx]
-  gem "rocco", platforms: :mri, git: "git://github.com/rtomayko/rocco.git"
-  gem "redcarpet", platforms: :mri
+  gem "rocco",      platforms: :mri, github: "rtomayko/rocco"
+  gem "redcarpet",  platforms: :mri
 end
 
 group :development, :test do

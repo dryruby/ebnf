@@ -28,8 +28,8 @@ Gem::Specification.new do |gem|
 
   gem.required_ruby_version = '>= 2.0'
   gem.requirements          = []
-  gem.add_runtime_dependency     'sxp',             '~> 1.0.0'
-  gem.add_runtime_dependency     'rdf',             '~> 2.0.0' # Required by sxp
+  gem.add_runtime_dependency     'sxp',             '~> 1.0'
+  gem.add_runtime_dependency     'rdf',             '~> 2.0' # Required by sxp
   gem.add_development_dependency 'haml',            '~> 4.0'
   gem.add_development_dependency 'rspec',           '~> 3.0'
   gem.add_development_dependency 'rspec-its',       '~> 1.0'
