@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-gemspec :name => ""
+gemspec
 gem 'sxp',            github: "dryruby/sxp.rb",     branch: "develop"
 gem 'rdf',            github: "ruby-rdf/rdf",       branch: "develop"
 
