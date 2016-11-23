@@ -34,6 +34,21 @@ describe EBNF::Base do
         %q{((terminal STRING1 "18" (seq "\"" (star (alt CHAR (range "\t'[]()-"))) "\"")))},
       %q{[161s] WS ::= #x20 | #x9 | #xD | #xA} =>
         %q{((terminal WS "161s" (alt (hex "#x20") (hex "#x9") (hex "#xD") (hex "#xA"))))},
+      %q{[1] shexDoc ::= directive* # leading CODE} =>
+        %q{((rule shexDoc "1" (star directive)))},
+      %q{[1] shexDoc ::= directive* /* leading CODE */} =>
+        %q{((rule shexDoc "1" (star directive)))},
+      %q{[1] shexDoc ::= directive* (* leading CODE *)} =>
+        %q{((rule shexDoc "1" (star directive)))},
+      %q{[1] shexDoc ::= directive* // leading CODE} =>
+        %q{((rule shexDoc "1" (star directive)))},
+      %q{[1] shexDoc ::= /* leading CODE */ directive*} =>
+        %q{((rule shexDoc "1" (star directive)))},
+      %q{[1] shexDoc (* leading CODE *) ::= directive*} =>
+        %q{((rule shexDoc "1" (star directive)))},
+      %q{[156s]  STRING_LITERAL1       ::= "'" ([^#x27#x5C#xA#xD] | ECHAR | UCHAR)* "'" /* #x27=' #x5C=\ #xA=new line #xD=carriage return */} =>
+        %q{((terminal STRING_LITERAL1 "156s"
+              (seq "'" (star (alt (range "^#x27#x5C#xA#xD") ECHAR UCHAR)) "'")) )}
     }.each do |input, expected|
       it "parses #{input.inspect}" do
         expect(parse(input).to_sxp).to produce(expected, @debug)

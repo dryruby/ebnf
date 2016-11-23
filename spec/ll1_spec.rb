@@ -353,7 +353,7 @@ describe EBNF::Base do
             [1] s ::= e | e "a"
             [2] e ::= "b"?
           ),
-          %r{First/First Conflict: .* is also the condition for e},
+          %r{First/First Conflict: .* is the condition for both _s_1 and e},
           :s
         ],
         "First/Follow Conflict" => [
