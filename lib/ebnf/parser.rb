@@ -18,14 +18,20 @@ module EBNF
           #debug("eachRule(ws)") { "[#{cur_lineno}] #{s.inspect}" }
         when s = scanner.scan(%r(/\*([^\*]|\*[^\/])*\*/)m)
           # Eat comments /* .. */
+          cur_lineno += s.count("\n")
           debug("eachRule(comment)") { "[#{cur_lineno}] #{s.inspect}" }
         when s = scanner.scan(%r(\(\*([^\*]|\*[^\)])*\*\))m)
           # Eat comments (* .. *)
-          debug("eachRule(comment)") { "[#{cur_lineno}] #{s.inspect}" }
-        when s = scanner.scan(%r((#(?!x)|//).*$))
-          # Eat comments
           cur_lineno += s.count("\n")
           debug("eachRule(comment)") { "[#{cur_lineno}] #{s.inspect}" }
+        when s = scanner.scan(%r((#(?!x)|//).*$))
+          # Eat comments // & #
+          cur_lineno += s.count("\n")
+          debug("eachRule(comment)") { "[#{cur_lineno}] #{s.inspect}" }
+        when s = scanner.scan(/\A["']/)
+          # Found a quote, scan until end of matching quote
+          s += scanner.scan_until(/#{scanner.matched}|$/)
+          r += s
         when s = scanner.scan(%r(^@terminals))
           #debug("eachRule(@terminals)") { "[#{cur_lineno}] #{s.inspect}" }
           yield(r) unless r.empty?
@@ -45,8 +51,15 @@ module EBNF
           @lineno = cur_lineno
           r = s
         else
-          # Collect until end of line, or start of comment
-          s = scanner.scan_until(%r((?:/\*)|$)m)
+          # Collect until end of line, or start of comment or quote
+          s = scanner.scan_until(%r{(?:[/\(]\*)|#(?!x)|//|["']|$})
+          if scanner.matched.length > 0
+            # Back up scan head before ending match
+            scanner.pos = scanner.pos - scanner.matched.length
+
+            # Remove matched from end of string
+            s = s[0..-(scanner.matched.length+1)]
+          end
           cur_lineno += s.count("\n")
           #debug("eachRule(rest)") { "[#{cur_lineno}] #{s.inspect}" }
           r += s
@@ -268,6 +281,7 @@ module EBNF
     #     ((range "^<>'{}|^`") '-\[#x00-#x20\]')
     def terminal(s)
       s = s.strip
+      #STDERR.puts s.inspect
       case m = s[0,1]
       when '"', "'" # STRING1 or STRING2
         l, s = s[1..-1].split(m.rstrip, 2)

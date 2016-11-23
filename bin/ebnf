@@ -17,10 +17,10 @@ options = {
   :namespace => "http://www.w3.org/ns/formats/Turtle#",
 }
 
-out = STDOUT
+input, out = nil, STDOUT
 
 OPT_ARGS = [
-  ["--dbg",             GetoptLong::NO_ARGUMENT,      "Turn on debugging output"],
+  ["--debug",           GetoptLong::NO_ARGUMENT,      "Turn on debugging output"],
   ["--bnf",             GetoptLong::NO_ARGUMENT,      "Transform EBNF to BNF"],
   ["--evaluate","-e",   GetoptLong::REQUIRED_ARGUMENT,"Evaluate argument as an EBNF document"],
   ["--ll1",             GetoptLong::REQUIRED_ARGUMENT,"Generate First/Follow rules, argument is start symbol"],
@@ -53,7 +53,7 @@ opts = GetoptLong.new(*OPT_ARGS.map {|o| o[0..-2]})
 
 opts.each do |opt, arg|
   case opt
-  when '--dbg'          then options[:debug] = true
+  when '--debug'        then options[:debug] = true
   when '--bnf'          then options[:bnf] = true
   when '--evaluate'     then input = arg
   when '--input-format' then options[:format] = arg.to_sym
