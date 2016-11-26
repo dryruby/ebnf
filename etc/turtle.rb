@@ -1466,5 +1466,18 @@ module Branch
       :STRING_LITERAL_LONG_SINGLE_QUOTE,
       :STRING_LITERAL_LONG_QUOTE],
   }.freeze
+  CLEANUP = {
+    :_RDFLiteral_1 => :opt,
+    :_collection_1 => :star,
+    :_collection_2 => :merge,
+    :_objectList_1 => :star,
+    :_objectList_3 => :merge,
+    :_predicateObjectList_1 => :star,
+    :_predicateObjectList_3 => :merge,
+    :_predicateObjectList_4 => :opt,
+    :_triples_3 => :opt,
+    :turtleDoc => :star,
+    :_turtleDoc_1 => :merge,
+  }.freeze
 end
 

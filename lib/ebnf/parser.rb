@@ -78,7 +78,7 @@ module EBNF
       num, sym = num_sym.split(']', 2).map(&:strip)
       num, sym = "", num if sym.nil?
       num = num[1..-1]
-      r = Rule.new(sym && sym.to_sym, num, expression(expr).first, :ebnf => self)
+      r = Rule.new(sym && sym.to_sym, num, expression(expr).first, ebnf: self)
       debug("ruleParts") { r.inspect }
       r
     end

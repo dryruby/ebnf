@@ -1,0 +1,5 @@
+(
+ (rule _empty "0" (first _eps) (seq))
+ (rule foo "1" (start #t) (first _eps "a") (follow _eof) (cleanup star) (alt _empty _foo_1))
+ (rule _foo_1 "1.1" (first "a") (follow _eof) (cleanup merge) (seq "a" foo))
+ (rule _foo_2 "1.2" (first _eps "a") (follow _eof) (seq foo)))

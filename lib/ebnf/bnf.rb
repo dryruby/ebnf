@@ -8,7 +8,7 @@ module EBNF
     # @return [ENBF] self
     def make_bnf
       progress("make_bnf") {"Start: #{@ast.length} rules"}
-      new_ast = [Rule.new(:_empty, "0", [:seq], :kind => :rule)]
+      new_ast = [Rule.new(:_empty, "0", [:seq], kind: :rule)]
 
       ast.each do |rule|
         debug("make_bnf") {"expand from: #{rule.inspect}"}

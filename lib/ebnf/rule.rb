@@ -54,6 +54,9 @@ module EBNF
     # @return [Boolean]
     attr_accessor :start
 
+    # Determines preparation and cleanup rules for reconstituting EBNF ? * + from BNF
+    attr_accessor :cleanup
+
     # @param [Integer] id
     # @param [Symbol] sym
     # @param [Array] expr
@@ -71,6 +74,7 @@ module EBNF
       @first = options[:first]
       @follow = options[:follow]
       @start = options[:start]
+      @cleanup = options[:cleanup]
       @kind = case
       when options[:kind] then options[:kind]
       when sym.to_s == sym.to_s.upcase then :terminal
@@ -97,10 +101,12 @@ module EBNF
       first = first[1..-1] if first
       follow = sxp.detect {|e| e.is_a?(Array) && e.first.to_sym == :follow}
       follow = follow[1..-1] if follow
+      cleanup = sxp.detect {|e| e.is_a?(Array) && e.first.to_sym == :cleanup}
+      cleanup = cleanup[1..-1] if cleanup
       start = sxp.any? {|e| e.is_a?(Array) && e.first.to_sym == :start}
       sym = sxp[1] if sxp[1].is_a?(Symbol)
       id = sxp[2] if sxp[2].is_a?(String)
-      Rule.new(sym, id, expr, :kind => sxp.first, :first => first, :follow => follow, :start => start)
+      Rule.new(sym, id, expr, kind: sxp.first, first: first, follow: follow, cleanup: cleanup, start: start)
     end
 
     # Build a new rule creating a symbol and numbering from the current rule
@@ -113,9 +119,10 @@ module EBNF
     def build(expr, options = {})
       new_sym, new_id = (@top_rule ||self).send(:make_sym_id)
       Rule.new(new_sym, new_id, expr, {
-        :kind => options[:kind],
-        :ebnf => @ebnf,
-        :top_rule => @top_rule || self,
+        kind: options[:kind],
+        ebnf: @ebnf,
+        top_rule: @top_rule || self,
+        cleanup: options[:cleanup],
       }.merge(options))
     end
 
@@ -127,6 +134,7 @@ module EBNF
       elements << [:start, true] if start
       elements << first.sort_by(&:to_s).unshift(:first) if first
       elements << follow.sort_by(&:to_s).unshift(:follow) if follow
+      elements << [:cleanup, cleanup] if cleanup
       elements << expr
       elements
     end
@@ -196,16 +204,19 @@ module EBNF
         this = dup
         #   * Transform (a rule (opt b)) into (a rule (alt _empty b))
         this.expr = [:alt, :_empty, expr.last]
+        this.cleanup = :opt
         new_rules = this.to_bnf
       elsif expr.first == :star
         #   * Transform (a rule (star b)) into (a rule (alt _empty (seq b a)))
         this = dup
-        new_rule = this.build([:seq, expr.last, this.sym])
+        this.cleanup = :star
+        new_rule = this.build([:seq, expr.last, this.sym], cleanup: :merge)
         this.expr = [:alt, :_empty, new_rule.sym]
         new_rules = [this] + new_rule.to_bnf
       elsif expr.first == :plus
         #   * Transform (a rule (plus b)) into (a rule (seq b (star b)
         this = dup
+        this.cleanup = :plus
         this.expr = [:seq, expr.last, [:star, expr.last]]
         new_rules = this.to_bnf
       elsif [:alt, :seq].include?(expr.first)
@@ -340,7 +351,7 @@ module EBNF
 
     def inspect
       "#<EBNF::Rule:#{object_id} " +
-      {:sym => sym, :id => id, :kind => kind, :expr => expr}.inspect +
+      {sym: sym, id: id, kind: kind, expr: expr}.inspect +
       ">"
     end
 
@@ -387,7 +398,7 @@ module EBNF
     private
     def ttl_expr(expr, pfx, depth, is_obj = true)
       indent = '  ' * depth
-      @ebnf.debug("ttl_expr", :depth => depth) {expr.inspect}
+      @ebnf.debug("ttl_expr", depth: depth) {expr.inspect}
       op = expr.shift if expr.is_a?(Array)
       statements = []
       
@@ -424,7 +435,7 @@ module EBNF
       end
       
       statements.last << " ." unless is_obj
-      @ebnf.debug("statements", :depth => depth) {statements.join("\n")}
+      @ebnf.debug("statements", depth: depth) {statements.join("\n")}
       statements
     end
     
@@ -461,10 +472,11 @@ module EBNF
     end
 
     # Make a new symbol/number combination
-    def make_sym_id
+    # @param [String] variation added to symbol to aid reconstitution from BNF to EBNF
+    def make_sym_id(variation = nil)
       @id_seq ||= 0
       @id_seq += 1
-      ["_#{@sym}_#{@id_seq}".to_sym, "#{@id}.#{@id_seq}"]
+      ["_#{@sym}_#{@id_seq}#{variation}".to_sym, "#{@id}.#{@id_seq}#{variation}"]
     end
   end
 end

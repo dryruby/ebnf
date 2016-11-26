@@ -12,9 +12,9 @@ require 'getoptlong'
 require 'ebnf'
 
 options = {
-  :output_format => :sxp,
-  :prefix => "ttl",
-  :namespace => "http://www.w3.org/ns/formats/Turtle#",
+  output_format: :sxp,
+  prefix: "ttl",
+  namespace: "http://www.w3.org/ns/formats/Turtle#",
 }
 
 input, out = nil, STDOUT

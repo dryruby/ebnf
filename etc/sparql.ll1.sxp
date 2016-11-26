@@ -4,6 +4,7 @@
   (start #t)
   (first "ASK" "BASE" "CONSTRUCT" "DESCRIBE" "PREFIX" "SELECT" _eps)
   (follow _eof)
+  (cleanup opt)
   (alt _empty Query))
  (rule Query "2"
   (first "ASK" "BASE" "CONSTRUCT" "DESCRIBE" "PREFIX" "SELECT")
@@ -29,6 +30,7 @@
   (follow "ADD" "ASK" "CLEAR" "CONSTRUCT" "COPY" "CREATE" "DELETE"
    "DELETE DATA" "DELETE WHERE" "DESCRIBE" "DROP" "INSERT" "INSERT DATA" "LOAD"
    "MOVE" "SELECT" "WITH" _eof )
+  (cleanup star)
   (alt _empty _Prologue_2))
  (rule _Prologue_1 "4.1"
   (first "BASE" "PREFIX")
@@ -41,6 +43,7 @@
   (follow "ADD" "ASK" "CLEAR" "CONSTRUCT" "COPY" "CREATE" "DELETE"
    "DELETE DATA" "DELETE WHERE" "DESCRIBE" "DROP" "INSERT" "INSERT DATA" "LOAD"
    "MOVE" "SELECT" "WITH" _eof )
+  (cleanup merge)
   (seq _Prologue_1 Prologue))
  (rule _Prologue_3 "4.3"
   (first "BASE" "PREFIX" _eps)
@@ -79,10 +82,12 @@
  (rule _SelectQuery_1 "7.1"
   (first "FROM" _eps)
   (follow "WHERE" "{")
+  (cleanup star)
   (alt _empty _SelectQuery_2))
  (rule _SelectQuery_2 "7.2"
   (first "FROM")
   (follow "WHERE" "{")
+  (cleanup merge)
   (seq DatasetClause _SelectQuery_1))
  (rule _SelectQuery_3 "7.3"
   (first "FROM" "WHERE" "{")
@@ -108,14 +113,15 @@
   (first "SELECT")
   (follow "FROM" "WHERE" "{")
   (seq "SELECT" _SelectClause_1 _SelectClause_2))
+ (rule _SelectClause_1 "9.1"
+  (first "DISTINCT" "REDUCED" _eps)
+  (follow "(" "*" VAR1 VAR2)
+  (cleanup opt)
+  (alt _empty _SelectClause_3))
  (rule _SelectClause_10 "9.10"
   (first "(" VAR1 VAR2 _eps)
   (follow "FROM" "WHERE" "{")
   (seq _SelectClause_6))
- (rule _SelectClause_1 "9.1"
-  (first "DISTINCT" "REDUCED" _eps)
-  (follow "(" "*" VAR1 VAR2)
-  (alt _empty _SelectClause_3))
  (rule _SelectClause_11 "9.11"
   (first "(" VAR1 VAR2 _eps)
   (follow "FROM" "WHERE" "{")
@@ -164,6 +170,7 @@
  (rule _SelectClause_4 "9.4"
   (first "(" VAR1 VAR2)
   (follow "FROM" "WHERE" "{")
+  (cleanup plus)
   (seq _SelectClause_5 _SelectClause_6))
  (rule _SelectClause_5 "9.5"
   (first "(" VAR1 VAR2)
@@ -172,10 +179,12 @@
  (rule _SelectClause_6 "9.6"
   (first "(" VAR1 VAR2 _eps)
   (follow "FROM" "WHERE" "{")
+  (cleanup star)
   (alt _empty _SelectClause_7))
  (rule _SelectClause_7 "9.7"
   (first "(" VAR1 VAR2)
   (follow "FROM" "WHERE" "{")
+  (cleanup merge)
   (seq _SelectClause_5 _SelectClause_6))
  (rule _SelectClause_8 "9.8"
   (first "(")
@@ -253,14 +262,17 @@
  (rule _ConstructQuery_4 "10.4"
   (first "FROM" _eps)
   (follow "WHERE" "{")
+  (cleanup star)
   (alt _empty _ConstructQuery_5))
  (rule _ConstructQuery_5 "10.5"
   (first "FROM")
   (follow "WHERE" "{")
+  (cleanup merge)
   (seq DatasetClause _ConstructQuery_4))
  (rule _ConstructQuery_6 "10.6"
   (first "FROM" _eps)
   (follow "WHERE")
+  (cleanup star)
   (alt _empty _ConstructQuery_8))
  (rule _ConstructQuery_7 "10.7"
   (first "(" ANON BLANK_NODE_LABEL DECIMAL DECIMAL_NEGATIVE DECIMAL_POSITIVE
@@ -269,10 +281,12 @@
    STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 VAR1 VAR2 "[" _eps
    "false" "true" )
   (follow "}")
+  (cleanup opt)
   (alt _empty TriplesTemplate))
  (rule _ConstructQuery_8 "10.8"
   (first "FROM")
   (follow "WHERE")
+  (cleanup merge)
   (seq DatasetClause _ConstructQuery_6))
  (rule _ConstructQuery_9 "10.9"
   (first "FROM" "WHERE" "{")
@@ -308,29 +322,35 @@
  (rule _DescribeQuery_2 "11.2"
   (first "FROM" _eps)
   (follow "GROUP" "HAVING" "LIMIT" "OFFSET" "ORDER" "VALUES" "WHERE" _eof "{")
+  (cleanup star)
   (alt _empty _DescribeQuery_7))
  (rule _DescribeQuery_3 "11.3"
   (first "WHERE" _eps "{")
   (follow "GROUP" "HAVING" "LIMIT" "OFFSET" "ORDER" "VALUES" _eof)
+  (cleanup opt)
   (alt _empty WhereClause))
  (rule _DescribeQuery_4 "11.4"
   (first IRIREF PNAME_LN PNAME_NS VAR1 VAR2)
   (follow "FROM" "GROUP" "HAVING" "LIMIT" "OFFSET" "ORDER" "VALUES" "WHERE"
    _eof "{" )
+  (cleanup plus)
   (seq VarOrIri _DescribeQuery_5))
  (rule _DescribeQuery_5 "11.5"
   (first IRIREF PNAME_LN PNAME_NS VAR1 VAR2 _eps)
   (follow "FROM" "GROUP" "HAVING" "LIMIT" "OFFSET" "ORDER" "VALUES" "WHERE"
    _eof "{" )
+  (cleanup star)
   (alt _empty _DescribeQuery_6))
  (rule _DescribeQuery_6 "11.6"
   (first IRIREF PNAME_LN PNAME_NS VAR1 VAR2)
   (follow "FROM" "GROUP" "HAVING" "LIMIT" "OFFSET" "ORDER" "VALUES" "WHERE"
    _eof "{" )
+  (cleanup merge)
   (seq VarOrIri _DescribeQuery_5))
  (rule _DescribeQuery_7 "11.7"
   (first "FROM")
   (follow "GROUP" "HAVING" "LIMIT" "OFFSET" "ORDER" "VALUES" "WHERE" _eof "{")
+  (cleanup merge)
   (seq DatasetClause _DescribeQuery_2))
  (rule _DescribeQuery_8 "11.8"
   (first "*" IRIREF PNAME_LN PNAME_NS VAR1 VAR2)
@@ -349,10 +369,12 @@
  (rule _AskQuery_1 "12.1"
   (first "FROM" _eps)
   (follow "WHERE" "{")
+  (cleanup star)
   (alt _empty _AskQuery_2))
  (rule _AskQuery_2 "12.2"
   (first "FROM")
   (follow "WHERE" "{")
+  (cleanup merge)
   (seq DatasetClause _AskQuery_1))
  (rule _AskQuery_3 "12.3"
   (first "FROM" "WHERE" "{")
@@ -403,7 +425,11 @@
   (first "WHERE" "{")
   (follow "GROUP" "HAVING" "LIMIT" "OFFSET" "ORDER" "VALUES" _eof "}")
   (seq _WhereClause_1 GroupGraphPattern))
- (rule _WhereClause_1 "17.1" (first "WHERE" _eps) (follow "{") (alt _empty "WHERE"))
+ (rule _WhereClause_1 "17.1"
+  (first "WHERE" _eps)
+  (follow "{")
+  (cleanup opt)
+  (alt _empty "WHERE"))
  (rule _WhereClause_2 "17.2"
   (first "{")
   (follow "(" "." ";" ANON "BIND" BLANK_NODE_LABEL DECIMAL DECIMAL_NEGATIVE
@@ -421,18 +447,22 @@
  (rule _SolutionModifier_1 "18.1"
   (first "GROUP" _eps)
   (follow "HAVING" "LIMIT" "OFFSET" "ORDER" "VALUES" _eof "}")
+  (cleanup opt)
   (alt _empty GroupClause))
  (rule _SolutionModifier_2 "18.2"
   (first "HAVING" _eps)
   (follow "LIMIT" "OFFSET" "ORDER" "VALUES" _eof "}")
+  (cleanup opt)
   (alt _empty HavingClause))
  (rule _SolutionModifier_3 "18.3"
   (first "ORDER" _eps)
   (follow "LIMIT" "OFFSET" "VALUES" _eof "}")
+  (cleanup opt)
   (alt _empty OrderClause))
  (rule _SolutionModifier_4 "18.4"
   (first "LIMIT" "OFFSET" _eps)
   (follow "VALUES" _eof "}")
+  (cleanup opt)
   (alt _empty LimitOffsetClauses))
  (rule _SolutionModifier_5 "18.5"
   (first "HAVING" "LIMIT" "OFFSET" "ORDER" _eps)
@@ -460,6 +490,7 @@
    "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" VAR1 VAR2
    "YEAR" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC" "isURI" "sameTerm" )
   (follow "HAVING" "LIMIT" "OFFSET" "ORDER" "VALUES" _eof "}")
+  (cleanup plus)
   (seq GroupCondition _GroupClause_2))
  (rule _GroupClause_2 "19.2"
   (first "(" "ABS" "AVG" "BNODE" "BOUND" "CEIL" "COALESCE" "CONCAT" "CONTAINS"
@@ -471,6 +502,7 @@
    "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" VAR1 VAR2
    "YEAR" _eps "isBLANK" "isIRI" "isLITERAL" "isNUMERIC" "isURI" "sameTerm" )
   (follow "HAVING" "LIMIT" "OFFSET" "ORDER" "VALUES" _eof "}")
+  (cleanup star)
   (alt _empty _GroupClause_3))
  (rule _GroupClause_3 "19.3"
   (first "(" "ABS" "AVG" "BNODE" "BOUND" "CEIL" "COALESCE" "CONCAT" "CONTAINS"
@@ -482,6 +514,7 @@
    "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" VAR1 VAR2
    "YEAR" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC" "isURI" "sameTerm" )
   (follow "HAVING" "LIMIT" "OFFSET" "ORDER" "VALUES" _eof "}")
+  (cleanup merge)
   (seq GroupCondition _GroupClause_2))
  (rule _GroupClause_4 "19.4"
   (first "BY")
@@ -554,6 +587,7 @@
  (rule _GroupCondition_2 "20.2"
   (first "AS" _eps)
   (follow ")")
+  (cleanup opt)
   (alt _empty _GroupCondition_3))
  (rule _GroupCondition_3 "20.3" (first "AS") (follow ")") (seq "AS" Var))
  (rule _GroupCondition_4 "20.4"
@@ -605,6 +639,7 @@
    "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" "YEAR"
    "isBLANK" "isIRI" "isLITERAL" "isNUMERIC" "isURI" "sameTerm" )
   (follow "LIMIT" "OFFSET" "ORDER" "VALUES" _eof "}")
+  (cleanup plus)
   (seq HavingCondition _HavingClause_2))
  (rule _HavingClause_2 "21.2"
   (first "(" "ABS" "AVG" "BNODE" "BOUND" "CEIL" "COALESCE" "CONCAT" "CONTAINS"
@@ -616,6 +651,7 @@
    "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" "YEAR" _eps
    "isBLANK" "isIRI" "isLITERAL" "isNUMERIC" "isURI" "sameTerm" )
   (follow "LIMIT" "OFFSET" "ORDER" "VALUES" _eof "}")
+  (cleanup star)
   (alt _empty _HavingClause_3))
  (rule _HavingClause_3 "21.3"
   (first "(" "ABS" "AVG" "BNODE" "BOUND" "CEIL" "COALESCE" "CONCAT" "CONTAINS"
@@ -627,6 +663,7 @@
    "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" "YEAR"
    "isBLANK" "isIRI" "isLITERAL" "isNUMERIC" "isURI" "sameTerm" )
   (follow "LIMIT" "OFFSET" "ORDER" "VALUES" _eof "}")
+  (cleanup merge)
   (seq HavingCondition _HavingClause_2))
  (rule _HavingClause_4 "21.4"
   (first "(" "ABS" "AVG" "BNODE" "BOUND" "CEIL" "COALESCE" "CONCAT" "CONTAINS"
@@ -699,6 +736,7 @@
    VAR1 VAR2 "YEAR" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC" "isURI"
    "sameTerm" )
   (follow "LIMIT" "OFFSET" "VALUES" _eof "}")
+  (cleanup plus)
   (seq OrderCondition _OrderClause_2))
  (rule _OrderClause_2 "23.2"
   (first "(" "ABS" "ASC" "AVG" "BNODE" "BOUND" "CEIL" "COALESCE" "CONCAT"
@@ -711,6 +749,7 @@
    VAR1 VAR2 "YEAR" _eps "isBLANK" "isIRI" "isLITERAL" "isNUMERIC" "isURI"
    "sameTerm" )
   (follow "LIMIT" "OFFSET" "VALUES" _eof "}")
+  (cleanup star)
   (alt _empty _OrderClause_3))
  (rule _OrderClause_3 "23.3"
   (first "(" "ABS" "ASC" "AVG" "BNODE" "BOUND" "CEIL" "COALESCE" "CONCAT"
@@ -723,6 +762,7 @@
    VAR1 VAR2 "YEAR" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC" "isURI"
    "sameTerm" )
   (follow "LIMIT" "OFFSET" "VALUES" _eof "}")
+  (cleanup merge)
   (seq OrderCondition _OrderClause_2))
  (rule _OrderClause_4 "23.4"
   (first "BY")
@@ -843,10 +883,12 @@
  (rule _LimitOffsetClauses_3 "25.3"
   (first "OFFSET" _eps)
   (follow "VALUES" _eof "}")
+  (cleanup opt)
   (alt _empty OffsetClause))
  (rule _LimitOffsetClauses_4 "25.4"
   (first "LIMIT" _eps)
   (follow "VALUES" _eof "}")
+  (cleanup opt)
   (alt _empty LimitClause))
  (rule _LimitOffsetClauses_5 "25.5"
   (first "OFFSET" _eps)
@@ -867,6 +909,7 @@
  (rule ValuesClause "28"
   (first "VALUES" _eps)
   (follow _eof "}")
+  (cleanup opt)
   (alt _empty _ValuesClause_1))
  (rule _ValuesClause_1 "28.1"
   (first "VALUES")
@@ -886,13 +929,18 @@
   (first "ADD" "CLEAR" "COPY" "CREATE" "DELETE" "DELETE DATA" "DELETE WHERE"
    "DROP" "INSERT" "INSERT DATA" "LOAD" "MOVE" "WITH" _eps )
   (follow _eof)
+  (cleanup opt)
   (alt _empty _Update_2))
  (rule _Update_2 "29.2"
   (first "ADD" "CLEAR" "COPY" "CREATE" "DELETE" "DELETE DATA" "DELETE WHERE"
    "DROP" "INSERT" "INSERT DATA" "LOAD" "MOVE" "WITH" )
   (follow _eof)
   (seq Update1 _Update_3))
- (rule _Update_3 "29.3" (first ";" _eps) (follow _eof) (alt _empty _Update_4))
+ (rule _Update_3 "29.3"
+  (first ";" _eps)
+  (follow _eof)
+  (cleanup opt)
+  (alt _empty _Update_4))
  (rule _Update_4 "29.4" (first ";") (follow _eof) (seq ";" Update))
  (rule _Update_5 "29.5"
   (first "ADD" "CLEAR" "COPY" "CREATE" "DELETE" "DELETE DATA" "DELETE WHERE"
@@ -910,8 +958,13 @@
  (rule _Load_1 "31.1"
   (first "SILENT" _eps)
   (follow IRIREF PNAME_LN PNAME_NS)
+  (cleanup opt)
   (alt _empty "SILENT"))
- (rule _Load_2 "31.2" (first "INTO" _eps) (follow ";" _eof) (alt _empty _Load_3))
+ (rule _Load_2 "31.2"
+  (first "INTO" _eps)
+  (follow ";" _eof)
+  (cleanup opt)
+  (alt _empty _Load_3))
  (rule _Load_3 "31.3" (first "INTO") (follow ";" _eof) (seq "INTO" GraphRef))
  (rule _Load_4 "31.4"
   (first IRIREF PNAME_LN PNAME_NS "SILENT")
@@ -927,6 +980,7 @@
  (rule _Clear_1 "32.1"
   (first "SILENT" _eps)
   (follow "ALL" "DEFAULT" "GRAPH" "NAMED")
+  (cleanup opt)
   (alt _empty "SILENT"))
  (rule _Clear_2 "32.2"
   (first "ALL" "DEFAULT" "GRAPH" "NAMED" "SILENT")
@@ -940,6 +994,7 @@
  (rule _Drop_1 "33.1"
   (first "SILENT" _eps)
   (follow "ALL" "DEFAULT" "GRAPH" "NAMED")
+  (cleanup opt)
   (alt _empty "SILENT"))
  (rule _Drop_2 "33.2"
   (first "ALL" "DEFAULT" "GRAPH" "NAMED" "SILENT")
@@ -950,7 +1005,11 @@
   (follow ";" _eof)
   (seq GraphRefAll))
  (rule Create "34" (first "CREATE") (follow ";" _eof) (seq "CREATE" _Create_1 GraphRef))
- (rule _Create_1 "34.1" (first "SILENT" _eps) (follow "GRAPH") (alt _empty "SILENT"))
+ (rule _Create_1 "34.1"
+  (first "SILENT" _eps)
+  (follow "GRAPH")
+  (cleanup opt)
+  (alt _empty "SILENT"))
  (rule _Create_2 "34.2"
   (first "GRAPH" "SILENT")
   (follow ";" _eof)
@@ -962,6 +1021,7 @@
  (rule _Add_1 "35.1"
   (first "SILENT" _eps)
   (follow "DEFAULT" "GRAPH" IRIREF PNAME_LN PNAME_NS)
+  (cleanup opt)
   (alt _empty "SILENT"))
  (rule _Add_2 "35.2"
   (first "DEFAULT" "GRAPH" IRIREF PNAME_LN PNAME_NS "SILENT")
@@ -983,6 +1043,7 @@
  (rule _Move_1 "36.1"
   (first "SILENT" _eps)
   (follow "DEFAULT" "GRAPH" IRIREF PNAME_LN PNAME_NS)
+  (cleanup opt)
   (alt _empty "SILENT"))
  (rule _Move_2 "36.2"
   (first "DEFAULT" "GRAPH" IRIREF PNAME_LN PNAME_NS "SILENT")
@@ -1004,6 +1065,7 @@
  (rule _Copy_1 "37.1"
   (first "SILENT" _eps)
   (follow "DEFAULT" "GRAPH" IRIREF PNAME_LN PNAME_NS)
+  (cleanup opt)
   (alt _empty "SILENT"))
  (rule _Copy_2 "37.2"
   (first "DEFAULT" "GRAPH" IRIREF PNAME_LN PNAME_NS "SILENT")
@@ -1037,11 +1099,12 @@
   (first "DELETE" "INSERT" "WITH")
   (follow ";" _eof)
   (seq _Modify_1 _Modify_2 _Modify_3 "WHERE" GroupGraphPattern))
+ (rule _Modify_10 "41.10" (first "USING" _eps) (follow "WHERE") (seq _Modify_3))
  (rule _Modify_1 "41.1"
   (first "WITH" _eps)
   (follow "DELETE" "INSERT")
+  (cleanup opt)
   (alt _empty _Modify_4))
- (rule _Modify_10 "41.10" (first "USING" _eps) (follow "WHERE") (seq _Modify_3))
  (rule _Modify_11 "41.11"
   (first "USING" "WHERE")
   (follow ";" _eof)
@@ -1054,7 +1117,11 @@
   (first "DELETE" "INSERT")
   (follow "USING" "WHERE")
   (alt _Modify_5 InsertClause))
- (rule _Modify_3 "41.3" (first "USING" _eps) (follow "WHERE") (alt _empty _Modify_7))
+ (rule _Modify_3 "41.3"
+  (first "USING" _eps)
+  (follow "WHERE")
+  (cleanup star)
+  (alt _empty _Modify_7))
  (rule _Modify_4 "41.4" (first "WITH") (follow "DELETE" "INSERT") (seq "WITH" iri))
  (rule _Modify_5 "41.5"
   (first "DELETE")
@@ -1063,8 +1130,13 @@
  (rule _Modify_6 "41.6"
   (first "INSERT" _eps)
   (follow "USING" "WHERE")
+  (cleanup opt)
   (alt _empty InsertClause))
- (rule _Modify_7 "41.7" (first "USING") (follow "WHERE") (seq UsingClause _Modify_3))
+ (rule _Modify_7 "41.7"
+  (first "USING")
+  (follow "WHERE")
+  (cleanup merge)
+  (seq UsingClause _Modify_3))
  (rule _Modify_8 "41.8"
   (first "DELETE" "INSERT")
   (follow ";" _eof)
@@ -1107,6 +1179,7 @@
  (rule _GraphOrDefault_2 "45.2"
   (first "GRAPH" _eps)
   (follow IRIREF PNAME_LN PNAME_NS)
+  (cleanup opt)
   (alt _empty "GRAPH"))
  (rule GraphRef "46" (first "GRAPH") (follow ";" _eof) (seq "GRAPH" iri))
  (rule GraphRefAll "47"
@@ -1142,6 +1215,15 @@
    "false" "true" )
   (follow "}")
   (seq _Quads_1 _Quads_2))
+ (rule _Quads_1 "50.1"
+  (first "(" ANON BLANK_NODE_LABEL DECIMAL DECIMAL_NEGATIVE DECIMAL_POSITIVE
+   DOUBLE DOUBLE_NEGATIVE DOUBLE_POSITIVE INTEGER INTEGER_NEGATIVE
+   INTEGER_POSITIVE IRIREF NIL PNAME_LN PNAME_NS STRING_LITERAL1
+   STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 VAR1 VAR2 "[" _eps
+   "false" "true" )
+  (follow "GRAPH" "}")
+  (cleanup opt)
+  (alt _empty TriplesTemplate))
  (rule _Quads_10 "50.10"
   (first "(" ANON BLANK_NODE_LABEL DECIMAL DECIMAL_NEGATIVE DECIMAL_POSITIVE
    DOUBLE DOUBLE_NEGATIVE DOUBLE_POSITIVE INTEGER INTEGER_NEGATIVE
@@ -1150,20 +1232,20 @@
    "false" "true" )
   (follow "GRAPH" "}")
   (seq _Quads_6))
- (rule _Quads_1 "50.1"
-  (first "(" ANON BLANK_NODE_LABEL DECIMAL DECIMAL_NEGATIVE DECIMAL_POSITIVE
-   DOUBLE DOUBLE_NEGATIVE DOUBLE_POSITIVE INTEGER INTEGER_NEGATIVE
-   INTEGER_POSITIVE IRIREF NIL PNAME_LN PNAME_NS STRING_LITERAL1
-   STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 VAR1 VAR2 "[" _eps
-   "false" "true" )
-  (follow "GRAPH" "}")
-  (alt _empty TriplesTemplate))
- (rule _Quads_2 "50.2" (first "GRAPH" _eps) (follow "}") (alt _empty _Quads_4))
+ (rule _Quads_2 "50.2"
+  (first "GRAPH" _eps)
+  (follow "}")
+  (cleanup star)
+  (alt _empty _Quads_4))
  (rule _Quads_3 "50.3"
   (first "GRAPH")
   (follow "GRAPH" "}")
   (seq QuadsNotTriples _Quads_5 _Quads_6))
- (rule _Quads_4 "50.4" (first "GRAPH") (follow "}") (seq _Quads_3 _Quads_2))
+ (rule _Quads_4 "50.4"
+  (first "GRAPH")
+  (follow "}")
+  (cleanup merge)
+  (seq _Quads_3 _Quads_2))
  (rule _Quads_5 "50.5"
   (first "." _eps)
   (follow "(" ANON BLANK_NODE_LABEL DECIMAL DECIMAL_NEGATIVE DECIMAL_POSITIVE
@@ -1171,6 +1253,7 @@
    INTEGER_POSITIVE IRIREF NIL PNAME_LN PNAME_NS STRING_LITERAL1
    STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 VAR1 VAR2 "["
    "false" "true" "}" )
+  (cleanup opt)
   (alt _empty "."))
  (rule _Quads_6 "50.6"
   (first "(" ANON BLANK_NODE_LABEL DECIMAL DECIMAL_NEGATIVE DECIMAL_POSITIVE
@@ -1179,6 +1262,7 @@
    STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 VAR1 VAR2 "[" _eps
    "false" "true" )
   (follow "GRAPH" "}")
+  (cleanup opt)
   (alt _empty TriplesTemplate))
  (rule _Quads_7 "50.7" (first "GRAPH" _eps) (follow "}") (seq _Quads_2))
  (rule _Quads_8 "50.8" (first "GRAPH" _eps) (follow "}") (seq _Quads_2))
@@ -1205,6 +1289,7 @@
    STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 VAR1 VAR2 "[" _eps
    "false" "true" )
   (follow "}")
+  (cleanup opt)
   (alt _empty TriplesTemplate))
  (rule _QuadsNotTriples_2 "51.2"
   (first IRIREF PNAME_LN PNAME_NS VAR1 VAR2)
@@ -1245,6 +1330,7 @@
  (rule _TriplesTemplate_1 "52.1"
   (first "." _eps)
   (follow "GRAPH" "}")
+  (cleanup opt)
   (alt _empty _TriplesTemplate_2))
  (rule _TriplesTemplate_2 "52.2"
   (first ".")
@@ -1257,6 +1343,7 @@
    STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 VAR1 VAR2 "[" _eps
    "false" "true" )
   (follow "GRAPH" "}")
+  (cleanup opt)
   (alt _empty TriplesTemplate))
  (rule _TriplesTemplate_4 "52.4"
   (first "." _eps)
@@ -1329,6 +1416,15 @@
    "false" "true" "{" )
   (follow "}")
   (seq _GroupGraphPatternSub_1 _GroupGraphPatternSub_2))
+ (rule _GroupGraphPatternSub_1 "54.1"
+  (first "(" ANON BLANK_NODE_LABEL DECIMAL DECIMAL_NEGATIVE DECIMAL_POSITIVE
+   DOUBLE DOUBLE_NEGATIVE DOUBLE_POSITIVE INTEGER INTEGER_NEGATIVE
+   INTEGER_POSITIVE IRIREF NIL PNAME_LN PNAME_NS STRING_LITERAL1
+   STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 VAR1 VAR2 "[" _eps
+   "false" "true" )
+  (follow "BIND" "FILTER" "GRAPH" "MINUS" "OPTIONAL" "SERVICE" "VALUES" "{" "}")
+  (cleanup opt)
+  (alt _empty TriplesBlock))
  (rule _GroupGraphPatternSub_10 "54.10"
   (first "(" ANON BLANK_NODE_LABEL DECIMAL DECIMAL_NEGATIVE DECIMAL_POSITIVE
    DOUBLE DOUBLE_NEGATIVE DOUBLE_POSITIVE INTEGER INTEGER_NEGATIVE
@@ -1337,17 +1433,10 @@
    "false" "true" )
   (follow "BIND" "FILTER" "GRAPH" "MINUS" "OPTIONAL" "SERVICE" "VALUES" "{" "}")
   (seq _GroupGraphPatternSub_6))
- (rule _GroupGraphPatternSub_1 "54.1"
-  (first "(" ANON BLANK_NODE_LABEL DECIMAL DECIMAL_NEGATIVE DECIMAL_POSITIVE
-   DOUBLE DOUBLE_NEGATIVE DOUBLE_POSITIVE INTEGER INTEGER_NEGATIVE
-   INTEGER_POSITIVE IRIREF NIL PNAME_LN PNAME_NS STRING_LITERAL1
-   STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 VAR1 VAR2 "[" _eps
-   "false" "true" )
-  (follow "BIND" "FILTER" "GRAPH" "MINUS" "OPTIONAL" "SERVICE" "VALUES" "{" "}")
-  (alt _empty TriplesBlock))
  (rule _GroupGraphPatternSub_2 "54.2"
   (first "BIND" "FILTER" "GRAPH" "MINUS" "OPTIONAL" "SERVICE" "VALUES" _eps "{")
   (follow "}")
+  (cleanup star)
   (alt _empty _GroupGraphPatternSub_4))
  (rule _GroupGraphPatternSub_3 "54.3"
   (first "BIND" "FILTER" "GRAPH" "MINUS" "OPTIONAL" "SERVICE" "VALUES" "{")
@@ -1356,6 +1445,7 @@
  (rule _GroupGraphPatternSub_4 "54.4"
   (first "BIND" "FILTER" "GRAPH" "MINUS" "OPTIONAL" "SERVICE" "VALUES" "{")
   (follow "}")
+  (cleanup merge)
   (seq _GroupGraphPatternSub_3 _GroupGraphPatternSub_2))
  (rule _GroupGraphPatternSub_5 "54.5"
   (first "." _eps)
@@ -1365,6 +1455,7 @@
    PNAME_LN PNAME_NS "SERVICE" STRING_LITERAL1 STRING_LITERAL2
    STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 "VALUES" VAR1 VAR2 "[" "false"
    "true" "{" "}" )
+  (cleanup opt)
   (alt _empty "."))
  (rule _GroupGraphPatternSub_6 "54.6"
   (first "(" ANON BLANK_NODE_LABEL DECIMAL DECIMAL_NEGATIVE DECIMAL_POSITIVE
@@ -1373,6 +1464,7 @@
    STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 VAR1 VAR2 "[" _eps
    "false" "true" )
   (follow "BIND" "FILTER" "GRAPH" "MINUS" "OPTIONAL" "SERVICE" "VALUES" "{" "}")
+  (cleanup opt)
   (alt _empty TriplesBlock))
  (rule _GroupGraphPatternSub_7 "54.7"
   (first "BIND" "FILTER" "GRAPH" "MINUS" "OPTIONAL" "SERVICE" "VALUES" _eps "{")
@@ -1401,6 +1493,7 @@
  (rule _TriplesBlock_1 "55.1"
   (first "." _eps)
   (follow "BIND" "FILTER" "GRAPH" "MINUS" "OPTIONAL" "SERVICE" "VALUES" "{" "}")
+  (cleanup opt)
   (alt _empty _TriplesBlock_2))
  (rule _TriplesBlock_2 "55.2"
   (first ".")
@@ -1413,6 +1506,7 @@
    STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 VAR1 VAR2 "[" _eps
    "false" "true" )
   (follow "BIND" "FILTER" "GRAPH" "MINUS" "OPTIONAL" "SERVICE" "VALUES" "{" "}")
+  (cleanup opt)
   (alt _empty TriplesBlock))
  (rule _TriplesBlock_4 "55.4"
   (first "." _eps)
@@ -1484,6 +1578,7 @@
  (rule _ServiceGraphPattern_1 "59.1"
   (first "SILENT" _eps)
   (follow IRIREF PNAME_LN PNAME_NS VAR1 VAR2)
+  (cleanup opt)
   (alt _empty "SILENT"))
  (rule _ServiceGraphPattern_2 "59.2"
   (first IRIREF PNAME_LN PNAME_NS "SILENT" VAR1 VAR2)
@@ -1545,6 +1640,7 @@
    PNAME_NS STRING_LITERAL1 STRING_LITERAL2 STRING_LITERAL_LONG1
    STRING_LITERAL_LONG2 "UNDEF" _eps "false" "true" )
   (follow "}")
+  (cleanup star)
   (alt _empty _InlineDataOneVar_2))
  (rule _InlineDataOneVar_2 "63.2"
   (first DECIMAL DECIMAL_NEGATIVE DECIMAL_POSITIVE DOUBLE DOUBLE_NEGATIVE
@@ -1552,6 +1648,7 @@
    PNAME_NS STRING_LITERAL1 STRING_LITERAL2 STRING_LITERAL_LONG1
    STRING_LITERAL_LONG2 "UNDEF" "false" "true" )
   (follow "}")
+  (cleanup merge)
   (seq DataBlockValue _InlineDataOneVar_1))
  (rule _InlineDataOneVar_3 "63.3"
   (first "{")
@@ -1590,14 +1687,15 @@
    STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 "VALUES" VAR1 VAR2 "[" _eof
    "false" "true" "{" "}" )
   (seq _InlineDataFull_1 "{" _InlineDataFull_2 "}"))
+ (rule _InlineDataFull_1 "64.1" (first "(" NIL) (follow "{") (alt NIL _InlineDataFull_3))
  (rule _InlineDataFull_10 "64.10"
   (first DECIMAL DECIMAL_NEGATIVE DECIMAL_POSITIVE DOUBLE DOUBLE_NEGATIVE
    DOUBLE_POSITIVE INTEGER INTEGER_NEGATIVE INTEGER_POSITIVE IRIREF PNAME_LN
    PNAME_NS STRING_LITERAL1 STRING_LITERAL2 STRING_LITERAL_LONG1
    STRING_LITERAL_LONG2 "UNDEF" "false" "true" )
   (follow ")")
+  (cleanup merge)
   (seq DataBlockValue _InlineDataFull_9))
- (rule _InlineDataFull_1 "64.1" (first "(" NIL) (follow "{") (alt NIL _InlineDataFull_3))
  (rule _InlineDataFull_11 "64.11"
   (first "{")
   (follow "(" "." ANON "BIND" BLANK_NODE_LABEL DECIMAL DECIMAL_NEGATIVE
@@ -1664,15 +1762,18 @@
  (rule _InlineDataFull_2 "64.2"
   (first "(" NIL _eps)
   (follow "}")
+  (cleanup star)
   (alt _empty _InlineDataFull_7))
  (rule _InlineDataFull_3 "64.3" (first "(") (follow "{") (seq "(" _InlineDataFull_4 ")"))
  (rule _InlineDataFull_4 "64.4"
   (first VAR1 VAR2 _eps)
   (follow ")")
+  (cleanup star)
   (alt _empty _InlineDataFull_5))
  (rule _InlineDataFull_5 "64.5"
   (first VAR1 VAR2)
   (follow ")")
+  (cleanup merge)
   (seq Var _InlineDataFull_4))
  (rule _InlineDataFull_6 "64.6"
   (first "(" NIL)
@@ -1681,6 +1782,7 @@
  (rule _InlineDataFull_7 "64.7"
   (first "(" NIL)
   (follow "}")
+  (cleanup merge)
   (seq _InlineDataFull_6 _InlineDataFull_2))
  (rule _InlineDataFull_8 "64.8"
   (first "(")
@@ -1692,6 +1794,7 @@
    PNAME_NS STRING_LITERAL1 STRING_LITERAL2 STRING_LITERAL_LONG1
    STRING_LITERAL_LONG2 "UNDEF" _eps "false" "true" )
   (follow ")")
+  (cleanup star)
   (alt _empty _InlineDataFull_10))
  (rule DataBlockValue "65"
   (first DECIMAL DECIMAL_NEGATIVE DECIMAL_POSITIVE DOUBLE DOUBLE_NEGATIVE
@@ -1738,6 +1841,7 @@
    PNAME_LN PNAME_NS "SERVICE" STRING_LITERAL1 STRING_LITERAL2
    STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 "VALUES" VAR1 VAR2 "[" "false"
    "true" "{" "}" )
+  (cleanup star)
   (alt _empty _GroupOrUnionGraphPattern_3))
  (rule _GroupOrUnionGraphPattern_2 "67.2"
   (first "UNION")
@@ -1756,6 +1860,7 @@
    PNAME_LN PNAME_NS "SERVICE" STRING_LITERAL1 STRING_LITERAL2
    STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 "VALUES" VAR1 VAR2 "[" "false"
    "true" "{" "}" )
+  (cleanup merge)
   (seq _GroupOrUnionGraphPattern_2 _GroupOrUnionGraphPattern_1))
  (rule _GroupOrUnionGraphPattern_4 "67.4"
   (first "UNION" _eps)
@@ -1869,24 +1974,6 @@
    VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
    "isURI" "sameTerm" "true" "{" "||" "}" )
   (alt NIL _ArgList_1))
- (rule _ArgList_10 "71.10"
-  (first ")" ",")
-  (follow "!=" "&&" "(" ")" "*" "+" "," "-" "." "/" ";" "<" "<=" "=" ">" ">="
-   "ABS" ANON "AS" "ASC" "AVG" "BIND" BLANK_NODE_LABEL "BNODE" "BOUND" "CEIL"
-   "COALESCE" "CONCAT" "CONTAINS" "COUNT" "DATATYPE" "DAY" DECIMAL
-   DECIMAL_NEGATIVE DECIMAL_POSITIVE "DESC" DOUBLE DOUBLE_NEGATIVE
-   DOUBLE_POSITIVE "ENCODE_FOR_URI" "EXISTS" "FILTER" "FLOOR" "GRAPH"
-   "GROUP_CONCAT" "HAVING" "HOURS" "IF" "IN" INTEGER INTEGER_NEGATIVE
-   INTEGER_POSITIVE "IRI" IRIREF "LANG" "LANGMATCHES" "LCASE" "LIMIT" "MAX"
-   "MD5" "MIN" "MINUS" "MINUTES" "MONTH" NIL "NOT" "NOW" "OFFSET" "OPTIONAL"
-   "ORDER" PNAME_LN PNAME_NS "RAND" "REGEX" "REPLACE" "ROUND" "SAMPLE"
-   "SECONDS" "SERVICE" "SHA1" "SHA224" "SHA256" "SHA384" "SHA512" "STR"
-   "STRAFTER" "STRBEFORE" "STRDT" "STRENDS" STRING_LITERAL1 STRING_LITERAL2
-   STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 "STRLANG" "STRLEN" "STRSTARTS"
-   "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" "VALUES" VAR1
-   VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
-   "isURI" "sameTerm" "true" "{" "||" "}" )
-  (seq _ArgList_3 ")"))
  (rule _ArgList_1 "71.1"
   (first "(")
   (follow "!=" "&&" "(" ")" "*" "+" "," "-" "." "/" ";" "<" "<=" "=" ">" ">="
@@ -1905,6 +1992,24 @@
    VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
    "isURI" "sameTerm" "true" "{" "||" "}" )
   (seq "(" _ArgList_2 Expression _ArgList_3 ")"))
+ (rule _ArgList_10 "71.10"
+  (first ")" ",")
+  (follow "!=" "&&" "(" ")" "*" "+" "," "-" "." "/" ";" "<" "<=" "=" ">" ">="
+   "ABS" ANON "AS" "ASC" "AVG" "BIND" BLANK_NODE_LABEL "BNODE" "BOUND" "CEIL"
+   "COALESCE" "CONCAT" "CONTAINS" "COUNT" "DATATYPE" "DAY" DECIMAL
+   DECIMAL_NEGATIVE DECIMAL_POSITIVE "DESC" DOUBLE DOUBLE_NEGATIVE
+   DOUBLE_POSITIVE "ENCODE_FOR_URI" "EXISTS" "FILTER" "FLOOR" "GRAPH"
+   "GROUP_CONCAT" "HAVING" "HOURS" "IF" "IN" INTEGER INTEGER_NEGATIVE
+   INTEGER_POSITIVE "IRI" IRIREF "LANG" "LANGMATCHES" "LCASE" "LIMIT" "MAX"
+   "MD5" "MIN" "MINUS" "MINUTES" "MONTH" NIL "NOT" "NOW" "OFFSET" "OPTIONAL"
+   "ORDER" PNAME_LN PNAME_NS "RAND" "REGEX" "REPLACE" "ROUND" "SAMPLE"
+   "SECONDS" "SERVICE" "SHA1" "SHA224" "SHA256" "SHA384" "SHA512" "STR"
+   "STRAFTER" "STRBEFORE" "STRDT" "STRENDS" STRING_LITERAL1 STRING_LITERAL2
+   STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 "STRLANG" "STRLEN" "STRSTARTS"
+   "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" "VALUES" VAR1
+   VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
+   "isURI" "sameTerm" "true" "{" "||" "}" )
+  (seq _ArgList_3 ")"))
  (rule _ArgList_2 "71.2"
   (first "DISTINCT" _eps)
   (follow "!" "(" "+" "-" "ABS" "AVG" "BNODE" "BOUND" "CEIL" "COALESCE"
@@ -1919,10 +2024,19 @@
    "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" VAR1 VAR2
    "YEAR" "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC" "isURI" "sameTerm"
    "true" )
+  (cleanup opt)
   (alt _empty "DISTINCT"))
- (rule _ArgList_3 "71.3" (first "," _eps) (follow ")") (alt _empty _ArgList_5))
+ (rule _ArgList_3 "71.3"
+  (first "," _eps)
+  (follow ")")
+  (cleanup star)
+  (alt _empty _ArgList_5))
  (rule _ArgList_4 "71.4" (first ",") (follow ")" ",") (seq "," Expression))
- (rule _ArgList_5 "71.5" (first ",") (follow ")") (seq _ArgList_4 _ArgList_3))
+ (rule _ArgList_5 "71.5"
+  (first ",")
+  (follow ")")
+  (cleanup merge)
+  (seq _ArgList_4 _ArgList_3))
  (rule _ArgList_6 "71.6"
   (first "!" "(" "+" "-" "ABS" "AVG" "BNODE" "BOUND" "CEIL" "COALESCE" "CONCAT"
    "CONTAINS" "COUNT" "DATATYPE" "DAY" DECIMAL DECIMAL_NEGATIVE
@@ -2036,11 +2150,13 @@
  (rule _ExpressionList_2 "72.2"
   (first "," _eps)
   (follow ")")
+  (cleanup star)
   (alt _empty _ExpressionList_4))
  (rule _ExpressionList_3 "72.3" (first ",") (follow ")" ",") (seq "," Expression))
  (rule _ExpressionList_4 "72.4"
   (first ",")
   (follow ")")
+  (cleanup merge)
   (seq _ExpressionList_3 _ExpressionList_2))
  (rule _ExpressionList_5 "72.5"
   (first "!" "(" "+" "-" "ABS" "AVG" "BNODE" "BOUND" "CEIL" "COALESCE" "CONCAT"
@@ -2116,6 +2232,7 @@
    STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 VAR1 VAR2 "[" _eps
    "false" "true" )
   (follow "}")
+  (cleanup opt)
   (alt _empty ConstructTriples))
  (rule _ConstructTemplate_2 "73.2"
   (first "(" ANON BLANK_NODE_LABEL DECIMAL DECIMAL_NEGATIVE DECIMAL_POSITIVE
@@ -2136,6 +2253,7 @@
  (rule _ConstructTriples_1 "74.1"
   (first "." _eps)
   (follow "}")
+  (cleanup opt)
   (alt _empty _ConstructTriples_2))
  (rule _ConstructTriples_2 "74.2" (first ".") (follow "}") (seq "." _ConstructTriples_3))
  (rule _ConstructTriples_3 "74.3"
@@ -2145,6 +2263,7 @@
    STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 VAR1 VAR2 "[" _eps
    "false" "true" )
   (follow "}")
+  (cleanup opt)
   (alt _empty ConstructTriples))
  (rule _ConstructTriples_4 "74.4"
   (first "." _eps)
@@ -2188,6 +2307,7 @@
  (rule PropertyList "76"
   (first IRIREF PNAME_LN PNAME_NS VAR1 VAR2 _eps "a")
   (follow "." "GRAPH" "}")
+  (cleanup opt)
   (alt _empty PropertyListNotEmpty))
  (rule PropertyListNotEmpty "77"
   (first IRIREF PNAME_LN PNAME_NS VAR1 VAR2 "a")
@@ -2198,6 +2318,7 @@
   (first ";" _eps)
   (follow "." "BIND" "FILTER" "GRAPH" "MINUS" "OPTIONAL" "SERVICE" "VALUES" "]"
    "{" "}" )
+  (cleanup star)
   (alt _empty _PropertyListNotEmpty_3))
  (rule _PropertyListNotEmpty_2 "77.2"
   (first ";")
@@ -2208,11 +2329,13 @@
   (first ";")
   (follow "." "BIND" "FILTER" "GRAPH" "MINUS" "OPTIONAL" "SERVICE" "VALUES" "]"
    "{" "}" )
+  (cleanup merge)
   (seq _PropertyListNotEmpty_2 _PropertyListNotEmpty_1))
  (rule _PropertyListNotEmpty_4 "77.4"
   (first IRIREF PNAME_LN PNAME_NS VAR1 VAR2 _eps "a")
   (follow "." ";" "BIND" "FILTER" "GRAPH" "MINUS" "OPTIONAL" "SERVICE" "VALUES"
    "]" "{" "}" )
+  (cleanup opt)
   (alt _empty _PropertyListNotEmpty_5))
  (rule _PropertyListNotEmpty_5 "77.5"
   (first IRIREF PNAME_LN PNAME_NS VAR1 VAR2 "a")
@@ -2268,6 +2391,7 @@
   (first "," _eps)
   (follow "." ";" "BIND" "FILTER" "GRAPH" "MINUS" "OPTIONAL" "SERVICE" "VALUES"
    "]" "{" "}" )
+  (cleanup star)
   (alt _empty _ObjectList_3))
  (rule _ObjectList_2 "79.2"
   (first ",")
@@ -2278,6 +2402,7 @@
   (first ",")
   (follow "." ";" "BIND" "FILTER" "GRAPH" "MINUS" "OPTIONAL" "SERVICE" "VALUES"
    "]" "{" "}" )
+  (cleanup merge)
   (seq _ObjectList_2 _ObjectList_1))
  (rule _ObjectList_4 "79.4"
   (first "," _eps)
@@ -2337,11 +2462,17 @@
  (rule PropertyListPath "82"
   (first IRIREF PNAME_LN PNAME_NS VAR1 VAR2 _eps "a")
   (follow "." "BIND" "FILTER" "GRAPH" "MINUS" "OPTIONAL" "SERVICE" "VALUES" "{" "}")
+  (cleanup opt)
   (alt _empty PropertyListNotEmpty))
  (rule PropertyListNotEmptyPath "83"
   (first "!" "(" IRIREF PNAME_LN PNAME_NS VAR1 VAR2 "^" "a")
   (follow "." "BIND" "FILTER" "GRAPH" "MINUS" "OPTIONAL" "SERVICE" "VALUES" "{" "}")
   (seq _PropertyListNotEmptyPath_1 ObjectList _PropertyListNotEmptyPath_2))
+ (rule _PropertyListNotEmptyPath_10 "83.10"
+  (first "!" "(" IRIREF PNAME_LN PNAME_NS VAR1 VAR2 "^" _eps "a")
+  (follow "." ";" "BIND" "FILTER" "GRAPH" "MINUS" "OPTIONAL" "SERVICE" "VALUES"
+   "{" "}" )
+  (seq _PropertyListNotEmptyPath_5))
  (rule _PropertyListNotEmptyPath_1 "83.1"
   (first "!" "(" IRIREF PNAME_LN PNAME_NS VAR1 VAR2 "^" "a")
   (follow "(" ANON BLANK_NODE_LABEL DECIMAL DECIMAL_NEGATIVE DECIMAL_POSITIVE
@@ -2350,11 +2481,6 @@
    STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 VAR1 VAR2 "["
    "false" "true" )
   (alt VerbPath VerbSimple))
- (rule _PropertyListNotEmptyPath_10 "83.10"
-  (first "!" "(" IRIREF PNAME_LN PNAME_NS VAR1 VAR2 "^" _eps "a")
-  (follow "." ";" "BIND" "FILTER" "GRAPH" "MINUS" "OPTIONAL" "SERVICE" "VALUES"
-   "{" "}" )
-  (seq _PropertyListNotEmptyPath_5))
  (rule _PropertyListNotEmptyPath_11 "83.11"
   (first "(" ANON BLANK_NODE_LABEL DECIMAL DECIMAL_NEGATIVE DECIMAL_POSITIVE
    DOUBLE DOUBLE_NEGATIVE DOUBLE_POSITIVE INTEGER INTEGER_NEGATIVE
@@ -2367,6 +2493,7 @@
  (rule _PropertyListNotEmptyPath_2 "83.2"
   (first ";" _eps)
   (follow "." "BIND" "FILTER" "GRAPH" "MINUS" "OPTIONAL" "SERVICE" "VALUES" "{" "}")
+  (cleanup star)
   (alt _empty _PropertyListNotEmptyPath_4))
  (rule _PropertyListNotEmptyPath_3 "83.3"
   (first ";")
@@ -2376,11 +2503,13 @@
  (rule _PropertyListNotEmptyPath_4 "83.4"
   (first ";")
   (follow "." "BIND" "FILTER" "GRAPH" "MINUS" "OPTIONAL" "SERVICE" "VALUES" "{" "}")
+  (cleanup merge)
   (seq _PropertyListNotEmptyPath_3 _PropertyListNotEmptyPath_2))
  (rule _PropertyListNotEmptyPath_5 "83.5"
   (first "!" "(" IRIREF PNAME_LN PNAME_NS VAR1 VAR2 "^" _eps "a")
   (follow "." ";" "BIND" "FILTER" "GRAPH" "MINUS" "OPTIONAL" "SERVICE" "VALUES"
    "{" "}" )
+  (cleanup opt)
   (alt _empty _PropertyListNotEmptyPath_6))
  (rule _PropertyListNotEmptyPath_6 "83.6"
   (first "!" "(" IRIREF PNAME_LN PNAME_NS VAR1 VAR2 "^" "a")
@@ -2430,9 +2559,15 @@
    STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 VAR1 VAR2 "["
    "false" "true" )
   (seq ObjectPath _ObjectListPath_1))
- (rule _ObjectListPath_1 "86.1" (first "," _eps) (alt _empty _ObjectListPath_3))
+ (rule _ObjectListPath_1 "86.1"
+  (first "," _eps)
+  (cleanup star)
+  (alt _empty _ObjectListPath_3))
  (rule _ObjectListPath_2 "86.2" (first ",") (follow ",") (seq "," ObjectPath))
- (rule _ObjectListPath_3 "86.3" (first ",") (seq _ObjectListPath_2 _ObjectListPath_1))
+ (rule _ObjectListPath_3 "86.3"
+  (first ",")
+  (cleanup merge)
+  (seq _ObjectListPath_2 _ObjectListPath_1))
  (rule _ObjectListPath_4 "86.4" (first "," _eps) (seq _ObjectListPath_1))
  (rule _ObjectListPath_5 "86.5" (first "," _eps) (seq _ObjectListPath_1))
  (rule _ObjectListPath_6 "86.6"
@@ -2474,6 +2609,7 @@
    INTEGER_NEGATIVE INTEGER_POSITIVE IRIREF NIL PNAME_LN PNAME_NS
    STRING_LITERAL1 STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2
    VAR1 VAR2 "[" "false" "true" )
+  (cleanup star)
   (alt _empty _PathAlternative_3))
  (rule _PathAlternative_2 "89.2"
   (first "|")
@@ -2490,6 +2626,7 @@
    INTEGER_NEGATIVE INTEGER_POSITIVE IRIREF NIL PNAME_LN PNAME_NS
    STRING_LITERAL1 STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2
    VAR1 VAR2 "[" "false" "true" )
+  (cleanup merge)
   (seq _PathAlternative_2 _PathAlternative_1))
  (rule _PathAlternative_4 "89.4"
   (first _eps "|")
@@ -2530,6 +2667,7 @@
    INTEGER_NEGATIVE INTEGER_POSITIVE IRIREF NIL PNAME_LN PNAME_NS
    STRING_LITERAL1 STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2
    VAR1 VAR2 "[" "false" "true" "|" )
+  (cleanup star)
   (alt _empty _PathSequence_3))
  (rule _PathSequence_2 "90.2"
   (first "/")
@@ -2546,6 +2684,7 @@
    INTEGER_NEGATIVE INTEGER_POSITIVE IRIREF NIL PNAME_LN PNAME_NS
    STRING_LITERAL1 STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2
    VAR1 VAR2 "[" "false" "true" "|" )
+  (cleanup merge)
   (seq _PathSequence_2 _PathSequence_1))
  (rule _PathSequence_4 "90.4"
   (first "/" _eps)
@@ -2586,6 +2725,7 @@
    INTEGER_NEGATIVE INTEGER_POSITIVE IRIREF NIL PNAME_LN PNAME_NS
    STRING_LITERAL1 STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2
    VAR1 VAR2 "[" "false" "true" "|" )
+  (cleanup opt)
   (alt _empty PathMod))
  (rule _PathElt_2 "91.2"
   (first "*" "+" "?" _eps "{")
@@ -2789,10 +2929,6 @@
    STRING_LITERAL1 STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2
    VAR1 VAR2 "[" "false" "true" "{" "|" )
   (alt PathOneInPropertySet _PathNegatedPropertySet_1))
- (rule _PathNegatedPropertySet_10 "95.10"
-  (first IRIREF PNAME_LN PNAME_NS "^" "a")
-  (follow ")" "|")
-  (seq PathOneInPropertySet))
  (rule _PathNegatedPropertySet_1 "95.1"
   (first "(")
   (follow "(" ")" "*" "+" "/" "?" ANON BLANK_NODE_LABEL DECIMAL
@@ -2801,6 +2937,10 @@
    STRING_LITERAL1 STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2
    VAR1 VAR2 "[" "false" "true" "{" "|" )
   (seq "(" _PathNegatedPropertySet_2 ")"))
+ (rule _PathNegatedPropertySet_10 "95.10"
+  (first IRIREF PNAME_LN PNAME_NS "^" "a")
+  (follow ")" "|")
+  (seq PathOneInPropertySet))
  (rule _PathNegatedPropertySet_11 "95.11"
   (first ")")
   (follow "(" ")" "*" "+" "/" "?" ANON BLANK_NODE_LABEL DECIMAL
@@ -2812,6 +2952,7 @@
  (rule _PathNegatedPropertySet_2 "95.2"
   (first IRIREF PNAME_LN PNAME_NS "^" _eps "a")
   (follow ")")
+  (cleanup opt)
   (alt _empty _PathNegatedPropertySet_3))
  (rule _PathNegatedPropertySet_3 "95.3"
   (first IRIREF PNAME_LN PNAME_NS "^" "a")
@@ -2820,6 +2961,7 @@
  (rule _PathNegatedPropertySet_4 "95.4"
   (first _eps "|")
   (follow ")")
+  (cleanup star)
   (alt _empty _PathNegatedPropertySet_6))
  (rule _PathNegatedPropertySet_5 "95.5"
   (first "|")
@@ -2828,6 +2970,7 @@
  (rule _PathNegatedPropertySet_6 "95.6"
   (first "|")
   (follow ")")
+  (cleanup merge)
   (seq _PathNegatedPropertySet_5 _PathNegatedPropertySet_4))
  (rule _PathNegatedPropertySet_7 "95.7"
   (first ")" IRIREF PNAME_LN PNAME_NS "^" "a")
@@ -2964,6 +3107,7 @@
    STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 VAR1 VAR2 "["
    "false" "true" )
   (follow ")")
+  (cleanup plus)
   (seq GraphNode _Collection_2))
  (rule _Collection_2 "102.2"
   (first "(" ANON BLANK_NODE_LABEL DECIMAL DECIMAL_NEGATIVE DECIMAL_POSITIVE
@@ -2972,6 +3116,7 @@
    STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 VAR1 VAR2 "[" _eps
    "false" "true" )
   (follow ")")
+  (cleanup star)
   (alt _empty _Collection_3))
  (rule _Collection_3 "102.3"
   (first "(" ANON BLANK_NODE_LABEL DECIMAL DECIMAL_NEGATIVE DECIMAL_POSITIVE
@@ -2980,6 +3125,7 @@
    STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 VAR1 VAR2 "["
    "false" "true" )
   (follow ")")
+  (cleanup merge)
   (seq GraphNode _Collection_2))
  (rule _Collection_4 "102.4"
   (first "(" ANON BLANK_NODE_LABEL DECIMAL DECIMAL_NEGATIVE DECIMAL_POSITIVE
@@ -3034,6 +3180,7 @@
    STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 VAR1 VAR2 "["
    "false" "true" )
   (follow ")")
+  (cleanup plus)
   (seq GraphNodePath _CollectionPath_2))
  (rule _CollectionPath_2 "103.2"
   (first "(" ANON BLANK_NODE_LABEL DECIMAL DECIMAL_NEGATIVE DECIMAL_POSITIVE
@@ -3042,6 +3189,7 @@
    STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 VAR1 VAR2 "[" _eps
    "false" "true" )
   (follow ")")
+  (cleanup star)
   (alt _empty _CollectionPath_3))
  (rule _CollectionPath_3 "103.3"
   (first "(" ANON BLANK_NODE_LABEL DECIMAL DECIMAL_NEGATIVE DECIMAL_POSITIVE
@@ -3050,6 +3198,7 @@
    STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 VAR1 VAR2 "["
    "false" "true" )
   (follow ")")
+  (cleanup merge)
   (seq GraphNodePath _CollectionPath_2))
  (rule _CollectionPath_4 "103.4"
   (first "(" ANON BLANK_NODE_LABEL DECIMAL DECIMAL_NEGATIVE DECIMAL_POSITIVE
@@ -3196,6 +3345,7 @@
  (rule _ConditionalOrExpression_1 "111.1"
   (first _eps "||")
   (follow ")" "," ";" "AS")
+  (cleanup star)
   (alt _empty _ConditionalOrExpression_3))
  (rule _ConditionalOrExpression_2 "111.2"
   (first "||")
@@ -3204,6 +3354,7 @@
  (rule _ConditionalOrExpression_3 "111.3"
   (first "||")
   (follow ")" "," ";" "AS")
+  (cleanup merge)
   (seq _ConditionalOrExpression_2 _ConditionalOrExpression_1))
  (rule _ConditionalOrExpression_4 "111.4"
   (first _eps "||")
@@ -3246,6 +3397,7 @@
  (rule _ConditionalAndExpression_1 "112.1"
   (first "&&" _eps)
   (follow ")" "," ";" "AS" "||")
+  (cleanup star)
   (alt _empty _ConditionalAndExpression_3))
  (rule _ConditionalAndExpression_2 "112.2"
   (first "&&")
@@ -3254,6 +3406,7 @@
  (rule _ConditionalAndExpression_3 "112.3"
   (first "&&")
   (follow ")" "," ";" "AS" "||")
+  (cleanup merge)
   (seq _ConditionalAndExpression_2 _ConditionalAndExpression_1))
  (rule _ConditionalAndExpression_4 "112.4"
   (first "&&" _eps)
@@ -3308,14 +3461,15 @@
    "true" )
   (follow "&&" ")" "," ";" "AS" "||")
   (seq NumericExpression _RelationalExpression_1))
- (rule _RelationalExpression_1 "114.1"
-  (first "!=" "<" "<=" "=" ">" ">=" "IN" "NOT" _eps)
-  (follow "&&" ")" "," ";" "AS" "||")
-  (alt _empty _RelationalExpression_2))
  (rule _RelationalExpression_10 "114.10"
   (first "NOT")
   (follow "&&" ")" "," ";" "AS" "||")
   (seq "NOT" "IN" ExpressionList))
+ (rule _RelationalExpression_1 "114.1"
+  (first "!=" "<" "<=" "=" ">" ">=" "IN" "NOT" _eps)
+  (follow "&&" ")" "," ";" "AS" "||")
+  (cleanup opt)
+  (alt _empty _RelationalExpression_2))
  (rule _RelationalExpression_11 "114.11"
   (first "!=" "<" "<=" "=" ">" ">=" "IN" "NOT" _eps)
   (follow "&&" ")" "," ";" "AS" "||")
@@ -3482,6 +3636,7 @@
   (first "+" "-" DECIMAL_NEGATIVE DECIMAL_POSITIVE DOUBLE_NEGATIVE
    DOUBLE_POSITIVE INTEGER_NEGATIVE INTEGER_POSITIVE _eps )
   (follow "!=" "&&" ")" "," ";" "<" "<=" "=" ">" ">=" "AS" "IN" "NOT" "||")
+  (cleanup star)
   (alt _empty _AdditiveExpression_3))
  (rule _AdditiveExpression_10 "116.10"
   (first "*")
@@ -3590,6 +3745,7 @@
   (first "+" "-" DECIMAL_NEGATIVE DECIMAL_POSITIVE DOUBLE_NEGATIVE
    DOUBLE_POSITIVE INTEGER_NEGATIVE INTEGER_POSITIVE )
   (follow "!=" "&&" ")" "," ";" "<" "<=" "=" ">" ">=" "AS" "IN" "NOT" "||")
+  (cleanup merge)
   (seq _AdditiveExpression_2 _AdditiveExpression_1))
  (rule _AdditiveExpression_4 "116.4"
   (first "+")
@@ -3622,6 +3778,7 @@
   (follow "!=" "&&" ")" "+" "," "-" ";" "<" "<=" "=" ">" ">=" "AS"
    DECIMAL_NEGATIVE DECIMAL_POSITIVE DOUBLE_NEGATIVE DOUBLE_POSITIVE "IN"
    INTEGER_NEGATIVE INTEGER_POSITIVE "NOT" "||" )
+  (cleanup opt)
   (alt _empty _AdditiveExpression_9))
  (rule _AdditiveExpression_9 "116.9"
   (first "*" "/")
@@ -3651,6 +3808,7 @@
   (follow "!=" "&&" ")" "+" "," "-" ";" "<" "<=" "=" ">" ">=" "AS"
    DECIMAL_NEGATIVE DECIMAL_POSITIVE DOUBLE_NEGATIVE DOUBLE_POSITIVE "IN"
    INTEGER_NEGATIVE INTEGER_POSITIVE "NOT" "||" )
+  (cleanup star)
   (alt _empty _MultiplicativeExpression_3))
  (rule _MultiplicativeExpression_2 "117.2"
   (first "*" "/")
@@ -3663,6 +3821,7 @@
   (follow "!=" "&&" ")" "+" "," "-" ";" "<" "<=" "=" ">" ">=" "AS"
    DECIMAL_NEGATIVE DECIMAL_POSITIVE DOUBLE_NEGATIVE DOUBLE_POSITIVE "IN"
    INTEGER_NEGATIVE INTEGER_POSITIVE "NOT" "||" )
+  (cleanup merge)
   (seq _MultiplicativeExpression_2 _MultiplicativeExpression_1))
  (rule _MultiplicativeExpression_4 "117.4"
   (first "*")
@@ -4127,24 +4286,6 @@
    VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
    "isURI" "sameTerm" "true" "{" "||" "}" )
   (seq "CONTAINS" "(" Expression "," Expression ")"))
- (rule _BuiltInCall_2 "121.2"
-  (first "LANG")
-  (follow "!=" "&&" "(" ")" "*" "+" "," "-" "." "/" ";" "<" "<=" "=" ">" ">="
-   "ABS" ANON "AS" "ASC" "AVG" "BIND" BLANK_NODE_LABEL "BNODE" "BOUND" "CEIL"
-   "COALESCE" "CONCAT" "CONTAINS" "COUNT" "DATATYPE" "DAY" DECIMAL
-   DECIMAL_NEGATIVE DECIMAL_POSITIVE "DESC" DOUBLE DOUBLE_NEGATIVE
-   DOUBLE_POSITIVE "ENCODE_FOR_URI" "EXISTS" "FILTER" "FLOOR" "GRAPH"
-   "GROUP_CONCAT" "HAVING" "HOURS" "IF" "IN" INTEGER INTEGER_NEGATIVE
-   INTEGER_POSITIVE "IRI" IRIREF "LANG" "LANGMATCHES" "LCASE" "LIMIT" "MAX"
-   "MD5" "MIN" "MINUS" "MINUTES" "MONTH" NIL "NOT" "NOW" "OFFSET" "OPTIONAL"
-   "ORDER" PNAME_LN PNAME_NS "RAND" "REGEX" "REPLACE" "ROUND" "SAMPLE"
-   "SECONDS" "SERVICE" "SHA1" "SHA224" "SHA256" "SHA384" "SHA512" "STR"
-   "STRAFTER" "STRBEFORE" "STRDT" "STRENDS" STRING_LITERAL1 STRING_LITERAL2
-   STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 "STRLANG" "STRLEN" "STRSTARTS"
-   "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" "VALUES" VAR1
-   VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
-   "isURI" "sameTerm" "true" "{" "||" "}" )
-  (seq "LANG" "(" Expression ")"))
  (rule _BuiltInCall_20 "121.20"
   (first "STRSTARTS")
   (follow "!=" "&&" "(" ")" "*" "+" "," "-" "." "/" ";" "<" "<=" "=" ">" ">="
@@ -4163,6 +4304,24 @@
    VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
    "isURI" "sameTerm" "true" "{" "||" "}" )
   (seq "STRSTARTS" "(" Expression "," Expression ")"))
+ (rule _BuiltInCall_2 "121.2"
+  (first "LANG")
+  (follow "!=" "&&" "(" ")" "*" "+" "," "-" "." "/" ";" "<" "<=" "=" ">" ">="
+   "ABS" ANON "AS" "ASC" "AVG" "BIND" BLANK_NODE_LABEL "BNODE" "BOUND" "CEIL"
+   "COALESCE" "CONCAT" "CONTAINS" "COUNT" "DATATYPE" "DAY" DECIMAL
+   DECIMAL_NEGATIVE DECIMAL_POSITIVE "DESC" DOUBLE DOUBLE_NEGATIVE
+   DOUBLE_POSITIVE "ENCODE_FOR_URI" "EXISTS" "FILTER" "FLOOR" "GRAPH"
+   "GROUP_CONCAT" "HAVING" "HOURS" "IF" "IN" INTEGER INTEGER_NEGATIVE
+   INTEGER_POSITIVE "IRI" IRIREF "LANG" "LANGMATCHES" "LCASE" "LIMIT" "MAX"
+   "MD5" "MIN" "MINUS" "MINUTES" "MONTH" NIL "NOT" "NOW" "OFFSET" "OPTIONAL"
+   "ORDER" PNAME_LN PNAME_NS "RAND" "REGEX" "REPLACE" "ROUND" "SAMPLE"
+   "SECONDS" "SERVICE" "SHA1" "SHA224" "SHA256" "SHA384" "SHA512" "STR"
+   "STRAFTER" "STRBEFORE" "STRDT" "STRENDS" STRING_LITERAL1 STRING_LITERAL2
+   STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 "STRLANG" "STRLEN" "STRSTARTS"
+   "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" "VALUES" VAR1
+   VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
+   "isURI" "sameTerm" "true" "{" "||" "}" )
+  (seq "LANG" "(" Expression ")"))
  (rule _BuiltInCall_21 "121.21"
   (first "STRENDS")
   (follow "!=" "&&" "(" ")" "*" "+" "," "-" "." "/" ";" "<" "<=" "=" ">" ">="
@@ -4721,24 +4880,6 @@
    VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
    "isURI" "sameTerm" "true" "{" "||" "}" )
   (seq "isLITERAL" "(" Expression ")"))
- (rule _BuiltInCall_5 "121.5"
-  (first "BOUND")
-  (follow "!=" "&&" "(" ")" "*" "+" "," "-" "." "/" ";" "<" "<=" "=" ">" ">="
-   "ABS" ANON "AS" "ASC" "AVG" "BIND" BLANK_NODE_LABEL "BNODE" "BOUND" "CEIL"
-   "COALESCE" "CONCAT" "CONTAINS" "COUNT" "DATATYPE" "DAY" DECIMAL
-   DECIMAL_NEGATIVE DECIMAL_POSITIVE "DESC" DOUBLE DOUBLE_NEGATIVE
-   DOUBLE_POSITIVE "ENCODE_FOR_URI" "EXISTS" "FILTER" "FLOOR" "GRAPH"
-   "GROUP_CONCAT" "HAVING" "HOURS" "IF" "IN" INTEGER INTEGER_NEGATIVE
-   INTEGER_POSITIVE "IRI" IRIREF "LANG" "LANGMATCHES" "LCASE" "LIMIT" "MAX"
-   "MD5" "MIN" "MINUS" "MINUTES" "MONTH" NIL "NOT" "NOW" "OFFSET" "OPTIONAL"
-   "ORDER" PNAME_LN PNAME_NS "RAND" "REGEX" "REPLACE" "ROUND" "SAMPLE"
-   "SECONDS" "SERVICE" "SHA1" "SHA224" "SHA256" "SHA384" "SHA512" "STR"
-   "STRAFTER" "STRBEFORE" "STRDT" "STRENDS" STRING_LITERAL1 STRING_LITERAL2
-   STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 "STRLANG" "STRLEN" "STRSTARTS"
-   "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" "VALUES" VAR1
-   VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
-   "isURI" "sameTerm" "true" "{" "||" "}" )
-  (seq "BOUND" "(" Var ")"))
  (rule _BuiltInCall_50 "121.50"
   (first "isNUMERIC")
   (follow "!=" "&&" "(" ")" "*" "+" "," "-" "." "/" ";" "<" "<=" "=" ">" ">="
@@ -4757,6 +4898,24 @@
    VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
    "isURI" "sameTerm" "true" "{" "||" "}" )
   (seq "isNUMERIC" "(" Expression ")"))
+ (rule _BuiltInCall_5 "121.5"
+  (first "BOUND")
+  (follow "!=" "&&" "(" ")" "*" "+" "," "-" "." "/" ";" "<" "<=" "=" ">" ">="
+   "ABS" ANON "AS" "ASC" "AVG" "BIND" BLANK_NODE_LABEL "BNODE" "BOUND" "CEIL"
+   "COALESCE" "CONCAT" "CONTAINS" "COUNT" "DATATYPE" "DAY" DECIMAL
+   DECIMAL_NEGATIVE DECIMAL_POSITIVE "DESC" DOUBLE DOUBLE_NEGATIVE
+   DOUBLE_POSITIVE "ENCODE_FOR_URI" "EXISTS" "FILTER" "FLOOR" "GRAPH"
+   "GROUP_CONCAT" "HAVING" "HOURS" "IF" "IN" INTEGER INTEGER_NEGATIVE
+   INTEGER_POSITIVE "IRI" IRIREF "LANG" "LANGMATCHES" "LCASE" "LIMIT" "MAX"
+   "MD5" "MIN" "MINUS" "MINUTES" "MONTH" NIL "NOT" "NOW" "OFFSET" "OPTIONAL"
+   "ORDER" PNAME_LN PNAME_NS "RAND" "REGEX" "REPLACE" "ROUND" "SAMPLE"
+   "SECONDS" "SERVICE" "SHA1" "SHA224" "SHA256" "SHA384" "SHA512" "STR"
+   "STRAFTER" "STRBEFORE" "STRDT" "STRENDS" STRING_LITERAL1 STRING_LITERAL2
+   STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 "STRLANG" "STRLEN" "STRSTARTS"
+   "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" "VALUES" VAR1
+   VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
+   "isURI" "sameTerm" "true" "{" "||" "}" )
+  (seq "BOUND" "(" Var ")"))
  (rule _BuiltInCall_51 "121.51"
   (first "(" NIL)
   (follow "!=" "&&" "(" ")" "*" "+" "," "-" "." "/" ";" "<" "<=" "=" ">" ">="
@@ -5392,6 +5551,24 @@
    VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
    "isURI" "sameTerm" "true" "{" "||" "}" )
   (seq Expression "," Expression ")"))
+ (rule _BuiltInCall_8 "121.8"
+  (first "BNODE")
+  (follow "!=" "&&" "(" ")" "*" "+" "," "-" "." "/" ";" "<" "<=" "=" ">" ">="
+   "ABS" ANON "AS" "ASC" "AVG" "BIND" BLANK_NODE_LABEL "BNODE" "BOUND" "CEIL"
+   "COALESCE" "CONCAT" "CONTAINS" "COUNT" "DATATYPE" "DAY" DECIMAL
+   DECIMAL_NEGATIVE DECIMAL_POSITIVE "DESC" DOUBLE DOUBLE_NEGATIVE
+   DOUBLE_POSITIVE "ENCODE_FOR_URI" "EXISTS" "FILTER" "FLOOR" "GRAPH"
+   "GROUP_CONCAT" "HAVING" "HOURS" "IF" "IN" INTEGER INTEGER_NEGATIVE
+   INTEGER_POSITIVE "IRI" IRIREF "LANG" "LANGMATCHES" "LCASE" "LIMIT" "MAX"
+   "MD5" "MIN" "MINUS" "MINUTES" "MONTH" NIL "NOT" "NOW" "OFFSET" "OPTIONAL"
+   "ORDER" PNAME_LN PNAME_NS "RAND" "REGEX" "REPLACE" "ROUND" "SAMPLE"
+   "SECONDS" "SERVICE" "SHA1" "SHA224" "SHA256" "SHA384" "SHA512" "STR"
+   "STRAFTER" "STRBEFORE" "STRDT" "STRENDS" STRING_LITERAL1 STRING_LITERAL2
+   STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 "STRLANG" "STRLEN" "STRSTARTS"
+   "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" "VALUES" VAR1
+   VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
+   "isURI" "sameTerm" "true" "{" "||" "}" )
+  (seq "BNODE" _BuiltInCall_51))
  (rule _BuiltInCall_80 "121.80"
   (first "!" "(" "+" "-" "ABS" "AVG" "BNODE" "BOUND" "CEIL" "COALESCE" "CONCAT"
    "CONTAINS" "COUNT" "DATATYPE" "DAY" DECIMAL DECIMAL_NEGATIVE
@@ -5421,24 +5598,6 @@
    VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
    "isURI" "sameTerm" "true" "{" "||" "}" )
   (seq Expression "," Expression "," Expression ")"))
- (rule _BuiltInCall_8 "121.8"
-  (first "BNODE")
-  (follow "!=" "&&" "(" ")" "*" "+" "," "-" "." "/" ";" "<" "<=" "=" ">" ">="
-   "ABS" ANON "AS" "ASC" "AVG" "BIND" BLANK_NODE_LABEL "BNODE" "BOUND" "CEIL"
-   "COALESCE" "CONCAT" "CONTAINS" "COUNT" "DATATYPE" "DAY" DECIMAL
-   DECIMAL_NEGATIVE DECIMAL_POSITIVE "DESC" DOUBLE DOUBLE_NEGATIVE
-   DOUBLE_POSITIVE "ENCODE_FOR_URI" "EXISTS" "FILTER" "FLOOR" "GRAPH"
-   "GROUP_CONCAT" "HAVING" "HOURS" "IF" "IN" INTEGER INTEGER_NEGATIVE
-   INTEGER_POSITIVE "IRI" IRIREF "LANG" "LANGMATCHES" "LCASE" "LIMIT" "MAX"
-   "MD5" "MIN" "MINUS" "MINUTES" "MONTH" NIL "NOT" "NOW" "OFFSET" "OPTIONAL"
-   "ORDER" PNAME_LN PNAME_NS "RAND" "REGEX" "REPLACE" "ROUND" "SAMPLE"
-   "SECONDS" "SERVICE" "SHA1" "SHA224" "SHA256" "SHA384" "SHA512" "STR"
-   "STRAFTER" "STRBEFORE" "STRDT" "STRENDS" STRING_LITERAL1 STRING_LITERAL2
-   STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 "STRLANG" "STRLEN" "STRSTARTS"
-   "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" "VALUES" VAR1
-   VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
-   "isURI" "sameTerm" "true" "{" "||" "}" )
-  (seq "BNODE" _BuiltInCall_51))
  (rule _BuiltInCall_81 "121.81"
   (first "!" "(" "+" "-" "ABS" "AVG" "BNODE" "BOUND" "CEIL" "COALESCE" "CONCAT"
    "CONTAINS" "COUNT" "DATATYPE" "DAY" DECIMAL DECIMAL_NEGATIVE
@@ -5745,6 +5904,7 @@
  (rule _RegexExpression_1 "122.1"
   (first "," _eps)
   (follow ")")
+  (cleanup opt)
   (alt _empty _RegexExpression_2))
  (rule _RegexExpression_2 "122.2" (first ",") (follow ")") (seq "," Expression))
  (rule _RegexExpression_3 "122.3"
@@ -5895,6 +6055,7 @@
  (rule _SubstringExpression_1 "123.1"
   (first "," _eps)
   (follow ")")
+  (cleanup opt)
   (alt _empty _SubstringExpression_2))
  (rule _SubstringExpression_2 "123.2" (first ",") (follow ")") (seq "," Expression))
  (rule _SubstringExpression_3 "123.3"
@@ -6043,6 +6204,11 @@
    "isURI" "sameTerm" "true" "{" "||" "}" )
   (seq "REPLACE" "(" Expression "," Expression "," Expression
    _StrReplaceExpression_1 ")" ))
+ (rule _StrReplaceExpression_1 "124.1"
+  (first "," _eps)
+  (follow ")")
+  (cleanup opt)
+  (alt _empty _StrReplaceExpression_2))
  (rule _StrReplaceExpression_10 "124.10"
   (first ")" ",")
   (follow "!=" "&&" "(" ")" "*" "+" "," "-" "." "/" ";" "<" "<=" "=" ">" ">="
@@ -6061,10 +6227,6 @@
    VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
    "isURI" "sameTerm" "true" "{" "||" "}" )
   (seq _StrReplaceExpression_1 ")"))
- (rule _StrReplaceExpression_1 "124.1"
-  (first "," _eps)
-  (follow ")")
-  (alt _empty _StrReplaceExpression_2))
  (rule _StrReplaceExpression_2 "124.2" (first ",") (follow ")") (seq "," Expression))
  (rule _StrReplaceExpression_3 "124.3"
   (first "(")
@@ -6327,6 +6489,7 @@
    "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" VAR1 VAR2
    "YEAR" "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC" "isURI" "sameTerm"
    "true" )
+  (cleanup opt)
   (alt _empty "DISTINCT"))
  (rule _Aggregate_11 "127.11"
   (first "DISTINCT" _eps)
@@ -6342,6 +6505,7 @@
    "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" VAR1 VAR2
    "YEAR" "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC" "isURI" "sameTerm"
    "true" )
+  (cleanup opt)
   (alt _empty "DISTINCT"))
  (rule _Aggregate_12 "127.12"
   (first "DISTINCT" _eps)
@@ -6357,6 +6521,7 @@
    "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" VAR1 VAR2
    "YEAR" "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC" "isURI" "sameTerm"
    "true" )
+  (cleanup opt)
   (alt _empty "DISTINCT"))
  (rule _Aggregate_13 "127.13"
   (first "DISTINCT" _eps)
@@ -6372,6 +6537,7 @@
    "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" VAR1 VAR2
    "YEAR" "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC" "isURI" "sameTerm"
    "true" )
+  (cleanup opt)
   (alt _empty "DISTINCT"))
  (rule _Aggregate_14 "127.14"
   (first "DISTINCT" _eps)
@@ -6387,6 +6553,7 @@
    "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" VAR1 VAR2
    "YEAR" "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC" "isURI" "sameTerm"
    "true" )
+  (cleanup opt)
   (alt _empty "DISTINCT"))
  (rule _Aggregate_15 "127.15"
   (first "DISTINCT" _eps)
@@ -6402,8 +6569,13 @@
    "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" VAR1 VAR2
    "YEAR" "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC" "isURI" "sameTerm"
    "true" )
+  (cleanup opt)
   (alt _empty "DISTINCT"))
- (rule _Aggregate_16 "127.16" (first ";" _eps) (follow ")") (alt _empty _Aggregate_17))
+ (rule _Aggregate_16 "127.16"
+  (first ";" _eps)
+  (follow ")")
+  (cleanup opt)
+  (alt _empty _Aggregate_17))
  (rule _Aggregate_17 "127.17" (first ";") (follow ")") (seq ";" "SEPARATOR" "=" String))
  (rule _Aggregate_18 "127.18"
   (first "(")
@@ -6441,24 +6613,6 @@
    VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
    "isURI" "sameTerm" "true" "{" "||" "}" )
   (seq "(" _Aggregate_10 Expression ")"))
- (rule _Aggregate_20 "127.20"
-  (first "(")
-  (follow "!=" "&&" "(" ")" "*" "+" "," "-" "." "/" ";" "<" "<=" "=" ">" ">="
-   "ABS" ANON "AS" "ASC" "AVG" "BIND" BLANK_NODE_LABEL "BNODE" "BOUND" "CEIL"
-   "COALESCE" "CONCAT" "CONTAINS" "COUNT" "DATATYPE" "DAY" DECIMAL
-   DECIMAL_NEGATIVE DECIMAL_POSITIVE "DESC" DOUBLE DOUBLE_NEGATIVE
-   DOUBLE_POSITIVE "ENCODE_FOR_URI" "EXISTS" "FILTER" "FLOOR" "GRAPH"
-   "GROUP_CONCAT" "HAVING" "HOURS" "IF" "IN" INTEGER INTEGER_NEGATIVE
-   INTEGER_POSITIVE "IRI" IRIREF "LANG" "LANGMATCHES" "LCASE" "LIMIT" "MAX"
-   "MD5" "MIN" "MINUS" "MINUTES" "MONTH" NIL "NOT" "NOW" "OFFSET" "OPTIONAL"
-   "ORDER" PNAME_LN PNAME_NS "RAND" "REGEX" "REPLACE" "ROUND" "SAMPLE"
-   "SECONDS" "SERVICE" "SHA1" "SHA224" "SHA256" "SHA384" "SHA512" "STR"
-   "STRAFTER" "STRBEFORE" "STRDT" "STRENDS" STRING_LITERAL1 STRING_LITERAL2
-   STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 "STRLANG" "STRLEN" "STRSTARTS"
-   "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" "VALUES" VAR1
-   VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
-   "isURI" "sameTerm" "true" "{" "||" "}" )
-  (seq "(" _Aggregate_11 Expression ")"))
  (rule _Aggregate_2 "127.2"
   (first "SUM")
   (follow "!=" "&&" "(" ")" "*" "+" "," "-" "." "/" ";" "<" "<=" "=" ">" ">="
@@ -6477,6 +6631,24 @@
    VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
    "isURI" "sameTerm" "true" "{" "||" "}" )
   (seq "SUM" "(" _Aggregate_10 Expression ")"))
+ (rule _Aggregate_20 "127.20"
+  (first "(")
+  (follow "!=" "&&" "(" ")" "*" "+" "," "-" "." "/" ";" "<" "<=" "=" ">" ">="
+   "ABS" ANON "AS" "ASC" "AVG" "BIND" BLANK_NODE_LABEL "BNODE" "BOUND" "CEIL"
+   "COALESCE" "CONCAT" "CONTAINS" "COUNT" "DATATYPE" "DAY" DECIMAL
+   DECIMAL_NEGATIVE DECIMAL_POSITIVE "DESC" DOUBLE DOUBLE_NEGATIVE
+   DOUBLE_POSITIVE "ENCODE_FOR_URI" "EXISTS" "FILTER" "FLOOR" "GRAPH"
+   "GROUP_CONCAT" "HAVING" "HOURS" "IF" "IN" INTEGER INTEGER_NEGATIVE
+   INTEGER_POSITIVE "IRI" IRIREF "LANG" "LANGMATCHES" "LCASE" "LIMIT" "MAX"
+   "MD5" "MIN" "MINUS" "MINUTES" "MONTH" NIL "NOT" "NOW" "OFFSET" "OPTIONAL"
+   "ORDER" PNAME_LN PNAME_NS "RAND" "REGEX" "REPLACE" "ROUND" "SAMPLE"
+   "SECONDS" "SERVICE" "SHA1" "SHA224" "SHA256" "SHA384" "SHA512" "STR"
+   "STRAFTER" "STRBEFORE" "STRDT" "STRENDS" STRING_LITERAL1 STRING_LITERAL2
+   STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 "STRLANG" "STRLEN" "STRSTARTS"
+   "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" "VALUES" VAR1
+   VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
+   "isURI" "sameTerm" "true" "{" "||" "}" )
+  (seq "(" _Aggregate_11 Expression ")"))
  (rule _Aggregate_21 "127.21"
   (first "(")
   (follow "!=" "&&" "(" ")" "*" "+" "," "-" "." "/" ";" "<" "<=" "=" ">" ">="
@@ -6669,24 +6841,6 @@
    VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
    "isURI" "sameTerm" "true" "{" "||" "}" )
   (seq _Aggregate_12 Expression ")"))
- (rule _Aggregate_3 "127.3"
-  (first "MIN")
-  (follow "!=" "&&" "(" ")" "*" "+" "," "-" "." "/" ";" "<" "<=" "=" ">" ">="
-   "ABS" ANON "AS" "ASC" "AVG" "BIND" BLANK_NODE_LABEL "BNODE" "BOUND" "CEIL"
-   "COALESCE" "CONCAT" "CONTAINS" "COUNT" "DATATYPE" "DAY" DECIMAL
-   DECIMAL_NEGATIVE DECIMAL_POSITIVE "DESC" DOUBLE DOUBLE_NEGATIVE
-   DOUBLE_POSITIVE "ENCODE_FOR_URI" "EXISTS" "FILTER" "FLOOR" "GRAPH"
-   "GROUP_CONCAT" "HAVING" "HOURS" "IF" "IN" INTEGER INTEGER_NEGATIVE
-   INTEGER_POSITIVE "IRI" IRIREF "LANG" "LANGMATCHES" "LCASE" "LIMIT" "MAX"
-   "MD5" "MIN" "MINUS" "MINUTES" "MONTH" NIL "NOT" "NOW" "OFFSET" "OPTIONAL"
-   "ORDER" PNAME_LN PNAME_NS "RAND" "REGEX" "REPLACE" "ROUND" "SAMPLE"
-   "SECONDS" "SERVICE" "SHA1" "SHA224" "SHA256" "SHA384" "SHA512" "STR"
-   "STRAFTER" "STRBEFORE" "STRDT" "STRENDS" STRING_LITERAL1 STRING_LITERAL2
-   STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 "STRLANG" "STRLEN" "STRSTARTS"
-   "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" "VALUES" VAR1
-   VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
-   "isURI" "sameTerm" "true" "{" "||" "}" )
-  (seq "MIN" "(" _Aggregate_11 Expression ")"))
  (rule _Aggregate_30 "127.30"
   (first "!" "(" "+" "-" "ABS" "AVG" "BNODE" "BOUND" "CEIL" "COALESCE" "CONCAT"
    "CONTAINS" "COUNT" "DATATYPE" "DAY" DECIMAL DECIMAL_NEGATIVE
@@ -6716,6 +6870,24 @@
    VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
    "isURI" "sameTerm" "true" "{" "||" "}" )
   (seq _Aggregate_13 Expression ")"))
+ (rule _Aggregate_3 "127.3"
+  (first "MIN")
+  (follow "!=" "&&" "(" ")" "*" "+" "," "-" "." "/" ";" "<" "<=" "=" ">" ">="
+   "ABS" ANON "AS" "ASC" "AVG" "BIND" BLANK_NODE_LABEL "BNODE" "BOUND" "CEIL"
+   "COALESCE" "CONCAT" "CONTAINS" "COUNT" "DATATYPE" "DAY" DECIMAL
+   DECIMAL_NEGATIVE DECIMAL_POSITIVE "DESC" DOUBLE DOUBLE_NEGATIVE
+   DOUBLE_POSITIVE "ENCODE_FOR_URI" "EXISTS" "FILTER" "FLOOR" "GRAPH"
+   "GROUP_CONCAT" "HAVING" "HOURS" "IF" "IN" INTEGER INTEGER_NEGATIVE
+   INTEGER_POSITIVE "IRI" IRIREF "LANG" "LANGMATCHES" "LCASE" "LIMIT" "MAX"
+   "MD5" "MIN" "MINUS" "MINUTES" "MONTH" NIL "NOT" "NOW" "OFFSET" "OPTIONAL"
+   "ORDER" PNAME_LN PNAME_NS "RAND" "REGEX" "REPLACE" "ROUND" "SAMPLE"
+   "SECONDS" "SERVICE" "SHA1" "SHA224" "SHA256" "SHA384" "SHA512" "STR"
+   "STRAFTER" "STRBEFORE" "STRDT" "STRENDS" STRING_LITERAL1 STRING_LITERAL2
+   STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 "STRLANG" "STRLEN" "STRSTARTS"
+   "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" "VALUES" VAR1
+   VAR2 "YEAR" "[" _eof "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC"
+   "isURI" "sameTerm" "true" "{" "||" "}" )
+  (seq "MIN" "(" _Aggregate_11 Expression ")"))
  (rule _Aggregate_31 "127.31"
   (first "!" "(" "+" "-" "ABS" "AVG" "BNODE" "BOUND" "CEIL" "COALESCE" "CONCAT"
    "CONTAINS" "COUNT" "DATATYPE" "DAY" DECIMAL DECIMAL_NEGATIVE
@@ -6941,6 +7113,7 @@
    "STRUUID" "SUBSTR" "SUM" "TIMEZONE" "TZ" "UCASE" "URI" "UUID" VAR1 VAR2
    "YEAR" "false" "isBLANK" "isIRI" "isLITERAL" "isNUMERIC" "isURI" "sameTerm"
    "true" )
+  (cleanup opt)
   (alt _empty "DISTINCT"))
  (rule _Aggregate_9 "127.9"
   (first "!" "(" "*" "+" "-" "ABS" "AVG" "BNODE" "BOUND" "CEIL" "COALESCE"
@@ -6968,6 +7141,7 @@
   (follow "!=" "&&" ")" "*" "+" "," "-" "/" ";" "<" "<=" "=" ">" ">=" "AS"
    DECIMAL_NEGATIVE DECIMAL_POSITIVE DOUBLE_NEGATIVE DOUBLE_POSITIVE "IN"
    INTEGER_NEGATIVE INTEGER_POSITIVE "NOT" "||" )
+  (cleanup opt)
   (alt _empty ArgList))
  (rule _iriOrFunction_2 "128.2"
   (first "(" NIL _eps)
@@ -6994,6 +7168,7 @@
    "OPTIONAL" PNAME_LN PNAME_NS "SERVICE" STRING_LITERAL1 STRING_LITERAL2
    STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 "UNDEF" "VALUES" VAR1 VAR2 "[" "]"
    "^" "a" "false" "true" "{" "||" "}" )
+  (cleanup opt)
   (alt _empty _RDFLiteral_2))
  (rule _RDFLiteral_2 "129.2"
   (first LANGTAG "^^")

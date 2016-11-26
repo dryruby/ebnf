@@ -226,8 +226,9 @@ module EBNF::LL1
       when @options[:validate] then 1
       end
       @branch  = options[:branch]
-      @first  = options[:first] ||= {}
+      @first   = options[:first] ||= {}
       @follow  = options[:follow] ||= {}
+      @cleanup = options[:cleanup] ||= {}
       @lexer   = input.is_a?(Lexer) ? input : Lexer.new(input, self.class.patterns, @options)
       @productions = []
       @parse_callback = block
@@ -241,7 +242,7 @@ module EBNF::LL1
 
       @prod_data = [{}]
       start = start.split('#').last.to_sym unless start.is_a?(Symbol)
-      todo_stack = [{:prod => start, :terms => nil}]
+      todo_stack = [{prod: start, terms: nil}]
 
       while !todo_stack.empty?
         begin
@@ -255,7 +256,7 @@ module EBNF::LL1
             # to the beginning to avoid excessive growth in the production
             # stack
             if options[:reset_on_start] && cur_prod == start
-              todo_stack = [{:prod => start, :terms => []}]
+              todo_stack = [{prod: start, terms: []}]
               @productions = []
               @prod_data = [{}]
             end
@@ -320,7 +321,7 @@ module EBNF::LL1
                 break
               else
                 # Push term onto stack
-                todo_stack << {:prod => term, :terms => nil}
+                todo_stack << {prod: term, terms: nil}
                 debug("parse(push)") {"term #{term.inspect}, depth #{depth}"}
                 pushed = true
                 break
@@ -348,9 +349,9 @@ module EBNF::LL1
           end
 
           # Get the list of follows for this sequence, this production and the stacked productions.
-          debug("recovery", "stack follows:", :level => 4)
+          debug("recovery", "stack follows:", level: 4)
           todo_stack.reverse.each do |todo|
-            debug("recovery", :level => 4) {"  #{todo[:prod]}: #{@follow[todo[:prod]].inspect}"}
+            debug("recovery", level: 4) {"  #{todo[:prod]}: #{@follow[todo[:prod]].inspect}"}
           end
 
           # Find all follows to the top of the stack
@@ -403,7 +404,7 @@ module EBNF::LL1
         end
       end
 
-      error("parse(eof)", "Finished processing before end of file", :token => @lexer.first) if @lexer.first
+      error("parse(eof)", "Finished processing before end of file", token: @lexer.first) if @lexer.first
 
       # Continue popping contexts off of the stack
       while !todo_stack.empty?
@@ -475,7 +476,7 @@ module EBNF::LL1
       m += ", production = #{options[:production].inspect}" if options[:production]
       @error_log << m unless @recovering
       @recovering = true
-      debug(node, m, options.merge(:level => 0))
+      debug(node, m, options.merge(level: 0))
       if options[:raise] || @options[:validate]
         raise Error.new(m, lineno: lineno, token: options[:token], production: options[:production])
       end
@@ -497,7 +498,7 @@ module EBNF::LL1
       m += " (found #{options[:token].inspect})" if options[:token]
       m += ", production = #{options[:production].inspect}" if options[:production]
       @error_log << m unless @recovering
-      debug(node, m, options.merge(:level => 1))
+      debug(node, m, options.merge(level: 1))
     end
 
     ##
@@ -569,10 +570,14 @@ module EBNF::LL1
             handler.call(@prod_data.last, data, @parse_callback)
           }
         rescue ArgumentError, Error => e
-          error("start", "#{e.class}: #{e.message}", :production => prod)
+          error("start", "#{e.class}: #{e.message}", production: prod)
           @recovering = false
         end
         @prod_data << data
+      elsif [:merge, :star].include?(@cleanup[prod])
+        # Save current data to merge later
+        @prod_data << {}
+        progress("#{prod}(:start}:#{@prod_data.length}:cleanup:#{@cleanup[prod]}") { get_token.inspect + (@recovering ? ' recovering' : '')}
       else
         # Make sure we push as many was we pop, even if there is no
         # explicit start handler
@@ -595,10 +600,22 @@ module EBNF::LL1
             handler.call(@prod_data.last, data, @parse_callback)
           }
         rescue ArgumentError, Error => e
-          error("finish", "#{e.class}: #{e.message}", :production => prod)
+          error("finish", "#{e.class}: #{e.message}", production: prod)
           @recovering = false
         end
         progress("#{prod}(:finish):#{@prod_data.length}") {@prod_data.last}
+      elsif [:merge, :star].include?(@cleanup[prod])
+        data = @prod_data.pop
+        input = @prod_data.last
+
+        # Append every element in data to last prod_data
+        data.each do |k, v|
+          input[k] = case input[k]
+          when nil then Array(v)
+          else Array(input[k]) + Array(v)
+          end
+        end
+        progress("#{prod}(:finish):#{@prod_data.length} cleanup:#{@cleanup[prod]}") {@prod_data.last}
       else
         progress("#{prod}(:finish):#{@prod_data.length}") { "recovering" if @recovering }
       end
@@ -618,15 +635,15 @@ module EBNF::LL1
               handler.call(parentProd, token, @prod_data.last, @parse_callback)
             }
           rescue ArgumentError, Error => e
-            error("terminal", "#{e.class}: #{e.message}", :token => token, :production => prod)
+            error("terminal", "#{e.class}: #{e.message}", token: token, production: prod)
             @recovering = false
           end
-          progress("#{prod}(:terminal)", "", :depth => (depth + 1)) {"#{token}: #{@prod_data.last}"}
+          progress("#{prod}(:terminal)", "", depth: (depth + 1)) {"#{token}: #{@prod_data.last}"}
         else
-          progress("#{prod}(:terminal)", "", :depth => (depth + 1)) {token.to_s}
+          progress("#{prod}(:terminal)", "", depth: (depth + 1)) {token.to_s}
         end
       else
-        error("#{parentProd}(:terminal)", "Terminal has no parent production", :token => token, :production => prod)
+        error("#{parentProd}(:terminal)", "Terminal has no parent production", token: token, production: prod)
       end
     end
 
@@ -703,7 +720,7 @@ module EBNF::LL1
     # @example Raising a parser error
     #   raise Error.new(
     #     "invalid token '%' on line 10",
-    #     :token => '%', :lineno => 9, :production => :turtleDoc)
+    #     token: '%', lineno: 9, production: :turtleDoc)
     #
     # @see http://ruby-doc.org/core/classes/StandardError.html
     class Error < StandardError

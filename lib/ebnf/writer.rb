@@ -94,7 +94,7 @@ module EBNF
         buffer = if rule.pass?
           "%-#{lhs_length-2}s" % "@pass"
         else
-          lhs_fmt % {:id => "[#{rule.id}]", :sym => rule.sym}
+          lhs_fmt % {id: "[#{rule.id}]", sym: rule.sym}
         end
         formatted_expr = format(rule.expr)
         if formatted_expr.length > rhs_length

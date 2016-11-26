@@ -6,7 +6,6 @@ $:.unshift(File.expand_path("..", __FILE__))
 require 'rubygems'
 require 'getoptlong'
 require 'parser'
-require 'sxp'
 
 out = STDOUT
 
@@ -49,6 +48,4 @@ end
 input = File.open(ARGV[0]) if ARGV[0]
 
 # Collect rules
-ebnf = EBNFParser.new(input || STDIN, options)
-
-puts ebnf.to_sxp
+PlusParser.new(input || STDIN, options)

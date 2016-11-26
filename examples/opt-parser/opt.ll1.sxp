@@ -1,0 +1,3 @@
+(
+ (rule _empty "0" (first _eps) (seq))
+ (rule foo "1" (start #t) (first _eps "a") (follow _eof) (cleanup opt) (alt _empty "a")))

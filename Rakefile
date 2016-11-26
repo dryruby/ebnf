@@ -15,8 +15,8 @@ namespace :gem do
 end
 
 desc 'Default: run specs.'
-task :default => :spec
-task :specs => :spec
+task default: :spec
+task specs: :spec
 
 require 'rspec/core/rake_task'
 desc 'Run specifications'
@@ -41,7 +41,7 @@ namespace :doc do
 end
 
 desc 'Create versions of ebnf files in etc'
-task :etc => %w{
+task etc: %w{
     etc/ebnf.sxp etc/ebnf.ll1.sxp etc/ebnf.html etc/ebnf.rb
     etc/turtle.sxp etc/turtle.ll1.sxp etc/turtle.html etc/turtle.rb
     etc/sparql.sxp etc/sparql.ll1.sxp etc/sparql.html etc/sparql.rb

@@ -33,14 +33,14 @@ describe EBNFParser do
         %q{((terminal STRING1 "18" (seq "\"" (star (alt (diff CHAR "\"") "\t")) "\"")))}
     }.each do |input, expected|
       it "parses #{input.inspect}" do
-        expect(parse(input, :validate => true).ast.to_sxp).to produce(expected, @debug)
+        expect(parse(input, validate: true).ast.to_sxp).to produce(expected, @debug)
       end
     end
   end
 
   def parse(value, options = {})
     @debug = []
-    options = {:debug => @debug}.merge(options)
+    options = {debug: @debug}.merge(options)
     EBNFParser.new(value, options)
   end
 end

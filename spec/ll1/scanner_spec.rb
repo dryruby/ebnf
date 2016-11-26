@@ -17,7 +17,7 @@ describe EBNF::LL1::Scanner do
       expect(scanner).not_to be_eos
     end
     
-    it "encodes input to UTF-8", :pending => !"".respond_to?(:force_encoding) do
+    it "encodes input to UTF-8", pending: !"".respond_to?(:force_encoding) do
       f = double("input")
       expect(f).to receive(:read).and_return("ascii".force_encoding(Encoding::ASCII_8BIT))
       expect(f).to receive(:gets).and_return("utf8".force_encoding(Encoding::UTF_8))

@@ -44,28 +44,28 @@ class EBNFParser
   # Terminal for `RANGE` is matched as part of a `primary` rule. Unescape the values to remove EBNF escapes in the input.
   #
   #     [14] `RANGE`      ::= '[' CHAR '-' CHAR ']'
-  terminal(:RANGE, RANGE, :unescape => true) do |prod, token, input|
+  terminal(:RANGE, RANGE, unescape: true) do |prod, token, input|
     input[:terminal] = [:range, token.value[1..-2]]
   end
 
   # Terminal for `ENUM` is matched as part of a `primary` rule. Unescape the values to remove EBNF escapes in the input.
   #
   #     [15] ENUM       ::= '[' CHAR+ ']'
-  terminal(:ENUM, ENUM, :unescape => true) do |prod, token, input|
+  terminal(:ENUM, ENUM, unescape: true) do |prod, token, input|
     input[:terminal] = [:range, token.value[1..-2]]
   end
 
   # Terminal for `O_RANGE` is matched as part of a `primary` rule. Unescape the values to remove EBNF escapes in the input.
   #
   #     [16] O_RANGE    ::= '[^' CHAR '-' CHAR ']'
-  terminal(:O_RANGE, O_RANGE, :unescape => true) do |prod, token, input|
+  terminal(:O_RANGE, O_RANGE, unescape: true) do |prod, token, input|
     input[:terminal] = [:range, token.value[1..-2]]
   end
 
   # Terminal for `O_ENUM` is matched as part of a `primary` rule. Unescape the values to remove EBNF escapes in the input.
   #
   #     [17] O_ENUM     ::= '[^' CHAR+ ']'
-  terminal(:O_ENUM, O_ENUM, :unescape => true) do |prod, token, input|
+  terminal(:O_ENUM, O_ENUM, unescape: true) do |prod, token, input|
     input[:terminal] = [:range, token.value[1..-2]]
   end
 
@@ -74,14 +74,14 @@ class EBNFParser
   # Match double quote string
   #
   #     [18] STRING1    ::= '"' (CHAR | [\t\'\[\]\(\)\-])* '"'
-  terminal(:STRING1, STRING1, :unescape => true) do |prod, token, input|
+  terminal(:STRING1, STRING1, unescape: true) do |prod, token, input|
     input[:terminal] = token.value[1..-2]
   end
 
   # Match single quote string
   #
   #     [19] STRING2    ::= "'" (CHAR | [\t\"\[\]\(\)\-])* "'"
-  terminal(:STRING2, STRING2, :unescape => true) do |prod, token, input|
+  terminal(:STRING2, STRING2, unescape: true) do |prod, token, input|
     input[:terminal] = token.value[1..-2]
   end
 
@@ -322,18 +322,18 @@ class EBNFParser
 
     parsing_terminals = false
     @ast = []
-    parse(@input, START.to_sym, @options.merge(:branch => BRANCH,
-                                               :first => FIRST,
-                                               :follow => FOLLOW,
-                                               :whitespace => EBNFParserTerminals::PASS,
-                                               :reset_on_start => true)
+    parse(@input, START.to_sym, @options.merge(branch: BRANCH,
+                                               first: FIRST,
+                                               follow: FOLLOW,
+                                               whitespace: EBNFParserTerminals::PASS,
+                                               reset_on_true: true)
     ) do |context, *data|
       rule = case context
       when :terminal
         parsing_terminals = true
         next
       when :pass
-        rule = EBNF::Rule.new(nil, nil, data.first, :kind => :pass)
+        rule = EBNF::Rule.new(nil, nil, data.first, kind: :pass)
       when :rule
         rule = data.first
         rule.kind = :terminal if parsing_terminals

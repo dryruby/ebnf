@@ -55,7 +55,7 @@ describe EBNF::Base do
       end
 
       it "parses generated SXP for #{input.inspect}" do
-        ast = parse(expected, :format => :sxp).ast
+        ast = parse(expected, format: :sxp).ast
         ast.each {|r| expect(r).to be_a(EBNF::Rule)}
         expect(ast.to_sxp).to produce(expected, @debug)
       end
@@ -68,7 +68,7 @@ describe EBNF::Base do
 
   def parse(value, options = {})
     @debug = []
-    options = {:debug => @debug}.merge(options)
+    options = {debug: @debug}.merge(options)
     EBNF::Base.new(value, options)
   end
 end
