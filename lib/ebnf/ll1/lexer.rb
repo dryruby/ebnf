@@ -183,7 +183,6 @@ module EBNF::LL1
     # @param [Array[Symbol]] types Optional set of types for restricting terminals examined
     # @return [Token]
     def first(*types)
-      require 'byebug'; byebug if !@first && types.include?(nil)
       return nil unless scanner
 
       @first ||= begin

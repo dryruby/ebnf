@@ -317,7 +317,6 @@ module EBNF
               # A First/First conflict appears when there are two rules having
               # the same first, so the parser can't know which one to choose.
               if branchDict.has_key?(f)
-                #require 'byebug'; byebug
                 error("First/First Conflict: #{f.inspect} is the condition for both #{prod_rule.sym} and #{branchDict[f].first}")
               end
 
