@@ -18,7 +18,23 @@ module EBNF::LL1
     attr_reader :input
 
     ##
-    # Create a scanner, from an IO or String
+    # If we don't have an IO input, simply use StringScanner directly
+    # @private
+    def self.new(input, options = {})
+      if input.respond_to?(:read)
+        scanner = self.allocate
+        scanner.send(:initialize, input, options)
+      else
+        if input.encoding != Encoding::UTF_8
+          input = input.dup if input.frozen?
+          input.force_encoding(Encoding::UTF_8)
+        end
+        StringScanner.new(input)
+      end
+    end
+
+    ##
+    # Create a scanner, from an IO
     #
     # @param [String, IO, #read] input
     # @param [Hash{Symbol => Object}] options
@@ -28,13 +44,10 @@ module EBNF::LL1
     def initialize(input, options = {})
       @options = options.merge(high_water: HIGH_WATER, low_water: LOW_WATER)
 
-      if input.respond_to?(:read)
-        @input = input
-        super("")
-        feed_me
-      else
-        super(encode_utf8 input.to_s)
-      end
+      @input = input
+      super("")
+      feed_me
+      self
     end
 
     ##

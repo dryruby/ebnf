@@ -156,16 +156,16 @@
  (terminal LHS "11" (seq (opt (seq "[" (plus SYMBOL) "]")) SYMBOL "::="))
  (terminal SYMBOL "12" (plus (alt (range "a-z") (range "A-Z") (range "0-9") "_" ".")))
  (terminal HEX "13" (seq "#x" (plus (alt (range "0-9") (range "a-f") (range "A-F")))))
- (terminal RANGE "16"
-  (seq "[" (plus (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR))) "]"))
- (terminal ENUM "16"
+ (terminal ENUM "14"
   (seq "["
    (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR)) "-"
    (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR)) "]" ))
- (terminal O_ENUM "17"
+ (terminal O_ENUM "15"
   (seq "[^"
    (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR)) "-"
    (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR)) "]" ))
+ (terminal RANGE "16"
+  (seq "[" (plus (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR))) "]"))
  (terminal O_RANGE "17"
   (seq "[^" (plus (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR))) "]"))
  (terminal STRING1 "18" (seq "\"" (star (diff CHAR "\"")) "\""))

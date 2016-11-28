@@ -38,9 +38,9 @@
 
     [13] HEX        ::= '#x' ([0-9]|[a-f]|[A-F])+
 
-    [16] ENUM       ::= '[' ((R_BEGIN (HEX | R_CHAR)) | (HEX | R_CHAR)) '-' ((R_BEGIN (HEX | R_CHAR)) | (HEX | R_CHAR)) ']'
+    [14] ENUM       ::= '[' ((R_BEGIN (HEX | R_CHAR)) | (HEX | R_CHAR)) '-' ((R_BEGIN (HEX | R_CHAR)) | (HEX | R_CHAR)) ']'
 
-    [17] O_ENUM     ::= '[^' ((R_BEGIN (HEX | R_CHAR)) | (HEX | R_CHAR)) '-' ((R_BEGIN (HEX | R_CHAR)) | (HEX | R_CHAR)) ']'
+    [15] O_ENUM     ::= '[^' ((R_BEGIN (HEX | R_CHAR)) | (HEX | R_CHAR)) '-' ((R_BEGIN (HEX | R_CHAR)) | (HEX | R_CHAR)) ']'
 
     # Range is any combination of R_CHAR '-' R_CHAR or R_CHAR+
     [16] RANGE      ::= '[' ((R_BEGIN (HEX | R_CHAR)) | (HEX | R_CHAR))+ ']'

@@ -12,7 +12,7 @@ describe EBNF::LL1::Scanner do
     end
     
     it "initializes with a string" do
-      scanner = EBNF::LL1::Scanner.new("line1\nline2\n")
+      scanner = EBNF::LL1::Scanner.new(StringIO.new "line1\nline2\n")
       expect(scanner.rest).to eq "line1\nline2\n"
       expect(scanner).not_to be_eos
     end
