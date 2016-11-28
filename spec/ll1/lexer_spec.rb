@@ -280,6 +280,16 @@ describe EBNF::LL1::Lexer do
           expect(subject.first.value).to eq "'foo'"
         end
       end
+
+      describe "#first" do
+        it "returns a token when passed as an argument" do
+          expect(subject.first(:INTEGER)).to be_a(EBNF::LL1::Lexer::Token)
+        end
+
+        it "does not return a token unless passed as an argument" do
+          expect {subject.first(:Double)}.to raise_error(EBNF::LL1::Lexer::Error, 'Invalid token "1"')
+        end
+      end
     end
 
     describe EBNF::LL1::Lexer::Terminal do

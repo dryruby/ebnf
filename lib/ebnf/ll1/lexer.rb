@@ -180,15 +180,17 @@ module EBNF::LL1
     ##
     # Returns first token in input stream
     #
+    # @param [Array[Symbol]] types Optional set of types for restricting terminals examined
     # @return [Token]
-    def first
+    def first(*types)
+      require 'byebug'; byebug if !@first && types.include?(nil)
       return nil unless scanner
 
       @first ||= begin
         {} while !scanner.eos? && skip_whitespace
         return @scanner = nil if scanner.eos?
 
-        token = match_token
+        token = match_token(*types)
 
         if token.nil?
           lexme = (scanner.rest.split(@whitespace || /\s/).first rescue nil) || scanner.rest
@@ -221,9 +223,10 @@ module EBNF::LL1
     ##
     # Skip input until a token is matched
     #
+    # @param [Array[Symbol]] types Optional set of types for restricting terminals examined
     # @return [Token]
-    def recover
-       until scanner.eos? || tok = match_token
+    def recover(*types)
+       until scanner.eos? || tok = match_token(*types)
         if scanner.skip_until(@whitespace || /\s/m).nil? # Skip past current "token"
           # No whitespace at the end, must be and end of string
           scanner.terminate
@@ -259,11 +262,13 @@ module EBNF::LL1
     # track this with the resulting {Token}, so that comparisons
     # with that token are also case insensitive
     #
+    # @param [Array[Symbol]] types Optional set of types for restricting terminals examined
     # @return [Token]
-    def match_token
+    def match_token(*types)
       @terminals.each do |term|
+        next unless types.empty? || types.include?(term.type)
         #STDERR.puts "match[#{term.type}] #{scanner.rest[0..100].inspect} against #{term.regexp.inspect}" #if term.type == :STRING_LITERAL_SINGLE_QUOTE
-        if term.partial_regexp && scanner.match?(term.partial_regexp) && !scanner.match?(term.regexp)
+        if term.partial_regexp && scanner.match?(term.partial_regexp) && !scanner.match?(term.regexp) && scanner.respond_to?(:ensure_buffer_full)
           scanner.ensure_buffer_full
         end
 
