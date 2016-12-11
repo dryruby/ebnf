@@ -21,6 +21,7 @@ module EBNF::LL1
     # If we don't have an IO input, simply use StringScanner directly
     # @private
     def self.new(input, options = {})
+      input ||= ""
       if input.respond_to?(:read)
         scanner = self.allocate
         scanner.send(:initialize, input, options)
