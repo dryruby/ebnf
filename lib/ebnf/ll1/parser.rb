@@ -611,7 +611,8 @@ module EBNF::LL1
         # Append every element in data to last prod_data
         data.each do |k, v|
           input[k] = case input[k]
-          when nil then Array(v)
+          when nil then v.is_a?(Hash) ? v : Array(v)
+          when Hash then input[k].merge!(v)
           else Array(input[k]) + Array(v)
           end
         end
