@@ -10,9 +10,9 @@ describe EBNF::Base do
       %{[2]     Prolog    ::=           BaseDecl? PrefixDecl*} =>
       %{((rule _empty "0" (seq))
          (rule Prolog "2" (seq _Prolog_1 _Prolog_2))
-         (rule _Prolog_1 "2.1" (alt _empty BaseDecl))
-         (rule _Prolog_2 "2.2" (alt _empty _Prolog_3))
-         (rule _Prolog_3 "2.3" (seq PrefixDecl _Prolog_2)))},
+         (rule _Prolog_1 "2.1" (cleanup opt) (alt _empty BaseDecl))
+         (rule _Prolog_2 "2.2" (cleanup star) (alt _empty _Prolog_3))
+         (rule _Prolog_3 "2.3" (cleanup merge) (seq PrefixDecl _Prolog_2)))},
       %{
         [9] primary     ::= HEX
                         |   RANGE
@@ -69,7 +69,7 @@ describe EBNF::Base do
 
   def parse(value, options = {})
     @debug = []
-    options = {:debug => @debug}.merge(options)
+    options = {debug: @debug}.merge(options)
     EBNF::Base.new(value, options)
   end
 end

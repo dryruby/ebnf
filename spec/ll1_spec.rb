@@ -9,7 +9,7 @@ describe EBNF::Base do
     context "start" do
       context "with legitimate start rule" do
         let!(:ebnf_doc) {
-          parse(%([1] ebnf        ::= (declaration | rule)*), :start => :ebnf)
+          parse(%([1] ebnf        ::= (declaration | rule)*), start: :ebnf)
         }
         let(:rule) {ebnf_doc.ast.detect {|r| r.sym == :ebnf}}
         it "should include rule" do
@@ -26,7 +26,7 @@ describe EBNF::Base do
       context "with illegitimate start rule" do
         specify {
           expect {
-            parse(%([1] ebnf        ::= (declaration | rule)*), :start => :foo)
+            parse(%([1] ebnf        ::= (declaration | rule)*), start: :foo)
           }.to raise_error("No rule found for start symbol foo")
         }
       end
@@ -110,7 +110,7 @@ describe EBNF::Base do
           %{
             ((rule _empty "0" (first _eps) (seq))
              (rule Query "2" (first "BASE" "SELECT") (seq _Query_1 "SELECT"))
-             (rule _Query_1 "2.1" (first "BASE" _eps) (follow "SELECT") (alt _empty "BASE"))
+             (rule _Query_1 "2.1" (first "BASE" _eps) (follow "SELECT") (cleanup opt) (alt _empty "BASE"))
              (rule _Query_2 "2.2" (first "SELECT") (seq "SELECT")))
           }
         ],
@@ -121,8 +121,8 @@ describe EBNF::Base do
           },
           %{
             ((rule _empty "0" (first _eps) (seq))
-             (rule turtleDoc "1" (start #t) (first _eps) (follow _eof) (alt _empty _turtleDoc_1))
-             (rule _turtleDoc_1 "1.1" (follow _eof) (seq statement turtleDoc))
+             (rule turtleDoc "1" (start #t) (first _eps) (follow _eof) (cleanup star) (alt _empty _turtleDoc_1))
+             (rule _turtleDoc_1 "1.1" (follow _eof) (cleanup merge) (seq statement turtleDoc))
              (rule _turtleDoc_2 "1.2" (first _eps) (follow _eof) (seq turtleDoc))
              (rule statement "2" (follow _eof) (alt directive _statement_1))
              (rule _statement_1 "2.1" (follow _eof) (seq triples "."))
@@ -149,14 +149,14 @@ describe EBNF::Base do
           %[
             ((rule _empty "0" (first _eps) (seq) )
              (rule GroupGraphPattern "54" (first "{") (seq "{" _GroupGraphPattern_1 "}"))
-             (rule _GroupGraphPattern_1 "54.1" (first "E" _eps) (follow "}") (alt _empty "E"))
+             (rule _GroupGraphPattern_1 "54.1" (first "E" _eps) (follow "}") (cleanup opt) (alt _empty "E"))
              (rule _GroupGraphPattern_2 "54.2" (first "E" "}") (seq _GroupGraphPattern_1 "}"))
              (rule _GroupGraphPattern_3 "54.3" (first "}") (seq "}")))
           ]
         ]
       }.each do |name, (input, expected, start)|
         it name do
-          ebnf = parse(input, :start => start)
+          ebnf = parse(input, start: start)
           sin = ebnf.ast.sort.to_sxp
           expect(sin).to produce(expected, @debug)
         end
@@ -188,13 +188,13 @@ describe EBNF::Base do
             ((rule _empty "0" (first _eps) (seq))
              (rule predicateObjectList "7" (follow "]")
                (seq verb objectList _predicateObjectList_1))
-             (rule _predicateObjectList_1 "7.1" (first ";" _eps) (follow "]")
+             (rule _predicateObjectList_1 "7.1" (first ";" _eps) (follow "]") (cleanup star)
                (alt _empty _predicateObjectList_3))
              (rule _predicateObjectList_2 "7.2" (first ";") (follow ";" "]")
                (seq ";" _predicateObjectList_4))
-             (rule _predicateObjectList_3 "7.3" (first ";") (follow "]")
+             (rule _predicateObjectList_3 "7.3" (first ";") (follow "]") (cleanup merge)
                (seq _predicateObjectList_2 _predicateObjectList_1 ))
-             (rule _predicateObjectList_4 "7.4" (first _eps) (follow ";" "]")
+             (rule _predicateObjectList_4 "7.4" (first _eps) (follow ";" "]") (cleanup opt)
                (alt _empty _predicateObjectList_5))
              (rule _predicateObjectList_5 "7.5" (follow ";" "]")
                (seq verb objectList))
@@ -217,8 +217,8 @@ describe EBNF::Base do
           %{
             ((rule _empty "0" (first _eps) (seq))
              (rule collection "15" (first "(") (seq "(" _collection_1 ")"))
-             (rule _collection_1 "15.1" (first _eps) (follow ")") (alt _empty _collection_2))
-             (rule _collection_2 "15.2" (follow ")") (seq object _collection_1))
+             (rule _collection_1 "15.1" (first _eps) (follow ")") (cleanup star) (alt _empty _collection_2))
+             (rule _collection_2 "15.2" (follow ")") (cleanup merge) (seq object _collection_1))
              (rule _collection_3 "15.3" (first ")") (seq _collection_1 ")"))
              (rule _collection_4 "15.4" (first _eps) (follow ")") (seq _collection_1))
              (rule _collection_5 "15.5" (first ")") (seq ")")))
@@ -233,9 +233,9 @@ describe EBNF::Base do
           },
           %{
             ((rule _empty "0" (first _eps) (seq))
-             (rule turtleDoc "1" (start #t) (first "BASE" "IRI" _eps) (follow _eof)
+             (rule turtleDoc "1" (start #t) (first "BASE" "IRI" _eps) (follow _eof) (cleanup star)
               (alt _empty _turtleDoc_1))
-             (rule _turtleDoc_1 "1.1" (first "BASE" "IRI") (follow _eof) (seq statement turtleDoc))
+             (rule _turtleDoc_1 "1.1" (first "BASE" "IRI") (follow _eof) (cleanup merge) (seq statement turtleDoc))
              (rule _turtleDoc_2 "1.2" (first "BASE" "IRI" _eps) (follow _eof) (seq turtleDoc))
              (rule statement "2" (first "BASE" "IRI") (follow "BASE" "IRI" _eof) (alt directive _statement_1))
              (rule _statement_1 "2.1" (first "IRI") (follow "BASE" "IRI" _eof) (seq triples "."))
@@ -246,7 +246,7 @@ describe EBNF::Base do
         ]
       }.each do |name, (input, expected, start)|
         it name do
-          ebnf = parse(input, :start => start)
+          ebnf = parse(input, start: start)
           sin = ebnf.ast.sort.to_sxp
           expect(sin).to produce(expected, @debug)
         end
@@ -256,7 +256,7 @@ describe EBNF::Base do
 
   shared_examples "#build_tables" do |source, start|
     let!(:ebnf) {
-      ebnf = parse(source, :start => start)
+      ebnf = parse(source, start: start)
       ebnf.build_tables
       ebnf
     }
@@ -366,7 +366,7 @@ describe EBNF::Base do
         ],
       }.each do |name, (input, expected, start)|
         it name do
-          ebnf = parse(input, :start => start)
+          ebnf = parse(input, start: start)
           expect {
             ebnf.build_tables
             expect(false).to produce(true, @debug)
@@ -389,7 +389,7 @@ describe EBNF::Base do
       :turtleDoc
 
     let!(:ebnf) {
-      ebnf = parse(File.read(File.expand_path("../../etc/turtle.ebnf", __FILE__)), :start => :turtleDoc)
+      ebnf = parse(File.read(File.expand_path("../../etc/turtle.ebnf", __FILE__)), start: :turtleDoc)
       ebnf.build_tables
       ebnf
     }
@@ -397,11 +397,11 @@ describe EBNF::Base do
 
     # Spot check some productions
     {
-      :turtleDoc => [
+      turtleDoc: [
         ['@prefix', '@base', :IRIREF],
         [:_eof]
       ],
-      :_predicateObjectList_1 => [
+      _predicateObjectList_1: [
         [";", :_eps],
         [".", "]"]
       ]
@@ -417,7 +417,7 @@ describe EBNF::Base do
 
   def parse(value, options = {})
     @debug = []
-    options = {:debug => @debug}.merge(options)
+    options = {debug: @debug}.merge(options)
     ebnf = EBNF::Base.new(value, options)
     ebnf.make_bnf
     @debug.clear

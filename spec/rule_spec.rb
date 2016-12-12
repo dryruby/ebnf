@@ -6,8 +6,8 @@ require 'sxp'
 
 describe EBNF::Rule do
   let(:debug) {[]}
-  let(:ebnf) {EBNF.parse("", :debug => debug)}
-  subject {EBNF::Rule.new("rule", "0", [], :ebnf => ebnf)}
+  let(:ebnf) {EBNF.parse("", debug: debug)}
+  subject {EBNF::Rule.new("rule", "0", [], ebnf: ebnf)}
 
   describe "#ttl_expr" do
     {
@@ -108,15 +108,15 @@ describe EBNF::Rule do
       ],
       "diff rule" => [
         [:diff, "a", "b"],
-        [EBNF::Rule.new(:rule, "0", [:diff, "a", "b"], :kind => :terminal)]
+        [EBNF::Rule.new(:rule, "0", [:diff, "a", "b"], kind: :terminal)]
       ],
       "hex rule" => [
         [:hex, "#x00B7"],
-        [EBNF::Rule.new(:rule, "0", [:hex, "#x00B7"], :kind => :terminal)]
+        [EBNF::Rule.new(:rule, "0", [:hex, "#x00B7"], kind: :terminal)]
       ],
       "range rule" => [
         [:range, "a", "b"],
-        [EBNF::Rule.new(:rule, "0", [:range, "a", "b"], :kind => :terminal)]
+        [EBNF::Rule.new(:rule, "0", [:range, "a", "b"], kind: :terminal)]
       ],
       "ebnf[1]" => [
         [:star, [:alt, :declaration, :rule]],
@@ -128,7 +128,7 @@ describe EBNF::Rule do
         [:seq, :primary, [:opt, [:range, "?*+"]]],
         [EBNF::Rule.new(:rule, "0", [:seq, :primary, :_rule_1]),
          EBNF::Rule.new(:_rule_1, "0.1", [:alt, :_empty, :_rule_2]),
-         EBNF::Rule.new(:_rule_2, "0.2", [:range, "?*+"], :kind => :terminal)]
+         EBNF::Rule.new(:_rule_2, "0.2", [:range, "?*+"], kind: :terminal)]
       ],
       "IRIREF" => [
         [:seq, "<", [:star, [:alt, [:range, "^#x00-#x20<>\"{}|^`\\"], :UCHAR]], ">"],
@@ -136,7 +136,7 @@ describe EBNF::Rule do
          EBNF::Rule.new(:_rule_1, "0.1", [:alt, :_empty, :_rule_3]),
          EBNF::Rule.new(:_rule_3, "0.3", [:seq, :_rule_2, :_rule_1]),
          EBNF::Rule.new(:_rule_2, "0.2", [:alt, :_rule_4, :UCHAR]),
-         EBNF::Rule.new(:_rule_4, "0.4", [:range, "^#x00-#x20<>\"{}|^`\\"], :kind => :terminal)]
+         EBNF::Rule.new(:_rule_4, "0.4", [:range, "^#x00-#x20<>\"{}|^`\\"], kind: :terminal)]
        ]
     }.each do |title, (expr, expected)|
       it title do

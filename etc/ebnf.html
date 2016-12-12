@@ -76,6 +76,8 @@
       <td>
         <a href="#grammar-production-HEX">HEX</a>
         <code>|</code> <a href="#grammar-production-SYMBOL">SYMBOL</a>
+        <code>|</code> <a href="#grammar-production-ENUM">ENUM</a>
+        <code>|</code> <a href="#grammar-production-O_ENUM">O_ENUM</a>
         <code>|</code> <a href="#grammar-production-RANGE">RANGE</a>
         <code>|</code> <a href="#grammar-production-O_RANGE">O_RANGE</a>
         <code>|</code> <a href="#grammar-production-STRING1">STRING1</a>
@@ -119,8 +121,32 @@
         (<code>[</code> <code class="grammar-literal">0-9</code><code>]</code>  <code>|</code> <code>[</code> <code class="grammar-literal">a-f</code><code>]</code>  <code>|</code> <code>[</code> <code class="grammar-literal">A-F</code><code>]</code> )<code>+</code>
       </td>
     </tr>
-    <tr id='grammar-production-RANGE'>
+    <tr id='grammar-production-ENUM'>
       <td>[14]</td>
+      <td><code>ENUM</code></td>
+      <td>::=</td>
+      <td>
+        "<code class="grammar-literal">[</code>"
+        <code>(</code> <a href="#grammar-production-R_BEGIN">R_BEGIN</a> <code>(</code> <a href="#grammar-production-HEX">HEX</a> <code>|</code> <a href="#grammar-production-R_CHAR">R_CHAR</a><code>)</code>  <code>|</code> <a href="#grammar-production-HEX">HEX</a> <code>|</code> <a href="#grammar-production-R_CHAR">R_CHAR</a><code>)</code> 
+        "<code class="grammar-literal">-</code>"
+        <code>(</code> <a href="#grammar-production-R_BEGIN">R_BEGIN</a> <code>(</code> <a href="#grammar-production-HEX">HEX</a> <code>|</code> <a href="#grammar-production-R_CHAR">R_CHAR</a><code>)</code>  <code>|</code> <a href="#grammar-production-HEX">HEX</a> <code>|</code> <a href="#grammar-production-R_CHAR">R_CHAR</a><code>)</code> 
+        "<code class="grammar-literal">]</code>"
+      </td>
+    </tr>
+    <tr id='grammar-production-O_ENUM'>
+      <td>[15]</td>
+      <td><code>O_ENUM</code></td>
+      <td>::=</td>
+      <td>
+        "<code class="grammar-literal">[^</code>"
+        <code>(</code> <a href="#grammar-production-R_BEGIN">R_BEGIN</a> <code>(</code> <a href="#grammar-production-HEX">HEX</a> <code>|</code> <a href="#grammar-production-R_CHAR">R_CHAR</a><code>)</code>  <code>|</code> <a href="#grammar-production-HEX">HEX</a> <code>|</code> <a href="#grammar-production-R_CHAR">R_CHAR</a><code>)</code> 
+        "<code class="grammar-literal">-</code>"
+        <code>(</code> <a href="#grammar-production-R_BEGIN">R_BEGIN</a> <code>(</code> <a href="#grammar-production-HEX">HEX</a> <code>|</code> <a href="#grammar-production-R_CHAR">R_CHAR</a><code>)</code>  <code>|</code> <a href="#grammar-production-HEX">HEX</a> <code>|</code> <a href="#grammar-production-R_CHAR">R_CHAR</a><code>)</code> 
+        "<code class="grammar-literal">]</code>"
+      </td>
+    </tr>
+    <tr id='grammar-production-RANGE'>
+      <td>[16]</td>
       <td><code>RANGE</code></td>
       <td>::=</td>
       <td>
@@ -130,7 +156,7 @@
       </td>
     </tr>
     <tr id='grammar-production-O_RANGE'>
-      <td>[15]</td>
+      <td>[17]</td>
       <td><code>O_RANGE</code></td>
       <td>::=</td>
       <td>
@@ -140,7 +166,7 @@
       </td>
     </tr>
     <tr id='grammar-production-STRING1'>
-      <td>[16]</td>
+      <td>[18]</td>
       <td><code>STRING1</code></td>
       <td>::=</td>
       <td>
@@ -150,7 +176,7 @@
       </td>
     </tr>
     <tr id='grammar-production-STRING2'>
-      <td>[17]</td>
+      <td>[19]</td>
       <td><code>STRING2</code></td>
       <td>::=</td>
       <td>
@@ -160,7 +186,7 @@
       </td>
     </tr>
     <tr id='grammar-production-CHAR'>
-      <td>[18]</td>
+      <td>[20]</td>
       <td><code>CHAR</code></td>
       <td>::=</td>
       <td>
@@ -170,7 +196,7 @@
       </td>
     </tr>
     <tr id='grammar-production-R_CHAR'>
-      <td>[19]</td>
+      <td>[21]</td>
       <td><code>R_CHAR</code></td>
       <td>::=</td>
       <td>
@@ -179,7 +205,7 @@
       </td>
     </tr>
     <tr id='grammar-production-R_BEGIN'>
-      <td>[20]</td>
+      <td>[22]</td>
       <td><code>R_BEGIN</code></td>
       <td>::=</td>
       <td>
@@ -188,7 +214,7 @@
       </td>
     </tr>
     <tr id='grammar-production-POSTFIX'>
-      <td>[21]</td>
+      <td>[23]</td>
       <td><code>POSTFIX</code></td>
       <td>::=</td>
       <td>
@@ -196,7 +222,7 @@
       </td>
     </tr>
     <tr id='grammar-production-PASS'>
-      <td>[22]</td>
+      <td>[24]</td>
       <td><code>PASS</code></td>
       <td>::=</td>
       <td>

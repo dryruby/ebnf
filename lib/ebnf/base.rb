@@ -122,7 +122,7 @@ module EBNF
     # @option options [Symbol] :format (:ebnf)
     #   Format of input, one of :ebnf, or :sxp
     def initialize(input, options = {})
-      @options = {:format => :ebnf}.merge(options)
+      @options = {format: :ebnf}.merge(options)
       @lineno, @depth, @errors = 1, 0, []
       terminal = false
       @ast = []
@@ -144,7 +144,7 @@ module EBNF
             terminal = true
           when /^@pass\s*(.*)$/m
             expr = expression($1).first
-            rule = Rule.new(nil, nil, expr, :kind => :pass)
+            rule = Rule.new(nil, nil, expr, kind: :pass)
             rule.orig = expr
             @ast << rule
           else
@@ -213,6 +213,7 @@ module EBNF
       self.outputTable(output, 'TERMINALS', self.terminals, 1)
       self.outputTable(output, 'FIRST', self.first, 1)
       self.outputTable(output, 'FOLLOW', self.follow, 1)
+      self.outputTable(output, 'CLEANUP', self.cleanup, 1)
       self.outputTable(output, 'PASS', [self.pass], 1) if self.pass
       unless output == STDOUT
         output.puts "end"

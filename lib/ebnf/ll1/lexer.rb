@@ -180,27 +180,28 @@ module EBNF::LL1
     ##
     # Returns first token in input stream
     #
+    # @param [Array[Symbol]] types Optional set of types for restricting terminals examined
     # @return [Token]
-    def first
+    def first(*types)
       return nil unless scanner
 
       @first ||= begin
         {} while !scanner.eos? && skip_whitespace
         return @scanner = nil if scanner.eos?
 
-        token = match_token
+        token = match_token(*types)
 
         if token.nil?
           lexme = (scanner.rest.split(@whitespace || /\s/).first rescue nil) || scanner.rest
           raise Error.new("Invalid token #{lexme[0..100].inspect}",
-            :input => scanner.rest[0..100], :token => lexme, :lineno => lineno)
+            input: scanner.rest[0..100], token: lexme, lineno: lineno)
         end
 
         token
       end
     rescue ArgumentError, Encoding::CompatibilityError => e
       raise Error.new(e.message,
-        :input => (scanner.rest[0..100] rescue '??'), :token => lexme, :lineno => lineno)
+        input: (scanner.rest[0..100] rescue '??'), token: lexme, lineno: lineno)
     rescue Error
       raise
     rescue
@@ -221,9 +222,10 @@ module EBNF::LL1
     ##
     # Skip input until a token is matched
     #
+    # @param [Array[Symbol]] types Optional set of types for restricting terminals examined
     # @return [Token]
-    def recover
-       until scanner.eos? || tok = match_token
+    def recover(*types)
+       until scanner.eos? || tok = match_token(*types)
         if scanner.skip_until(@whitespace || /\s/m).nil? # Skip past current "token"
           # No whitespace at the end, must be and end of string
           scanner.terminate
@@ -259,11 +261,13 @@ module EBNF::LL1
     # track this with the resulting {Token}, so that comparisons
     # with that token are also case insensitive
     #
+    # @param [Array[Symbol]] types Optional set of types for restricting terminals examined
     # @return [Token]
-    def match_token
+    def match_token(*types)
       @terminals.each do |term|
+        next unless types.empty? || types.include?(term.type)
         #STDERR.puts "match[#{term.type}] #{scanner.rest[0..100].inspect} against #{term.regexp.inspect}" #if term.type == :STRING_LITERAL_SINGLE_QUOTE
-        if term.partial_regexp && scanner.match?(term.partial_regexp) && !scanner.match?(term.regexp)
+        if term.partial_regexp && scanner.match?(term.partial_regexp) && !scanner.match?(term.regexp) && scanner.respond_to?(:ensure_buffer_full)
           scanner.ensure_buffer_full
         end
 
@@ -350,7 +354,7 @@ module EBNF::LL1
     # @param  [Hash{Symbol => Object}] options
     # @return [Token]
     def token(type, value, options = {})
-      Token.new(type, value, options.merge(:lineno => lineno))
+      Token.new(type, value, options.merge(lineno: lineno))
     end
 
     ##
@@ -442,7 +446,7 @@ module EBNF::LL1
       #
       # @return [Hash]
       def to_hash
-        {:type => @type, :value => @value}
+        {type: @type, value: @value}
       end
       
       ##
@@ -480,7 +484,7 @@ module EBNF::LL1
     # @example Raising a lexer error
     #   raise EBNF::LL1::Lexer::Error.new(
     #     "invalid token '%' on line 10",
-    #     :input => query, :token => '%', :lineno => 9)
+    #     input: query, token: '%', lineno: 9)
     #
     # @see http://ruby-doc.org/core/classes/StandardError.html
     class Error < StandardError

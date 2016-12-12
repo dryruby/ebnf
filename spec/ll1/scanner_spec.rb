@@ -12,12 +12,12 @@ describe EBNF::LL1::Scanner do
     end
     
     it "initializes with a string" do
-      scanner = EBNF::LL1::Scanner.new("line1\nline2\n")
+      scanner = EBNF::LL1::Scanner.new(StringIO.new "line1\nline2\n")
       expect(scanner.rest).to eq "line1\nline2\n"
       expect(scanner).not_to be_eos
     end
     
-    it "encodes input to UTF-8", :pending => !"".respond_to?(:force_encoding) do
+    it "encodes input to UTF-8", pending: !"".respond_to?(:force_encoding) do
       f = double("input")
       expect(f).to receive(:read).and_return("ascii".force_encoding(Encoding::ASCII_8BIT))
       expect(f).to receive(:gets).and_return("utf8".force_encoding(Encoding::UTF_8))

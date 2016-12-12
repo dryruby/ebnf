@@ -12,13 +12,20 @@ module EBNF
 
     # First table
     #
-    # @return [Hash{Symbol, String => Symbol}]
+    # @return [Hash{Symbol => Array<String, Symbol>}]
     attr_reader :first
 
     # Follow table
     #
-    # @return [Hash{Symbol, String => Symbol}]
+    # @return [Hash{Symbol => Array<String, Symbol>}]
     attr_reader :follow
+
+    # EBNF Cleanup table
+    #
+    # The list of terminals used in the grammar.
+    #
+    # @return [Hash{Symbol => Symbol}]
+    attr_reader :cleanup
 
     # Terminal table
     #
@@ -175,18 +182,20 @@ module EBNF
       @first = ast.
         select(&:first).
         inject({}) {|memo, r|
-          memo[r.sym] = r.first if r.first
-          memo
+          memo.merge(r.sym => r.first)
         }
       @follow = ast.
         select(&:follow).
         inject({}) {|memo, r|
-          memo[r.sym] = r.follow if r.follow
-          memo
+          memo.merge(r.sym => r.follow)
         }
+
+      @cleanup = ast.
+        select(&:cleanup).
+        inject({}) {|memo, r| memo.merge(r.sym => r.cleanup)}
+
       @terminals = ast.map {|r| Array(r.first) + Array(r.follow)}.flatten.uniq
       @terminals = (@terminals - [:_eps, :_eof]).sort_by{|t| t.to_s.sub(/^_/, '')}
-
       # FIXME: assumes that this is a (seq :PASS), or similar
       if pass = ast.detect {|r| r.pass?}
         @pass = pass.expr.last
@@ -228,7 +237,7 @@ module EBNF
     # @param [IO, StringIO] io
     # @param [String] name of the table constant
     # @param [String] table
-    #   to output, one of {#branch}, {#first}, {#follow}, or {#terminals}
+    #   to output, one of {#branch}, {#first}, {#follow}, {#cleanup} or {#terminals}
     # @param [Integer] indent = 0
     def outputTable(io, name, table, indent = 0)
       ind0 = '  ' * indent
@@ -239,6 +248,8 @@ module EBNF
         io.puts "#{ind0}#{name} = {"
         table.keys.sort_by{|t| t.to_s.sub(/^_/, '')}.each do |prod|
           case table[prod]
+          when Symbol, String
+            io.puts "#{ind1}#{prod.inspect} => #{table[prod].inspect},"
           when Array
             list = table[prod].map(&:inspect).join(",\n#{ind2}")
             io.puts "#{ind1}#{prod.inspect} => [\n#{ind2}#{list}],"
@@ -306,7 +317,6 @@ module EBNF
               # A First/First conflict appears when there are two rules having
               # the same first, so the parser can't know which one to choose.
               if branchDict.has_key?(f)
-                #require 'byebug'; byebug
                 error("First/First Conflict: #{f.inspect} is the condition for both #{prod_rule.sym} and #{branchDict[f].first}")
               end
 

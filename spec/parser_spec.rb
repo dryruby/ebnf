@@ -33,14 +33,12 @@ describe EBNF::Base do
       %{a? b c} => %{((seq (opt a) b c) "")},
       %(a - b) => %{((diff a b) "")},
       %((a - b) - c) => %{((diff (diff a b) c) "")},
-      %(a b c) => %{((seq a b c) "")},
       %(a b? c) => %{((seq a (opt b) c) "")},
       %(a | b | c) => %{((alt a b c) "")},
       %(a? b+ c*) => %{((seq (opt a) (plus b) (star c)) "")},
       %( | x xlist) => %{((alt (seq ()) (seq x xlist)) "")},
       %(a | (b - c)) => %{((alt a (diff b c)) "")},
       %(a b | c d) => %{((alt (seq a b) (seq c d)) "")},
-      %(a | b | c) => %{((alt a b c) "")},
       %{a) b c} => %{(a " b c")},
       %(BaseDecl? PrefixDecl*) => %{((seq (opt BaseDecl) (star PrefixDecl)) "")},
       %(NCCHAR1 | '-' | [0-9] | #x00B7 | [#x0300-#x036F] | [#x203F-#x2040]) =>
@@ -72,7 +70,7 @@ describe EBNF::Base do
   
   def ebnf(method, value, options = {})
     @debug = []
-    options = {:debug => @debug}.merge(options)
+    options = {debug: @debug}.merge(options)
     EBNF::Base.new("", options).send(method, value)
   end
 end

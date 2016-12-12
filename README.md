@@ -8,12 +8,20 @@
 [![Dependency Status](https://gemnasium.com/gkellogg/ebnf.png)](https://gemnasium.com/gkellogg/ebnf)
 
 ## Description
-This is a [Ruby][] implementation of an [EBNF][] and [BNF][] parser and parser generator.
-It parses [EBNF][] grammars to [BNF][], generates [First/Follow and Branch][] tables for
-[LL(1)][] grammars, which can be used with the stream [Tokenizer][] and [LL(1) Parser][].
+This is a [Ruby][] implementation of an [EBNF][] and [BNF][] parser and parser generator. It parses [EBNF][] grammars to [BNF][], generates [First/Follow][] and Branch tables for [LL(1)][] grammars, which can be used with the stream [Tokenizer][] and [LL(1) Parser][].
 
-Of note in this implementation is that the tokenizer and parser are streaming, so that they can
-process inputs of arbitrary size.
+As LL(1) grammars operate using `alt` and `seq` primitives, allowing for a match on alternative productions or a sequence of productions, generating a parser requires turning the EBNF rules into BNF:
+
+* Transform `a ::= b?` into `a ::= _empty | b`
+* Transform `a ::= b+` into `a ::= b b*`
+* Transform `a ::= b*` into `a ::= _empty | (b a)`
+* Transform `a ::= op1 (op2)` into two rules:
+  ```
+  a     ::= op1 _a_1
+  _a_1_ ::= op2
+  ```
+
+Of note in this implementation is that the tokenizer and parser are streaming, so that they can process inputs of arbitrary size.
 
 ## Usage
 ### Parsing an LL(1) Grammar
@@ -36,7 +44,7 @@ Generate [First/Follow][] rules for BNF grammars
 
     ebnf.first_follow(start_tokens)
 
-Generate Terminal, [First/Follow and Branch][] tables as Ruby for parsing grammars
+Generate Terminal, [First/Follow][], Cleanup and Branch tables as Ruby for parsing grammars
 
     ebnf.to_ruby
 
@@ -44,8 +52,29 @@ Generate formatted grammar using HTML (requires [Haml][Haml] gem)
 
     ebnf.to_html
 
-### Creating terminal definitions and parser rules to parse generated grammars
+### Parser S-Expressions
+Intermediate representations of the grammar may be serialized to Lisp-like S-Expressions. For example, the rule `[1] ebnf        ::= (declaration | rule)*` is serialized as `(rule ebnf "1" (star (alt declaration rule)))`.
 
+Once the [LL(1)][] conversion is made, the [First/Follow][] table is generated, this rule expands as follows:
+
+     (rule ebnf "1"
+      (start #t)
+      (first "@pass" "@terminals" LHS _eps)
+      (follow _eof)
+      (cleanup star)
+      (alt _empty _ebnf_2))
+     (rule _ebnf_1 "1.1"
+      (first "@pass" "@terminals" LHS)
+      (follow "@pass" "@terminals" LHS _eof)
+      (alt declaration rule))
+     (rule _ebnf_2 "1.2"
+      (first "@pass" "@terminals" LHS)
+      (follow _eof)
+      (cleanup merge)
+      (seq _ebnf_1 ebnf))
+     (rule _ebnf_3 "1.3" (first "@pass" "@terminals" LHS _eps) (follow _eof) (seq ebnf))
+
+### Creating terminal definitions and parser rules to parse generated grammars
 The parser is initialized to callbacks invoked on entry and exit
 to each `terminal` and `production`. A trivial parser loop can be described as follows:
 
@@ -76,9 +105,10 @@ to each `terminal` and `production`. A trivial parser loop can be described as f
 
       def initialize(input)
         parser_options = {
-          :branch => BRANCH,
-          :first => FIRST,
-          :follow => FOLLOW
+          branch: BRANCH,
+          first: FIRST,
+          follow: FOLLOW,
+          cleanup: CLEANUP
         }
         parse(input, start_symbol, parser_options) do |context, *data|
           # Process calls from callback from productions
@@ -88,10 +118,92 @@ to each `terminal` and `production`. A trivial parser loop can be described as f
           raise RDF::ReaderError, e.message if validate?
         end
 
+### Branch Table
+The Branch table is a hash mapping production rules to a hash relating terminals appearing in input to sequence of productions to follow when the corresponding input terminal is found. This allows either the `seq` primitive, where all terminals map to the same sequence of productions, or the `alt` primitive, where each terminal may map to a different production.
+
+    BRANCH = {
+      :alt => {
+        "(" => [:seq, :_alt_1],
+        :ENUM => [:seq, :_alt_1],
+        :HEX => [:seq, :_alt_1],
+        :O_ENUM => [:seq, :_alt_1],
+        :O_RANGE => [:seq, :_alt_1],
+        :RANGE => [:seq, :_alt_1],
+        :STRING1 => [:seq, :_alt_1],
+        :STRING2 => [:seq, :_alt_1],
+        :SYMBOL => [:seq, :_alt_1],
+      },
+      ...
+      :declaration => {
+        "@pass" => [:pass],
+        "@terminals" => ["@terminals"],
+      },
+      ...
+    }
+
+In this case the `alt` rule is `seq ('|' seq)*` can happen when any of the specified tokens appears on the input stream. The all cause the same token to be passed to the `seq` rule and follow with `_alt_1`, which handles the `('|' seq)*` portion of the rule, after the first sequence is matched.
+
+The `declaration` rule is `@terminals' | pass` using the `alt` primitive determining the production to run based on the terminal appearing on the input stream. Eventually, a terminal production is found and the token is consumed.
+
+### First/Follow Table
+The [First/Follow][] table is a hash mapping production rules to the terminals that may proceed or follow the rule. For example:
+
+    FIRST = {
+      :alt => [
+        :HEX,
+        :SYMBOL,
+        :ENUM,
+        :O_ENUM,
+        :RANGE,
+        :O_RANGE,
+        :STRING1,
+        :STRING2,
+        "("],
+      ...
+    }
+
+### Terminals Table
+This table is a simple list of the terminal productions found in the grammar. For example:
+
+    TERMINALS = ["(", ")", "-",
+      "@pass", "@terminals",
+      :ENUM, :HEX, :LHS, :O_ENUM, :O_RANGE,:POSTFIX,
+      :RANGE, :STRING1, :STRING2, :SYMBOL,"|"
+    ].freeze
+
+### Cleanup Table
+This table identifies productions which used EBNF rules, which are transformed to BNF for actual parsing. This allows the parser, in some cases, to reproduce *star*, *plus*, and *opt* rule matches. For example:
+
+    CLEANUP = {
+      :_alt_1 => :star,
+      :_alt_3 => :merge,
+      :_diff_1 => :opt,
+      :ebnf => :star,
+      :_ebnf_2 => :merge,
+      :_postfix_1 => :opt,
+      :seq => :plus,
+      :_seq_1 => :star,
+      :_seq_2 => :merge,
+    }.freeze
+
+In this case the `ebnf` rule was `(declaration | rule)*`. As BNF does not support a star operator, this is decomposed into a set of rules using `alt` and `seq` primitives:
+
+    ebnf    ::= _empty _ebnf_2
+    _ebnf_1 ::= declaration | rule
+    _ebnf_2 ::= _ebnf_1 ebnf
+    _ebnf_3 ::= ebnf
+
+The `_empty` production matches an empty string, so allows for now value. `_ebnf_2` matches `declaration | rule` (using the `alt` primitive) followed by `ebnf`, creating a sequence of zero or more `declaration` or `alt` members.
 
 ## EBNF Grammar
 The [EBNF][] variant used here is based on [W3C](http://w3.org/) [EBNF][] (see {file:etc/ebnf.ebnf EBNF grammar}) as defined in the
-[XML 1.0 recommendation](http://www.w3.org/TR/REC-xml/), with minor extensions.
+[XML 1.0 recommendation](http://www.w3.org/TR/REC-xml/), with minor extensions:
+
+* Comments include `\\` and `#` through end of line (other than hex character) and `/* ... */ (* ... *) which may cross lines`
+* All rules **MAY** start with an identifier, contained within square brackets. For example `[1] rule`, where the value within the brackets is a symbol `([a-z] | [A-Z] | [0-9] | "_" | ".")+`
+* `@terminals` causes following rules to be treated as terminals. Any terminal which are entirely upper-case are also treated as terminals
+* `@pass` defines the expression used to detect whitespace, which is removed in processing.
+* No support for `wfc` (well-formedness constraint) or `vc` (validity constraint).
 
 Parsing this grammar yields an S-Expression version: {file:etc/ebnf.ll1.sxp}.
 

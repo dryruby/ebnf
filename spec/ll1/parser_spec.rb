@@ -12,7 +12,7 @@ describe EBNF::LL1::Parser do
     ParserTest.start_production(:term) {"foo"}
     ParserTest.production(:term) {"foo"}
     ParserTest.terminal(:escape, /escape/) {"foo"}
-    ParserTest.terminal(:unescape, /unescape/, :unescape => true) {"foo"}
+    ParserTest.terminal(:unescape, /unescape/, unescape: true) {"foo"}
   }
 
   describe "ClassMethods" do
@@ -37,7 +37,7 @@ describe EBNF::LL1::Parser do
       it "adds patterns" do
         expect(ParserTest.patterns).to include(
           EBNF::LL1::Lexer::Terminal.new(:escape, /escape/),
-          EBNF::LL1::Lexer::Terminal.new(:unescape, /unescape/, :unescape => true)
+          EBNF::LL1::Lexer::Terminal.new(:unescape, /unescape/, unescape: true)
         )
       end
     end
@@ -51,7 +51,7 @@ describe EBNF::LL1::Parser do
 
     it "raises error if starting production not defined" do
       expect {
-        subject.parse("foo", nil, :branch => {:a => {:b => ["c"]}})
+        subject.parse("foo", nil, branch: {a: {b: ["c"]}})
       }.to raise_error(EBNF::LL1::Parser::Error, "Starting production not defined")
     end
   end
