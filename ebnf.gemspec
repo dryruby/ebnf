@@ -29,12 +29,12 @@ Gem::Specification.new do |gem|
   gem.required_ruby_version = '>= 2.2.2'
   gem.requirements          = []
   gem.add_runtime_dependency     'sxp',             '~> 1.0'
-  gem.add_runtime_dependency     'rdf',             '~> 2.0' # Required by sxp
-  gem.add_development_dependency 'haml',            '~> 4.0'
-  gem.add_development_dependency 'rspec',           '~> 3.0'
-  gem.add_development_dependency 'rspec-its',       '~> 1.0'
-  gem.add_development_dependency 'yard',            '~> 0.8'
-  gem.add_development_dependency 'rake',            '~> 10.4'
+  gem.add_runtime_dependency     'rdf',             '~> 2.2' # Required by sxp
+  gem.add_development_dependency 'haml',            '~> 5.0'
+  gem.add_development_dependency 'rspec',           '~> 3.6'
+  gem.add_development_dependency 'rspec-its',       '~> 1.2'
+  gem.add_development_dependency 'yard',            '~> 0.9'
+  gem.add_development_dependency 'rake',            '~> 12.0'
 
   gem.post_install_message  = nil
 end

@@ -28,7 +28,7 @@ Of note in this implementation is that the tokenizer and parser are streaming, s
 
     require 'ebnf'
 
-    ebnf = EBNF.parse(File.open(./etc/ebnf.bnf))
+    ebnf = EBNF.parse(File.open('./etc/ebnf.bnf'))
 
 Output rules and terminals as S-Expressions, Turtle or EBNF
 
