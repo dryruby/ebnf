@@ -77,7 +77,10 @@ input = File.open(ARGV[0]) if ARGV[0]
 
 ebnf = EBNF.parse(input || STDIN, options)
 ebnf.make_bnf if options[:bnf] || options[:ll1]
-ebnf.first_follow(*options[:ll1]) if options[:ll1]
+if options[:ll1]
+  ebnf.first_follow(*options[:ll1])
+  ebnf.build_tables
+  
 
 res = case options[:output_format]
 when :ebnf    then ebnf.to_s
