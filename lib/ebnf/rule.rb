@@ -60,23 +60,19 @@ module EBNF
     # @param [Integer] id
     # @param [Symbol] sym
     # @param [Array] expr
-    # @param [Hash{Symbol => Object}] options
-    # @option options [Symbol] :kind
-    # @option options [String] :ebnf
-    # @option options [Array] :first
-    # @option options [Array] :follow
-    # option options [Boolean] :start
-    def initialize(sym, id, expr, options = {})
+    # @param [Symbol] :kind
+    # @param [String] :ebnf
+    # @param [Array] :first
+    # @param [Array] :follow
+    # @param [Boolean] :start
+    # @param [Rule] :top_rule
+    # @param [Boolean] :cleanup
+    def initialize(sym, id, expr, kind: nil, ebnf: nil, first: nil, follow: nil, start: nil, top_rule: nil, cleanup: nil)
       @sym, @id = sym, id
       @expr = expr.is_a?(Array) ? expr : [:seq, expr]
-      @ebnf = options[:ebnf]
-      @top_rule = options.fetch(:top_rule, self)
-      @first = options[:first]
-      @follow = options[:follow]
-      @start = options[:start]
-      @cleanup = options[:cleanup]
-      @kind = case
-      when options[:kind] then options[:kind]
+      @ebnf, @kind, @first, @follow, @start, @cleanup, @top_rule = ebnf, kind, first, follow, start, cleanup, top_rule
+      @top_rule ||= self
+      @kind ||= case
       when sym.to_s == sym.to_s.upcase then :terminal
       when !BNF_OPS.include?(@expr.first) then :terminal
       else :rule
@@ -114,16 +110,15 @@ module EBNF
     #
     # @param [Array] expr
     # @param [Hash{Symbol => Object}] options
-    # @option options [Symbol] :kind
-    # @option options [String] :ebnf EBNF instance (used for messages)
-    def build(expr, options = {})
+    # @param [Symbol] :kind
+    def build(expr, kind: nil, cleanup: nil, **options)
       new_sym, new_id = (@top_rule ||self).send(:make_sym_id)
-      Rule.new(new_sym, new_id, expr, {
-        kind: options[:kind],
-        ebnf: @ebnf,
-        top_rule: @top_rule || self,
-        cleanup: options[:cleanup],
-      }.merge(options))
+      Rule.new(new_sym, new_id, expr,
+               kind: kind,
+               ebnf: @ebnf,
+               top_rule: (@top_rule || self),
+               cleanup: cleanup,
+               **options)
     end
 
     # Return representation for building S-Expressions
@@ -151,7 +146,7 @@ module EBNF
     # @return [String]
     def to_ttl
       @ebnf.debug("to_ttl") {inspect} if @ebnf
-      comment = orig.strip.
+      comment = orig.to_s.strip.
         gsub(/"""/, '\"\"\"').
         gsub("\\", "\\\\").
         sub(/^\"/, '\"').
@@ -398,7 +393,7 @@ module EBNF
     private
     def ttl_expr(expr, pfx, depth, is_obj = true)
       indent = '  ' * depth
-      @ebnf.debug("ttl_expr", depth: depth) {expr.inspect}
+      @ebnf.debug("ttl_expr", depth: depth) {expr.inspect} if @ebnf
       op = expr.shift if expr.is_a?(Array)
       statements = []
       
@@ -435,7 +430,7 @@ module EBNF
       end
       
       statements.last << " ." unless is_obj
-      @ebnf.debug("statements", depth: depth) {statements.join("\n")}
+      @ebnf.debug("statements", depth: depth) {statements.join("\n")} if @ebnf
       statements
     end
     

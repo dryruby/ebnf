@@ -31,6 +31,8 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency     'sxp',             '~> 1.0'
   #gem.add_runtime_dependency     'rdf',             '~> 3.0' # Required by sxp
   gem.add_runtime_dependency     'rdf',             '>= 2.2', '< 4.0'
+  #gem.add_development_dependency 'rdf-spec',        '~> 3.0'
+  gem.add_development_dependency 'rdf-spec',        '>= 2.2', '< 4.0'
   gem.add_development_dependency 'haml',            '~> 5.0'
   gem.add_development_dependency 'rspec',           '~> 3.7'
   gem.add_development_dependency 'rspec-its',       '~> 1.2'

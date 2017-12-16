@@ -28,13 +28,14 @@ Of note in this implementation is that the tokenizer and parser are streaming, s
 
     require 'ebnf'
 
-    ebnf = EBNF.parse(File.open('./etc/ebnf.bnf'))
+    ebnf = EBNF.parse(File.open('./etc/ebnf.ebnf'))
 
-Output rules and terminals as S-Expressions, Turtle or EBNF
+Output rules and terminals as S-Expressions, Turtle, HTML or BNF
 
     puts ebnf.to_sxp
     puts ebnf.to_ttl
-    puts ebnf.to_ebnf
+    puts ebnf.to_html
+    puts ebnf.to_s
 
 Transform EBNF to BNF (generates sub-productions using `alt` or `seq` from `plus`, `star` or `opt`)
 
@@ -42,10 +43,11 @@ Transform EBNF to BNF (generates sub-productions using `alt` or `seq` from `plus
 
 Generate [First/Follow][] rules for BNF grammars
 
-    ebnf.first_follow(start_tokens)
+    ebnf.first_follow(:ebnf)
 
 Generate Terminal, [First/Follow][], Cleanup and Branch tables as Ruby for parsing grammars
 
+    ebnf.build_tables
     ebnf.to_ruby
 
 Generate formatted grammar using HTML (requires [Haml][Haml] gem)
