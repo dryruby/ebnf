@@ -216,7 +216,7 @@ module EBNF
       @branch = {}
       @already = []
       @agenda = []
-      @starts.each do |start|
+      Array(@starts).each do |start|
         do_production(start)
         while !@agenda.empty?
           x = @agenda.shift
@@ -265,7 +265,7 @@ module EBNF
           end
         end
         io.puts "#{ind0}}.freeze\n"
-      else
+      elsif table
         io.puts "#{ind0}#{name} = [\n#{ind1}" +
           table.sort_by{|t| t.to_s.sub(/^_/, '')}.map(&:inspect).join(",\n#{ind1}") +
           "\n#{ind0}].freeze\n"

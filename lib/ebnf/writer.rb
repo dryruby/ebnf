@@ -54,14 +54,10 @@ module EBNF
     ##
     # @param [Array<Rule>] rules
     # @param [Hash{Symbol => Object}] options
+    # @param [#write] :out ($stdout)
     # @option options [Symbol] :format
-    # @option options [#write] :out ($stdout)
-    # @option options [Boolean] :html (false)
-    #   Format as HTML
-    def initialize(rules, options = {})
+    def initialize(rules, out: $stdout, html: false, **options)
       @options = options.dup
-      out = options.fetch(:out, $stdio)
-      #fmt = options.fetch(:format, :ebnf)
 
       # Determine max LHS length
       max_id = rules.max_by {|r| r.id.to_s.length}.id.to_s.length
@@ -74,15 +70,15 @@ module EBNF
       end
       rhs_length = LINE_LENGTH - lhs_length
 
-      if @options[:html]
+      if html
         # Output as formatted HTML
         begin
           require 'haml'
-          html = Haml::Engine.new(HAML_DESC).render(self, rules: rules) do |rule|
+          hout = Haml::Engine.new(HAML_DESC).render(self, rules: rules) do |rule|
             formatted_expr = format(rule.expr)
             formatted_expr.length > rhs_length ? format(rule.expr, "\n") : formatted_expr
           end
-          out.write html
+          out.write hout
           return
         rescue LoadError
           $stderr.puts "Generating HTML requires haml gem to be loaded"
