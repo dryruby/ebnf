@@ -146,7 +146,7 @@ module EBNF
     # @return [String]
     def to_ttl
       @ebnf.debug("to_ttl") {inspect} if @ebnf
-      comment = orig.strip.
+      comment = orig.to_s.strip.
         gsub(/"""/, '\"\"\"').
         gsub("\\", "\\\\").
         sub(/^\"/, '\"').
@@ -393,7 +393,7 @@ module EBNF
     private
     def ttl_expr(expr, pfx, depth, is_obj = true)
       indent = '  ' * depth
-      @ebnf.debug("ttl_expr", depth: depth) {expr.inspect}
+      @ebnf.debug("ttl_expr", depth: depth) {expr.inspect} if @ebnf
       op = expr.shift if expr.is_a?(Array)
       statements = []
       
@@ -430,7 +430,7 @@ module EBNF
       end
       
       statements.last << " ." unless is_obj
-      @ebnf.debug("statements", depth: depth) {statements.join("\n")}
+      @ebnf.debug("statements", depth: depth) {statements.join("\n")} if @ebnf
       statements
     end
     

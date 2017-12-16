@@ -34,14 +34,67 @@ describe EBNF do
                     |   '(' expression ')'
       } => %{((rule primary (alt HEX RANGE ENUM O_RANGE O_ENUM STRING1 STRING2 (seq "(" expression ")"))))},
     }.each do |input, expected|
-      it "parses #{input.inspect}" do
-        @debug = []
-        expect(EBNF.parse(input).ast.to_sxp).to produce(expected, @debug)
+      context input do
+        subject {EBNF.parse(input)}
+        it "creates ast" do
+          expect(subject.ast.to_sxp).to produce(expected, [])
+        end
+
+        it "#to_sxp" do
+          expect(subject.to_sxp).to produce(expected)
+        end
+
+        it "#to_ttl" do
+          expect(subject.to_ttl("ex", "http://example.org/")).not_to be_empty
+        end
+
+        it "#to_html" do
+          expect(subject.to_html).not_to be_empty
+        end
+
+        it "#to_s" do
+          expect(subject.to_s).not_to be_empty
+        end
+      end
+    end
+
+    context "README" do
+      let(:ebnf) {EBNF.parse(File.open(File.expand_path("../../etc/ebnf.ebnf", __FILE__)))}
+      subject {ebnf}
+
+      it "creates ast" do
+        expect(subject.ast.to_sxp).not_to be_empty
       end
 
-      it "creates turtle" do
-        ebnf = EBNF.parse(input)
-        expect(ebnf.to_ttl("ex", "http://example.org/")).not_to be_empty
+      it "#to_sxp" do
+        expect(subject.to_sxp).not_to be_empty
+      end
+
+      it "#to_ttl" do
+        expect(subject.to_ttl("ex", "http://example.org/")).not_to be_empty
+      end
+
+      it "#to_html" do
+        expect(subject.to_html).not_to be_empty
+      end
+
+      it "#to_s" do
+        expect(subject.to_s).not_to be_empty
+      end
+
+      context "BNF" do
+        before {subject.make_bnf}
+
+        context "LL1" do
+          before do
+            subject.first_follow(:ebnf)
+            subject.build_tables
+          end
+
+          it "#to_ruby" do
+            expect {subject.to_ruby}.to write(:something).to(:output)
+          end
+        end
       end
     end
   end
