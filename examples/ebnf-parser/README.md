@@ -139,7 +139,7 @@ The `ebnf` production uses the `alt` operator. When matching the production itse
 [YARD-GS]:      http://rubydoc.info/docs/yard/file/docs/GettingStarted.md
 [PDD]:          http://lists.w3.org/Archives/Public/public-rdf-ruby/2010May/0013.html
 [EBNF]:         http://www.w3.org/TR/REC-xml/#sec-notation
-[EBNF doc]:     http://rubydoc.info/github/gkellogg/ebnf/master/frames
+[EBNF doc]:     http://rubydoc.info/github/dryruby/ebnf/
 [First/Follow]: http://en.wikipedia.org/wiki/LL_parser#Constructing_an_LL.281.29_parsing_table
 [LL(1)]:        http://www.csd.uwo.ca/~moreno//CS447/Lectures/Syntax.html/node14.html
 [LL(1) Parser]: http://en.wikipedia.org/wiki/LL_parser

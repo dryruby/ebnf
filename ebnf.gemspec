@@ -6,7 +6,7 @@ Gem::Specification.new do |gem|
   gem.date                  = File.mtime('VERSION').strftime('%Y-%m-%d')
 
   gem.name                  = "ebnf"
-  gem.homepage              = "http://github.com/gkellogg/ebnf"
+  gem.homepage              = "http://github.com/dryruby/ebnf"
   gem.license               = 'Unlicense'
   gem.summary               = "EBNF parser and parser generator."
   gem.description           = %q{EBNF is a Ruby parser for W3C EBNF and a parser generator for compliant LL(1) grammars.}
@@ -29,10 +29,8 @@ Gem::Specification.new do |gem|
   gem.required_ruby_version = '>= 2.2.2'
   gem.requirements          = []
   gem.add_runtime_dependency     'sxp',             '~> 1.0'
-  #gem.add_runtime_dependency     'rdf',             '~> 3.0' # Required by sxp
-  gem.add_runtime_dependency     'rdf',             '>= 2.2', '< 4.0'
-  #gem.add_development_dependency 'rdf-spec',        '~> 3.0'
-  gem.add_development_dependency 'rdf-spec',        '>= 2.2', '< 4.0'
+  gem.add_runtime_dependency     'rdf',             '~> 3.0' # Required by sxp
+  gem.add_development_dependency 'rdf-spec',        '~> 3.0'
   gem.add_development_dependency 'haml',            '~> 5.0'
   gem.add_development_dependency 'rspec',           '~> 3.7'
   gem.add_development_dependency 'rspec-its',       '~> 1.2'
