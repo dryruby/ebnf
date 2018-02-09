@@ -383,18 +383,14 @@ module EBNF
 
     # Rules compare using their ids
     def <=>(other)
-      if id.to_i == other.id.to_i
-        id <=> other.id
-      else
-        id.to_i <=> other.id.to_i
-      end
+      id.to_i <=> other.id.to_i
     end
 
     private
     def ttl_expr(expr, pfx, depth, is_obj = true)
       indent = '  ' * depth
       @ebnf.debug("ttl_expr", depth: depth) {expr.inspect} if @ebnf
-      op = expr.shift if expr.is_a?(Array)
+      op, *expr = expr if expr.is_a?(Array)
       statements = []
       
       if is_obj
