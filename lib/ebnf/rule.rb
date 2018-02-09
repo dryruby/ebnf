@@ -383,7 +383,11 @@ module EBNF
 
     # Rules compare using their ids
     def <=>(other)
-      id.to_i <=> other.id.to_i
+      if id.to_i == other.id.to_i
+        id.to_s <=> other.id.to_s
+      else
+        id.to_i <=> other.id.to_i
+      end
     end
 
     private
