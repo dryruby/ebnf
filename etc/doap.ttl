@@ -9,7 +9,7 @@
 
 <http://rubygems.org/gems/ebnf> a doap:Project, earl:TestSubject, earl:Software ;
   doap:name          "ebnf" ;
-  doap:homepage      <http://gkellogg.github.com/ebnf> ;
+  doap:homepage      <http://dryruby.github.com/ebnf> ;
   doap:license       <http://creativecommons.org/licenses/publicdomain/> ;
   doap:shortdesc     "EBNF parser and parser generator"@en ;
   doap:description   "EBNF is a Ruby parser for W3C EBNF and a parser generator for compliant LL(1) grammars."@en ;
@@ -20,7 +20,7 @@
                      <http://dbpedia.org/resource/Ruby_(programming_language)> ;
   doap:download-page <http://rubygems.org/gems/ebnf> ;
   doap:mailing-list  <http://lists.w3.org/Archives/Public/public-rdf-ruby/> ;
-  doap:bug-database  <http://github.com/gkellogg/ebnf/issues> ;
+  doap:bug-database  <http://github.com/dryruby/ebnf/issues> ;
   doap:blog          <http://greggkellogg.net/> ;
   doap:developer     <http://greggkellogg.net/foaf#me> ;
   doap:maintainer    <http://greggkellogg.net/foaf#me> ;

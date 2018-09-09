@@ -3,9 +3,9 @@
 [EBNF][] parser and generic parser generator.
 
 [![Gem Version](https://badge.fury.io/rb/ebnf.png)](http://badge.fury.io/rb/ebnf)
-[![Build Status](https://secure.travis-ci.org/gkellogg/ebnf.png?branch=master)](http://travis-ci.org/gkellogg/ebnf)
-[![Coverage Status](https://coveralls.io/repos/gkellogg/ebnf/badge.svg)](https://coveralls.io/r/gkellogg/ebnf)
-[![Dependency Status](https://gemnasium.com/gkellogg/ebnf.png)](https://gemnasium.com/gkellogg/ebnf)
+[![Build Status](https://secure.travis-ci.org/dryruby/ebnf.png?branch=master)](http://travis-ci.org/dryruby/ebnf)
+[![Coverage Status](https://coveralls.io/repos/dryruby/ebnf/badge.svg)](https://coveralls.io/r/dryruby/ebnf)
+[![Dependency Status](https://gemnasium.com/dryruby/ebnf.png)](https://gemnasium.com/dryruby/ebnf)
 
 ## Description
 This is a [Ruby][] implementation of an [EBNF][] and [BNF][] parser and parser generator. It parses [EBNF][] grammars to [BNF][], generates [First/Follow][] and Branch tables for [LL(1)][] grammars, which can be used with the stream [Tokenizer][] and [LL(1) Parser][].
@@ -257,7 +257,7 @@ A copy of the [Turtle EBNF][] and derived parser files are included in the repos
 [YARD-GS]:      http://rubydoc.info/docs/yard/file/docs/GettingStarted.md
 [PDD]:          http://lists.w3.org/Archives/Public/public-rdf-ruby/2010May/0013.html
 [EBNF]:         http://www.w3.org/TR/REC-xml/#sec-notation
-[EBNF doc]:     http://rubydoc.info/github/gkellogg/ebnf/master/frames
+[EBNF doc]:     http://rubydoc.info/github/dryruby/ebnf/master/frames
 [First/Follow]: http://en.wikipedia.org/wiki/LL_parser#Constructing_an_LL.281.29_parsing_table
 [LL(1)]:        http://www.csd.uwo.ca/~moreno//CS447/Lectures/Syntax.html/node14.html
 [LL(1) Parser]: http://en.wikipedia.org/wiki/LL_parser
