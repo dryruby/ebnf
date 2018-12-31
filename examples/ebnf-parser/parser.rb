@@ -299,6 +299,7 @@ class EBNFParser
 
   # Output formatted S-Expression of grammar
   def to_sxp
+    require 'sxp' unless defined?(SXP)
     # Output rules as a formatted S-Expression
     SXP::Generator.string(@ast.map(&:for_sxp))
   end

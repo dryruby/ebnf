@@ -168,6 +168,10 @@ module EBNF
           progress("first_follow") {"(#{ittr}) firsts #{firsts}, follows #{follows}"}
           ittr += 1
         end while (firsts + follows) > 0
+
+        debug("Fi.2-post: non-terminals without first") do
+          ast.reject(&:terminal?).reject(&:first).map(&:sym)
+        end if ast.reject(&:terminal?).any? {|r| r.first.nil?}
       end
     end
 
@@ -287,16 +291,16 @@ module EBNF
 
       if rule.expr.first == :matches
         debug("prod") {"Rule is regexp: #{rule}"}
-
-        error("No record of what token #{lhs} can start with") unless rule.first
         return
       end
+
+      error("No record of what token #{lhs.inspect} can start with") unless rule.first
 
       if rule.alt?
         # A First/Follow conflict appears when _eps is in the first
         # of one rule and there is a token in the first and
         # follow of the same rule
-        if rule.first.include?(:_eps) && !(overlap = ((rule.first & (rule.follow || [])) - [:eps])).empty?
+        if Array(rule.first).include?(:_eps) && !(overlap = ((Array(rule.first) & (rule.follow || [])) - [:eps])).empty?
           error("First/Follow Conflict: #{overlap.first.inspect} is both first and follow of #{rule.sym}")
         end
 

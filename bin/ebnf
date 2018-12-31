@@ -80,7 +80,7 @@ ebnf.make_bnf if options[:bnf] || options[:ll1]
 if options[:ll1]
   ebnf.first_follow(*options[:ll1])
   ebnf.build_tables
-  
+end
 
 res = case options[:output_format]
 when :ebnf    then ebnf.to_s
