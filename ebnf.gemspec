@@ -28,10 +28,10 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency     'rdf',             '~> 3.0' # Required by sxp
   gem.add_development_dependency 'rdf-spec',        '~> 3.0'
   gem.add_development_dependency 'haml',            '~> 5.0'
-  gem.add_development_dependency 'rspec',           '~> 3.7'
+  gem.add_development_dependency 'rspec',           '~> 3.8'
   gem.add_development_dependency 'rspec-its',       '~> 1.2'
-  gem.add_development_dependency 'yard',            '~> 0.9.12'
-  gem.add_development_dependency 'rake',            '~> 12.0'
+  gem.add_development_dependency 'yard',            '~> 0.9'
+  gem.add_development_dependency 'rake',            '~> 12.3'
 
   gem.post_install_message  = nil
 end
