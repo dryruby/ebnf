@@ -262,18 +262,19 @@ class EBNFParser
   # @option options [Boolean] :progress
   #   Show progress of parser productions
   # @return [EBNFParser]
-  def initialize(input, options = {}, &block)
+  def initialize(input, **options, &block)
     @options = options.dup
     @input = input.respond_to?(:read) ? input.read : input.to_s
 
     parsing_terminals = false
     @ast = []
-    parse(@input, START.to_sym, @options.merge(branch: BRANCH,
-                                               first: FIRST,
-                                               follow: FOLLOW,
-                                               cleanup: CLEANUP,
-                                               whitespace: EBNFParserTerminals::PASS,
-                                               reset_on_start: true)
+    parse(@input, START.to_sym, branch: BRANCH,
+                                first: FIRST,
+                                follow: FOLLOW,
+                                cleanup: CLEANUP,
+                                whitespace: EBNFParserTerminals::PASS,
+                                reset_on_start: true,
+                                **options)
     ) do |context, *data|
       rule = case context
       when :terminal

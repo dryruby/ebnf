@@ -20,11 +20,11 @@ module EBNF::LL1
     ##
     # If we don't have an IO input, simply use StringScanner directly
     # @private
-    def self.new(input, options = {})
+    def self.new(input, **options)
       input ||= ""
       if input.respond_to?(:read)
         scanner = self.allocate
-        scanner.send(:initialize, input, options)
+        scanner.send(:initialize, input, **options)
       else
         if input.encoding != Encoding::UTF_8
           input = input.dup if input.frozen?
@@ -42,7 +42,7 @@ module EBNF::LL1
     # @option options[Integer] :high_water (HIGH_WATER)
     # @option options[Integer] :low_water (LOW_WATER)
     # @return [Scanner]
-    def initialize(input, options = {})
+    def initialize(input, **options)
       @options = options.merge(high_water: HIGH_WATER, low_water: LOW_WATER)
 
       @input = input

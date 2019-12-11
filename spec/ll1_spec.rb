@@ -415,10 +415,10 @@ describe EBNF::Base do
     end
   end
 
-  def parse(value, options = {})
+  def parse(value, **options)
     @debug = []
     options = {debug: @debug}.merge(options)
-    ebnf = EBNF::Base.new(value, options)
+    ebnf = EBNF::Base.new(value, **options)
     ebnf.make_bnf
     @debug.clear
     ebnf.first_follow(options[:start])

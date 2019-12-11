@@ -22,16 +22,16 @@ Gem::Specification.new do |gem|
   gem.executables          = %w(ebnf)
   gem.require_paths         = %w(lib)
 
-  gem.required_ruby_version = '>= 2.2.2'
+  gem.required_ruby_version = '>= 2.4'
   gem.requirements          = []
-  gem.add_runtime_dependency     'sxp',             '~> 1.0'
-  gem.add_runtime_dependency     'rdf',             '~> 3.0' # Required by sxp
-  gem.add_development_dependency 'rdf-spec',        '~> 3.0'
+  gem.add_runtime_dependency     'sxp',             '~> 1.1'
+  gem.add_runtime_dependency     'rdf',             '~> 3.1' # Required by sxp
+  gem.add_development_dependency 'rdf-spec',        '~> 3.1'
   gem.add_development_dependency 'haml',            '~> 5.0'
-  gem.add_development_dependency 'rspec',           '~> 3.8'
-  gem.add_development_dependency 'rspec-its',       '~> 1.2'
+  gem.add_development_dependency 'rspec',           '~> 3.9'
+  gem.add_development_dependency 'rspec-its',       '~> 1.3'
   gem.add_development_dependency 'yard',            '~> 0.9'
-  gem.add_development_dependency 'rake',            '~> 12.3'
+  gem.add_development_dependency 'rake',            '~> 13.0'
 
   gem.post_install_message  = nil
 end

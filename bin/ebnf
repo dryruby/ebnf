@@ -75,7 +75,7 @@ end
 
 input = File.open(ARGV[0]) if ARGV[0]
 
-ebnf = EBNF.parse(input || STDIN, options)
+ebnf = EBNF.parse(input || STDIN, **options)
 ebnf.make_bnf if options[:bnf] || options[:ll1]
 if options[:ll1]
   ebnf.first_follow(*options[:ll1])
@@ -87,7 +87,7 @@ when :ebnf    then ebnf.to_s
 when :html    then ebnf.to_html
 when :sxp     then ebnf.to_sxp
 when :ttl     then ebnf.to_ttl(options[:prefix], options[:namespace])
-when :rb      then ebnf.to_ruby(out, options.merge(grammarFile: ARGV[0]))
+when :rb      then ebnf.to_ruby(out, grammarFile: ARGV[0], **options)
 else          ebnf.ast.inspect
 end
 

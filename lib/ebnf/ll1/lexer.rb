@@ -98,8 +98,8 @@ module EBNF::LL1
     # @yieldparam [Lexer] lexer
     # @return [Lexer]
     # @raise  [Lexer::Error] on invalid input
-    def self.tokenize(input, terminals, options = {}, &block)
-      lexer = self.new(input, terminals, options)
+    def self.tokenize(input, terminals, **options, &block)
+      lexer = self.new(input, terminals, **options)
       block_given? ? block.call(lexer) : lexer
     end
 
@@ -115,17 +115,24 @@ module EBNF::LL1
     #   Whitespace between tokens, including comments
     # @option options[Integer] :high_water passed to scanner
     # @option options[Integer] :low_water passed to scanner
-    def initialize(input = nil, terminals = nil, options = {})
+    def initialize(input = nil, terminals = nil, **options)
       @options        = options.dup
       @whitespace     = @options[:whitespace]
       @terminals      = terminals.map do |term|
-        term.is_a?(Array) ? Terminal.new(*term) : term
+        if term.is_a?(Array) && term.length ==3
+          # Last element is options
+          Terminal.new(term[0], term[1], **term[2])
+        elsif term.is_a?(Array)
+          Terminal.new(*term)
+        else
+          term
+        end
       end
 
       raise Error, "Terminal patterns not defined" unless @terminals && @terminals.length > 0
 
       @lineno = 1
-      @scanner = Scanner.new(input, options)
+      @scanner = Scanner.new(input, **options)
     end
 
     ##
@@ -300,7 +307,7 @@ module EBNF::LL1
       #   Cause strings and codepoints to be unescaped.
       # @option options [Regexp] :partial_regexp
       #   A regular expression matching the beginning of this terminal; useful for terminals that match things longer than the scanner low water mark.
-      def initialize(type, regexp, options = {})
+      def initialize(type, regexp, **options)
         @type, @regexp, @options = type, regexp, options
         @partial_regexp = options[:partial_regexp]
         @map = options.fetch(:map, {})
@@ -353,8 +360,8 @@ module EBNF::LL1
     #   Scanner instance with access to matched groups
     # @param  [Hash{Symbol => Object}] options
     # @return [Token]
-    def token(type, value, options = {})
-      Token.new(type, value, options.merge(lineno: lineno))
+    def token(type, value, **options)
+      Token.new(type, value, lineno: lineno, **options)
     end
 
     ##
@@ -398,7 +405,7 @@ module EBNF::LL1
       # @param  [String]                 value
       # @param  [Hash{Symbol => Object}] options
       # @option options [Integer]        :lineno (nil)
-      def initialize(type, value, options = {})
+      def initialize(type, value, **options)
         @type = type.to_s.to_sym if type
         @value = value.to_s
         @options = options.dup
@@ -514,7 +521,7 @@ module EBNF::LL1
       # @option options [String]         :input  (nil)
       # @option options [String]         :token  (nil)
       # @option options [Integer]        :lineno (nil)
-      def initialize(message, options = {})
+      def initialize(message, **options)
         @input  = options[:input]
         @token  = options[:token]
         @lineno = options[:lineno]

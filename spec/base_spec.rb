@@ -66,9 +66,9 @@ describe EBNF::Base do
     specify {expect(parse(%{[2]     Prolog    ::=           BaseDecl? PrefixDecl*}).dup).to be_a(EBNF::Base)}
   end
 
-  def parse(value, options = {})
+  def parse(value, **options)
     @debug = []
     options = {debug: @debug}.merge(options)
-    EBNF::Base.new(value, options)
+    EBNF::Base.new(value, **options)
   end
 end
