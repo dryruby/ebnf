@@ -19,17 +19,18 @@ class PlusParser
     input[:terminal] = token.value
   end
 
-  def initialize(input, options = {}, &block)
+  def initialize(input, **options, &block)
     @options = options.dup
     @input = input.respond_to?(:read) ? input.read : input.to_s
 
     parsing_terminals = false
     @ast = []
-    parse(@input, START.to_sym, @options.merge(branch: BRANCH,
-                                               first: FIRST,
-                                               follow: FOLLOW,
-                                               cleanup: CLEANUP,
-                                               whitespace: /\s+/)
+    parse(@input, START.to_sym, branch: BRANCH,
+                                first: FIRST,
+                                follow: FOLLOW,
+                                cleanup: CLEANUP,
+                                whitespace: /\s+/,
+                                **options)
     ) do |context, *data|
       rule = case context
       when :trace

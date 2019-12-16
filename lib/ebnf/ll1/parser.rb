@@ -51,10 +51,10 @@ module EBNF::LL1
       # @yieldparam [Proc] block
       #   Block passed to initialization for yielding to calling parser.
       #   Should conform to the yield specs for #initialize
-      def terminal(term, regexp, options = {}, &block)
+      def terminal(term, regexp, **options, &block)
         @patterns ||= []
         # Passed in order to define evaulation sequence
-        @patterns << EBNF::LL1::Lexer::Terminal.new(term, regexp, options)
+        @patterns << EBNF::LL1::Lexer::Terminal.new(term, regexp, **options)
         @terminal_handlers ||= {}
         @terminal_handlers[term] = block if block_given?
       end
@@ -122,7 +122,14 @@ module EBNF::LL1
 
       def method_missing(method, *args, &block)
         if @delegate ||= nil
-          @delegate.send method, *args, &block
+          # special handling when last arg is **options
+          params = @delegate.method(method).parameters
+          if params.any? {|t, _| t == :keyrest} && args.last.is_a?(Hash)
+            opts = args.pop
+            @delegate.send(method, *args, **opts, &block)
+          else
+            @delegate.send(method, *args, &block)
+          end
         else
           super
         end
@@ -219,7 +226,7 @@ module EBNF::LL1
     #   or errors raised during processing callbacks. Internal
     #   errors are raised using {Error}.
     # @see http://cs.adelaide.edu.au/~charles/lt/Lectures/07-ErrorRecovery.pdf
-    def parse(input = nil, start = nil, options = {}, &block)
+    def parse(input = nil, start = nil, **options, &block)
       @options = options.dup
       @options[:debug] ||= case
       when @options[:progress] then 2
@@ -229,7 +236,7 @@ module EBNF::LL1
       @first   = options[:first] ||= {}
       @follow  = options[:follow] ||= {}
       @cleanup = options[:cleanup] ||= {}
-      @lexer   = input.is_a?(Lexer) ? input : Lexer.new(input, self.class.patterns, @options)
+      @lexer   = input.is_a?(Lexer) ? input : Lexer.new(input, self.class.patterns, **@options)
       @productions = []
       @parse_callback = block
       @recovering = false
@@ -467,7 +474,7 @@ module EBNF::LL1
     # @option options [URI, #to_s] :production
     # @option options [Token] :token
     # @see {#debug}
-    def error(node, message, options = {})
+    def error(node, message, **options)
       lineno = @lineno || (options[:token].lineno if options[:token].respond_to?(:lineno))
       m = "ERROR "
       m += "[line: #{lineno}] " if lineno
@@ -476,7 +483,7 @@ module EBNF::LL1
       m += ", production = #{options[:production].inspect}" if options[:production]
       @error_log << m unless @recovering
       @recovering = true
-      debug(node, m, options.merge(level: 0))
+      debug(node, m, level: 0, **options)
       if options[:raise] || @options[:validate]
         raise Error.new(m, lineno: lineno, token: options[:token], production: options[:production])
       end
@@ -491,20 +498,20 @@ module EBNF::LL1
     # @option options [URI, #to_s] :production
     # @option options [Token] :token
     # @see {#debug}
-    def warn(node, message, options = {})
+    def warn(node, message, **options)
       m = "WARNING "
       m += "[line: #{@lineno}] " if @lineno
       m += message
       m += " (found #{options[:token].inspect})" if options[:token]
       m += ", production = #{options[:production].inspect}" if options[:production]
       @error_log << m unless @recovering
-      debug(node, m, options.merge(level: 1))
+      debug(node, m, level: 1, **options)
     end
 
     ##
     # Progress output when parsing. Passed as level `2` debug messages.
     #
-    # @overload progress(node, message, options)
+    # @overload progress(node, message, **options)
     #   @param [String] node Relevant location associated with message
     #   @param [String] message ("")
     #   @param [Hash] options
@@ -526,7 +533,7 @@ module EBNF::LL1
     # if `@options[:debug]` is an Integer, the call is aborted if the
     # `:level` option is less than than `:level`.
     #
-    # @overload debug(node, message, options)
+    # @overload debug(node, message, **options)
     #   @param [Array<String>] args Relevant location associated with message
     #   @param [Hash] options
     #   @option options [Integer] :depth
@@ -751,7 +758,7 @@ module EBNF::LL1
       # @option options [Symbol]         :production  (nil)
       # @option options [String]         :token  (nil)
       # @option options [Integer]        :lineno (nil)
-      def initialize(message, options = {})
+      def initialize(message, **options)
         @production = options[:production]
         @token      = options[:token]
         @lineno     = options[:lineno] || (@token.lineno if @token.respond_to?(:lineno))

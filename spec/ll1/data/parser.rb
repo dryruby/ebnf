@@ -316,17 +316,18 @@ class EBNFParser
   # @option options [Boolean] :progress
   #   Show progress of parser productions
   # @return [EBNFParser]
-  def initialize(input, options = {}, &block)
+  def initialize(input, **options, &block)
     @options = options.dup
     @input = input.respond_to?(:read) ? input.read : input.to_s
 
     parsing_terminals = false
     @ast = []
-    parse(@input, START.to_sym, @options.merge(branch: BRANCH,
-                                               first: FIRST,
-                                               follow: FOLLOW,
-                                               whitespace: EBNFParserTerminals::PASS,
-                                               reset_on_true: true)
+    parse(@input, START.to_sym, branch: BRANCH,
+                                first: FIRST,
+                                follow: FOLLOW,
+                                whitespace: EBNFParserTerminals::PASS,
+                                reset_on_true: true,
+                                **options
     ) do |context, *data|
       rule = case context
       when :terminal
@@ -352,6 +353,7 @@ class EBNFParser
 
   # Output formatted S-Expression of grammar
   def to_sxp
+    require 'sxp' unless defined?(SXP)
     # Output rules as a formatted S-Expression
     SXP::Generator.string(@ast.sort_by{|r| r.id.to_f}.map(&:for_sxp))
   end

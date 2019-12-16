@@ -38,9 +38,9 @@ describe EBNFParser do
     end
   end
 
-  def parse(value, options = {})
+  def parse(value, **options)
     @debug = []
     options = {debug: @debug}.merge(options)
-    EBNFParser.new(value, options)
+    EBNFParser.new(value, **options)
   end
 end

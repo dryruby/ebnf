@@ -68,9 +68,9 @@ describe EBNF::Base do
     end
   end
   
-  def ebnf(method, value, options = {})
+  def ebnf(method, value, **options)
     @debug = []
     options = {debug: @debug}.merge(options)
-    EBNF::Base.new("", options).send(method, value)
+    EBNF::Base.new("", **options).send(method, value)
   end
 end

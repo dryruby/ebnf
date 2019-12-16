@@ -137,6 +137,7 @@ module EBNF
     # Return SXP representation of this rule
     # @return [String]
     def to_sxp
+      require 'sxp' unless defined?(SXP)
       for_sxp.to_sxp
     end
 

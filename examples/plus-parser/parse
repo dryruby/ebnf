@@ -48,4 +48,4 @@ end
 input = File.open(ARGV[0]) if ARGV[0]
 
 # Collect rules
-PlusParser.new(input || STDIN, options)
+PlusParser.new(input || STDIN, **options)

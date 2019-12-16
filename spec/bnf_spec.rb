@@ -67,9 +67,9 @@ describe EBNF::Base do
     end
   end
 
-  def parse(value, options = {})
+  def parse(value, **options)
     @debug = []
     options = {debug: @debug}.merge(options)
-    EBNF::Base.new(value, options)
+    EBNF::Base.new(value, **options)
   end
 end
