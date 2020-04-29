@@ -6,7 +6,7 @@ Gem::Specification.new do |gem|
   gem.date                  = File.mtime('VERSION').strftime('%Y-%m-%d')
 
   gem.name                  = "ebnf"
-  gem.homepage              = "http://github.com/dryruby/ebnf"
+  gem.homepage              = "https://github.com/dryruby/ebnf"
   gem.license               = 'Unlicense'
   gem.summary               = "EBNF parser and parser generator."
   gem.description           = %q{EBNF is a Ruby parser for W3C EBNF and a parser generator for compliant LL(1) grammars.}

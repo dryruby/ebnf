@@ -470,10 +470,10 @@ module EBNF::LL1
     #
     # @param [String] node Relevant location associated with message
     # @param [String] message Error string
-    # @param [Hash] options
+    # @param [Hash{Symbol => Object}] options
     # @option options [URI, #to_s] :production
     # @option options [Token] :token
-    # @see {#debug}
+    # @see #debug
     def error(node, message, **options)
       lineno = @lineno || (options[:token].lineno if options[:token].respond_to?(:lineno))
       m = "ERROR "
@@ -497,7 +497,7 @@ module EBNF::LL1
     # @param [Hash] options
     # @option options [URI, #to_s] :production
     # @option options [Token] :token
-    # @see {#debug}
+    # @see #debug
     def warn(node, message, **options)
       m = "WARNING "
       m += "[line: #{@lineno}] " if @lineno
@@ -517,7 +517,7 @@ module EBNF::LL1
     #   @param [Hash] options
     #   @option options [Integer] :depth
     #       Recursion depth for indenting output
-    # @see {#debug}
+    # @see #debug
     def progress(node, *args, &block)
       return unless @options[:progress] || @options[:debug]
       args << {} unless args.last.is_a?(Hash)

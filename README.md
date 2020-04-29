@@ -5,7 +5,6 @@
 [![Gem Version](https://badge.fury.io/rb/ebnf.png)](http://badge.fury.io/rb/ebnf)
 [![Build Status](https://secure.travis-ci.org/dryruby/ebnf.png?branch=master)](http://travis-ci.org/dryruby/ebnf)
 [![Coverage Status](https://coveralls.io/repos/dryruby/ebnf/badge.svg)](https://coveralls.io/r/dryruby/ebnf)
-[![Dependency Status](https://gemnasium.com/dryruby/ebnf.png)](https://gemnasium.com/dryruby/ebnf)
 
 ## Description
 This is a [Ruby][] implementation of an [EBNF][] and [BNF][] parser and parser generator. It parses [EBNF][] grammars to [BNF][], generates [First/Follow][] and Branch tables for [LL(1)][] grammars, which can be used with the stream [Tokenizer][] and [LL(1) Parser][].

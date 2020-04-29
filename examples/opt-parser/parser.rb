@@ -23,14 +23,13 @@ class OptParser
     @options = options.dup
     @input = input.respond_to?(:read) ? input.read : input.to_s
 
-    parsing_terminals = false
     @ast = []
     parse(@input, START.to_sym, branch: BRANCH,
                                 first: FIRST,
                                 follow: FOLLOW,
                                 cleanup: CLEANUP,
                                 reset_on_start: true,
-                                **options)
+                                **options
     ) do |context, *data|
       rule = case context
       when :trace

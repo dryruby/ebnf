@@ -60,13 +60,13 @@ module EBNF
     # @param [Integer] id
     # @param [Symbol] sym
     # @param [Array] expr
-    # @param [Symbol] :kind
-    # @param [String] :ebnf
-    # @param [Array] :first
-    # @param [Array] :follow
-    # @param [Boolean] :start
-    # @param [Rule] :top_rule
-    # @param [Boolean] :cleanup
+    # @param [Symbol] kind (nil)
+    # @param [String] ebnf (nil)
+    # @param [Array] first (nil)
+    # @param [Array] follow (nil)
+    # @param [Boolean] start (nil)
+    # @param [Rule] top_rule (nil)
+    # @param [Boolean] cleanup (nil)
     def initialize(sym, id, expr, kind: nil, ebnf: nil, first: nil, follow: nil, start: nil, top_rule: nil, cleanup: nil)
       @sym, @id = sym, id
       @expr = expr.is_a?(Array) ? expr : [:seq, expr]
@@ -109,8 +109,9 @@ module EBNF
     # Symbol and number creation is handled by the top-most rule in such a chain
     #
     # @param [Array] expr
+    # @param [Symbol] kind (nil)
+    # @param [Hash{Symbol => Symbol}] cleanup (nil)
     # @param [Hash{Symbol => Object}] options
-    # @param [Symbol] :kind
     def build(expr, kind: nil, cleanup: nil, **options)
       new_sym, new_id = (@top_rule ||self).send(:make_sym_id)
       Rule.new(new_sym, new_id, expr,

@@ -274,7 +274,7 @@ class EBNFParser
                                 cleanup: CLEANUP,
                                 whitespace: EBNFParserTerminals::PASS,
                                 reset_on_start: true,
-                                **options)
+                                **options
     ) do |context, *data|
       rule = case context
       when :terminal
