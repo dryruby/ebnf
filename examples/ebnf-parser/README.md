@@ -134,14 +134,14 @@ This is reduced to the LL(1) S-Expression noted above:
 
 The `ebnf` production uses the `alt` operator. When matching the production itself we can see that it is either a `declaration` or a `rule`. In this case of this parser, the result of parsing EBNF is an Abstract Syntax Tree, but in other cases it may create something else. In the case of the [Turtle gem][], the parser generates _RDF Triples_. Because the parser uses a streaming lexer, a file of any length can be passed to the parser, which emits triples as sufficient processing completes.
 
-[Ruby]:         http://ruby-lang.org/
-[YARD]:         http://yardoc.org/
-[YARD-GS]:      http://rubydoc.info/docs/yard/file/docs/GettingStarted.md
-[PDD]:          http://lists.w3.org/Archives/Public/public-rdf-ruby/2010May/0013.html
-[EBNF]:         http://www.w3.org/TR/REC-xml/#sec-notation
-[EBNF doc]:     http://rubydoc.info/github/dryruby/ebnf/
-[First/Follow]: http://en.wikipedia.org/wiki/LL_parser#Constructing_an_LL.281.29_parsing_table
-[LL(1)]:        http://www.csd.uwo.ca/~moreno//CS447/Lectures/Syntax.html/node14.html
-[LL(1) Parser]: http://en.wikipedia.org/wiki/LL_parser
-[Tokenizer]:    http://en.wikipedia.org/wiki/Lexical_analysis#Tokenizer
-[Turtle gem]:   http://rubygems.org/gems/rdf-turtle
+[Ruby]:         https://ruby-lang.org/
+[YARD]:         https://yardoc.org/
+[YARD-GS]:      https://rubydoc.info/docs/yard/file/docs/GettingStarted.md
+[PDD]:          https://lists.w3.org/Archives/Public/public-rdf-ruby/2010May/0013.html
+[EBNF]:         https://www.w3.org/TR/REC-xml/#sec-notation
+[EBNF doc]:     https://rubydoc.info/github/dryruby/ebnf/
+[First/Follow]: https://en.wikipedia.org/wiki/LL_parser#Constructing_an_LL.281.29_parsing_table
+[LL(1)]:        https://www.csd.uwo.ca/~moreno//CS447/Lectures/Syntax.html/node14.html
+[LL(1) Parser]: https://en.wikipedia.org/wiki/LL_parser
+[Tokenizer]:    https://en.wikipedia.org/wiki/Lexical_analysis#Tokenizer
+[Turtle gem]:   https://rubygems.org/gems/rdf-turtle

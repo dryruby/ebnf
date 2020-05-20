@@ -29,7 +29,7 @@ module EBNF::LL1
   #     warn error.inspect
   #   end
   #
-  # @see http://en.wikipedia.org/wiki/Lexical_analysis
+  # @see https://en.wikipedia.org/wiki/Lexical_analysis
   class Lexer
     include Enumerable
 
@@ -59,7 +59,7 @@ module EBNF::LL1
     #
     # @param  [String] string
     # @return [String]
-    # @see    http://www.w3.org/TR/rdf-sparql-query/#codepointEscape
+    # @see    https://www.w3.org/TR/rdf-sparql-query/#codepointEscape
     def self.unescape_codepoints(string)
       string = string.dup
       string.force_encoding(Encoding::ASCII_8BIT) if string.respond_to?(:force_encoding)
@@ -81,7 +81,7 @@ module EBNF::LL1
     #
     # @param  [String] input
     # @return [String]
-    # @see    http://www.w3.org/TR/rdf-sparql-query/#grammarEscapes
+    # @see    https://www.w3.org/TR/rdf-sparql-query/#grammarEscapes
     def self.unescape_string(input)
       input.gsub(ECHAR) { |escaped| ESCAPE_CHARS[escaped] || escaped[1..-1]}
     end
@@ -372,7 +372,7 @@ module EBNF::LL1
     #   token.type   #=> :LANGTAG
     #   token.value  #=> "en"
     #
-    # @see http://en.wikipedia.org/wiki/Lexical_analysis#Token
+    # @see https://en.wikipedia.org/wiki/Lexical_analysis#Token
     class Token
       ##
       # The token's symbol type.
@@ -493,7 +493,7 @@ module EBNF::LL1
     #     "invalid token '%' on line 10",
     #     input: query, token: '%', lineno: 9)
     #
-    # @see http://ruby-doc.org/core/classes/StandardError.html
+    # @see https://ruby-doc.org/core/classes/StandardError.html
     class Error < StandardError
       ##
       # The input string associated with the error.

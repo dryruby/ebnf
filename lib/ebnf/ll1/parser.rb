@@ -225,7 +225,7 @@ module EBNF::LL1
     # @raise [Exception] Raises exceptions for parsing errors
     #   or errors raised during processing callbacks. Internal
     #   errors are raised using {Error}.
-    # @see http://cs.adelaide.edu.au/~charles/lt/Lectures/07-ErrorRecovery.pdf
+    # @see https://cs.adelaide.edu.au/~charles/lt/Lectures/07-ErrorRecovery.pdf
     def parse(input = nil, start = nil, **options, &block)
       @options = options.dup
       @options[:debug] ||= case
@@ -730,7 +730,7 @@ module EBNF::LL1
     #     "invalid token '%' on line 10",
     #     token: '%', lineno: 9, production: :turtleDoc)
     #
-    # @see http://ruby-doc.org/core/classes/StandardError.html
+    # @see https://ruby-doc.org/core/classes/StandardError.html
     class Error < StandardError
       ##
       # The current production.

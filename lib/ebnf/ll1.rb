@@ -52,7 +52,7 @@ module EBNF
     # Create first/follow for each rule using techniques defined for LL(1) parsers.
     #
     # @return [EBNF] self
-    # @see http://en.wikipedia.org/wiki/LL_parser#Constructing_an_LL.281.29_parsing_table
+    # @see https://en.wikipedia.org/wiki/LL_parser#Constructing_an_LL.281.29_parsing_table
     # @param [Array<Symbol>] starts
     #   Set of symbols which are start rules
     def first_follow(*starts)

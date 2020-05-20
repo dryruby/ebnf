@@ -2,8 +2,8 @@
 
 [EBNF][] parser and generic parser generator.
 
-[![Gem Version](https://badge.fury.io/rb/ebnf.png)](http://badge.fury.io/rb/ebnf)
-[![Build Status](https://secure.travis-ci.org/dryruby/ebnf.png?branch=master)](http://travis-ci.org/dryruby/ebnf)
+[![Gem Version](https://badge.fury.io/rb/ebnf.png)](https://badge.fury.io/rb/ebnf)
+[![Build Status](https://secure.travis-ci.org/dryruby/ebnf.png?branch=master)](https://travis-ci.org/dryruby/ebnf)
 [![Coverage Status](https://coveralls.io/repos/dryruby/ebnf/badge.svg)](https://coveralls.io/r/dryruby/ebnf)
 
 ## Description
@@ -197,8 +197,8 @@ In this case the `ebnf` rule was `(declaration | rule)*`. As BNF does not suppor
 The `_empty` production matches an empty string, so allows for now value. `_ebnf_2` matches `declaration | rule` (using the `alt` primitive) followed by `ebnf`, creating a sequence of zero or more `declaration` or `alt` members.
 
 ## EBNF Grammar
-The [EBNF][] variant used here is based on [W3C](http://w3.org/) [EBNF][] (see {file:etc/ebnf.ebnf EBNF grammar}) as defined in the
-[XML 1.0 recommendation](http://www.w3.org/TR/REC-xml/), with minor extensions:
+The [EBNF][] variant used here is based on [W3C](https://w3.org/) [EBNF][] (see {file:etc/ebnf.ebnf EBNF grammar}) as defined in the
+[XML 1.0 recommendation](https://www.w3.org/TR/REC-xml/), with minor extensions:
 
 * Comments include `\\` and `#` through end of line (other than hex character) and `/* ... */ (* ... *) which may cross lines`
 * All rules **MAY** start with an identifier, contained within square brackets. For example `[1] rule`, where the value within the brackets is a symbol `([a-z] | [A-Z] | [0-9] | "_" | ".")+`
@@ -213,12 +213,12 @@ For an example parser built using this gem, see {file:examples/ebnf-parser/READM
 
 ##  Acknowledgements
 Much of this work, particularly the generic parser, is inspired by work originally done by
-Tim Berners-Lee's Python [predictive parser](http://www.w3.org/2000/10/swap/grammar/predictiveParser.py).
+Tim Berners-Lee's Python [predictive parser](https://www.w3.org/2000/10/swap/grammar/predictiveParser.py).
 
 The EBNF parser was inspired by Dan Connolly's
-[EBNF to Turtle processor](http://www.w3.org/2000/10/swap/grammar/ebnf2turtle.py),
-[EBNF to BNF Notation-3 rules](http://www.w3.org/2000/10/swap/grammar/ebnf2bnf.n3),
-and [First Follow Notation-3 rules](http://www.w3.org/2000/10/swap/grammar/first_follow.n3). 
+[EBNF to Turtle processor](https://www.w3.org/2000/10/swap/grammar/ebnf2turtle.py),
+[EBNF to BNF Notation-3 rules](https://www.w3.org/2000/10/swap/grammar/ebnf2bnf.n3),
+and [First Follow Notation-3 rules](https://www.w3.org/2000/10/swap/grammar/first_follow.n3). 
 
 ## Documentation
 Full documentation available on [Rubydoc.info][EBNF doc].
@@ -228,7 +228,7 @@ Full documentation available on [Rubydoc.info][EBNF doc].
 * Either generate [Packrat parser][Packrat] for a [Parsing Regular Expression Grammar][PEG], or integrate with [Treetop][] or similar.
 
 ## Author
-* [Gregg Kellogg](http://github.com/gkellogg) - <http://greggkellogg.net/>
+* [Gregg Kellogg](https://github.com/gkellogg) - <https://greggkellogg.net/>
 
 ## Contributing
 This repository uses [Git Flow](https://github.com/nvie/gitflow) to mange development and release activity. All submissions _must_ be on a feature branch based on the _develop_ branch to ease staging and integration.
@@ -247,22 +247,22 @@ This repository uses [Git Flow](https://github.com/nvie/gitflow) to mange develo
 
 ## License
 This is free and unencumbered public domain software. For more information,
-see <http://unlicense.org/> or the accompanying {file:UNLICENSE} file.
+see <https://unlicense.org/> or the accompanying {file:UNLICENSE} file.
 
-A copy of the [Turtle EBNF][] and derived parser files are included in the repository, which are not covered under the UNLICENSE. These files are covered via the [W3C Document License](http://www.w3.org/Consortium/Legal/2002/copyright-documents-20021231).
+A copy of the [Turtle EBNF][] and derived parser files are included in the repository, which are not covered under the UNLICENSE. These files are covered via the [W3C Document License](https://www.w3.org/Consortium/Legal/2002/copyright-documents-20021231).
 
-[Ruby]:         http://ruby-lang.org/
-[YARD]:         http://yardoc.org/
-[YARD-GS]:      http://rubydoc.info/docs/yard/file/docs/GettingStarted.md
-[PDD]:          http://lists.w3.org/Archives/Public/public-rdf-ruby/2010May/0013.html
-[EBNF]:         http://www.w3.org/TR/REC-xml/#sec-notation
-[EBNF doc]:     http://rubydoc.info/github/dryruby/ebnf/master/frames
-[First/Follow]: http://en.wikipedia.org/wiki/LL_parser#Constructing_an_LL.281.29_parsing_table
-[LL(1)]:        http://www.csd.uwo.ca/~moreno//CS447/Lectures/Syntax.html/node14.html
-[LL(1) Parser]: http://en.wikipedia.org/wiki/LL_parser
-[Tokenizer]:    http://en.wikipedia.org/wiki/Lexical_analysis#Tokenizer
-[Turtle EBNF]:  http://dvcs.w3.org/hg/rdf/file/default/rdf-turtle/turtle.bnf
-[Packrat]:      http://pdos.csail.mit.edu/~baford/packrat/thesis/
-[PEG]:          http://en.wikipedia.org/wiki/Parsing_expression_grammar
-[Treetop]:      http://rubygems.org/gems/treetop
-[Haml]:         http://rubygems.org/gems/haml
+[Ruby]:         https://ruby-lang.org/
+[YARD]:         https://yardoc.org/
+[YARD-GS]:      https://rubydoc.info/docs/yard/file/docs/GettingStarted.md
+[PDD]:          https://lists.w3.org/Archives/Public/public-rdf-ruby/2010May/0013.html
+[EBNF]:         https://www.w3.org/TR/REC-xml/#sec-notation
+[EBNF doc]:     https://rubydoc.info/github/dryruby/ebnf/master/frames
+[First/Follow]: https://en.wikipedia.org/wiki/LL_parser#Constructing_an_LL.281.29_parsing_table
+[LL(1)]:        https://www.csd.uwo.ca/~moreno//CS447/Lectures/Syntax.html/node14.html
+[LL(1) Parser]: https://en.wikipedia.org/wiki/LL_parser
+[Tokenizer]:    https://en.wikipedia.org/wiki/Lexical_analysis#Tokenizer
+[Turtle EBNF]:  https://dvcs.w3.org/hg/rdf/file/default/rdf-turtle/turtle.bnf
+[Packrat]:      https://pdos.csail.mit.edu/~baford/packrat/thesis/
+[PEG]:          https://en.wikipedia.org/wiki/Parsing_expression_grammar
+[Treetop]:      https://rubygems.org/gems/treetop
+[Haml]:         https://rubygems.org/gems/haml

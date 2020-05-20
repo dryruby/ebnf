@@ -2,7 +2,7 @@ require 'strscan'
 
 # Extended Bakus-Nour Form (EBNF), being the W3C variation is
 # originaly defined in the
-# [W3C XML 1.0 Spec](http://www.w3.org/TR/REC-xml/#sec-notation).
+# [W3C XML 1.0 Spec](https://www.w3.org/TR/REC-xml/#sec-notation).
 #
 # This version attempts to be less strict than the strict definition
 # to allow for coloquial variations (such as in the Turtle syntax).
@@ -12,8 +12,8 @@ require 'strscan'
 #
 # Comments include the content between '/*' and '*/'
 #
-# @see http://www.w3.org/2000/10/swap/grammar/ebnf2turtle.py
-# @see http://www.w3.org/2000/10/swap/grammar/ebnf2bnf.n3
+# @see https://www.w3.org/2000/10/swap/grammar/ebnf2turtle.py
+# @see https://www.w3.org/2000/10/swap/grammar/ebnf2bnf.n3
 #
 # Based on bnf2turtle by Dan Connolly.
 #
@@ -36,7 +36,7 @@ require 'strscan'
 # derived mechanically from the specification.
 # 
 # 
-# [N3 design note]: http://www.w3.org/DesignIssues/Notation3
+# [N3 design note]: https://www.w3.org/DesignIssues/Notation3
 # 
 # Related Work
 # ------------
@@ -59,12 +59,12 @@ require 'strscan'
 # expression of the grammar in terms of the higher level EBNF
 # constructs.
 # 
-# [goal]: http://www.w3.org/2002/02/mid/1086902566.21030.1479.camel@dirk;list=public-cwm-bugs
-# [n3p announcement]: http://lists.w3.org/Archives/Public/public-cwm-talk/2004OctDec/0029.html
-# [Yacker]: http://www.w3.org/1999/02/26-modules/User/Yacker
-# [SPARQL specification]: http://www.w3.org/TR/rdf-sparql-query/
-# [Cwm Release 1.1.0rc1]: http://lists.w3.org/Archives/Public/public-cwm-announce/2005JulSep/0000.html
-# [bnf-rules.n3]: http://www.w3.org/2000/10/swap/grammar/bnf-rules.n3
+# [goal]: https://www.w3.org/2002/02/mid/1086902566.21030.1479.camel@dirk;list=public-cwm-bugs
+# [n3p announcement]: https://lists.w3.org/Archives/Public/public-cwm-talk/2004OctDec/0029.html
+# [Yacker]: https://rubygems/02/26-modules/User/Yacker
+# [SPARQL specification]: https://www.w3.org/TR/rdf-sparql-query/
+# [Cwm Release 1.1.0rc1]: https://lists.w3.org/Archives/Public/public-cwm-announce/2005JulSep/0000.html
+# [bnf-rules.n3]: https://www.w3.org/2000/10/swap/grammar/bnf-rules.n3
 # 
 # Open Issues and Future Work
 # ---------------------------
@@ -82,8 +82,8 @@ require 'strscan'
 # It would be interesting to corroborate the claim in the SPARQL spec
 # that the grammar is LL(1) with a mechanical proof based on N3 rules.
 # 
-# [swap/grammar/bnf]: http://www.w3.org/2000/10/swap/grammar/bnf
-# [bnf2html.n3]: http://www.w3.org/2000/10/swap/grammar/bnf2html.n3  
+# [swap/grammar/bnf]: https://www.w3.org/2000/10/swap/grammar/bnf
+# [bnf2html.n3]: https://www.w3.org/2000/10/swap/grammar/bnf2html.n3  
 # 
 # Background
 # ----------
@@ -93,7 +93,7 @@ require 'strscan'
 # of N3 that maps directly to (and from) the standard XML syntax for
 # RDF.
 #
-# [N3 Primer]: http://www.w3.org/2000/10/swap/Primer.html
+# [N3 Primer]: https://www.w3.org/2000/10/swap/Primer.html
 # 
 # @author Gregg Kellogg
 module EBNF
