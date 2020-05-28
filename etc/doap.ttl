@@ -11,7 +11,7 @@
 <> a doap:Project, earl:TestSubject, earl:Software ;
   doap:name          "ebnf" ;
   doap:homepage      <https://github.com/dryruby/ebnf> ;
-  doap:license       <http://creativecommons.org/publicdomain/zero/1.0/> ;
+  doap:license       <https://unlicense.org/> ;
   doap:shortdesc     "EBNF parser and parser generator"@en ;
   doap:description   "EBNF is a Ruby parser for W3C EBNF and a parser generator for compliant LL(1) grammars."@en ;
   doap:created       "2011-08-29"^^xsd:date ;
