@@ -131,7 +131,6 @@ module EBNF::LL1
 
       raise Error, "Terminal patterns not defined" unless @terminals && @terminals.length > 0
 
-      @lineno = 1
       @scanner = Scanner.new(input, **options)
     end
 
@@ -146,12 +145,6 @@ module EBNF::LL1
     #
     # @return [String]
     attr_accessor :input
-
-    ##
-    # The current line number (zero-based).
-    #
-    # @return [Integer]
-    attr_reader   :lineno
 
     ##
     # Returns `true` if the input string is lexically valid.
@@ -194,7 +187,7 @@ module EBNF::LL1
 
       @first ||= begin
         {} while !scanner.eos? && skip_whitespace
-        return @scanner = nil if scanner.eos?
+        return nil if scanner.eos?
 
         token = match_token(*types)
 
@@ -243,6 +236,14 @@ module EBNF::LL1
       scanner.unscan if tok
       first
     end
+
+    ##
+    # The current line number (one-based).
+    #
+    # @return [Integer]
+    def lineno
+      scanner.lineno
+    end
   protected
 
     # @return [StringScanner]
@@ -253,9 +254,7 @@ module EBNF::LL1
     def skip_whitespace
       # skip all white space, but keep track of the current line number
       while @whitespace && !scanner.eos?
-        if matched = scanner.scan(@whitespace)
-          @lineno += matched.count("\n")
-        else
+        unless scanner.scan(@whitespace)
           return
         end
       end
@@ -281,7 +280,6 @@ module EBNF::LL1
         if matched = scanner.scan(term.regexp)
           #STDERR.puts "  matched #{term.type.inspect}: #{matched.inspect}"
           tok = token(term.type, term.canonicalize(matched))
-          @lineno += matched.count("\n")
           return tok
         end
       end
