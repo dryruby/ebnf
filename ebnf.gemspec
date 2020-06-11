@@ -25,6 +25,7 @@ Gem::Specification.new do |gem|
   gem.required_ruby_version = '>= 2.4'
   gem.requirements          = []
   gem.add_runtime_dependency     'sxp',             '~> 1.1'
+  gem.add_runtime_dependency     'scanf',           '~> 1.0'
   gem.add_runtime_dependency     'rdf',             '~> 3.1' # Required by sxp
   gem.add_development_dependency 'rdf-spec',        '~> 3.1'
   gem.add_development_dependency 'haml',            '~> 5.0'

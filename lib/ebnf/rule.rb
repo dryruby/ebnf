@@ -1,3 +1,5 @@
+require 'scanf'
+
 module EBNF
   # Represent individual parsed rules
   class Rule
@@ -102,7 +104,7 @@ module EBNF
       start = sxp.any? {|e| e.is_a?(Array) && e.first.to_sym == :start}
       sym = sxp[1] if sxp[1].is_a?(Symbol)
       id = sxp[2] if sxp[2].is_a?(String)
-      Rule.new(sym, id, expr, kind: sxp.first, first: first, follow: follow, cleanup: cleanup, start: start)
+      self.new(sym, id, expr, kind: sxp.first, first: first, follow: follow, cleanup: cleanup, start: start)
     end
 
     # Build a new rule creating a symbol and numbering from the current rule
@@ -114,12 +116,12 @@ module EBNF
     # @param [Hash{Symbol => Object}] options
     def build(expr, kind: nil, cleanup: nil, **options)
       new_sym, new_id = (@top_rule ||self).send(:make_sym_id)
-      Rule.new(new_sym, new_id, expr,
-               kind: kind,
-               ebnf: @ebnf,
-               top_rule: (@top_rule || self),
-               cleanup: cleanup,
-               **options)
+      self.class.new(new_sym, new_id, expr,
+                     kind: kind,
+                     ebnf: @ebnf,
+                     top_rule: (@top_rule || self),
+                     cleanup: cleanup,
+                     **options)
     end
 
     # Return representation for building S-Expressions
@@ -165,12 +167,12 @@ module EBNF
     ##
     # Transform EBNF rule to BNF rules:
     #
-    #   * Transform (a [n] rule (op1 (op2))) into two rules:
-    #     (a [n] rule (op1 _a_1))
-    #     (_a_1 [n.1] rule (op2))
-    #   * Transform (a rule (opt b)) into (a rule (alt _empty b))
-    #   * Transform (a rule (star b)) into (a rule (alt _empty (seq b a)))
-    #   * Transform (a rule (plus b)) into (a rule (seq b (star b)
+    #   * Transform (rule a "n" (op1 (op2))) into two rules:
+    #     (rule a "n" (op1 _a_1))
+    #     (rule _a_1 "n.1" (op2))
+    #   * Transform (rule a (opt b)) into (rule a (alt _empty b))
+    #   * Transform (rule a (star b)) into (rule a (alt _empty (seq b a)))
+    #   * Transform (rule a (plus b)) into (rule a (seq b (star b)
     #
     # Transformation includes information used to re-construct non-transformed
     # AST representation
@@ -199,19 +201,19 @@ module EBNF
         new_rules = new_rules.map {|r| r.to_bnf}.flatten
       elsif expr.first == :opt
         this = dup
-        #   * Transform (a rule (opt b)) into (a rule (alt _empty b))
+        #   * Transform (rule a (opt b)) into (rule a (alt _empty b))
         this.expr = [:alt, :_empty, expr.last]
         this.cleanup = :opt
         new_rules = this.to_bnf
       elsif expr.first == :star
-        #   * Transform (a rule (star b)) into (a rule (alt _empty (seq b a)))
+        #   * Transform (rule a (star b)) into (rule a (alt _empty (seq b a)))
         this = dup
         this.cleanup = :star
         new_rule = this.build([:seq, expr.last, this.sym], cleanup: :merge)
         this.expr = [:alt, :_empty, new_rule.sym]
         new_rules = [this] + new_rule.to_bnf
       elsif expr.first == :plus
-        #   * Transform (a rule (plus b)) into (a rule (seq b (star b)
+        #   * Transform (rule a (plus b)) into (rule a (seq b (star b)
         this = dup
         this.cleanup = :plus
         this.expr = [:seq, expr.last, [:star, expr.last]]
@@ -268,8 +270,8 @@ module EBNF
     end
 
     # Does this rule start with a sym? It does if expr is that sym,
-    # expr starts with alt and contains that sym, or
-    # expr starts with seq and the next element is that sym
+    # expr starts with alt and contains that sym,
+    # or expr starts with seq and the next element is that sym
     # @param [Symbol, class] sym
     #   Symbol matching any start element, or if it is String, any start element which is a String
     # @return [Array<Symbol, String>] list of symbol (singular), or strings which are start symbol, or nil if there are none
@@ -314,6 +316,7 @@ module EBNF
     end
 
     # Is this a terminal?
+    # 
     # @return [Boolean]
     def terminal?
       kind == :terminal
@@ -365,20 +368,20 @@ module EBNF
     # @param [Rule] other
     # @return [Boolean]
     def equivalent?(other)
-      expr  == other.expr
+      expr == other.expr
     end
 
     # Rewrite the rule substituting src_rule for dst_rule wherever
     # it is used in the production (first level only).
-    # @param [Rule] src_rule
-    # @param [Rule] dst_rule
-    # @return [Rule]
+    # @param [Symbol] src_rule
+    # @param [Symbol] dst_rule
+    # @return [self]
     def rewrite(src_rule, dst_rule)
       case @expr
       when Array
-        @expr = @expr.map {|e| e == src_rule.sym ? dst_rule.sym : e}
+        @expr = @expr.map {|e| e == src_rule ? dst_rule : e}
       else
-        @expr = dst_rule.sym if @expr == src_rule.sym
+        @expr = dst_rule if @expr == src_rule
       end
       self
     end
@@ -390,6 +393,12 @@ module EBNF
       else
         id.to_i <=> other.id.to_i
       end
+    end
+
+    ##
+    # Utility function to translate code points of the form '#xN' into ruby unicode characters
+    def translate_codepoints(str)
+      str.gsub(/#x\h+/) {|c| c[2..-1].scanf("%x").first.chr(Encoding::UTF_8)}
     end
 
     private
@@ -414,7 +423,7 @@ module EBNF
         statements << %{#{indent}#{bra}#{pfx}:#{op} }
         statements += ttl_expr(expr.first, pfx, depth + 1)
         statements << %{#{indent} #{ket}} unless ket.empty?
-      when :_empty, :_eps, :_empty
+      when :_empty, :_eps
         statements << %{#{indent}"g:#{op.to_s[1..-1]}"}
       when :"'"
         statements << %{#{indent}"#{esc(expr)}"}
