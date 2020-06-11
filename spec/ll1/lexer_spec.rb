@@ -324,5 +324,5 @@ describe EBNF::LL1::Lexer do
   STRING_LITERAL_SINGLE_QUOTE      = /"(?:[^\"\\\n\r])*"/
   STRING_LITERAL_LONG_SINGLE_QUOTE = /'''(?:(?:'|'')?(?:[^'\\]))*'''/m
   STRING_LITERAL_LONG_QUOTE        = /"""(?:(?:"|"")?(?:[^"\\]|#))*"""/m 
-  WHITESPACE                       = /(\s|(?:#.*$))+/m.freeze
+  WHITESPACE                       = /(\s|(?:#[^x]*$))+/m.freeze
 end

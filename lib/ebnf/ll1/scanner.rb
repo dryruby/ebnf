@@ -21,7 +21,7 @@ module EBNF::LL1
     # The current line number (one-based).
     #
     # @return [Integer]
-    attr_accessor   :lineno
+    attr_accessor :lineno
 
     ##
     # Create a scanner, from an IO

@@ -5,12 +5,13 @@ module EBNFParserTerminals
   CHAR    = %r((?:#{HEX})|(?:\\[\\trn'"])|[^\t\r\n]).freeze
   R_CHAR  = %r((?:#{HEX})|(?:\\[\\trn'"])|[^\t\r\n\]]).freeze
   RANGE   = %r(\[(?:#{R_CHAR})\-(?:#{R_CHAR})\]).freeze
-  ENUM    = %r(\[#{R_CHAR}+\]).freeze
-  LHS     = %r((?:#{ENUM}\s*)?#{SYMBOL}\s*::=).freeze
+  ENUM_BASE = %r(\[#{R_CHAR}+\]).freeze
+  ENUM    = %r(#{ENUM_BASE}(?!\s+#{SYMBOL})).freeze  # Not followed by symbol
+  LHS     = %r((?:#{ENUM_BASE}\s*)?#{SYMBOL}\s*::=).freeze
   O_RANGE = %r(\[^(?:#{R_CHAR})\-(?:#{R_CHAR})\]).freeze
   O_ENUM  = %r(\[^#{R_CHAR}+\]).freeze
   STRING1 = %r("(?:(?:#{HEX})|(?:\\[\\trn'"])|[^\r\n"])*").freeze
   STRING2 = %r('(?:(?:#{HEX})|(?:\\[\\trn'"])|[^\r\n'])*').freeze
   POSTFIX = %r([?*+]).freeze
-  PASS    = %r((\s|(?:(#|//)[^\n\r]*$)|(?:/\*(?:(?:\*[^/])|[^*])*\*/))+)m.freeze
+  PASS    = %r((\s|(?:(#[^x]|//)[^\n\r]*$)|(?:/\*(?:(?:\*[^/])|[^*])*\*/))+)m.freeze
 end

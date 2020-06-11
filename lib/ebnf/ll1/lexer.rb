@@ -226,7 +226,7 @@ module EBNF::LL1
     # @return [Token]
     def recover(*types)
        until scanner.eos? || tok = match_token(*types)
-        if scanner.skip_until(@whitespace || /\s/m).nil? # Skip past current "token"
+        if scanner.skip_until(@whitespace || /\s+/m).nil? # Skip past current "token"
           # No whitespace at the end, must be and end of string
           scanner.terminate
         else
