@@ -5,8 +5,8 @@
 
     [3] rule        ::= LHS expression
 
-    # Use a terminal to match the identifier, rule name and assignment due to
-    # confusion between the identifier RANGE
+    # Use the LHS terminal to match the identifier, rule name and assignment due to
+    # confusion between the identifier and RANGE
 
     [4] expression  ::= alt
 
@@ -38,7 +38,7 @@
 
     [13] HEX        ::= '#x' ([0-9]|[a-f]|[A-F])+
 
-    [14] ENUM       ::= '[' ((R_BEGIN (HEX | R_CHAR)) | (HEX | R_CHAR)) '-' ((R_BEGIN (HEX | R_CHAR)) | (HEX | R_CHAR)) ']'
+    [14] ENUM       ::= ('[' ((R_BEGIN (HEX | R_CHAR)) | (HEX | R_CHAR)) '-' ((R_BEGIN (HEX | R_CHAR)) | (HEX | R_CHAR)) ']') - LHS
 
     [15] O_ENUM     ::= '[^' ((R_BEGIN (HEX | R_CHAR)) | (HEX | R_CHAR)) '-' ((R_BEGIN (HEX | R_CHAR)) | (HEX | R_CHAR)) ']'
 
@@ -65,7 +65,7 @@
     [23] POSTFIX    ::= [?*+]
 
     [24] PASS       ::= ( [#x00-#x20]
-                        | ( '#' | '//' ) [^#x0A#x0D]*
+                        | ( ('#' - '#x') | '//' ) [^#x0A#x0Dx]*
                         | '/*' (( '*' [^/] )? | [^*] )* '*/'
                         | '(*' (( '*' [^)] )? | [^*] )* '*)'
                         )+
