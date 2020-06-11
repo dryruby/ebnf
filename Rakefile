@@ -40,16 +40,39 @@ namespace :doc do
   YARD::Rake::YardocTask.new
 end
 
-desc 'Create versions of ebnf files in etc'
-task etc: %w{
-    etc/ebnf.sxp etc/ebnf.ll1.sxp etc/ebnf.html etc/ebnf.rb
-    etc/turtle.sxp etc/turtle.ll1.sxp etc/turtle.html etc/turtle.rb
-    etc/sparql.sxp etc/sparql.ll1.sxp etc/sparql.html etc/sparql.rb
+namespace :etc do
+  ETC_FILES = %w{
+    etc/ebnf.sxp etc/ebnf.ll1.sxp etc/ebnf.peg.sxp etc/ebnf.html etc/ebnf.rb
+    etc/turtle.sxp etc/turtle.ll1.sxp etc/turtle.peg.sxp etc/turtle.html etc/turtle.rb
+    etc/sparql.sxp etc/sparql.ll1.sxp etc/sparql.peg.sxp etc/sparql.html etc/sparql.rb
   }
+  desc 'Remove generated files in etc'
+  task :clean do
+    %x(rm #{ETC_FILES.join(' ')})
+  end
 
+  desc 'Create versions of ebnf files in etc'
+  task build: ETC_FILES
+end
+
+
+# Build SXP output with leading space to allow for Markdown formatting.
 rule ".sxp" => %w{.ebnf} do |t|
   puts "build #{t.name}"
-  %x(bin/ebnf -o #{t.name} #{t.source})
+  File.open(t.name, "w") do |f|
+    IO.popen(%(bin/ebnf #{t.source})).each_line do |line|
+      f.puts '    ' + line
+    end
+  end
+end
+
+rule ".peg.sxp" => %w{.ebnf} do |t|
+  puts "build #{t.name}"
+  File.open(t.name, "w") do |f|
+    IO.popen(%(bin/ebnf --peg #{t.source})).each_line do |line|
+      f.puts '    ' + line
+    end
+  end
 end
 
 rule ".html" => %w{.ebnf} do |t|
@@ -57,26 +80,44 @@ rule ".html" => %w{.ebnf} do |t|
   %x(bin/ebnf --format html -o #{t.name} #{t.source})
 end
 
-file "etc/ebnf.ll1.sxp" => "etc/ebnf.ebnf" do
-  %x(bin/ebnf --ll1 ebnf -o etc/ebnf.ll1.sxp etc/ebnf.ebnf)
+file "etc/ebnf.ll1.sxp" => "etc/ebnf.ebnf" do |t|
+  puts "build #{t.name}"
+  File.open(t.name, "w") do |f|
+    IO.popen(%(bin/ebnf --ll1 ebnf #{t.source})).each_line do |line|
+      f.puts '    ' + line
+    end
+  end
 end
 
-file "etc/ebnf.rb" => "etc/ebnf.ebnf" do
+file "etc/ebnf.rb" => "etc/ebnf.ebnf" do |t|
+  puts "build #{t.name}"
   %x(bin/ebnf --ll1 ebnf -f rb -o etc/ebnf.rb etc/ebnf.ebnf)
 end
 
-file "etc/turtle.ll1.sxp" => "etc/turtle.ebnf" do
-  %x(bin/ebnf --ll1 turtleDoc -o etc/turtle.ll1.sxp etc/turtle.ebnf)
+file "etc/turtle.ll1.sxp" => "etc/turtle.ebnf" do |t|
+  puts "build #{t.name}"
+  File.open(t.name, "w") do |f|
+    IO.popen(%(bin/ebnf --ll1 turtleDoc #{t.source})).each_line do |line|
+      f.puts '    ' + line
+    end
+  end
 end
 
-file "etc/turtle.rb" => "etc/turtle.ebnf" do
+file "etc/turtle.rb" => "etc/turtle.ebnf" do |t|
+  puts "build #{t.name}"
   %x(bin/ebnf --ll1 turtleDoc -f rb -o etc/turtle.rb etc/turtle.ebnf)
 end
 
-file "etc/sparql.ll1.sxp" => "etc/sparql.ebnf" do
-  %x(bin/ebnf --ll1 QueryUnit --ll1 UpdateUnit -o etc/sparql.ll1.sxp etc/sparql.ebnf)
+file "etc/sparql.ll1.sxp" => "etc/sparql.ebnf" do |t|
+  puts "build #{t.name}"
+  File.open(t.name, "w") do |f|
+    IO.popen(%(bin/ebnf --ll1 QueryUnit --ll1 UpdateUnit #{t.source})).each_line do |line|
+      f.puts '    ' + line
+    end
+  end
 end
 
-file "etc/sparql.rb" => "etc/sparql.ebnf" do
+file "etc/sparql.rb" => "etc/sparql.ebnf" do |t|
+  puts "build #{t.name}"
   %x(bin/ebnf --ll1 QueryUnit --ll1 UpdateUnit -f rb -o etc/sparql.rb etc/sparql.ebnf)
 end

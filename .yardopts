@@ -13,7 +13,7 @@ CREDITS
 VERSION
 UNLICENSE
 etc/ebnf.ebnf
-etc/ebnf.sxp
 etc/ebnf.ll1.sxp
+etc/ebnf.peg.sxp
 examples/**/README.md
 examples/**/*.rb
