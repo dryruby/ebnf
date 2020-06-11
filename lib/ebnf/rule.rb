@@ -233,6 +233,58 @@ module EBNF
       return new_rules
     end
 
+    ##
+    # Transform EBNF rule for PEG:
+    #
+    #   * Transform (rule a "n" (op1 ... (op2 y) ...z)) into two rules:
+    #     (rule a "n" (op1 ... _a_1 ... z))
+    #     (rule _a_1 "n.1" (op2 y))
+    #
+    # @return [Array<Rule>]
+    def to_peg
+      new_rules = []
+
+      # Look for rules containing sub-sequences
+      if expr.any? {|e| e.is_a?(Array) && e.first.is_a?(Symbol)}
+        # duplicate ourselves for rewriting
+        this = dup
+        new_rules << this
+
+        expr.each_with_index do |e, index|
+          next unless e.is_a?(Array) && e.first.is_a?(Symbol)
+          new_rule = build(e)
+          this.expr[index] = new_rule.sym
+          new_rules << new_rule
+        end
+
+        # Return new rules after recursively applying #to_bnf
+        new_rules = new_rules.map {|r| r.to_peg}.flatten
+      elsif [:diff, :hex, :range].include?(expr.first)
+        # This rules are fine, the just need to be terminals
+        raise "Encountered #{expr.first.inspect}, which is a #{self.kind}, not :terminal" unless self.terminal?
+        new_rules << self
+      else
+        new_rules << self
+      end
+      
+      return new_rules.map {|r| r.extend(EBNF::PEG::Rule)}
+    end
+
+    ##
+    # For :hex or :range, create a regular expression
+    #
+    # @return [Regexp]
+    def to_regexp
+      case expr.first
+      when :hex
+        Regexp.new(translate_codepoints(expr[1]))
+      when :range
+        Regexp.new("[#{translate_codepoints(expr[1])}]")
+      else
+        raise "Can't turn #{expr.inspect} into a regexp"
+      end
+    end
+
     # Return the non-terminals for this rule. For seq, this is the first
     # non-terminals in the seq. For alt, this is every non-terminal ni the alt
     # @param [Array<Rule>] ast

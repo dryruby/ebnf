@@ -6,7 +6,7 @@ This example implements an [EBNF][] parser equivalent to the built-in parser. Th
 
     require 'ebnf'
 
-    ebnf = EBNFParser.new(File.open(../../etc/ebnf.bnf))
+    ebnf = EBNFParser.new(File.open(../../etc/ebnf.ebnf))
 
 Output rules and terminals as S-Expressions, Turtle or EBNF
 
@@ -14,7 +14,8 @@ Output rules and terminals as S-Expressions, Turtle or EBNF
 
 This generates a S-Expression form of the grammar suitable for use by {EBNF} for generating a BNF representation (avoiding `star`, `plus`, and `opt` expressions), LL(1) first/follow comprehensions and branch tables used for parsing input files based on the grammar.
 
-    ((pass (seq PASS))
+    (
+     (pass (seq PASS))
      (rule ebnf "1" (star (alt declaration rule)))
      (rule declaration "2" (alt "@terminals" pass))
      (rule rule "3" (seq LHS expression))
@@ -24,29 +25,37 @@ This generates a S-Expression form of the grammar suitable for use by {EBNF} for
      (rule diff "7" (seq postfix (opt (seq "-" postfix))))
      (rule postfix "8" (seq primary (opt POSTFIX)))
      (rule primary "9"
-      (alt HEX SYMBOL RANGE ENUM O_RANGE O_ENUM STRING1 STRING2 (seq "(" expression ")")))
+      (alt HEX SYMBOL ENUM O_ENUM RANGE O_RANGE STRING1 STRING2 (seq "(" expression ")")))
      (rule pass "10" (seq "@pass" expression))
-     (terminal LHS "11" (seq (opt ENUM) SYMBOL "::="))
+     (terminal LHS "11" (seq (opt (seq "[" (plus SYMBOL) "]")) SYMBOL "::="))
      (terminal SYMBOL "12" (plus (alt (range "a-z") (range "A-Z") (range "0-9") "_" ".")))
-     (terminal HEX "13"
-      (seq "#x"
-       (alt (range "0-9") (range "a-f") (range "A-F"))
-       (alt (range "0-9") (range "a-f") (range "A-F"))) )
-     (terminal RANGE "14" (seq "[" CHAR "-" CHAR "]"))
-     (terminal ENUM "15" (seq "[" (plus CHAR) "]"))
-     (terminal O_RANGE "16" (seq "[^" CHAR "-" CHAR "]"))
-     (terminal O_ENUM "17" (seq "[^" (plus CHAR) "]"))
-     (terminal STRING1 "18" (seq "\"" (star (alt CHAR (range "\t'[]()-"))) "\""))
-     (terminal STRING2 "19" (seq "'" (star (alt CHAR (range "\t\"[]()-"))) "'"))
-     (terminal CHAR "20"
-      (alt HEX (seq "\\" (range "\\trn'\"[]()-")) (range "^\t\r\n'\"[]()-")))
-     (terminal POSTFIX "21" (range "?*+"))
-     (terminal PASS "22"
+     (terminal HEX "13" (seq "#x" (plus (alt (range "0-9") (range "a-f") (range "A-F")))))
+     (terminal ENUM "14"
+      (diff
+       (seq "["
+        (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR)) "-"
+        (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR)) "]" ) LHS ))
+     (terminal O_ENUM "15"
+      (seq "[^"
+       (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR)) "-"
+       (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR)) "]" ))
+     (terminal RANGE "16"
+      (seq "[" (plus (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR))) "]"))
+     (terminal O_RANGE "17"
+      (seq "[^" (plus (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR))) "]"))
+     (terminal STRING1 "18" (seq "\"" (star (diff CHAR "\"")) "\""))
+     (terminal STRING2 "19" (seq "'" (star (diff CHAR "'")) "'"))
+     (terminal CHAR "20" (alt HEX (range "#x20#x21#x22") (range "#x24-#x00FFFFFF")))
+     (terminal R_CHAR "21" (diff CHAR "]"))
+     (terminal R_BEGIN "22" (seq (alt HEX R_CHAR) "-"))
+     (terminal POSTFIX "23" (range "?*+"))
+     (terminal PASS "24"
       (plus
        (alt
-        (range "#x20\t\r\n")
-        (seq (alt "#" "//") (star (range "^\r\n")))
-        (seq "/*" (star (alt (opt (seq "*" (range "^/"))) (range "^*"))) "*/")) )) )
+        (range "#x00-#x20")
+        (seq (alt "#" "//") (star (range "^#x0A#x0D")))
+        (seq "/*" (star (alt (opt (seq "*" (range "^/"))) (range "^*"))) "*/")
+        (seq "(*" (star (alt (opt (seq "*" (range "^)"))) (range "^*"))) "*)")) )) )
 
 This can then be used as input to {EBNF.parse} to transform EBNF to BNF, create LL(1) first/follow rules and/or generate parser tables for parsing examples of the grammar using {EBNF::LL1::Parser}.
 

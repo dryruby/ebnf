@@ -3,6 +3,7 @@ module EBNF
   autoload :BNF,      "ebnf/bnf"
   autoload :LL1,      "ebnf/ll1"
   autoload :Parser,   "ebnf/parser"
+  autoload :PEG,      "ebnf/peg"
   autoload :Rule,     "ebnf/rule"
   autoload :Writer,   "ebnf/writer"
   autoload :VERSION,  "ebnf/version"
@@ -18,6 +19,6 @@ module EBNF
   # @return [EBNF::Base]
   # @raise  [Exception] on invalid input
   def self.parse(input, **options)
-    query = ::EBNF::Base.new(input, **options)
+    ::EBNF::Base.new(input, **options)
   end
 end

@@ -27,6 +27,9 @@ Of note in this implementation is that the tokenizer and parser are streaming, s
 
 See {EBNF::LL1} and {EBNF::LL1::Parser} for further information.
 
+## [PEG][]/[Packrat][] Parser
+An additional Parsing Expression Grammar ([PEG][]) parser generator is also supported. This performs more minmal transformations on the parsed grammar to extract sub-productions, which allows each component of a rule to generate its own parsing event.
+
 ## Usage
 ### Parsing an EBNF Grammar
 
@@ -41,20 +44,24 @@ Output rules and terminals as S-Expressions, Turtle, HTML or BNF
     puts ebnf.to_html
     puts ebnf.to_s
 
+Transform EBNF to PEG (generates sub-rules for embedded expressions)
+
+    ebnf.make_peg
+
 Transform EBNF to BNF (generates sub-rules using `alt` or `seq` from `plus`, `star` or `opt`)
 
     ebnf.make_bnf
 
-Generate [First/Follow][] rules for BNF grammars
+Generate [First/Follow][] rules for BNF grammars (using "ebnf" as the starting production):
 
     ebnf.first_follow(:ebnf)
 
-Generate Terminal, [First/Follow][], Cleanup and Branch tables as Ruby for parsing grammars
+Generate Terminal, [First/Follow][], Cleanup and Branch tables as Ruby for parsing grammars:
 
     ebnf.build_tables
     ebnf.to_ruby
 
-Generate formatted grammar using HTML (requires [Haml][Haml] gem)
+Generate formatted grammar using HTML (requires [Haml][Haml] gem):
 
     ebnf.to_html
 
@@ -166,6 +173,8 @@ For a [PEG][] parser generator, there is a simpler transformation that reduces r
 
 ## Example parser
 For an example parser built using this gem, see  {http://dryruby.github.io/ebnf/examples/ebnf-parser/doc/parser.html EBNF LL1 Parser example}. This example creates a parser for the [EBNF][] grammar which generates the same Abstract Syntax Tree as the built-in parser in the gem.
+
+There is also a {://dryruby.github.io/ebnf/examples/ebnf-peg-parser/doc/parser.html EBNF PEG Parser example}.
 
 ##  Acknowledgements
 Much of this work, particularly the generic parser, is inspired by work originally done by

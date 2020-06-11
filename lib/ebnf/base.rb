@@ -101,6 +101,7 @@ module EBNF
     include BNF
     include LL1
     include Parser
+    include PEG
 
     # Abstract syntax tree from parse
     #

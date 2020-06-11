@@ -1,4 +1,90 @@
 module EBNF
+  ##
+  # This module extends {EBNF::Base} to create metadata including _branch_,  [First/Follow][], and other tables which is used by {EBNF::LL1::Parser} to recognize examples of the associated grammar.
+  #
+  ### Branch Table
+  #
+  #  The Branch table is a hash mapping production rules to a hash relating terminals appearing in input to sequence of productions to follow when the corresponding input terminal is found. This allows either the `seq` primitive, where all terminals map to the same sequence of productions, or the `alt` primitive, where each terminal may map to a different production.
+  #
+  #      BRANCH = {
+  #        :alt => {
+  #          "(" => [:seq, :_alt_1],
+  #          :ENUM => [:seq, :_alt_1],
+  #          :HEX => [:seq, :_alt_1],
+  #          :O_ENUM => [:seq, :_alt_1],
+  #          :O_RANGE => [:seq, :_alt_1],
+  #          :RANGE => [:seq, :_alt_1],
+  #          :STRING1 => [:seq, :_alt_1],
+  #          :STRING2 => [:seq, :_alt_1],
+  #          :SYMBOL => [:seq, :_alt_1],
+  #        },
+  #        ...
+  #        :declaration => {
+  #          "@pass" => [:pass],
+  #          "@terminals" => ["@terminals"],
+  #        },
+  #        ...
+  #      }
+  #
+  #  In this case the `alt` rule is `seq ('|' seq)*` can happen when any of the specified tokens appears on the input stream. The all cause the same token to be passed to the `seq` rule and follow with `_alt_1`, which handles the `('|' seq)*` portion of the rule, after the first sequence is matched.
+  #
+  #  The `declaration` rule is `@terminals' | pass` using the `alt` primitive determining the production to run based on the terminal appearing on the input stream. Eventually, a terminal production is found and the token is consumed.
+  #
+  ### First/Follow Table
+  #
+  #  The [First/Follow][] table is a hash mapping production rules to the terminals that may proceed or follow the rule. For example:
+  #
+  #      FIRST = {
+  #        :alt => [
+  #          :HEX,
+  #          :SYMBOL,
+  #          :ENUM,
+  #          :O_ENUM,
+  #          :RANGE,
+  #          :O_RANGE,
+  #          :STRING1,
+  #          :STRING2,
+  #          "("],
+  #        ...
+  #      }
+  #
+  ### Terminals Table
+  #
+  #  This table is a simple list of the terminal productions found in the grammar. For example:
+  #
+  #      TERMINALS = ["(", ")", "-",
+  #        "@pass", "@terminals",
+  #        :ENUM, :HEX, :LHS, :O_ENUM, :O_RANGE,:POSTFIX,
+  #        :RANGE, :STRING1, :STRING2, :SYMBOL,"|"
+  #      ].freeze
+  #
+  ### Cleanup Table
+  #
+  #  This table identifies productions which used EBNF rules, which are transformed to BNF for actual parsing. This allows the parser, in some cases, to reproduce *star*, *plus*, and *opt* rule matches. For example:
+  #
+  #      CLEANUP = {
+  #        :_alt_1 => :star,
+  #        :_alt_3 => :merge,
+  #        :_diff_1 => :opt,
+  #        :ebnf => :star,
+  #        :_ebnf_2 => :merge,
+  #        :_postfix_1 => :opt,
+  #        :seq => :plus,
+  #        :_seq_1 => :star,
+  #        :_seq_2 => :merge,
+  #      }.freeze
+  #
+  #  In this case the `ebnf` rule was `(declaration | rule)*`. As BNF does not support a star operator, this is decomposed into a set of rules using `alt` and `seq` primitives:
+  #
+  #      ebnf    ::= _empty _ebnf_2
+  #      _ebnf_1 ::= declaration | rule
+  #      _ebnf_2 ::= _ebnf_1 ebnf
+  #      _ebnf_3 ::= ebnf
+  #
+  #  The `_empty` production matches an empty string, so allows for now value. `_ebnf_2` matches `declaration | rule` (using the `alt` primitive) followed by `ebnf`, creating a sequence of zero or more `declaration` or `alt` members.
+  #
+  # [First/Follow]: https://en.wikipedia.org/wiki/LL_parser#Constructing_an_LL.281.29_parsing_table
+
   module LL1
     autoload :Lexer,    "ebnf/ll1/lexer"
     autoload :Parser,   "ebnf/ll1/parser"
@@ -50,6 +136,38 @@ module EBNF
 
     ##
     # Create first/follow for each rule using techniques defined for LL(1) parsers.
+    #
+    # This takes rules which have transformed into BNF and adds first/follow and otehr information to the rules to allow the generation of metadata tables used for driving a parser.
+    #
+    # Given an initial rule in EBNF:
+    #
+    #     (rule enbf "1" (star declaration rule))
+    #
+    # The BNF transformation becomes:
+    #
+    #     (rule ebnf "1" (alt _empty _ebnf_2))
+    #     (rule _ebnf_1 "1.1" (alt declaration rule))
+    #     (rule _ebnf_2 "1.2" (seq _ebnf_1 ebnf))
+    #     (rule _ebnf_3 "1.3" (seq ebnf))
+    #
+    # After running this method, the rules are annotated with first/follow and cleanup rules:
+    #
+    #     (rule ebnf "1"
+    #      (start #t)
+    #      (first "@pass" "@terminals" LHS _eps)
+    #      (follow _eof)
+    #      (cleanup star)
+    #      (alt _empty _ebnf_2))
+    #     (rule _ebnf_1 "1.1"
+    #      (first "@pass" "@terminals" LHS)
+    #      (follow "@pass" "@terminals" LHS _eof)
+    #      (alt declaration rule))
+    #     (rule _ebnf_2 "1.2"
+    #      (first "@pass" "@terminals" LHS)
+    #      (follow _eof)
+    #      (cleanup merge)
+    #      (seq _ebnf_1 ebnf))
+    #     (rule _ebnf_3 "1.3" (first "@pass" "@terminals" LHS _eps) (follow _eof) (seq ebnf))
     #
     # @return [EBNF] self
     # @see https://en.wikipedia.org/wiki/LL_parser#Constructing_an_LL.281.29_parsing_table

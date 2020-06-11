@@ -28,6 +28,7 @@ OPT_ARGS = [
   ["--input-format",    GetoptLong::REQUIRED_ARGUMENT,"Specify input format one of ebnf or sxp"],
   ["--mod-name",        GetoptLong::REQUIRED_ARGUMENT,"Module name used when creating ruby tables"],
   ["--output", "-o",    GetoptLong::REQUIRED_ARGUMENT,"Output to the specified file path"],
+  ["--peg",             GetoptLong::NO_ARGUMENT,      "Transform EBNF to PEG"],
   ["--prefix", "-p",    GetoptLong::REQUIRED_ARGUMENT,"Prefix to use when generating Turtle"],
   ["--progress", "-v",  GetoptLong::NO_ARGUMENT,      "Detail on execution"],
   ["--namespace", "-n", GetoptLong::REQUIRED_ARGUMENT,"Namespace to use when generating Turtle"],
@@ -58,9 +59,10 @@ opts.each do |opt, arg|
   when '--evaluate'     then input = arg
   when '--input-format' then options[:format] = arg.to_sym
   when '--format'       then options[:output_format] = arg.to_sym
-  when '--ll1'          then (options[:ll1] ||= []) <<arg.to_sym
+  when '--ll1'          then (options[:ll1] ||= []) << arg.to_sym
   when '--mod-name'     then options[:mod_name] = arg
   when '--output'       then out = File.open(arg, "w")
+  when '--peg'          then options[:peg] = true
   when '--prefix'       then options[:prefix] = arg
   when '--namespace'    then options[:namespace] = arg
   when '--progress'     then options[:progress] = true
@@ -77,6 +79,7 @@ input = File.open(ARGV[0]) if ARGV[0]
 
 ebnf = EBNF.parse(input || STDIN, **options)
 ebnf.make_bnf if options[:bnf] || options[:ll1]
+ebnf.make_peg if options[:peg]
 if options[:ll1]
   ebnf.first_follow(*options[:ll1])
   ebnf.build_tables

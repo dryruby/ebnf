@@ -1,0 +1,20 @@
+desc 'Build first, follow and branch tables'
+task meta: "meta.rb"
+
+task default: :meta
+
+file "meta.rb" => "../../etc/ebnf.ebnf" do |t|
+  sh %{
+    ebnf --ll1 ebnf --format rb \
+      --mod-name EBNFParserMeta \
+      --output meta.rb \
+      #{t.prerequisites.first}
+  }
+end
+
+desc "Generate literal documentation for parser"
+task doc: %w(doc/parser.html)
+
+file "doc/parser.html" => "parser.rb" do
+  `rocco -t doc/layout.mustache parser.rb -o doc`
+end
