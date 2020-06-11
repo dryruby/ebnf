@@ -56,7 +56,7 @@ module EBNF::PEG
             raise "No rule found for #{prod}" unless rule
             rule.parse(input)
           when String
-            input.scan(prod) || :unmatched
+            input.scan(Regexp.new(Regexp.quote(prod))) || :unmatched
           end
           break unless alt == :unmatched
         end
@@ -77,7 +77,7 @@ module EBNF::PEG
           raise "No rule found for #{prod}" unless rule
           rule.parse(input)
         when String
-          input.scan(prod) || :unmatched
+          input.scan(Regexp.new(Regexp.quote(prod))) || :unmatched
         end
         opt == :unmatched ? nil : opt
       when :plus
@@ -93,7 +93,7 @@ module EBNF::PEG
             plus << res
           end
         when String
-          while res = input.scan(prod)
+          while res = input.scan(Regexp.new(Regexp.quote(prod)))
             eat_whitespace(input)
             plus << res
           end
@@ -112,7 +112,7 @@ module EBNF::PEG
             raise "No rule found for #{prod}" unless rule
             rule.parse(input)
           when String
-            input.scan(prod) || :unmatched
+            input.scan(Regexp.new(Regexp.quote(prod))) || :unmatched
           end
           break :unmatched if res == :unmatched
           accumulator << {prod.to_sym => res}
@@ -135,7 +135,7 @@ module EBNF::PEG
             star << res
           end
         when String
-          while res = input.scan(prod)
+          while res = input.scan(Regexp.new(Regexp.quote(prod)))
             eat_whitespace(input)
             star << res
           end
