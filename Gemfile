@@ -9,8 +9,8 @@ group :development do
   gem "byebug",     platforms: :mri
   gem 'psych',      platforms: [:mri, :rbx]
   gem "redcarpet",  platforms: :mri
-  gem "rocco"
-  gem "pygmentize"
+  gem "rocco",      platforms: :mri
+  gem "pygmentize", platforms: :mri
 end
 
 group :development, :test do
