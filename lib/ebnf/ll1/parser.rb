@@ -3,6 +3,51 @@ require 'ebnf/ll1/lexer'
 module EBNF::LL1
   ##
   # A Generic LL1 parser using a lexer and branch tables defined using the SWAP tool chain (modified).
+  #
+  #  # Creating terminal definitions and parser rules to parse generated grammars
+  #
+  #  The parser is initialized to callbacks invoked on entry and exit
+  #  to each `terminal` and `production`. A trivial parser loop can be described as follows:
+  #
+  #      require 'ebnf/ll1/parser'
+  #      require 'meta'
+  #
+  #      class Parser
+  #        include Meta
+  #        include EBNF::LL1::Parser
+  #
+  #        terminal(:SYMBOL, /([a-z]|[A-Z]|[0-9]|_)+/) do |prod, token, input|
+  #          # Add data based on scanned token to input
+  #          input[:symbol] = token.value
+  #        end
+  #
+  #        start_production(:rule) do |input, current, callback|
+  #          # Process on start of production
+  #          # Set state for entry into recursed rules through current
+  #
+  #          # Callback to parser loop with callback
+  #        end
+  #
+  #        production(:rule) do |input, current, callback|
+  #          # Process on end of production
+  #          # return results in input, retrieve results from recursed rules in current
+  #
+  #          # Callback to parser loop with callback
+  #        end
+  #
+  #        def initialize(input)
+  #          parse(input, start_symbol,
+  #            branch: BRANCH,
+  #            first: FIRST,
+  #            follow: FOLLOW,
+  #            cleanup: CLEANUP
+  #          ) do |context, *data|
+  #            # Process calls from callback from productions
+  #
+  #          rescue ArgumentError, RDF::LL1::Parser::Error => e
+  #            progress("Parsing completed with errors:\n\t#{e.message}")
+  #            raise RDF::ReaderError, e.message if validate?
+  #          end
   module Parser
     ##
     # @return [Integer] line number of current token
@@ -181,7 +226,7 @@ module EBNF::LL1
     #     def each_statement(&block)
     #       @callback = block
     #
-    #       parse(START.to_sym) do |context, *data|
+    #       parse(input, START.to_sym) do |context, *data|
     #         case context
     #         when :statement
     #           yield *data

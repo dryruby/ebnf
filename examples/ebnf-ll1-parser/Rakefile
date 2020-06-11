@@ -16,5 +16,5 @@ desc "Generate literal documentation for parser"
 task doc: %w(doc/parser.html)
 
 file "doc/parser.html" => "parser.rb" do
-  `rocco -s docco.css parser.rb -o doc`
+  `rocco -t doc/layout.mustache parser.rb -o doc`
 end

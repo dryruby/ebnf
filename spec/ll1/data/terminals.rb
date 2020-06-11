@@ -1,5 +1,5 @@
 # Terminal definitions for EBNF Parser
-module EBNFParserTerminals
+module EBNFLL1ParserTerminals
   SYMBOL  = %r([a-zA-Z0-9_\.]+).freeze
   HEX     = %r(\#x[0-9a-fA-F]+).freeze
   CHAR    = %r((?:#{HEX})|(?:\\[\\trn'"])|[^\t\r\n]).freeze

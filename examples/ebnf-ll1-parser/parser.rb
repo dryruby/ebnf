@@ -7,10 +7,10 @@ require 'meta'
 require 'terminals'
 require 'sxp'
 
-class EBNFParser
+class EBNLL1FParser
   include EBNF::LL1::Parser
   include EBNFParserMeta
-  include EBNFParserTerminals
+  include EBNFLL1ParserTerminals
 
   class ProdResult
     attr_accessor :prod
@@ -146,7 +146,7 @@ class EBNFParser
     # data contains an expression.
     # Invoke callback
     expr = data[:expression].respond_to?(:to_ary) ? data[:expression].to_ary : data[:expression]
-    callback.call(:rule, EBNF::Rule.new(data[:symbol].to_sym, data[:id], expr))
+    callback.call(:rule, EBNF::Rule.new(data[:symbol].to_sym, data[:id], expr)) if expr
   end
 
   # Production for end of `expression` non-terminal.
@@ -200,6 +200,7 @@ class EBNFParser
   #     [7] diff        ::= postfix ('-' postfix)?
   production(:diff) do |input, data, callback|
     input[:diff] ||= []
+    data[:postfix] ||= []
     input[:diff] << if data[:postfix].length > 1
       ProdResult.new(:diff, *data[:postfix])
     else
@@ -261,7 +262,7 @@ class EBNFParser
   #   the prefix mappings to use (for acessing intermediate parser productions)
   # @option options [Boolean] :progress
   #   Show progress of parser productions
-  # @return [EBNFParser]
+  # @return [self]
   def initialize(input, **options, &block)
     @options = options.dup
     @input = input.respond_to?(:read) ? input.read : input.to_s
@@ -272,7 +273,7 @@ class EBNFParser
                                 first: FIRST,
                                 follow: FOLLOW,
                                 cleanup: CLEANUP,
-                                whitespace: EBNFParserTerminals::PASS,
+                                whitespace: EBNFLL1ParserTerminals::PASS,
                                 reset_on_start: true,
                                 **options
     ) do |context, *data|

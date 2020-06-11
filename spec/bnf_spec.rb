@@ -4,7 +4,7 @@ require 'spec_helper'
 require 'ebnf'
 require 'sxp'
 
-describe EBNF::Base do
+describe EBNF::BNF do
   describe "#make_bnf" do
     {
       %{[2]     Prolog    ::=           BaseDecl? PrefixDecl*} =>
@@ -31,7 +31,9 @@ describe EBNF::Base do
         [1]  R1 ::= 1 2
         [2]  R2 ::= 1 2
       } =>
-      %{ ((rule _empty "0" (seq)))}  
+      %{((rule _empty "0" (seq))
+         (terminal R1 "1" (seq 1 2))
+         (terminal R2 "2" (seq 1 2)))}  
     }.each do |input, expected|
       it "parses #{input.inspect}" do
         expect(parse(input).make_bnf.ast.to_sxp).to produce(expected, @debug)

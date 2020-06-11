@@ -10,7 +10,7 @@ require 'sxp'
 class EBNFParser
   include EBNF::LL1::Parser
   include EBNFParserMeta
-  include EBNFParserTerminals
+  include EBNFLL1ParserTerminals
 
   # Abstract syntax tree from parse
   #
@@ -325,7 +325,7 @@ class EBNFParser
     parse(@input, START.to_sym, branch: BRANCH,
                                 first: FIRST,
                                 follow: FOLLOW,
-                                whitespace: EBNFParserTerminals::PASS,
+                                whitespace: EBNFLL1ParserTerminals::PASS,
                                 reset_on_true: true,
                                 **options
     ) do |context, *data|
