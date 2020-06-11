@@ -14,6 +14,10 @@ describe EBNF::LL1::Parser do
     ParserTest.terminal(:escape, /escape/) {"foo"}
     ParserTest.terminal(:unescape, /unescape/, unescape: true) {"foo"}
   }
+  let(:logger) {RDF::Spec.logger}
+  after(:each) do |example|
+    puts logger.to_s if example.exception && !example.exception.is_a?(RSpec::Expectations::ExpectationNotMetError)
+  end
 
   describe "ClassMethods" do
     describe "production" do
@@ -59,12 +63,13 @@ describe EBNF::LL1::Parser do
   require_relative "data/parser"
 
   describe EBNFParser do
+    before {logger.level = Logger::INFO}
     let(:input) {File.expand_path("../../../etc/ebnf.ebnf", __FILE__)}
     let(:sxp) {File.read File.expand_path("../../../etc/ebnf.sxp", __FILE__)}
-    let(:parser) {EBNFParser.new(File.open(input))}
+    let(:parser) {EBNFParser.new(File.open(input), debug: true, logger: logger)}
 
     it "parses EBNF Grammar" do
-      expect(parser.to_sxp).to produce(sxp, [])
+      expect(parser.to_sxp).to produce(sxp, logger)
     end
   end
 end

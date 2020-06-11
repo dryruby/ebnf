@@ -343,7 +343,11 @@ class EBNFParser
         level, lineno, depth, *args = data
         message = "#{args.join(': ')}"
         d_str = depth > 100 ? ' ' * 100 + '+' : ' ' * depth
-        $stderr.puts "[#{lineno}](#{level})#{d_str}#{message}" if @options[:progress] || @options[:debug] == true
+        if @options[:logger]
+          @options[:logger].add(level, "[#{lineno}]#{d_str}#{message}")
+        elsif @options[:progress] || @options[:debug]
+          $stderr.puts "[#{lineno}](#{level})#{d_str}#{message}"
+        end
         next
       end
       @ast << rule
