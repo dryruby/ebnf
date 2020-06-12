@@ -7,14 +7,18 @@ require 'rdf/spec/matchers'
 require 'rspec'
 require 'rspec/its'
 require 'matchers'
-require 'simplecov'
-require 'coveralls'
-SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new([
-  SimpleCov::Formatter::HTMLFormatter,
-  Coveralls::SimpleCov::Formatter
-])
-SimpleCov.start do
-  add_filter "/spec/"
+begin
+  require 'simplecov'
+  require 'coveralls'
+  SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new([
+    SimpleCov::Formatter::HTMLFormatter,
+    Coveralls::SimpleCov::Formatter
+  ])
+  SimpleCov.start do
+    add_filter "/spec/"
+  end
+rescue LoadError => e
+  STDERR.puts "Coverage Skipped: #{e.message}"
 end
 
 ::RSpec.configure do |c|
