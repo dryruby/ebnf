@@ -339,18 +339,8 @@ class EBNFParser
         rule = data.first
         rule.kind = :terminal if parsing_terminals
         rule
-      when :trace
-        level, lineno, depth, *args = data
-        message = "#{args.join(': ')}"
-        d_str = depth > 100 ? ' ' * 100 + '+' : ' ' * depth
-        if @options[:logger]
-          @options[:logger].add(level, "[#{lineno}]#{d_str}#{message}")
-        elsif @options[:progress] || @options[:debug]
-          $stderr.puts "[#{lineno}](#{level})#{d_str}#{message}"
-        end
-        next
       end
-      @ast << rule
+      @ast << rule if rule
     end
     @ast
   end

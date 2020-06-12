@@ -278,14 +278,8 @@ class EBNFPegParser
         rule = data.first
         rule.kind = :terminal if parsing_terminals
         rule
-      when :trace
-        level, lineno, depth, *args = data
-        message = "#{args.join(': ')}"
-        d_str = depth > 100 ? ' ' * 100 + '+' : ' ' * depth
-        @options[:logger].add(level, "[#{lineno}](#{level})#{d_str}#{message}")
-        next
       end
-      @ast << rule
+      @ast << rule if rule
     end
     @ast
   end

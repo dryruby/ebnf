@@ -596,17 +596,17 @@ module EBNF::LL1
     # @yieldparam [Array<String>] args
     # @yieldreturn [String] added to message
     def debug(*args)
-      return unless @parse_callback || @options[:logger]
+      return unless @options[:logger] || @parse_callback
       options = args.last.is_a?(Hash) ? args.pop : {}
       lineno = @lineno || (options[:token].lineno if options[:token].respond_to?(:lineno))
       level = options.fetch(:level, 0)
 
       depth = options[:depth] || self.depth
       args << yield if block_given?
-      if @parse_callback
-        @parse_callback.call(:trace, level, @lineno, depth, *args)
-      else
+      if @options[:logger]
         @options[:logger].add(level, "[#{@lineno}]" + (" " * depth) + args.join(" "))
+      else
+        @parse_callback.call(:trace, level, @lineno, depth, *args)
       end
     end
 
