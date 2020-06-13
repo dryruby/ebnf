@@ -153,29 +153,24 @@
       (first "(" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 SYMBOL)
       (follow "@pass" "@terminals" LHS _eof)
       (seq expression))
-     (terminal LHS "11" (seq (opt (seq "[" (plus SYMBOL) "]")) SYMBOL "::="))
+     (terminal LHS "11" (seq (opt (seq "[" (plus SYMBOL) "]" (plus " "))) SYMBOL (star " ") "::="))
      (terminal SYMBOL "12" (plus (alt (range "a-z") (range "A-Z") (range "0-9") "_" ".")))
-     (terminal HEX "13" (seq "#x" (plus (alt (range "0-9") (range "a-f") (range "A-F")))))
-     (terminal ENUM "14"
-      (diff
-       (seq "["
-        (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR)) "-"
-        (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR)) "]" ) LHS ))
-     (terminal O_ENUM "15"
-      (seq "[^"
-       (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR)) "-"
-       (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR)) "]" ))
-     (terminal RANGE "16"
-      (seq "[" (plus (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR))) "]"))
-     (terminal O_RANGE "17"
-      (seq "[^" (plus (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR))) "]"))
+     (terminal HEX "13" (seq "#x" (plus (alt (range "a-f") (range "A-F") (range "0-9")))))
+     (terminal ENUM "14" (diff (alt (seq "[" (plus R_CHAR)) (seq (plus HEX) "]")) LHS))
+     (terminal O_ENUM "15" (alt (seq "[^" (plus R_CHAR)) (seq (plus HEX) "]")))
+     (terminal RANGE "16" (alt (seq "[" (seq R_CHAR "-" R_CHAR)) (seq (diff HEX HEX) "]")))
+     (terminal O_RANGE "17" (alt (seq "[^" (seq R_CHAR "-" R_CHAR)) (seq (diff HEX HEX) "]")))
      (terminal STRING1 "18" (seq "\"" (star (diff CHAR "\"")) "\""))
      (terminal STRING2 "19" (seq "'" (star (diff CHAR "'")) "'"))
-     (terminal CHAR "20" (alt HEX (range "#x20#x21#x22") (range "#x24-#x00FFFFFF")))
+     (terminal CHAR "20"
+      (alt
+       (range "#x9#xA#xD")
+       (range "#x20-#xD7FF")
+       (range "#xE000-#xFFFD")
+       (range "#x10000-#x10FFFF")) )
      (terminal R_CHAR "21" (diff CHAR "]"))
-     (terminal R_BEGIN "22" (seq (alt HEX R_CHAR) "-"))
-     (terminal POSTFIX "23" (range "?*+"))
-     (terminal PASS "24"
+     (terminal POSTFIX "22" (range "?*+"))
+     (terminal PASS "23"
       (plus
        (alt
         (range "#x00-#x20")

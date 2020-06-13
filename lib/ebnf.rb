@@ -5,6 +5,7 @@ module EBNF
   autoload :Parser,   "ebnf/parser"
   autoload :PEG,      "ebnf/peg"
   autoload :Rule,     "ebnf/rule"
+  autoload :Terminals,"ebnf/terminals"
   autoload :Writer,   "ebnf/writer"
   autoload :VERSION,  "ebnf/version"
 

@@ -93,7 +93,7 @@ HEX
 <td><code>LHS</code></td>
 <td>::=</td>
 <td>
-("[" SYMBOL+ "]")? SYMBOL "::="
+("[" SYMBOL+ "]" #x20+)? SYMBOL #x20* "::="
 </td>
 </tr>
 <tr id='grammar-production-SYMBOL'>
@@ -109,7 +109,7 @@ HEX
 <td><code>HEX</code></td>
 <td>::=</td>
 <td>
-"#x" ([0-9] | [a-f] | [A-F])+
+"#x" ([a-f] | [A-F] | [0-9])+
 </td>
 </tr>
 <tr id='grammar-production-ENUM'>
@@ -117,8 +117,7 @@ HEX
 <td><code>ENUM</code></td>
 <td>::=</td>
 <td>
-"[" (R_BEGIN (HEX | R_CHAR) | HEX | R_CHAR) "-" (R_BEGIN (HEX | R_CHAR) | HEX | R_CHAR) "]"
-- LHS
+"[" R_CHAR+ | HEX+ "]" - LHS
 </td>
 </tr>
 <tr id='grammar-production-O_ENUM'>
@@ -126,11 +125,7 @@ HEX
 <td><code>O_ENUM</code></td>
 <td>::=</td>
 <td>
-"[^"
-(R_BEGIN (HEX | R_CHAR) | HEX | R_CHAR)
-"-"
-(R_BEGIN (HEX | R_CHAR) | HEX | R_CHAR)
-"]"
+"[^" R_CHAR+ | HEX+ "]"
 </td>
 </tr>
 <tr id='grammar-production-RANGE'>
@@ -138,7 +133,7 @@ HEX
 <td><code>RANGE</code></td>
 <td>::=</td>
 <td>
-"[" (R_BEGIN (HEX | R_CHAR) | HEX | R_CHAR)+ "]"
+"[" (R_CHAR "-" R_CHAR) | (HEX - HEX) "]"
 </td>
 </tr>
 <tr id='grammar-production-O_RANGE'>
@@ -146,7 +141,7 @@ HEX
 <td><code>O_RANGE</code></td>
 <td>::=</td>
 <td>
-"[^" (R_BEGIN (HEX | R_CHAR) | HEX | R_CHAR)+ "]"
+"[^" (R_CHAR "-" R_CHAR) | (HEX - HEX) "]"
 </td>
 </tr>
 <tr id='grammar-production-STRING1'>
@@ -170,7 +165,10 @@ HEX
 <td><code>CHAR</code></td>
 <td>::=</td>
 <td>
-HEX | [#x20#x21#x22] | [#x24-#x00FFFFFF]
+[#x9#xA#xD]
+| [#x20-#xD7FF]
+| [#xE000-#xFFFD]
+| [#x10000-#x10FFFF]
 </td>
 </tr>
 <tr id='grammar-production-R_CHAR'>
@@ -181,16 +179,8 @@ HEX | [#x20#x21#x22] | [#x24-#x00FFFFFF]
 CHAR - "]"
 </td>
 </tr>
-<tr id='grammar-production-R_BEGIN'>
-<td>[22]</td>
-<td><code>R_BEGIN</code></td>
-<td>::=</td>
-<td>
-(HEX | R_CHAR) "-"
-</td>
-</tr>
 <tr id='grammar-production-POSTFIX'>
-<td>[23]</td>
+<td>[22]</td>
 <td><code>POSTFIX</code></td>
 <td>::=</td>
 <td>
@@ -198,7 +188,7 @@ CHAR - "]"
 </td>
 </tr>
 <tr id='grammar-production-PASS'>
-<td>[24]</td>
+<td>[23]</td>
 <td><code>PASS</code></td>
 <td>::=</td>
 <td>

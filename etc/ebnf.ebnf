@@ -32,39 +32,33 @@
 
     @terminals
 
-    [11] LHS        ::= ('[' SYMBOL+ ']')? SYMBOL "::="
+    [11] LHS        ::= ('[' SYMBOL+ ']' ' '+)? SYMBOL ' '* '::='
 
-    [12] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | "_" | ".")+
+    [12] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | '_' | '.')+
 
-    [13] HEX        ::= '#x' ([0-9]|[a-f]|[A-F])+
+    [13] HEX        ::= '#x' ([a-f] | [A-F] | [0-9])+
 
-    [14] ENUM       ::= ('[' ((R_BEGIN (HEX | R_CHAR)) | (HEX | R_CHAR)) '-' ((R_BEGIN (HEX | R_CHAR)) | (HEX | R_CHAR)) ']') - LHS
+    [14] ENUM       ::= ('[' R_CHAR+ | HEX+ ']') - LHS
 
-    [15] O_ENUM     ::= '[^' ((R_BEGIN (HEX | R_CHAR)) | (HEX | R_CHAR)) '-' ((R_BEGIN (HEX | R_CHAR)) | (HEX | R_CHAR)) ']'
+    [15] O_ENUM     ::= '[^' R_CHAR+ | HEX+ ']'
 
-    # Range is any combination of R_CHAR '-' R_CHAR or R_CHAR+
-    [16] RANGE      ::= '[' ((R_BEGIN (HEX | R_CHAR)) | (HEX | R_CHAR))+ ']'
+    [16] RANGE      ::= '[' (R_CHAR '-' R_CHAR) | (HEX - HEX) ']'
 
-    # Range is any combination of R_CHAR '-' R_CHAR or R_CHAR+ preceded by ^
-    [17] O_RANGE    ::= '[^' ((R_BEGIN (HEX | R_CHAR)) | (HEX | R_CHAR))+ ']'
+    [17] O_RANGE    ::= '[^' (R_CHAR '-' R_CHAR) | (HEX - HEX) ']'
 
     # Strings are unescaped Unicode, excepting control characters and hash (#)
     [18] STRING1    ::= '"' (CHAR - '"')* '"'
 
     [19] STRING2    ::= "'" (CHAR - "'")* "'"
 
-    [20] CHAR       ::= HEX
-                      | [#x20#x21#x22]
-                      | [#x24-#x00FFFFFF]
+    [20] CHAR       ::= [#x9#xA#xD] | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
 
     [21] R_CHAR     ::= CHAR - ']'
 
-    [22] R_BEGIN    ::= (HEX | R_CHAR) "-"
-
     # Should be able to do this inline, but not until terminal regular expressions are created automatically
-    [23] POSTFIX    ::= [?*+]
+    [22] POSTFIX    ::= [?*+]
 
-    [24] PASS       ::= ( [#x00-#x20]
+    [23] PASS       ::= ( [#x00-#x20]
                         | ( ('#' - '#x') | '//' ) [^#x0A#x0Dx]*
                         | '/*' (( '*' [^/] )? | [^*] )* '*/'
                         | '(*' (( '*' [^)] )? | [^*] )* '*)'
