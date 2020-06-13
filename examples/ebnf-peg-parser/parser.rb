@@ -38,72 +38,72 @@ class EBNFPegParser
   #
   # Terminals are defined with a symbol matching the associated rule name, and an optional (although strongly encouraged) regular expression used to match the head of the input stream.
   #
-  # The result of the terminal is the semantic value of that terminal, which if often a string, but may be any instance which reflects the semantic interpretation of that terminal.
+  # The result of the terminal block is the semantic value of that terminal, which if often a string, but may be any instance which reflects the semantic interpretation of that terminal.
   #
   # The `value` parameter is the value matched by the regexp, if defined, or by the sub-terminal rules otherwise.
   #
   # The `prod` parameter is the name of the parent rule for which this terminal is matched, which may have a bearing in some circumstances, although not used in this example.
+  #
+  # If no block is provided, then the value which would have been passed to the block is used as the result directly.
 
   # Match the Left hand side of a rule or terminal
   #
   #     [11] LHS        ::= ('[' SYMBOL+ ']' ' '+)? SYMBOL ' '* '::='
-  terminal(:LHS, LHS) do |prod, value|
+  terminal(:LHS, LHS) do |value, prod|
     value.to_s.scan(/\[([^\]]+)\]\s*(\w+)\s*::=/).first
   end
 
   # Match `SYMBOL` terminal
   #
   #     [12] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | '_' | '.')+
-  terminal(:SYMBOL, SYMBOL) do |prod, value|
+  terminal(:SYMBOL, SYMBOL) do |value|
     value.to_sym
   end
 
   # Match `HEX` terminal
   #
   #     [13] HEX        ::= #x' ([a-f] | [A-F] | [0-9])+
-  terminal(:HEX, HEX) do |prod, value|
-    value
-  end
+  terminal(:HEX, HEX)
 
   # Terminal for `ENUM` is matched as part of a `primary` rule.
   #
   #     [14] ENUM       ::= ('[' R_CHAR+ | HEX+ ']') - LHS
-  terminal(:ENUM, ENUM) do |prod, value|
+  terminal(:ENUM, ENUM) do |value|
     [:range, value[1..-2]]
   end
 
   # Terminal for `O_ENUM` is matched as part of a `primary` rule.
   #
   #     [15] O_ENUM     ::= '[^' R_CHAR+ | HEX+ ']'
-  terminal(:O_ENUM, O_ENUM) do |prod, value|
+  terminal(:O_ENUM, O_ENUM) do |value|
     [:range, value[1..-2]]
   end
 
   # Terminal for `RANGE` is matched as part of a `primary` rule.
   #
   #     [16] `RANGE`      ::= '[' (R_CHAR '-' R_CHAR) | (HEX - HEX) ']'
-  terminal(:RANGE, RANGE) do |prod, value|
+  terminal(:RANGE, RANGE) do |value|
     [:range, value[1..-2]]
   end
 
   # Terminal for `O_RANGE` is matched as part of a `primary` rule.
   #
   #     [17] O_RANGE    ::= '[^' (R_CHAR '-' R_CHAR) | (HEX - HEX) ']'
-  terminal(:O_RANGE, O_RANGE) do |prod, value|
+  terminal(:O_RANGE, O_RANGE) do |value|
     [:range, value[1..-2]]
   end
 
   # Match double quote string
   #
   #     [18] STRING1    ::= '"' (CHAR - '"')* '"'
-  terminal(:STRING1, STRING1) do |prod, value|
+  terminal(:STRING1, STRING1) do |value|
     value[1..-2]
   end
 
   # Match single quote string
   #
   #     [19] STRING2    ::= "'" (CHAR - "'")* "'"
-  terminal(:STRING2, STRING2) do |prod, value|
+  terminal(:STRING2, STRING2) do |value|
     value[1..-2]
   end
 
@@ -112,9 +112,7 @@ class EBNFPegParser
   # Match `POSTFIX` terminal
   #
   #     [22] POSTFIX    ::= [?*+]
-  terminal(:POSTFIX, POSTFIX) do |prod, value|
-    value
-  end
+  terminal(:POSTFIX, POSTFIX)
 
   # The `PASS` productions is not used explicitly
 
@@ -138,7 +136,7 @@ class EBNFPegParser
   # `@pass` is ignored here.
   #
   #     [2] declaration ::= '@terminals' | pass
-  production(:declaration) do |data, value, callback|
+  production(:declaration) do |value, data, callback|
     # value contains a declaration.
     # Invoke callback
     callback.call(:terminal) if value == '@terminals'
@@ -151,7 +149,7 @@ class EBNFPegParser
   # Create rule from expression value and pass to callback
   #
   #     [3] rule        ::= LHS expression
-  production(:rule) do |data, value, callback|
+  production(:rule) do |value, data, callback|
     # value contains an expression.
     # Invoke callback
     id, sym = value.first[:LHS]
@@ -168,7 +166,7 @@ class EBNFPegParser
   #     [:alt foo bar] => [:alt foo bar]
   #
   #     [4] expression  ::= alt
-  production(:expression) do |data, value|
+  production(:expression) do |value|
     value.first[:alt]
   end
 
@@ -183,7 +181,7 @@ class EBNFPegParser
   # Note that this also may just pass through from `_alt_1`
   #
   #     [5] alt         ::= seq ('|' seq)*
-  production(:alt) do |data, value|
+  production(:alt) do |value|
     if value.last[:_alt_1].length > 0
       [:alt, value.first[:seq]] + value.last[:_alt_1]
     else
@@ -197,7 +195,7 @@ class EBNFPegParser
   # The `value` parameter, is of the form `[{seq: ["v"]}]`.
   #
   #     [5] _alt_1         ::= ('|' seq)*
-  production(:_alt_1) do |data, value|
+  production(:_alt_1) do |value|
     value.map {|a1| a1.last[:seq]}.compact # Get rid of '|'
   end
 
@@ -212,7 +210,7 @@ class EBNFPegParser
   # Note that this also may just pass through from `_seq_1`
   #
   #     [6] seq         ::= diff+
-  production(:seq) do |data, value|
+  production(:seq) do |value|
     value.length == 1 ? value.first : ([:seq] + value)
   end
 
@@ -221,7 +219,7 @@ class EBNFPegParser
   # The `value` parameter, is of the form `[{postfix: "v"}, {_diff_1: "v"}]`.
   #
   #     [7] diff        ::= postfix ('-' postfix)?
-  production(:diff) do |data, value|
+  production(:diff) do |value|
     if value.last[:_diff_1]
       [:diff, value.first[:postfix], value.last[:_diff_1]]
     else
@@ -229,7 +227,7 @@ class EBNFPegParser
     end
   end
 
-  production(:_diff_1) do |data, value|
+  production(:_diff_1) do |value|
     value.last[:postfix] if value
   end
 
@@ -244,7 +242,7 @@ class EBNFPegParser
   #     [:primary, '?'] => [:opt, :primary]
   #
   #     [8] postfix     ::= primary POSTFIX?
-  production(:postfix) do |data, value|
+  production(:postfix) do |value|
     # Push result onto input stack, as the `diff` production can have some number of `postfix` values that are applied recursively
     case value.last[:_postfix_1]
     when "*" then [:star, value.first[:primary]]
@@ -270,14 +268,14 @@ class EBNFPegParser
   #                     |   STRING1
   #                     |   STRING2
   #                     |   '(' expression ')'
-  production(:primary) do |data, value|
+  production(:primary) do |value|
     Array(value).length > 2 ? value[1][:expression] : value
   end
 
   # Production for end of pass non-terminal.
   #
   #     [10] pass       ::= '@pass' expression
-  production(:pass) do |data, value, callback|
+  production(:pass) do |value, data, callback|
     # Invoke callback
     callback.call(:pass, value.last[:expression])
   end

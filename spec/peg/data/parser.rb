@@ -15,54 +15,50 @@ class EBNFPegParser
   # @return [Array<EBNF::Rule>]
   attr_reader :ast
 
-  terminal(:LHS, LHS) do |prod, value|
+  terminal(:LHS, LHS) do |value|
     # [id symbol]
     value.to_s.scan(/\[([^\]]+)\]\s*(\w+)\s*::=/).first
   end
 
-  terminal(:SYMBOL, SYMBOL) do |prod, value|
+  terminal(:SYMBOL, SYMBOL) do |value|
     value.to_sym
   end
 
-  terminal(:HEX, HEX) do |prod, value|
-    value
-  end
+  terminal(:HEX, HEX)
 
-  terminal(:ENUM, ENUM, unescape: true) do |prod, value|
+  terminal(:ENUM, ENUM, unescape: true) do |value|
     [:range, value[1..-2]]
   end
 
-  terminal(:O_ENUM, O_ENUM, unescape: true) do |prod, value|
+  terminal(:O_ENUM, O_ENUM, unescape: true) do |value|
     [:range, value[1..-2]]
   end
 
-  terminal(:RANGE, RANGE, unescape: true) do |prod, value|
+  terminal(:RANGE, RANGE, unescape: true) do |value|
     [:range, value[1..-2]]
   end
 
-  terminal(:O_RANGE, O_RANGE, unescape: true) do |prod, value|
+  terminal(:O_RANGE, O_RANGE, unescape: true) do |value|
     [:range, value[1..-2]]
   end
 
-  terminal(:STRING1, STRING1, unescape: true) do |prod, value|
+  terminal(:STRING1, STRING1, unescape: true) do |value|
     value[1..-2]
   end
 
-  terminal(:STRING2, STRING2, unescape: true) do |prod, value|
+  terminal(:STRING2, STRING2, unescape: true) do |value|
     value[1..-2]
   end
 
-  terminal(:POSTFIX, POSTFIX) do |prod, value|
-    value
-  end
+  terminal(:POSTFIX, POSTFIX)
 
-  production(:declaration) do |data, value, callback|
+  production(:declaration) do |value, data, callback|
     # current contains a declaration.
     # Invoke callback
     callback.call(:terminal) if value == '@terminals'
   end
 
-  production(:rule) do |data, value, callback|
+  production(:rule) do |value, data, callback|
     # current contains an expression.
     # Invoke callback
     id, sym = value.first[:LHS]
@@ -70,11 +66,11 @@ class EBNFPegParser
     callback.call(:rule, EBNF::Rule.new(sym.to_sym, id, expression))
   end
 
-  production(:expression) do |data, value, callback|
+  production(:expression) do |value|
     value.first[:alt]
   end
 
-  production(:alt) do |data, value, callback|
+  production(:alt) do |value|
     if value.last[:_alt_1].length > 0
       [:alt, value.first[:seq]] + value.last[:_alt_1]
     else
@@ -82,15 +78,15 @@ class EBNFPegParser
     end
   end
 
-  production(:_alt_1) do |data, value, callback|
+  production(:_alt_1) do |value|
     value.map {|a1| a1.last[:seq]}.compact # Get rid of '|'
   end
 
-  production(:seq) do |data, value|
+  production(:seq) do |value|
     value.length == 1 ? value.first : ([:seq] + value)
   end
 
-  production(:diff) do |data, value, callback|
+  production(:diff) do |value|
     if value.last[:_diff_1]
       [:diff, value.first[:postfix], value.last[:_diff_1]]
     else
@@ -98,11 +94,11 @@ class EBNFPegParser
     end
   end
 
-  production(:_diff_1) do |data, value, callback|
+  production(:_diff_1) do |value|
     value.last[:postfix] if value
   end
 
-  production(:postfix) do |data, value, callback|
+  production(:postfix) do |value|
     # Push result onto input stack, as the `diff` production can have some number of `postfix` values that are applied recursively
     case value.last[:_postfix_1]
     when "*" then [:star, value.first[:primary]]
@@ -112,11 +108,11 @@ class EBNFPegParser
     end
   end
 
-  production(:primary) do |data, value, callback|
+  production(:primary) do |value|
     Array(value).length > 2 ? value[1][:expression] : value
   end
 
-  production(:pass) do |data, value, callback|
+  production(:pass) do |value, data, callback|
     # Invoke callback
     callback.call(:pass, value.last[:expression])
   end

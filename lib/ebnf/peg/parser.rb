@@ -24,6 +24,8 @@ module EBNF::PEG
       # to a previous production. Block is called in an evaluation block from
       # the enclosing parser.
       #
+      # If no block is provided, then the value which would have been passed to the block is used as the result directly.
+      #
       # @param [Symbol] term
       #   The terminal name.
       # @param [Regexp] regexp (nil)
@@ -36,17 +38,17 @@ module EBNF::PEG
       #   their canonical value
       # @option options [Boolean] :unescape
       #   Cause strings and codepoints to be unescaped.
-      # @yield [term, value]
-      # @yieldparam [Symbol] term
-      #   A symbol indicating the production which referenced this terminal
+      # @yield [value, prod]
       # @yieldparam [String] value
       #   The scanned terminal value.
+      # @yieldparam [Symbol] prod
+      #   A symbol indicating the production which referenced this terminal
       # @yieldparam [Proc] block
       #   Block passed to initialization for yielding to calling parser.
       #   Should conform to the yield specs for #initialize
       def terminal(term, regexp = nil, **options, &block)
         terminal_regexps[term] = regexp if regexp
-        terminal_handlers[term] = block
+        terminal_handlers[term] = block if block_given?
       end
 
       ##
@@ -79,13 +81,13 @@ module EBNF::PEG
       #
       # @param [Symbol] term
       #   Term which is a key in the branch table
-      # @yield [data, result, block]
+      # @yield [result, data, block]
+      # @yieldparam [Object] result
+      #   The result from sucessfully parsing the production.
       # @yieldparam [Hash] data
       #   A Hash defined for the current production, during :start
       #   may be initialized with data to pass to further productions,
       #   during :finish, it contains data placed by earlier productions
-      # @yieldparam [Object] result
-      #   The result from sucessfully parsing the production.
       # @yieldparam [Proc] block
       #   Block passed to initialization for yielding to calling parser.
       #   Should conform to the yield specs for #initialize
@@ -336,7 +338,7 @@ module EBNF::PEG
         data = @prod_data.pop
         result = begin
           self.class.eval_with_binding(self) {
-            handler.call(data, result, @parse_callback)
+            handler.call(result, data, @parse_callback)
           }
         rescue ArgumentError, Error => e
           error("finish", "#{e.class}: #{e.message}", production: prod)
@@ -351,23 +353,23 @@ module EBNF::PEG
     # A terminal with a defined handler
     #
     # @param [Symbol] prod from the symbol of the associated rule
-    # @param [String] token the scanned string
+    # @param [String] value the scanned string
     # @return [String, Object] either the result from the handler, or the token
-    def onTerminal(prod, token, scanner: nil)
+    def onTerminal(prod, value, scanner: nil)
       parentProd = @productions.last
       handler = self.class.terminal_handlers[prod]
-      if handler && token != :unmatched
-        token = begin
+      if handler && value != :unmatched
+        value = begin
           self.class.eval_with_binding(self) {
-            handler.call(parentProd, token, @parse_callback)
+            handler.call(value, parentProd, @parse_callback)
           }
         rescue ArgumentError, Error => e
-          error("terminal", "#{e.class}: #{e.message}", token: token, production: prod)
+          error("terminal", "#{e.class}: #{e.message}", value: value, production: prod)
           @recovering = false
         end
       end
-      progress("#{prod}(:terminal)", "", depth: (depth + 2)) {"#{prod}: #{token.inspect}, lineno: #{scanner ? scanner.lineno : '?'}, pos: #{scanner ? scanner.pos : '?'}"}
-      token
+      progress("#{prod}(:terminal)", "", depth: (depth + 2)) {"#{prod}: #{value.inspect}, lineno: #{scanner ? scanner.lineno : '?'}, pos: #{scanner ? scanner.pos : '?'}"}
+      value
     end
 
     ##
