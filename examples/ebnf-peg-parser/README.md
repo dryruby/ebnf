@@ -84,7 +84,7 @@ This example uses the EBNF grammar from {file:/etc/ebnf.ebnf} to generate {file:
 
 The first step is defining regular expressions for terminals used within the grammar. The table generation process in {EBNF::LL1#build_tables} is not yet capable of automatically generating regular expressions for terminal productions, so they must be defined by hand. For the EBNF grammar, this is done in {file:terminals}.
 
-The {file:parser} is implemented using the {EBNFParser} class, which includes {EBNF::LL1::Parser}, {EBNFParserMeta} and {EBNFParserTerminals}.
+The {file:parser} is implemented using the {EBNFParser} class, which includes {EBNF::LL1::Parser} and {EBNFParserMeta}.
 
 ### Parser basics
 The parser operates using the `BRANCH`, `FIRST`, `FOLLOW`, `START`, and `PASS` definitions from {file:meta}. Basically, the starting production has identified a possible set of starting tokens and it branches to different non-terminal productions when it finds a matching token. Tokens are derived from terminal rules defined in the grammar or contained inline through non-terminal rule definitions. Tokens are either strings, which must be matched exactly, or symbols, which identify a regular expression used to match the terminal and yield a token. The association between terminal symbols and their regular expressions along with processing rules to invoke when they are identified are described in [Terminal definitions](#Terminal_definitions).
@@ -100,7 +100,7 @@ The {file:parser} uses a DSL to specify `terminals` and `productions` associated
       input[:terminal] = token.value.to_sym
     end
 
-In this terminal definition, the SYMBOL terminal is recognized using the `SYMBOL` regular expression from {EBNFParserTerminals::SYMBOL}. When found, the value of the symbol is added to the `input` stack for use by non-terminal productions which include it.
+In this terminal definition, the SYMBOL terminal is recognized using the `SYMBOL` regular expression from {EBNF::Terminals::SYMBOL}. When found, the value of the symbol is added to the `input` stack for use by non-terminal productions which include it.
 
 ### Production definitions
 During parsing, when a non-terminal production is identified, it attempts to invoke an associated `start_production` block. Typically there is nothing to do at the start of a production, so these are often left out. However, at times, it is necessary to prepare the production stack with information. For example, consider the _start production_ for `_alt_1` (a sub-production of `alt`).

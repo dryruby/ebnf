@@ -54,7 +54,6 @@ describe EBNF::LL1::Lexer do
       end
     end
 
-    
     context "escaped strings" do
       {
         'Dürst' => 'D\\u00FCrst',

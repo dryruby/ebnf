@@ -507,7 +507,8 @@ module EBNF::LL1
   protected
 
     ##
-    # Error information, used as level `3` debug messages.
+    # Error information, used as level `3` logger messages.
+    # Messages may be logged and are saved for reporting at end of parsing.
     #
     # @param [String] node Relevant location associated with message
     # @param [String] message Error string
@@ -531,7 +532,8 @@ module EBNF::LL1
     end
 
     ##
-    # Warning information, used as level `2` debug messages.
+    # Warning information, used as level `2` logger messages.
+    # Messages may be logged and are saved for reporting at end of parsing.
     #
     # @param [String] node Relevant location associated with message
     # @param [String] message Error string
@@ -551,9 +553,11 @@ module EBNF::LL1
     end
 
     ##
-    # Progress output when parsing. Passed as level `1` debug messages.
+    # Progress logged when parsing. Passed as level `1` logger messages.
     #
-    # @overload progress(node, message, **options)
+    # The call is ignored, unless `@options[:logger]` is set.
+    #
+    # @overload progress(node, message, **options, &block)
     #   @param [String] node Relevant location associated with message
     #   @param [String] message ("")
     #   @param [Hash] options
@@ -561,8 +565,8 @@ module EBNF::LL1
     #       Recursion depth for indenting output
     # @see #debug
     def progress(node, *args, &block)
+      return unless @options[:logger]
       lineno = @lineno || (options[:token].lineno if options[:token].respond_to?(:lineno))
-      return unless @options[:progress] || @options[:debug]
       args << {} unless args.last.is_a?(Hash)
       args.last[:level] ||= 1
       args.last[:lineno] ||= lineno
@@ -570,44 +574,25 @@ module EBNF::LL1
     end
 
     ##
-    # Progress output when debugging.
+    # Debug logging.
     #
-    # The call is ignored, unless `@options[:debug]` is set, in which
-    # case it yields tracing information as indicated. Additionally,
-    # if `@options[:debug]` is an Integer, the call is aborted if the
-    # `:level` option is less than than `:level`.
+    # The call is ignored, unless `@options[:logger]` is set.
     #
     # @overload debug(node, message, **options)
     #   @param [Array<String>] args Relevant location associated with message
     #   @param [Hash] options
     #   @option options [Integer] :depth
     #     Recursion depth for indenting output
-    #   @option options [Integer] :level
-    #     Level assigned to message, by convention, level `0` is for
-    #     errors, level `1` is for warnings, level `2` is for parser
-    #     progress information, and anything higher is for various levels
-    #     of debug information.
-    #
-    # @yield trace, level, lineno, depth, args
-    # @yieldparam [:trace] trace
-    # @yieldparam [Integer] level
-    # @yieldparam [Integer] lineno
-    # @yieldparam [Integer] depth Recursive depth of productions
-    # @yieldparam [Array<String>] args
-    # @yieldreturn [String] added to message
+    #   @yieldreturn [String] additional string appended to `message`.
     def debug(*args)
-      return unless @options[:logger] || @parse_callback
+      return unless @options[:logger]
       options = args.last.is_a?(Hash) ? args.pop : {}
       lineno = @lineno || (options[:token].lineno if options[:token].respond_to?(:lineno))
       level = options.fetch(:level, 0)
 
       depth = options[:depth] || self.depth
       args << yield if block_given?
-      if @options[:logger]
-        @options[:logger].add(level, "[#{@lineno}]" + (" " * depth) + args.join(" "))
-      else
-        @parse_callback.call(:trace, level, @lineno, depth, *args)
-      end
+      @options[:logger].add(level, "[#{@lineno}]" + (" " * depth) + args.join(" "))
     end
 
   private
@@ -618,7 +603,7 @@ module EBNF::LL1
       if handler
         # Create a new production data element, potentially allowing handler
         # to customize before pushing on the @prod_data stack
-        progress("#{prod}(:start):#{@prod_data.length}") {@prod_data.last}
+        debug("#{prod}(:start):#{@prod_data.length}") {@prod_data.last}
         data = {}
         begin
           self.class.eval_with_binding(self) {
@@ -632,12 +617,12 @@ module EBNF::LL1
       elsif [:merge, :star].include?(@cleanup[prod])
         # Save current data to merge later
         @prod_data << {}
-        progress("#{prod}(:start}:#{@prod_data.length}:cleanup:#{@cleanup[prod]}") { get_token.inspect + (@recovering ? ' recovering' : '')}
+        debug("#{prod}(:start}:#{@prod_data.length}:cleanup:#{@cleanup[prod]}") { get_token.inspect + (@recovering ? ' recovering' : '')}
       else
         # Make sure we push as many was we pop, even if there is no
         # explicit start handler
         @prod_data << {} if self.class.production_handlers[prod]
-        progress("#{prod}(:start:#{@prod_data.length})") { get_token.inspect + (@recovering ? ' recovering' : '')}
+        debug("#{prod}(:start:#{@prod_data.length})") { get_token.inspect + (@recovering ? ' recovering' : '')}
       end
       #puts "prod_data(s): " + @prod_data.inspect
     end
@@ -671,7 +656,7 @@ module EBNF::LL1
           else Array(input[k]) + Array(v)
           end
         end
-        progress("#{prod}(:finish):#{@prod_data.length} cleanup:#{@cleanup[prod]}") {@prod_data.last}
+        debug("#{prod}(:finish):#{@prod_data.length} cleanup:#{@cleanup[prod]}") {@prod_data.last}
       else
         progress("#{prod}(:finish):#{@prod_data.length}") { "recovering" if @recovering }
       end

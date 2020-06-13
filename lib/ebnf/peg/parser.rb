@@ -212,13 +212,14 @@ module EBNF::PEG
     def prod_data; @prod_data.last; end
 
     ##
-    # Error information, used as level `0` debug messages.
+    # Error information, used as level `3` logger messages.
+    # Messages may be logged and are saved for reporting at end of parsing.
     #
     # @param [String] node Relevant location associated with message
     # @param [String] message Error string
     # @param [Hash{Symbol => Object}] options
     # @option options [URI, #to_s] :production
-    # @option options [String] :rest
+    # @option options [Token] :token
     # @see #debug
     def error(node, message, **options)
       lineno = options[:lineno]
@@ -236,13 +237,14 @@ module EBNF::PEG
     end
 
     ##
-    # Warning information, used as level `1` debug messages.
+    # Warning information, used as level `2` logger messages.
+    # Messages may be logged and are saved for reporting at end of parsing.
     #
     # @param [String] node Relevant location associated with message
     # @param [String] message Error string
     # @param [Hash] options
     # @option options [URI, #to_s] :production
-    # @option options [String] :rest
+    # @option options [Token] :token
     # @see #debug
     def warn(node, message, **options)
       lineno = options[:lineno]
@@ -255,9 +257,11 @@ module EBNF::PEG
     end
 
     ##
-    # Progress output when parsing. Passed as level `2` debug messages.
+    # Progress logged when parsing. Passed as level `1` logger messages.
     #
-    # @overload progress(node, message, **options)
+    # The call is ignored, unless `@options[:logger]` is set.
+    #
+    # @overload progress(node, message, **options, &block)
     #   @param [String] node Relevant location associated with message
     #   @param [String] message ("")
     #   @param [Hash] options
@@ -265,51 +269,32 @@ module EBNF::PEG
     #       Recursion depth for indenting output
     # @see #debug
     def progress(node, *args, &block)
-      return unless @options[:progress] || @options[:debug]
+      return unless @options[:logger]
       args << {} unless args.last.is_a?(Hash)
       args.last[:level] ||= 1
       debug(node, *args, &block)
     end
 
     ##
-    # Progress output when debugging.
+    # Debug logging.
     #
-    # The call is ignored, unless `@options[:debug]` is set, in which
-    # case it yields tracing information as indicated. Additionally,
-    # if `@options[:debug]` is an Integer, the call is aborted if the
-    # `:level` option is less than than `:level`.
+    # The call is ignored, unless `@options[:logger]` is set.
     #
     # @overload debug(node, message, **options)
     #   @param [Array<String>] args Relevant location associated with message
     #   @param [Hash] options
     #   @option options [Integer] :depth
     #     Recursion depth for indenting output
-    #   @option options [Integer] :level
-    #     Level assigned to message, by convention, level `0` is for
-    #     errors, level `1` is for warnings, level `2` is for parser
-    #     progress information, and anything higher is for various levels
-    #     of debug information.
-    #
-    # @yield trace, level, lineno, depth, args
-    # @yieldparam [:trace] trace
-    # @yieldparam [Integer] level
-    # @yieldparam [Integer] lineno
-    # @yieldparam [Integer] depth Recursive depth of productions
-    # @yieldparam [Array<String>] args
-    # @yieldreturn [String] added to message
+    #   @yieldreturn [String] additional string appended to `message`.
     def debug(*args)
-      return unless @options[:logger] || @parse_callback
+      return unless @options[:logger]
       options = args.last.is_a?(Hash) ? args.pop : {}
       lineno = options[:lineno]
       level = options.fetch(:level, 0)
 
       depth = options[:depth] || self.depth
       args << yield if block_given?
-      if @options[:logger]
-        @options[:logger].add(level, "[#{lineno}]" + (" " * depth) + args.join(" "))
-      else
-        @parse_callback.call(:trace, level, lineno, depth, *args)
-      end
+      @options[:logger].add(level, "[#{lineno}]" + (" " * depth) + args.join(" "))
     end
 
     # Start for production

@@ -2,16 +2,18 @@
 #
 # Produces an Abstract Synatx Tree in S-Expression form for the input grammar file
 require 'ebnf/rule'
+require 'ebnf/terminals'
 require 'ebnf/ll1/parser'
 require 'meta'
-require 'terminals'
 require 'sxp'
+require 'logger'
 
 class EBNLL1FParser
   include EBNF::LL1::Parser
   include EBNFParserMeta
-  include EBNFLL1ParserTerminals
+  include EBNF::Terminals
 
+  # An internal class used for capturing the values of a production.
   class ProdResult
     attr_accessor :prod
     attr_accessor :values
@@ -34,55 +36,65 @@ class EBNLL1FParser
   # @return [Array<EBNF::Rule>]
   attr_reader :ast
 
-  # Grammar errors, or errors found genering parse tables
-  #
-  # @return [Array<String>]
-  attr_accessor :errors
-
   # ## Terminals
   # Define rules for Terminals, placing results on the input stack, making them available to upstream non-Terminal rules.
+  #
+  # Terminals are defined with a symbol matching the associated rule name, and a regular expression used by the lexer.
+  #
+  # The `prod` parameter is the name of the parent rule for which this terminal is matched, which may have a bearing in some circumstances, although not used in this example.
+  #
+  # The `token` parameter is the matched lexer token.
+  #
+  # The `input` is used for returning the semantic value(s) of this terminal, which if often a string, but may be any instance which reflects the semantic interpretation of that terminal.
   #
   # Terminals are matched in the order of appearance
 
   # Match the Left hand side of a rule or terminal
   #
-  #     [11] LHS        ::= ENUM? SYMBOL "::="
+  #     [11] LHS        ::= ('[' SYMBOL+ ']' ' '+)? SYMBOL ' '* '::='
   terminal(:LHS, LHS) do |prod, token, input|
     input[:id], input[:symbol] = token.value.to_s.scan(/\[([^\]]+)\]\s*(\w+)\s*::=/).first
   end
 
   # Match `SYMBOL` terminal
   #
-  #     [12] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | "_" | ".")+
+  #     [12] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | '_' | '.')+
   terminal(:SYMBOL, SYMBOL) do |prod, token, input|
     input[:terminal] = token.value.to_sym
   end
 
-  # Terminal for `RANGE` is matched as part of a `primary` rule. Unescape the values to remove EBNF escapes in the input.
+  # Match `HEX` terminal
   #
-  #     [14] `RANGE`      ::= '[' CHAR '-' CHAR ']'
-  terminal(:RANGE, RANGE, unescape: true) do |prod, token, input|
-    input[:terminal] = [:range, token.value[1..-2]]
+  #     [13] HEX        ::= '#x' ([a-f] | [A-F] | [0-9])+
+  terminal(:HEX, HEX) do |prod, token, input|
+    input[:terminal] = token.value
   end
 
   # Terminal for `ENUM` is matched as part of a `primary` rule. Unescape the values to remove EBNF escapes in the input.
   #
-  #     [15] ENUM       ::= '[' CHAR+ ']'
+  #     [14] ENUM       ::= ('[' R_CHAR+ | HEX+ ']') - LHS
   terminal(:ENUM, ENUM, unescape: true) do |prod, token, input|
-    input[:terminal] = [:range, token.value[1..-2]]
-  end
-
-  # Terminal for `O_RANGE` is matched as part of a `primary` rule. Unescape the values to remove EBNF escapes in the input.
-  #
-  #     [16] O_RANGE    ::= '[^' CHAR '-' CHAR ']'
-  terminal(:O_RANGE, O_RANGE, unescape: true) do |prod, token, input|
     input[:terminal] = [:range, token.value[1..-2]]
   end
 
   # Terminal for `O_ENUM` is matched as part of a `primary` rule. Unescape the values to remove EBNF escapes in the input.
   #
-  #     [17] O_ENUM     ::= '[^' CHAR+ ']'
+  #     [15] O_ENUM     ::= '[^' R_CHAR+ | HEX+ ']'
   terminal(:O_ENUM, O_ENUM, unescape: true) do |prod, token, input|
+    input[:terminal] = [:range, token.value[1..-2]]
+  end
+
+  # Terminal for `RANGE` is matched as part of a `primary` rule. Unescape the values to remove EBNF escapes in the input.
+  #
+  #     [16] `RANGE`      ::= '[' (R_CHAR '-' R_CHAR) | (HEX - HEX) ']'
+  terminal(:RANGE, RANGE, unescape: true) do |prod, token, input|
+    input[:terminal] = [:range, token.value[1..-2]]
+  end
+
+  # Terminal for `O_RANGE` is matched as part of a `primary` rule. Unescape the values to remove EBNF escapes in the input.
+  #
+  #     [17] O_RANGE    ::= '[^' (R_CHAR '-' R_CHAR) | (HEX - HEX) ']'
+  terminal(:O_RANGE, O_RANGE, unescape: true) do |prod, token, input|
     input[:terminal] = [:range, token.value[1..-2]]
   end
 
@@ -90,32 +102,42 @@ class EBNLL1FParser
 
   # Match double quote string
   #
-  #     [18] STRING1    ::= '"' (CHAR | [\t\'\[\]\(\)\-])* '"'
+  #     [18] STRING1    ::= '"' (CHAR - '"')* '"'
   terminal(:STRING1, STRING1, unescape: true) do |prod, token, input|
     input[:terminal] = token.value[1..-2]
   end
 
   # Match single quote string
   #
-  #     [19] STRING2    ::= "'" (CHAR | [\t\"\[\]\(\)\-])* "'"
+  #     [19] STRING2    ::= "'" (CHAR - "'")* "'"
   terminal(:STRING2, STRING2, unescape: true) do |prod, token, input|
     input[:terminal] = token.value[1..-2]
   end
 
+  # The `CHAR` and `R_CHAR` productions are not used explicitly
+
   # Match `POSTFIX` terminal
   #
-  #     [21] POSTFIX    ::= [?*+]
+  #     [22] POSTFIX    ::= [?*+]
   terminal(:POSTFIX, POSTFIX) do |prod, token, input|
     input[:postfix] = token.value
   end
 
-  # Make sure we recognize string terminals, even though they're not actually used in processing
+  # The `PASS` productions is not used explicitly
+
+  # Make sure we recognize string terminals, even though they're not actually used in processing. This defines a "catch-all" terminal for the lexer.
   terminal(nil,                  %r(@terminals|@pass|[\[\]|\-\(\)])) do |prod, token, input|
     input[:terminal] = token.value
   end
 
   # ## Non-terminal productions
   # Define productions for non-Termainals. This can include `start_production` as well as `production` to hook into rule start and end. In some cases, we need to use sub-productions as generated when turning EBNF into BNF.
+  #
+  # The `input` parameter is a Hash containing input from the parent production. and is  used for returning the results of this production.
+  #
+  # The `data` parameter data returned by child productions placing information onto their input.
+  #
+  # The `callback` parameter provides access to a callback defined in the call to `parse`, see `#each_rule` below).
 
   # Production for end of `declaration` non-terminal.
   #
@@ -137,7 +159,7 @@ class EBNLL1FParser
   # Production for end of `rule` non-terminal.
   # The `input` parameter includes information placed by previous productions at the same level, or at the start of the current production.
   # The `data` parameter, is the result of child productions placing information onto their input.
-  # The `callback` parameter provides access to a callback defined in the call to `parse`, see `#each_rule` below).
+  # The `callback` parameter provides access to a callback defined in the call.
   #
   # Create rule from expression value and pass to callback
   #
@@ -258,14 +280,19 @@ class EBNLL1FParser
   #
   # @param  [#read, #to_s]          input
   # @param  [Hash{Symbol => Object}] options
-  # @option options [Hash]     :prefixes     (Hash.new)
-  #   the prefix mappings to use (for acessing intermediate parser productions)
-  # @option options [Boolean] :progress
-  #   Show progress of parser productions
+  # @option options [Boolean] :level
+  #   Trace level. 0(debug), 1(info), 2(warn), 3(error).
   # @return [self]
   def initialize(input, **options, &block)
-    @options = options.dup
+    # Read input, if necessary, which will be used in a Scanner which feads the Lexer.
     @input = input.respond_to?(:read) ? input.read : input.to_s
+
+    # If the `level` option is set, instantiate a logger for collecting trace information.
+    if options.has_key?(:level)
+      options[:logger] = Logger.new(STDERR)
+      options[:logger].level = options.fetch(:level, 2)
+      options[:logger].formatter = lambda {|severity, datetime, progname, msg| "#{severity} #{msg}\n"}
+    end
 
     parsing_terminals = false
     @ast = []
@@ -273,28 +300,27 @@ class EBNLL1FParser
                                 first: FIRST,
                                 follow: FOLLOW,
                                 cleanup: CLEANUP,
-                                whitespace: EBNFLL1ParserTerminals::PASS,
+                                whitespace: EBNF::Terminals::PASS,
                                 reset_on_start: true,
                                 **options
     ) do |context, *data|
       rule = case context
       when :terminal
+        # After parsing `@terminals`
+        # This changes the state of the parser to treat subsequent rules as terminals.
         parsing_terminals = true
         rule = EBNF::Rule.new(nil, nil, data.first, kind: :terminal)
       when :pass
+        # After parsing `@pass`
+        # This defines a specific rule for whitespace.
         rule = EBNF::Rule.new(nil, nil, data.first, kind: :pass)
       when :rule
+        # A rule which has already been turned into a `Rule` object.
         rule = data.first
         rule.kind = :terminal if parsing_terminals
         rule
-      when :trace
-        level, lineno, depth, *args = data
-        message = "#{args.join(': ')}"
-        d_str = depth > 100 ? ' ' * 100 + '+' : ' ' * depth
-        $stderr.puts "[#{lineno}](#{level})#{d_str}#{message}" if @options[:progress] || @options[:debug] == true
-        next
       end
-      @ast << rule
+      @ast << rule if rule
     end
     @ast
   end

@@ -11,13 +11,13 @@ require 'sxp'
 out = STDOUT
 
 OPT_ARGS = [
-  ["--debug",           GetoptLong::NO_ARGUMENT,      "Turn on debugging output"],
   ["--evaluate","-e",   GetoptLong::REQUIRED_ARGUMENT,"Evaluate argument"],
-  ["--progress", "-v",  GetoptLong::NO_ARGUMENT,      "Detail on execution"],
+  ["--trace",           GetoptLong::OPTIONAL_ARGUMENT,"Trace output level (0-3)"],
   ["--help", "-?",      GetoptLong::NO_ARGUMENT,      "This message"]
 ]
 def usage
-  STDERR.puts %{#{$0} Version #{EBNF::VERSION}}
+  require 'ebnf'
+  STDERR.puts %{#{$0} Version #{::EBNF::VERSION}}
   STDERR.puts %{Usage: #{$0} [options] file ...}
   width = OPT_ARGS.map do |o|
     l = o.first.length
@@ -39,9 +39,8 @@ opts = GetoptLong.new(*OPT_ARGS.map {|o| o[0..-2]})
 
 opts.each do |opt, arg|
   case opt
-  when '--debug'        then options[:debug] = true
   when '--evaluate'     then input = arg
-  when '--progress'     then options[:progress] = true
+  when '--trace'        then options[:level] = arg.to_i
   when '--help'         then usage
   end
 end
