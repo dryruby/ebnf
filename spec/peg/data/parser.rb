@@ -52,13 +52,13 @@ class EBNFPegParser
 
   terminal(:POSTFIX, POSTFIX)
 
-  production(:declaration) do |value, data, callback|
+  production(:declaration, clear_packrat: true) do |value, data, callback|
     # current contains a declaration.
     # Invoke callback
     callback.call(:terminal) if value == '@terminals'
   end
 
-  production(:rule) do |value, data, callback|
+  production(:rule, clear_packrat: true) do |value, data, callback|
     # current contains an expression.
     # Invoke callback
     id, sym = value.first[:LHS]

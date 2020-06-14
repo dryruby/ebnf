@@ -27,7 +27,7 @@ describe EBNF::PEG::Parser do
       end
       it "adds as a production_handler" do
         expect(PegParserTest.production_handlers.keys).to eq [:term]
-        expect(PegParserTest.production_handlers[:term]).to be_a(Proc)
+        expect(PegParserTest.production_handlers[:term]).to include(Proc, FalseClass)
       end
     end
 
@@ -62,15 +62,15 @@ describe EBNF::PEG::Parser do
       {
         "1" => "1",
         "10" => "10",
-        "1+1" => [{:integer=>"1"}, {:operator=>"+"}, {:expression=>"1"}],
-        " 1 +  2 " => [{:integer=>"1"}, {:operator=>"+"}, {:expression=>"2"}],
+        "1+1" => [{integer: "1"}, {operator: "+"}, {expression: "1"}],
+        " 1 +  2 " => [{integer: "1"}, {operator: "+"}, {expression: "2"}],
         "1 + 2 + 3" => [
-          {:integer=>"1"},
-          {:operator=>"+"},
-          {:expression=>[
-            {:integer=>"2"},
-            {:operator=>"+"},
-            {:expression=>"3"}
+          {integer: "1"},
+          {operator: "+"},
+          {expression: [
+            {integer: "2"},
+            {operator: "+"},
+            {expression: "3"}
           ]}]
       }.each do |input, expected|
         it "parses #{input.inspect} to #{expected.inspect}" do
@@ -89,6 +89,26 @@ describe EBNF::PEG::Parser do
           expect {
             PegParserTest.new.parse(input, start, rules, debug: 3, logger: logger)
           }.to raise_error(EBNF::PEG::Parser::Error, expected)
+        end
+      end
+    end
+
+    context "with backtracking" do
+      let(:start) {:expression}
+      let(:grammar) {%{(
+        (rule expression "1" (alt (seq integer "+" integer) (seq integer "*" integer)))
+        (terminal integer "2" (plus (range "0-9")))
+      )}}
+      let(:rules) {EBNF.parse(grammar, format: :sxp).make_peg.ast}
+
+      {
+        "1+1" => [{integer: "1"}, {"+": "+"}, {integer: "1"}],
+        # The following will memoize the first position
+        "1*1" => [{integer: "1"}, {"*": "*"}, {integer: "1"}],
+      }.each do |input, expected|
+        it "parses #{input.inspect} to #{expected.inspect}" do
+          output = PegParserTest.new.parse(input, start, rules, debug: 3, logger: logger)
+          expect(output).to produce(expected, logger)
         end
       end
     end

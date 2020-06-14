@@ -29,15 +29,28 @@ module EBNF::PEG
     # @param [Scanner] input
     # @return [Hash{Symbol => Object}, :unmatched] A hash with keys for matched component of the expression. Returns :unmatched if the input does not match the production.
     def parse(input)
+      # Save position and linenumber for backtracking
       pos, lineno = input.pos, input.lineno
+
+      parser.packrat[sym] ||= {}
+      if parser.packrat[sym][pos]
+        parser.debug("#{sym}(:memo)", lineno: lineno) { "#{parser.packrat[sym][pos].inspect}(@#{pos})"}
+        input.pos, input.lineno = parser.packrat[sym][pos][:pos], parser.packrat[sym][pos][:lineno]
+        return parser.packrat[sym][pos][:result]
+      end
 
       if terminal?
         # If the terminal is defined with a regular expression,
         # use that to match the input,
         # otherwise,
         if regexp = parser.find_terminal_regexp(sym)
-          return :unmatched unless matched = input.scan(regexp)
-          return parser.onTerminal(sym, matched, scanner: input)
+          matched = input.scan(regexp)
+          parser.packrat[sym][pos] = {
+            pos: input.pos,
+            lineno: input.lineno,
+            result: (matched ? parser.onTerminal(sym, matched, scanner: input) : :unmatched)
+          }
+          return parser.packrat[sym][pos][:result]
         end
       else
         eat_whitespace(input)
@@ -149,8 +162,13 @@ module EBNF::PEG
         input.pos, input.lineno = pos, lineno
       end
 
-      # TODO: memoize matched value at this position
-      return parser.onFinish(result, scanner: input)
+      result = parser.onFinish(result, scanner: input)
+      (parser.packrat[sym] ||= {})[pos] = {
+        pos: input.pos,
+        lineno: input.lineno,
+        result: result
+      }
+      return parser.packrat[sym][pos][:result]
     end
 
     ##

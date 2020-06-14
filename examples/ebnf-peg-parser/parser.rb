@@ -133,28 +133,34 @@ class EBNFPegParser
   #
   # Look for `@terminals` to change parser state to parsing terminals.
   #
+  # Clears the packrat parser when called.
+  #
   # `@pass` is ignored here.
   #
   #     [2] declaration ::= '@terminals' | pass
-  production(:declaration) do |value, data, callback|
+  production(:declaration, clear_packrat: true) do |value, data, callback|
     # value contains a declaration.
     # Invoke callback
     callback.call(:terminal) if value == '@terminals'
+    nil
   end
 
   # Production for end of `rule` non-terminal.
   #
   # The `value` parameter, is of the form `[{LHS: "v"}, {expression: "v"}]`.
   #
+  # Clears the packrat parser when called.
+  #
   # Create rule from expression value and pass to callback
   #
   #     [3] rule        ::= LHS expression
-  production(:rule) do |value, data, callback|
+  production(:rule, clear_packrat: true) do |value, data, callback|
     # value contains an expression.
     # Invoke callback
     id, sym = value.first[:LHS]
     expression = value.last[:expression]
     callback.call(:rule, EBNF::Rule.new(sym.to_sym, id, expression))
+    nil
   end
 
   # Production for end of `expression` non-terminal.

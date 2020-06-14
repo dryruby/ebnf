@@ -5,7 +5,7 @@ require 'ebnf'
 
 describe EBNF::PEG::Rule do
   describe "#parse" do
-    let(:parser) {double("PEG Parser", whitespace: /\s+/)}
+    let(:parser) {double("PEG Parser", whitespace: /\s+/, packrat: {})}
 
     context "non-terminal rules" do
       {

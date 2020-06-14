@@ -523,11 +523,13 @@
 
 <p>Terminals are defined with a symbol matching the associated rule name, and an optional (although strongly encouraged) regular expression used to match the head of the input stream.</p>
 
-<p>The result of the terminal is the semantic value of that terminal, which if often a string, but may be any instance which reflects the semantic interpretation of that terminal.</p>
+<p>The result of the terminal block is the semantic value of that terminal, which if often a string, but may be any instance which reflects the semantic interpretation of that terminal.</p>
 
 <p>The <code>value</code> parameter is the value matched by the regexp, if defined, or by the sub-terminal rules otherwise.</p>
 
 <p>The <code>prod</code> parameter is the name of the parent rule for which this terminal is matched, which may have a bearing in some circumstances, although not used in this example.</p>
+
+<p>If no block is provided, then the value which would have been passed to the block is used as the result directly.</p>
       </td>
       <td class=code>
         <div class='highlight'><pre></pre></div>
@@ -544,7 +546,7 @@
 </code></pre>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:LHS</span><span class="p">,</span> <span class="no">LHS</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">prod</span><span class="p">,</span> <span class="n">value</span><span class="o">|</span>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:LHS</span><span class="p">,</span> <span class="no">LHS</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="p">,</span> <span class="n">prod</span><span class="o">|</span>
     <span class="n">value</span><span class="o">.</span><span class="n">to_s</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span><span class="sr">/\[([^\]]+)\]\s*(\w+)\s*::=/</span><span class="p">)</span><span class="o">.</span><span class="n">first</span>
   <span class="k">end</span></pre></div>
       </td>
@@ -560,7 +562,7 @@
 </code></pre>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:SYMBOL</span><span class="p">,</span> <span class="no">SYMBOL</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">prod</span><span class="p">,</span> <span class="n">value</span><span class="o">|</span>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:SYMBOL</span><span class="p">,</span> <span class="no">SYMBOL</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
     <span class="n">value</span><span class="o">.</span><span class="n">to_sym</span>
   <span class="k">end</span></pre></div>
       </td>
@@ -576,9 +578,7 @@
 </code></pre>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:HEX</span><span class="p">,</span> <span class="no">HEX</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">prod</span><span class="p">,</span> <span class="n">value</span><span class="o">|</span>
-    <span class="n">value</span>
-  <span class="k">end</span></pre></div>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:HEX</span><span class="p">,</span> <span class="no">HEX</span><span class="p">)</span></pre></div>
       </td>
     </tr>
     <tr id='section-7'>
@@ -592,7 +592,7 @@
 </code></pre>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:ENUM</span><span class="p">,</span> <span class="no">ENUM</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">prod</span><span class="p">,</span> <span class="n">value</span><span class="o">|</span>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:ENUM</span><span class="p">,</span> <span class="no">ENUM</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
     <span class="o">[</span><span class="ss">:range</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">2</span><span class="o">]]</span>
   <span class="k">end</span></pre></div>
       </td>
@@ -608,7 +608,7 @@
 </code></pre>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:O_ENUM</span><span class="p">,</span> <span class="no">O_ENUM</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">prod</span><span class="p">,</span> <span class="n">value</span><span class="o">|</span>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:O_ENUM</span><span class="p">,</span> <span class="no">O_ENUM</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
     <span class="o">[</span><span class="ss">:range</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">2</span><span class="o">]]</span>
   <span class="k">end</span></pre></div>
       </td>
@@ -624,7 +624,7 @@
 </code></pre>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:RANGE</span><span class="p">,</span> <span class="no">RANGE</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">prod</span><span class="p">,</span> <span class="n">value</span><span class="o">|</span>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:RANGE</span><span class="p">,</span> <span class="no">RANGE</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
     <span class="o">[</span><span class="ss">:range</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">2</span><span class="o">]]</span>
   <span class="k">end</span></pre></div>
       </td>
@@ -640,7 +640,7 @@
 </code></pre>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:O_RANGE</span><span class="p">,</span> <span class="no">O_RANGE</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">prod</span><span class="p">,</span> <span class="n">value</span><span class="o">|</span>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:O_RANGE</span><span class="p">,</span> <span class="no">O_RANGE</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
     <span class="o">[</span><span class="ss">:range</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">2</span><span class="o">]]</span>
   <span class="k">end</span></pre></div>
       </td>
@@ -656,7 +656,7 @@
 </code></pre>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:STRING1</span><span class="p">,</span> <span class="no">STRING1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">prod</span><span class="p">,</span> <span class="n">value</span><span class="o">|</span>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:STRING1</span><span class="p">,</span> <span class="no">STRING1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
     <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">2</span><span class="o">]</span>
   <span class="k">end</span></pre></div>
       </td>
@@ -672,7 +672,7 @@
 </code></pre>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:STRING2</span><span class="p">,</span> <span class="no">STRING2</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">prod</span><span class="p">,</span> <span class="n">value</span><span class="o">|</span>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:STRING2</span><span class="p">,</span> <span class="no">STRING2</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
     <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">2</span><span class="o">]</span>
   <span class="k">end</span></pre></div>
       </td>
@@ -699,9 +699,7 @@
 </code></pre>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:POSTFIX</span><span class="p">,</span> <span class="no">POSTFIX</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">prod</span><span class="p">,</span> <span class="n">value</span><span class="o">|</span>
-    <span class="n">value</span>
-  <span class="k">end</span></pre></div>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:POSTFIX</span><span class="p">,</span> <span class="no">POSTFIX</span><span class="p">)</span></pre></div>
       </td>
     </tr>
     <tr id='section-15'>
@@ -747,13 +745,15 @@
 
 <p>Look for <code>@terminals</code> to change parser state to parsing terminals.</p>
 
+<p>Clears the packrat parser when called.</p>
+
 <p><code>@pass</code> is ignored here.</p>
 
 <pre><code>[2] declaration ::= &#39;@terminals&#39; | pass
 </code></pre>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:declaration</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">data</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">callback</span><span class="o">|</span></pre></div>
+        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:declaration</span><span class="p">,</span> <span class="n">clear_packrat</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">callback</span><span class="o">|</span></pre></div>
       </td>
     </tr>
     <tr id='section-18'>
@@ -766,6 +766,7 @@ Invoke callback</p>
       </td>
       <td class=code>
         <div class='highlight'><pre>    <span class="n">callback</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="ss">:terminal</span><span class="p">)</span> <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s1">&#39;@terminals&#39;</span>
+    <span class="kp">nil</span>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
@@ -778,13 +779,15 @@ Invoke callback</p>
 
 <p>The <code>value</code> parameter, is of the form <code>[{LHS: &quot;v&quot;}, {expression: &quot;v&quot;}]</code>.</p>
 
+<p>Clears the packrat parser when called.</p>
+
 <p>Create rule from expression value and pass to callback</p>
 
 <pre><code>[3] rule        ::= LHS expression
 </code></pre>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:rule</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">data</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">callback</span><span class="o">|</span></pre></div>
+        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:rule</span><span class="p">,</span> <span class="n">clear_packrat</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">callback</span><span class="o">|</span></pre></div>
       </td>
     </tr>
     <tr id='section-20'>
@@ -799,6 +802,7 @@ Invoke callback</p>
         <div class='highlight'><pre>    <span class="nb">id</span><span class="p">,</span> <span class="n">sym</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">first</span><span class="o">[</span><span class="ss">:LHS</span><span class="o">]</span>
     <span class="n">expression</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:expression</span><span class="o">]</span>
     <span class="n">callback</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="ss">:rule</span><span class="p">,</span> <span class="no">EBNF</span><span class="o">::</span><span class="no">Rule</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">sym</span><span class="o">.</span><span class="n">to_sym</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">expression</span><span class="p">))</span>
+    <span class="kp">nil</span>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
@@ -819,7 +823,7 @@ Passes through the optimized value of the alt production as follows:</p>
 </code></pre>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:expression</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">data</span><span class="p">,</span> <span class="n">value</span><span class="o">|</span>
+        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:expression</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
     <span class="n">value</span><span class="o">.</span><span class="n">first</span><span class="o">[</span><span class="ss">:alt</span><span class="o">]</span>
   <span class="k">end</span></pre></div>
       </td>
@@ -844,7 +848,7 @@ Passes through the optimized value of the seq production as follows:</p>
 </code></pre>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:alt</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">data</span><span class="p">,</span> <span class="n">value</span><span class="o">|</span>
+        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:alt</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
     <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:_alt_1</span><span class="o">].</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span>
       <span class="o">[</span><span class="ss">:alt</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">first</span><span class="o">[</span><span class="ss">:seq</span><span class="o">]]</span> <span class="o">+</span> <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:_alt_1</span><span class="o">]</span>
     <span class="k">else</span>
@@ -867,7 +871,7 @@ Used to collect the <code>(&#39;|&#39; seq)*</code> portion of the <code>alt</co
 </code></pre>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:_alt_1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">data</span><span class="p">,</span> <span class="n">value</span><span class="o">|</span>
+        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:_alt_1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
     <span class="n">value</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span><span class="o">|</span><span class="n">a1</span><span class="o">|</span> <span class="n">a1</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:seq</span><span class="o">]</span><span class="p">}</span><span class="o">.</span><span class="n">compact</span> <span class="c1"># Get rid of &#39;|&#39;</span>
   <span class="k">end</span></pre></div>
       </td>
@@ -892,7 +896,7 @@ Passes through the optimized value of the <code>diff</code> production as follow
 </code></pre>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:seq</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">data</span><span class="p">,</span> <span class="n">value</span><span class="o">|</span>
+        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:seq</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
     <span class="n">value</span><span class="o">.</span><span class="n">length</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">?</span> <span class="n">value</span><span class="o">.</span><span class="n">first</span> <span class="p">:</span> <span class="p">(</span><span class="o">[</span><span class="ss">:seq</span><span class="o">]</span> <span class="o">+</span> <span class="n">value</span><span class="p">)</span>
   <span class="k">end</span></pre></div>
       </td>
@@ -910,7 +914,7 @@ Passes through the optimized value of the <code>diff</code> production as follow
 </code></pre>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:diff</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">data</span><span class="p">,</span> <span class="n">value</span><span class="o">|</span>
+        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:diff</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
     <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:_diff_1</span><span class="o">]</span>
       <span class="o">[</span><span class="ss">:diff</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">first</span><span class="o">[</span><span class="ss">:postfix</span><span class="o">]</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:_diff_1</span><span class="o">]]</span>
     <span class="k">else</span>
@@ -918,7 +922,7 @@ Passes through the optimized value of the <code>diff</code> production as follow
     <span class="k">end</span>
   <span class="k">end</span>
 
-  <span class="n">production</span><span class="p">(</span><span class="ss">:_diff_1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">data</span><span class="p">,</span> <span class="n">value</span><span class="o">|</span>
+  <span class="n">production</span><span class="p">(</span><span class="ss">:_diff_1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
     <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:postfix</span><span class="o">]</span> <span class="k">if</span> <span class="n">value</span>
   <span class="k">end</span></pre></div>
       </td>
@@ -942,7 +946,7 @@ Either returns the <code>primary</code> production value, or as modified by the 
 </code></pre>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:postfix</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">data</span><span class="p">,</span> <span class="n">value</span><span class="o">|</span></pre></div>
+        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:postfix</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span></pre></div>
       </td>
     </tr>
     <tr id='section-27'>
@@ -986,7 +990,7 @@ Places <code>:primary</code> on the stack</p>
 </code></pre>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:primary</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">data</span><span class="p">,</span> <span class="n">value</span><span class="o">|</span>
+        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:primary</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
     <span class="nb">Array</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="o">?</span> <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">][</span><span class="ss">:expression</span><span class="o">]</span> <span class="p">:</span> <span class="n">value</span>
   <span class="k">end</span></pre></div>
       </td>
@@ -1002,7 +1006,7 @@ Places <code>:primary</code> on the stack</p>
 </code></pre>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:pass</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">data</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">callback</span><span class="o">|</span></pre></div>
+        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:pass</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">callback</span><span class="o">|</span></pre></div>
       </td>
     </tr>
     <tr id='section-30'>

@@ -6,6 +6,40 @@ module EBNF::PEG
     # @return [Regexp, Rule] how to remove inter-rule whitespace
     attr_reader :whitespace
 
+    ##
+    # A Hash structure used for memoizing rule results for a given input location.
+    #
+    #  @example Partial structure for memoizing results for a particular rule
+    #
+    #      {
+    #        rule: {
+    #          86: {
+    #                pos: 
+    #                result: [<EBNF::Rule:80 {
+    #                  sym: :ebnf,
+    #                    id: "1",
+    #                    kind: :rule,
+    #                    expr: [:star, [:alt, :declaration, :rule]]}>],
+    #               }
+    #          131: [<EBNF::Rule:80 {sym: :ebnf,
+    #              id: "1",
+    #              kind: :rule,
+    #              expr: [:star, [:alt, :declaration, :rule]]}>,
+    #            <EBNF::Rule:100 {
+    #              sym: :declaration,
+    #              id: "2",
+    #              kind: :rule,
+    #              expr: [:alt, "@terminals", :pass]}>]
+    #        },
+    #        POSTFIX: {
+    #          80: "*",
+    #          368: "*",
+    #          399: "+"
+    #        }
+    #      }
+    # @return [Hash{Integer => Hash{Symbol => Object}}]
+    attr_reader :packrat
+
     def self.included(base)
       base.extend(ClassMethods)
     end
@@ -81,6 +115,8 @@ module EBNF::PEG
       #
       # @param [Symbol] term
       #   Term which is a key in the branch table
+      # @param [Boolean] clear_packrat (false)
+      #   Clears the packrat state on completion to reduce memory requirements of parser. Use only on a top-level rule when it is determined that no further backtracking is necessary.
       # @yield [result, data, block]
       # @yieldparam [Object] result
       #   The result from sucessfully parsing the production.
@@ -93,8 +129,8 @@ module EBNF::PEG
       #   Should conform to the yield specs for #initialize
       # @yieldreturn [Object] the result of this production.
       # Yield to generate a triple
-      def production(term, &block)
-        production_handlers[term] = block
+      def production(term, clear_packrat: false, &block)
+        production_handlers[term] = [block, clear_packrat]
       end
 
       # Evaluate a handler, delegating to the specified object.
@@ -157,6 +193,7 @@ module EBNF::PEG
     #   errors are raised using {Error}.
     def parse(input = nil, start = nil, rules = [], **options, &block)
       @rules = rules.inject({}) {|memo, rule| memo.merge(rule.sym => rule)}
+      @packrat = {}
 
       # Add parser reference to each rule
       @rules.each_value {|rule| rule.parser = self}
@@ -212,6 +249,9 @@ module EBNF::PEG
 
     # Current ProdData element
     def prod_data; @prod_data.last; end
+
+    # Clear out packrat memoizer. This is appropriate when completing a top-level rule when there is no possibility of backtracking.
+    def clear_packrat; @packrat.clear; end
 
     ##
     # Error information, used as level `3` logger messages.
@@ -304,7 +344,7 @@ module EBNF::PEG
     def onStart(prod, scanner: nil)
       handler = self.class.start_handlers[prod]
       @productions << prod
-      progress("#{prod}(:start)", "", depth: (depth + 1)) {"#{prod}, lineno: #{scanner ? scanner.lineno : '?'}, pos: #{scanner ? scanner.pos : '?'}, rest: #{scanner ? scanner.rest[0..20].inspect : '?'}"}
+      debug("#{prod}(:start)", "", depth: (depth + 1)) {"#{prod}, lineno: #{scanner ? scanner.lineno : '?'}, pos: #{scanner ? scanner.pos : '?'}, rest: #{scanner ? scanner.rest[0..20].inspect : '?'}"}
       if handler
         # Create a new production data element, potentially allowing handler
         # to customize before pushing on the @prod_data stack
@@ -332,7 +372,7 @@ module EBNF::PEG
     def onFinish(result, scanner: nil)
       #puts "prod_data(f): " + @prod_data.inspect
       prod = @productions.last
-      handler = self.class.production_handlers[prod]
+      handler, clear_packrat = self.class.production_handlers[prod]
       if handler && !@recovering && result != :unmatched
         # Pop production data element from stack, potentially allowing handler to use it
         data = @prod_data.pop
@@ -345,7 +385,13 @@ module EBNF::PEG
           @recovering = false
         end
       end
-      progress("#{prod}(:finish)", "", depth: (depth + 1)) {"#{prod}: #{result.inspect}, lineno: #{scanner ? scanner.lineno : '?'}, pos: #{scanner ? scanner.pos : '?'}, rest: #{scanner ? scanner.rest[0..20].inspect : '?'}"}
+      progress("#{prod}(:finish)", "",
+               depth: (depth + 1),
+               lineno: (scanner ? scanner.lineno : '?'),
+               level: result == :unmatched ? 0 : 1) do
+        "#{result.inspect}@(#{scanner ? scanner.pos : '?'}), rest: #{scanner ? scanner.rest[0..20].inspect : '?'}"
+      end
+      self.clear_packrat if clear_packrat
       @productions.pop
       result
     end
@@ -368,7 +414,12 @@ module EBNF::PEG
           @recovering = false
         end
       end
-      progress("#{prod}(:terminal)", "", depth: (depth + 2)) {"#{prod}: #{value.inspect}, lineno: #{scanner ? scanner.lineno : '?'}, pos: #{scanner ? scanner.pos : '?'}"}
+      progress("#{prod}(:terminal)", "",
+               depth: (depth + 2),
+               lineno: (scanner ? scanner.lineno : '?'),
+               level: value == :unmatched ? 0 : 1) do
+        "#{value.inspect}@(#{scanner ? scanner.pos : '?'})"
+      end
       value
     end
 
