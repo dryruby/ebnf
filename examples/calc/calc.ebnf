@@ -1,0 +1,10 @@
+/*
+ *  The following grammar is an example from the
+ * [Wikipedia entry on Parsing Expression Grammar](https://en.wikipedia.org/wiki/Parsing_expression_grammar#Examples).
+ */
+[1] Expr    ::= Sum
+[2] Sum     ::= Product (('+' | '-') Product)*
+[3] Product ::= Power (('*' | '/') Power)*
+[4] Power   ::= Value ('^' Power)?
+[5] Value   ::= NUMBER | '(' Expr ')'
+[6] NUMBER  ::= [0-9]+

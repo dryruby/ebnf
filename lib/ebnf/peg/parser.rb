@@ -171,13 +171,9 @@ module EBNF::PEG
     #   The parsed rules, which control parsing sequence.
     #   Identify the symbol of the starting rule with `start`.
     # @param  [Hash{Symbol => Object}] options
-    # @option options [Boolean] :debug
-    #   Detailed debug output
     # @option options[Integer] :high_water passed to lexer
     # @option options [Logger] :logger for errors/progress/debug.
     # @option options[Integer] :low_water passed to lexer
-    # @option options [Boolean] :progress
-    #   Show progress of parser productions    # @opt
     # @option options [Symbol, Regexp] :whitespace 
     #   Symbol of whitespace rule (defaults to `@pass`), or a regular expression
     #   for eating whitespace between non-terminal rules (strongly encouraged).
@@ -191,7 +187,9 @@ module EBNF::PEG
     # @raise [Exception] Raises exceptions for parsing errors
     #   or errors raised during processing callbacks. Internal
     #   errors are raised using {Error}.
-    def parse(input = nil, start = nil, rules = [], **options, &block)
+    def parse(input = nil, start = nil, rules = nil, **options, &block)
+      start ||= options[:start]
+      rules ||= options[:rules] || []
       @rules = rules.inject({}) {|memo, rule| memo.merge(rule.sym => rule)}
       @packrat = {}
 
@@ -207,10 +205,6 @@ module EBNF::PEG
         /(?:\s|(?:#[^x][^\n\r]*))+/m.freeze
 
       @options = options.dup
-      @options[:debug] ||= case
-      when @options[:progress] then 2
-      when @options[:validate] then 1
-      end
       @productions = []
       @parse_callback = block
       @error_log = []
@@ -219,7 +213,7 @@ module EBNF::PEG
       scanner = EBNF::LL1::Scanner.new(input)
       start = start.split('#').last.to_sym unless start.is_a?(Symbol)
       start_rule = @rules[start]
-      raise Error, "Starting production not defined" unless start_rule
+      raise Error, "Starting production #{start.inspect} not defined" unless start_rule
 
       result = start_rule.parse(scanner)
       if result == :unmatched

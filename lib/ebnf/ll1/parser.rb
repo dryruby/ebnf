@@ -241,8 +241,6 @@ module EBNF::LL1
     #   The starting production for the parser. It may be a URI from the grammar, or a symbol representing the local_name portion of the grammar URI.
     # @param  [Hash{Symbol => Object}] options
     # @option options [Hash{Symbol,String => Hash{Symbol,String => Array<Symbol,String>}}] :branch LL1 branch table.
-    # @option options [Boolean] :debug
-    #   Detailed debug output
     # @option options [HHash{Symbol,String => Array<Symbol,String>}] :first ({})
     #   Lists valid terminals that can precede each production (for error recovery).
     # @option options [Hash{Symbol,String => Array<Symbol,String>}] :follow ({})
@@ -250,8 +248,6 @@ module EBNF::LL1
     # @option options[Integer] :high_water passed to lexer
     # @option options [Logger] :logger for errors/progress/debug.
     # @option options[Integer] :low_water passed to lexer
-    # @option options [Boolean] :progress
-    #   Show progress of parser productions
     # @option options [Boolean] :reset_on_start
     #   Reset the parser state if the start token set with `prod` is found in a production. This reduces the production stack depth growth, which is appropriate for some grammars.
     # @option options [Boolean]  :validate     (false)
@@ -269,10 +265,6 @@ module EBNF::LL1
     # @see https://cs.adelaide.edu.au/~charles/lt/Lectures/07-ErrorRecovery.pdf
     def parse(input = nil, start = nil, **options, &block)
       @options = options.dup
-      @options[:debug] ||= case
-      when @options[:progress] then 2
-      when @options[:validate] then 1
-      end
       @branch  = options[:branch]
       @first   = options[:first] ||= {}
       @follow  = options[:follow] ||= {}

@@ -11,9 +11,9 @@ require 'sxp'
 out = STDOUT
 
 OPT_ARGS = [
-  ["--evaluate","-e",   GetoptLong::REQUIRED_ARGUMENT,"Evaluate argument"],
-  ["--trace",           GetoptLong::OPTIONAL_ARGUMENT,      "Trace output level (0-3)"],
-  ["--help", "-?",      GetoptLong::NO_ARGUMENT,      "This message"]
+  ["--evaluate","-e",   GetoptLong::REQUIRED_ARGUMENT,  "Evaluate argument"],
+  ["--trace",           GetoptLong::OPTIONAL_ARGUMENT,  "Trace output level (0-3)"],
+  ["--help", "-?",      GetoptLong::NO_ARGUMENT,        "This message"]
 ]
 def usage
   require 'ebnf'

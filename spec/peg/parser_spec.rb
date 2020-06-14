@@ -46,7 +46,7 @@ describe EBNF::PEG::Parser do
       rule = EBNF::Rule.new(:rule, "0", [:seq, "foo"], kind: :terminal).extend(EBNF::PEG::Rule)
       expect {
         subject.parse("foo", "none", [rule])
-      }.to raise_error(EBNF::PEG::Parser::Error, "Starting production not defined")
+      }.to raise_error(EBNF::PEG::Parser::Error, "Starting production :none not defined")
     end
 
     context "simplest grammar" do

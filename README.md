@@ -9,7 +9,7 @@
 ## Description
 This is a [Ruby][] implementation of an [EBNF][] and [BNF][] parser and parser generator.
 
-## LL(1) Parser
+### LL(1) Parser
 In one mode, it parses [EBNF][] grammars to [BNF][], generates [First/Follow][] and Branch tables for [LL(1)][] grammars, which can be used with the stream [Tokenizer][] and [LL(1) Parser][].
 
 As LL(1) grammars operate using `alt` and `seq` primitives, allowing for a match on alternative productions or a sequence of productions, generating a parser requires turning the EBNF rules into BNF:
@@ -27,7 +27,7 @@ Of note in this implementation is that the tokenizer and parser are streaming, s
 
 See {EBNF::LL1} and {EBNF::LL1::Parser} for further information.
 
-## [PEG][]/[Packrat][] Parser
+### [PEG][]/[Packrat][] Parser
 An additional Parsing Expression Grammar ([PEG][]) parser generator is also supported. This performs more minmal transformations on the parsed grammar to extract sub-productions, which allows each component of a rule to generate its own parsing event.
 
 ## Usage
@@ -65,6 +65,12 @@ Generate formatted grammar using HTML (requires [Haml][Haml] gem):
 
     ebnf.to_html
 
+### Parser debugging
+
+Inevitably while implementing a parser for some specific grammar, a developer will need greater insight into the operation of the parser. While this can involve sorting through a tremendous amount of data, the parser can be provided a {Logger}[] instance which will output messages at varying levels of detail to document the state of the parser at any given point. Most useful is likely the `INFO` level of debugging, but even more detail is revealed using the `DEBUG` level. `WARN` and `ERROR` statements will typically also be provided as part of an exception if parsing fails, but can be shown in the context of other parsing state with appropriate indentation as part of the logger.
+
+### Parser errors
+On a parsing failure, and exception is raised with information that may be useful in determining the source of the error.
 
 ## EBNF Grammar
 The [EBNF][] variant used here is based on [W3C](https://w3.org/) [EBNF][] (see {file:etc/ebnf.ebnf EBNF grammar}) as defined in the
@@ -171,10 +177,13 @@ For a [PEG][] parser generator, there is a simpler transformation that reduces r
     (rule ebnf "1" (star _ebnf_1))
     (rule _ebnf_1 "1.1" (alt declaration rule))
 
-## Example parser
-For an example parser built using this gem, see  {http://dryruby.github.io/ebnf/examples/ebnf-parser/doc/parser.html EBNF LL1 Parser example}. This example creates a parser for the [EBNF][] grammar which generates the same Abstract Syntax Tree as the built-in parser in the gem.
+## Example parsers
+For a [PEG][] parser for a simple grammar implementing a calculator see [Calc example](http://dryruby.github.io/ebnf/examples/calc/doc/calc.html
 
-There is also a {://dryruby.github.io/ebnf/examples/ebnf-peg-parser/doc/parser.html EBNF PEG Parser example}.
+For an example parser built using this gem that parses the [EBNF][] grammar, see [EBNF PEG Parser example](http://dryruby.github.io/ebnf/examples/ebnf-peg-parser/doc/parser.html). This example creates a parser for the [EBNF][] grammar which generates the same Abstract Syntax Tree as the built-in parser in the gem.
+
+There is also an
+[EBNF LL(1) Parser example](http://dryruby.github.io/ebnf/examples/ebnf-peg-parser/doc/parser.html).
 
 ##  Acknowledgements
 Much of this work, particularly the generic parser, is inspired by work originally done by
@@ -190,7 +199,6 @@ Full documentation available on [Rubydoc.info][EBNF doc].
 
 ## Future Work
 * Better LL(1) parser tests
-* Either generate [Packrat parser][Packrat] for a [Parsing Regular Expression Grammar][PEG], or integrate with [Treetop][] or similar.
 
 ## Author
 * [Gregg Kellogg](https://github.com/gkellogg) - <https://greggkellogg.net/>
@@ -226,6 +234,7 @@ A copy of the [Turtle EBNF][] and derived parser files are included in the repos
 [First/Follow]: https://en.wikipedia.org/wiki/LL_parser#Constructing_an_LL.281.29_parsing_table
 [LL(1)]:        https://www.csd.uwo.ca/~moreno//CS447/Lectures/Syntax.html/node14.html
 [LL(1) Parser]: https://en.wikipedia.org/wiki/LL_parser
+[Logger]:       https://ruby-doc.org/stdlib-2.4.0/libdoc/logger/rdoc/Logger.html
 [Tokenizer]:    https://en.wikipedia.org/wiki/Lexical_analysis#Tokenizer
 [Turtle EBNF]:  https://dvcs.w3.org/hg/rdf/file/default/rdf-turtle/turtle.bnf
 [Packrat]:      https://pdos.csail.mit.edu/~baford/packrat/thesis/

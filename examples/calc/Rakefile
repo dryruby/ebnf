@@ -1,0 +1,14 @@
+task default: ["calc.peg.sxp", :doc]
+
+file "calc.peg.sxp" => "calc.ebnf" do |t|
+  sh %{
+    ebnf --peg --output calc.peg.sxp calc.ebnf
+  }
+end
+
+desc "Generate literal documentation for parser"
+task doc: %w(doc/calc.html)
+
+file "doc/calc.html" => "calc.rb" do
+  `rocco -t doc/layout.mustache calc.rb -o doc`
+end

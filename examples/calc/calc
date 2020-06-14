@@ -5,17 +5,17 @@ $:.unshift(File.expand_path("../../../lib", __FILE__))
 $:.unshift(File.expand_path("..", __FILE__))
 require 'rubygems'
 require 'getoptlong'
-require 'parser'
+require 'calc'
 
 out = STDOUT
 
 OPT_ARGS = [
-  ["--debug",           GetoptLong::NO_ARGUMENT,      "Turn on debugging output"],
-  ["--evaluate","-e",   GetoptLong::REQUIRED_ARGUMENT,"Evaluate argument"],
-  ["--progress", "-v",  GetoptLong::NO_ARGUMENT,      "Detail on execution"],
-  ["--help", "-?",      GetoptLong::NO_ARGUMENT,      "This message"]
+  ["--evaluate","-e",   GetoptLong::REQUIRED_ARGUMENT,  "Evaluate argument"],
+  ["--trace",           GetoptLong::OPTIONAL_ARGUMENT,  "Trace output level (0-3)"],
+  ["--help", "-?",      GetoptLong::NO_ARGUMENT,        "This message"]
 ]
 def usage
+  require 'ebnf'
   STDERR.puts %{#{$0} Version #{EBNF::VERSION}}
   STDERR.puts %{Usage: #{$0} [options] file ...}
   width = OPT_ARGS.map do |o|
@@ -38,14 +38,16 @@ opts = GetoptLong.new(*OPT_ARGS.map {|o| o[0..-2]})
 
 opts.each do |opt, arg|
   case opt
-  when '--debug'        then options[:debug] = true
   when '--evaluate'     then input = arg
-  when '--progress'     then options[:progress] = true
+  when '--trace'        then options[:trace] = arg.to_i
   when '--help'         then usage
   end
 end
 
-input = File.open(ARGV[0]) if ARGV[0]
+input = File.open(ARGV[1]) if ARGV[1]
 
 # Collect rules
-OptParser.new(input || STDIN, **options)
+calculator = Calc.new(**options)
+
+# Evaluate the input
+puts calculator.evaluate(input.respond_to?(:read) ? input.read : input)
