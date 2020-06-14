@@ -8,7 +8,7 @@ require 'meta'
 require 'sxp'
 require 'logger'
 
-class EBNLL1FParser
+class EBNFLL1Parser
   include EBNF::LL1::Parser
   include EBNFParserMeta
   include EBNF::Terminals

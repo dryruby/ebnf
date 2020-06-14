@@ -67,7 +67,7 @@ Generate formatted grammar using HTML (requires [Haml][Haml] gem):
 
 ### Parser debugging
 
-Inevitably while implementing a parser for some specific grammar, a developer will need greater insight into the operation of the parser. While this can involve sorting through a tremendous amount of data, the parser can be provided a {Logger}[] instance which will output messages at varying levels of detail to document the state of the parser at any given point. Most useful is likely the `INFO` level of debugging, but even more detail is revealed using the `DEBUG` level. `WARN` and `ERROR` statements will typically also be provided as part of an exception if parsing fails, but can be shown in the context of other parsing state with appropriate indentation as part of the logger.
+Inevitably while implementing a parser for some specific grammar, a developer will need greater insight into the operation of the parser. While this can involve sorting through a tremendous amount of data, the parser can be provided a [Logger][] instance which will output messages at varying levels of detail to document the state of the parser at any given point. Most useful is likely the `INFO` level of debugging, but even more detail is revealed using the `DEBUG` level. `WARN` and `ERROR` statements will typically also be provided as part of an exception if parsing fails, but can be shown in the context of other parsing state with appropriate indentation as part of the logger.
 
 ### Parser errors
 On a parsing failure, and exception is raised with information that may be useful in determining the source of the error.

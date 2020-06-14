@@ -1,18 +1,18 @@
 # EBNF Parser example
 
-This example implements an [EBNF][] parser equivalent to the built-in parser. The proximate result is an Abstract S-Expression which can be used to generate parser tables input grammars. Effectively, this is a re-implementation of {EBNF::Parser} itself.
+This example implements an [EBNF][] parser equivalent to the built-in parser. The proximate result is an Abstract S-Expression composed of sub-rules which can be directly executed by the parser. Effectively, this is a re-implementation of {EBNF::Parser} itself.
 
 ## Parsing an LL(1) Grammar
 
     require 'ebnf'
 
-    ebnf = EBNFParser.new(File.open(../../etc/ebnf.ebnf))
+    ebnf = EBNFPegParser.new(File.open(../../etc/ebnf.ebnf))
 
 Output rules and terminals as S-Expressions, Turtle or EBNF
 
     puts ebnf.to_sxp
 
-This generates a S-Expression form of the grammar suitable for use by {EBNF} for generating a BNF representation (avoiding `star`, `plus`, and `opt` expressions), LL(1) first/follow comprehensions and branch tables used for parsing input files based on the grammar.
+This generates a S-Expression form of the grammar suitable for use by {EBNF}.
 
     (
      (pass (seq PASS))
@@ -27,121 +27,130 @@ This generates a S-Expression form of the grammar suitable for use by {EBNF} for
      (rule primary "9"
       (alt HEX SYMBOL ENUM O_ENUM RANGE O_RANGE STRING1 STRING2 (seq "(" expression ")")))
      (rule pass "10" (seq "@pass" expression))
-     (terminal LHS "11" (seq (opt (seq "[" (plus SYMBOL) "]")) SYMBOL "::="))
+     (terminal LHS "11" (seq (opt (seq "[" (plus SYMBOL) "]" (plus " "))) SYMBOL (star " ") "::="))
      (terminal SYMBOL "12" (plus (alt (range "a-z") (range "A-Z") (range "0-9") "_" ".")))
-     (terminal HEX "13" (seq "#x" (plus (alt (range "0-9") (range "a-f") (range "A-F")))))
-     (terminal ENUM "14"
-      (diff
-       (seq "["
-        (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR)) "-"
-        (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR)) "]" ) LHS ))
-     (terminal O_ENUM "15"
-      (seq "[^"
-       (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR)) "-"
-       (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR)) "]" ))
-     (terminal RANGE "16"
-      (seq "[" (plus (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR))) "]"))
-     (terminal O_RANGE "17"
-      (seq "[^" (plus (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR))) "]"))
+     (terminal HEX "13" (seq "#x" (plus (alt (range "a-f") (range "A-F") (range "0-9")))))
+     (terminal ENUM "14" (diff (alt (seq "[" (plus R_CHAR)) (seq (plus HEX) "]")) LHS))
+     (terminal O_ENUM "15" (alt (seq "[^" (plus R_CHAR)) (seq (plus HEX) "]")))
+     (terminal RANGE "16" (alt (seq "[" (seq R_CHAR "-" R_CHAR)) (seq (diff HEX HEX) "]")))
+     (terminal O_RANGE "17" (alt (seq "[^" (seq R_CHAR "-" R_CHAR)) (seq (diff HEX HEX) "]")))
      (terminal STRING1 "18" (seq "\"" (star (diff CHAR "\"")) "\""))
      (terminal STRING2 "19" (seq "'" (star (diff CHAR "'")) "'"))
-     (terminal CHAR "20" (alt HEX (range "#x20#x21#x22") (range "#x24-#x00FFFFFF")))
+     (terminal CHAR "20"
+      (alt
+       (range "#x9#xA#xD")
+       (range "#x20-#xD7FF")
+       (range "#xE000-#xFFFD")
+       (range "#x10000-#x10FFFF")) )
      (terminal R_CHAR "21" (diff CHAR "]"))
-     (terminal R_BEGIN "22" (seq (alt HEX R_CHAR) "-"))
-     (terminal POSTFIX "23" (range "?*+"))
-     (terminal PASS "24"
+     (terminal POSTFIX "22" (range "?*+"))
+     (terminal PASS "23"
       (plus
        (alt
         (range "#x00-#x20")
-        (seq (alt "#" "//") (star (range "^#x0A#x0D")))
+        (seq (alt (diff "#" "#x") "//") (star (range "^#x0A#x0Dx")))
         (seq "/*" (star (alt (opt (seq "*" (range "^/"))) (range "^*"))) "*/")
         (seq "(*" (star (alt (opt (seq "*" (range "^)"))) (range "^*"))) "*)")) )) )
 
-This can then be used as input to {EBNF.parse} to transform EBNF to BNF, create LL(1) first/follow rules and/or generate parser tables for parsing examples of the grammar using {EBNF::LL1::Parser}.
+This can then be used as input to {EBNF.parse} to transform EBNF to PEG for parsing examples of the grammar using {EBNF::PEG::Parser}.
 
-    ebnf --input-format sxp --bnf output.sxp
-    ebnf --input-format sxp --ll1 ebnf --format rb output.sxp
+    ebnf --input-format sxp --peg ebnf.sxp -o ebnf.peg.sxp
 
-An example S-Expression for rule `ebnf`, which uses both `start` and `alt` operators is transformed to use just BNF `alt` and `seq` operators, and include `first` and `follow` sets is shown here:
+An example S-Expression for rule `ebnf`, which is decomposed into sub-rules as follows:
 
-    (rule ebnf "1"
-     (start #t)
-     (first "@pass" "@terminals" LHS _eps)
-     (follow _eof)
-     (alt _empty _ebnf_2))
-    (rule _ebnf_1 "1.1"
-     (first "@pass" "@terminals" LHS)
-     (follow "@pass" "@terminals" LHS _eof)
-     (alt declaration rule))
-    (rule _ebnf_2 "1.2" (first "@pass" "@terminals" LHS) (follow _eof) (seq _ebnf_1 ebnf))
-    (rule _ebnf_3 "1.3" (first "@pass" "@terminals" LHS _eps) (follow _eof) (seq ebnf))
+     (rule ebnf "1" (star _ebnf_1))
+     (rule _ebnf_1 "1.1" (alt declaration rule))
 
-Note that sub-productions `_ebnf_1` through `_ebnf_3` are created, could be useful for some productions when creating parser logic, as described in the example walkthrough below.
+Note that sub-production `_ebnf_1` is created, could be useful for some productions when creating parser logic, as described in the example walkthrough below.
 
 ## Example Walkthrough
 
-This example uses the EBNF grammar from {file:/etc/ebnf.ebnf} to generate {file:meta}, which include the resulting `BRANCH`, `FIRST`, `FOLLOW`, `TERMINALS` and `PASS` tables, used by {file:parser} to implement a parser for the grammar.
+This example uses the EBNF grammar from {file:/etc/ebnf.ebnf}.
 
-The first step is defining regular expressions for terminals used within the grammar. The table generation process in {EBNF::LL1#build_tables} is not yet capable of automatically generating regular expressions for terminal productions, so they must be defined by hand. For the EBNF grammar, this is done in {file:terminals}.
+The first step is defining regular expressions for terminals used within the grammar. For the EBNF grammar, this is done in {EBNF::Terminals}. Note that the parser can operate without terminal definitions, but this can greatly improve parser performance.
 
-The {file:parser} is implemented using the {EBNFParser} class, which includes {EBNF::LL1::Parser} and {EBNFParserMeta}.
+The {file:parser} is implemented using the {EBNFPegParser} class, which includes {EBNF::PEG::Parser}.
 
 ### Parser basics
-The parser operates using the `BRANCH`, `FIRST`, `FOLLOW`, `START`, and `PASS` definitions from {file:meta}. Basically, the starting production has identified a possible set of starting tokens and it branches to different non-terminal productions when it finds a matching token. Tokens are derived from terminal rules defined in the grammar or contained inline through non-terminal rule definitions. Tokens are either strings, which must be matched exactly, or symbols, which identify a regular expression used to match the terminal and yield a token. The association between terminal symbols and their regular expressions along with processing rules to invoke when they are identified are described in [Terminal definitions](#Terminal_definitions).
+The parser operates directly using the rules from the abstract syntax tree generated by turning the original EBNF grammar using {EBNF::PEG#make_peg}. Tokens are derived from terminal rules defined in the grammar or contained inline through non-terminal rule definitions. Tokens are either strings, which must be matched exactly, or symbols, which identify a regular expression used to match the terminal and yield a token. The association between terminal symbols and their regular expressions along with processing rules to invoke when they are identified are described in [Terminal definitions](#Terminal_definitions).
 
-As mentioned, a production is found then the next token returned from the input matches a _first_ of the current production. If this is the case, then the `BRANCH` table will identify another production; this is pushed onto the _production stack_, along with an empty hash in the associated _production data stack_ (`prod_data`). If a _start handler_ is associated with the production, it is invoked with the top of `prod_data`, a fresh `data` hash, which will be pushed onto `prod_data` after the _start handler_ completes, and a reference to a callback specified when the parser was invoked. This is an opportunity to modify information at the top of `prod_data`, or to prepare information needed by downstream productions by initializing the new top of `prod_data`.
+The parser starts with the specified rule, `ebnf` in this case, and executes that rule, which is expected to completely parse the input file potentially leaving some whitespace.
+
+Non-terminal rules have an expression using one of the following:
+
+`seq`
+: A sequence of rules or terminals. If any (other than `opt` or `star`) to not parse, the rule is terminated as unmatched.
+`opt`
+: An optional rule or terminal. It either results in the matching rule or returns `nil`.
+`alt`
+: A list of alternative rules, which are attempted in order. It terminates with the first matching rule, or is terminated as unmatched, if no such rule is found.
+`plus`
+: A sequence of one or more of the matching rule. If there is no such rule, it is terminated as unmatched; otherwise, the result is an array containing all matched input.
+`star`
+: A sequence of zero or more of the matching rule. It will always return an array.
+
+The starting rule will typically be of the form `(star sub_rule)` which will attempt to parse that sub rule until the end of input.
+
+If a rule matches, it enters a _production_, which may invoke a _start production before matching is attempted, and will call any _production_ either if matched, or unmatched. That _production_ may choose to evaluate the returned abstract syntax tree to simplify the result, or create some semantic representation of that value.
+
+Due to the nature of [PEG][] parsers, the same rule may be attempted at the same input location many times; this is optimized by use of a [Packrat][] memoizing cache, which remembers the result of a previous successful evaluation and short-circuits further execution.
 
 Processing continues by continuing to look for productions sequence and pushing those productions onto the stack. When a production is complete, any associated _production handler_ is invoked, after popping off the top of the `prod_data` stack. The just removed hash is passed as `current` to the _production handler_. This is typically where the work of the parser happens. See [Production definitions](#Production_definitions) for more information.
 
 ### Terminal definitions
 The {file:parser} uses a DSL to specify `terminals` and `productions` associated with rules in the grammar. Each `terminal` specifies the rule name, associated regular expression, and a block which is invoked when the parser recognizes the terminal:
 
-    terminal(:SYMBOL, SYMBOL) do |prod, token, input|
-      input[:terminal] = token.value.to_sym
+    terminal(:SYMBOL, SYMBOL) do |value, prod|
+      value.to_sym
     end
 
-In this terminal definition, the SYMBOL terminal is recognized using the `SYMBOL` regular expression from {EBNF::Terminals::SYMBOL}. When found, the value of the symbol is added to the `input` stack for use by non-terminal productions which include it.
+In this terminal definition, the SYMBOL terminal is recognized using the `SYMBOL` regular expression from {EBNF::Terminals::SYMBOL}. When found, the value of the symbol returned for use by productions which include it.
 
 ### Production definitions
 During parsing, when a non-terminal production is identified, it attempts to invoke an associated `start_production` block. Typically there is nothing to do at the start of a production, so these are often left out. However, at times, it is necessary to prepare the production stack with information. For example, consider the _start production_ for `_alt_1` (a sub-production of `alt`).
 
-    start_production(:_alt_1) do |input, current, callback|
-      seq = Array(input[:seq])
-      (input[:alt] = [:alt]) << (seq.length > 2 ? seq : seq.last)
-      input.delete(:seq)
+    start_production(:_alt_1) do |data, callback|
+      data[:i_was_here] = true
     end
-
-The `_alt_1` production comes from the LL(1) definition:
-
-    (rule _alt_1 "5.1"
-     (first _eps "|")
-     (follow ")" "@pass" "@terminals" LHS _eof)
-     (alt _empty _alt_3))
-
 
 This is associated with the '|' part of the `alt` production.
 
     [5] alt         ::= seq ('|' seq)*
 
-When this is invoked, we have already processed one `seq`, which is placed on the `prod_data` stack, as `input[:seq]`. The result is to remove the `seq` data and append it to the `alt` data in `input[:alt]`. The final result of `alt`, will then be the hash containing :alt and an array of data matching the `seq` sub-productions. Looking at the EBNF grammar itself, we can see that the first declaration is
+When this is invoked, we have already processed one `seq`, which provided as part of the input value of the `:alt` production. The result is to remove the `seq` data and append it to the `alt` data in `value[:alt]`.
+
+    production(:_alt_1) do |value, data, callback|
+      data[:i_was_here] == true
+      value.map {|a1| a1.last[:seq]}.compact # Get rid of '|'
+    end
+
+The final result of `alt`, will then be the hash containing :alt and an array of data matching the `seq` sub-productions.
+
+The `_alt_1` production comes from the PEG definition:
+
+     (rule _alt_1 "5.1" (star _alt_2))
+     (rule _alt_2 "5.2" (seq "|" seq))
+
+On completion, the associated _production_ for `:alt` is invoked:
+
+    production(:alt) do |value|
+      if value.last[:_alt_1].length > 0
+        [:alt, value.first[:seq]] + value.last[:_alt_1]
+      else
+        value.first[:seq]
+      end
+    end
+
+Looking at the EBNF grammar itself, we can see that the first declaration is
 
     [1] ebnf        ::= (declaration | rule)*
 
 This is reduced to the LL(1) S-Expression noted above:
 
-    (rule ebnf "1"
-     (start #t)
-     (first "@pass" "@terminals" LHS _eps)
-     (follow _eof)
-     (alt _empty _ebnf_2))
-    (rule _ebnf_1 "1.1"
-     (first "@pass" "@terminals" LHS)
-     (follow "@pass" "@terminals" LHS _eof)
-     (alt declaration rule))
-    (rule _ebnf_2 "1.2" (first "@pass" "@terminals" LHS) (follow _eof) (seq _ebnf_1 ebnf))
-    (rule _ebnf_3 "1.3" (first "@pass" "@terminals" LHS _eps) (follow _eof) (seq ebnf))
+    (rule ebnf "1" (star _ebnf_1))
+    (rule _ebnf_1 "1.1" (alt declaration rule))
 
-The `ebnf` production uses the `alt` operator. When matching the production itself we can see that it is either a `declaration` or a `rule`. In this case of this parser, the result of parsing EBNF is an Abstract Syntax Tree, but in other cases it may create something else. In the case of the [Turtle gem][], the parser generates _RDF Triples_. Because the parser uses a streaming lexer, a file of any length can be passed to the parser, which emits triples as sufficient processing completes.
+The `ebnf` production uses the `alt` operator. When matching the production itself we can see that it is either a `declaration` or a `rule`. In this case of this parser, the result of parsing EBNF is an Abstract Syntax Tree, but in other cases it may create something else. In the case of the [Turtle gem][], the parser generates _RDF Triples_. Because the parser uses a streaming scanner, a file of any length can be passed to the parser, which emits triples as sufficient processing completes.
 
 [Ruby]:         https://ruby-lang.org/
 [YARD]:         https://yardoc.org/
@@ -149,8 +158,5 @@ The `ebnf` production uses the `alt` operator. When matching the production itse
 [PDD]:          https://lists.w3.org/Archives/Public/public-rdf-ruby/2010May/0013.html
 [EBNF]:         https://www.w3.org/TR/REC-xml/#sec-notation
 [EBNF doc]:     https://rubydoc.info/github/dryruby/ebnf/
-[First/Follow]: https://en.wikipedia.org/wiki/LL_parser#Constructing_an_LL.281.29_parsing_table
-[LL(1)]:        https://www.csd.uwo.ca/~moreno//CS447/Lectures/Syntax.html/node14.html
-[LL(1) Parser]: https://en.wikipedia.org/wiki/LL_parser
-[Tokenizer]:    https://en.wikipedia.org/wiki/Lexical_analysis#Tokenizer
 [Turtle gem]:   https://rubygems.org/gems/rdf-turtle
+[Packrat]:      https://pdos.csail.mit.edu/~baford/packrat/thesis/

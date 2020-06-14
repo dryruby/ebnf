@@ -48,6 +48,6 @@ end
 input = File.open(ARGV[0]) if ARGV[0]
 
 # Collect rules
-ebnf = EBNLL1FParser.new(input || STDIN, **options)
+ebnf = EBNFLL1Parser.new(input || STDIN, **options)
 
 puts ebnf.to_sxp

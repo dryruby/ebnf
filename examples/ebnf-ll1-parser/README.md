@@ -27,40 +27,35 @@ This generates a S-Expression form of the grammar suitable for use by {EBNF} for
      (rule primary "9"
       (alt HEX SYMBOL ENUM O_ENUM RANGE O_RANGE STRING1 STRING2 (seq "(" expression ")")))
      (rule pass "10" (seq "@pass" expression))
-     (terminal LHS "11" (seq (opt (seq "[" (plus SYMBOL) "]")) SYMBOL "::="))
+     (terminal LHS "11" (seq (opt (seq "[" (plus SYMBOL) "]" (plus " "))) SYMBOL (star " ") "::="))
      (terminal SYMBOL "12" (plus (alt (range "a-z") (range "A-Z") (range "0-9") "_" ".")))
-     (terminal HEX "13" (seq "#x" (plus (alt (range "0-9") (range "a-f") (range "A-F")))))
-     (terminal ENUM "14"
-      (diff
-       (seq "["
-        (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR)) "-"
-        (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR)) "]" ) LHS ))
-     (terminal O_ENUM "15"
-      (seq "[^"
-       (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR)) "-"
-       (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR)) "]" ))
-     (terminal RANGE "16"
-      (seq "[" (plus (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR))) "]"))
-     (terminal O_RANGE "17"
-      (seq "[^" (plus (alt (seq R_BEGIN (alt HEX R_CHAR)) (alt HEX R_CHAR))) "]"))
+     (terminal HEX "13" (seq "#x" (plus (alt (range "a-f") (range "A-F") (range "0-9")))))
+     (terminal ENUM "14" (diff (alt (seq "[" (plus R_CHAR)) (seq (plus HEX) "]")) LHS))
+     (terminal O_ENUM "15" (alt (seq "[^" (plus R_CHAR)) (seq (plus HEX) "]")))
+     (terminal RANGE "16" (alt (seq "[" (seq R_CHAR "-" R_CHAR)) (seq (diff HEX HEX) "]")))
+     (terminal O_RANGE "17" (alt (seq "[^" (seq R_CHAR "-" R_CHAR)) (seq (diff HEX HEX) "]")))
      (terminal STRING1 "18" (seq "\"" (star (diff CHAR "\"")) "\""))
      (terminal STRING2 "19" (seq "'" (star (diff CHAR "'")) "'"))
-     (terminal CHAR "20" (alt HEX (range "#x20#x21#x22") (range "#x24-#x00FFFFFF")))
+     (terminal CHAR "20"
+      (alt
+       (range "#x9#xA#xD")
+       (range "#x20-#xD7FF")
+       (range "#xE000-#xFFFD")
+       (range "#x10000-#x10FFFF")) )
      (terminal R_CHAR "21" (diff CHAR "]"))
-     (terminal R_BEGIN "22" (seq (alt HEX R_CHAR) "-"))
-     (terminal POSTFIX "23" (range "?*+"))
-     (terminal PASS "24"
+     (terminal POSTFIX "22" (range "?*+"))
+     (terminal PASS "23"
       (plus
        (alt
         (range "#x00-#x20")
-        (seq (alt "#" "//") (star (range "^#x0A#x0D")))
+        (seq (alt (diff "#" "#x") "//") (star (range "^#x0A#x0Dx")))
         (seq "/*" (star (alt (opt (seq "*" (range "^/"))) (range "^*"))) "*/")
         (seq "(*" (star (alt (opt (seq "*" (range "^)"))) (range "^*"))) "*)")) )) )
 
 This can then be used as input to {EBNF.parse} to transform EBNF to BNF, create LL(1) first/follow rules and/or generate parser tables for parsing examples of the grammar using {EBNF::LL1::Parser}.
 
-    ebnf --input-format sxp --bnf output.sxp
-    ebnf --input-format sxp --ll1 ebnf --format rb output.sxp
+    ebnf --input-format sxp --bnf ebnf.sxp
+    ebnf --input-format sxp --ll1 ebnf --format rb ebnf.sxp
 
 An example S-Expression for rule `ebnf`, which uses both `start` and `alt` operators is transformed to use just BNF `alt` and `seq` operators, and include `first` and `follow` sets is shown here:
 
@@ -82,7 +77,7 @@ Note that sub-productions `_ebnf_1` through `_ebnf_3` are created, could be usef
 
 This example uses the EBNF grammar from {file:/etc/ebnf.ebnf} to generate {file:meta}, which include the resulting `BRANCH`, `FIRST`, `FOLLOW`, `TERMINALS` and `PASS` tables, used by {file:parser} to implement a parser for the grammar.
 
-The first step is defining regular expressions for terminals used within the grammar. The table generation process in {EBNF::LL1#build_tables} is not yet capable of automatically generating regular expressions for terminal productions, so they must be defined by hand. For the EBNF grammar, this is done in {file:terminals}.
+The first step is defining regular expressions for terminals used within the grammar. The table generation process in {EBNF::LL1#build_tables} is not yet capable of automatically generating regular expressions for terminal productions, so they must be defined by hand. For the EBNF grammar, this is done in {EBNF::Terminals}.
 
 The {file:parser} is implemented using the {EBNFLL1Parser} class, which includes {EBNF::LL1::Parser} and {EBNFParserMeta}.
 
