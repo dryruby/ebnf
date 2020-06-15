@@ -218,16 +218,19 @@ module EBNF::PEG
       result = start_rule.parse(scanner)
       if result == :unmatched
         # Start rule wasn't matched, which is about the only error condition
-        error("--top--", "Parse failed #{result}", pos: scanner.pos, lineno: scanner.lineno)
+        error("--top--", @furthest_failure.to_s,
+          pos: @furthest_failure.pos,
+          lineno: @furthest_failure.lineno,
+          rest: scanner.string[@furthest_failure.pos, 20])
       end
 
       # Eat any remaining whitespace
       start_rule.eat_whitespace(scanner)
       if !scanner.eos?
-        error("--top--", "Parse completed with unconsumed input #{result}",
-              pos: scanner.pos,
-              lineno: scanner.lineno,
-              rest: scanner.rest[0..100])
+        error("--top--", @furthest_failure.to_s,
+          pos: @furthest_failure.pos,
+          lineno: @furthest_failure.lineno,
+          rest: scanner.string[@furthest_failure.pos, 20])
       end
 
       # When all is said and done, raise the error log
@@ -435,7 +438,48 @@ module EBNF::PEG
       self.class.terminal_regexps[sym]
     end
 
+    ##
+    # Record furthest failure.
+    #
+    # @param [Integer] pos
+    #   The position in the input stream where the failure occured.
+    # @param [Integer] lineno
+    #   Line where the failure occured.
+    # @param [Symbol, String] token
+    #   The terminal token or string which attempted to match.
+    # @see https://arxiv.org/pdf/1405.6646.pdf
+    def update_furthest_failure(pos, lineno, token)
+      # Skip generated productions
+      return if token.is_a?(Symbol) && token.to_s.start_with?('_')
+      if @furthest_failure.nil? || pos > @furthest_failure.pos
+        @furthest_failure = Unmatched.new(pos, lineno, [token])
+      elsif pos == @furthest_failure.pos && !@furthest_failure[:expecting].include?(token)
+        @furthest_failure[:expecting] << token
+      end
+    end
+
   public
+
+    ##
+    # @!parse
+    #   # Record details about an inmatched rule, including the following:
+    #   # 
+    #   # * Input location and line number at time of failure.
+    #   # * The rule at which this was found (non-terminal, and nat starting with '_').
+    #   class Unmatched
+    #     # @return [Integer] The position within the scanner which did not match.
+    #     attr_reader :pos
+    #     # @return [Integer] The line number which did not match.
+    #     attr_reader :lineno
+    #     # @return [Array<Symbol,String>]
+    #     #   Strings or production rules that attempted to match at this position.
+    #     attr_reader :expecting
+    #   end
+    class Unmatched < Struct.new(:pos, :lineno, :expecting)
+      def to_s
+        "syntax error, expecting #{expecting.map(&:inspect).join(', ')}"
+      end
+    end
 
     ##
     # Raised for errors during parsing.

@@ -45,10 +45,13 @@ module EBNF::PEG
         # otherwise,
         if regexp = parser.find_terminal_regexp(sym)
           matched = input.scan(regexp)
+          result = (matched ? parser.onTerminal(sym, matched, scanner: input) : :unmatched)
+          # Update furthest failure for strings and terminals
+          parser.update_furthest_failure(input.pos, input.lineno, sym) if result == :unmatched
           parser.packrat[sym][pos] = {
             pos: input.pos,
             lineno: input.lineno,
-            result: (matched ? parser.onTerminal(sym, matched, scanner: input) : :unmatched)
+            result: result
           }
           return parser.packrat[sym][pos][:result]
         end
@@ -71,17 +74,33 @@ module EBNF::PEG
           when String
             input.scan(Regexp.new(Regexp.quote(prod))) || :unmatched
           end
-          break unless alt == :unmatched
+          if alt == :unmatched
+            # Update furthest failure for strings and terminals
+            parser.update_furthest_failure(input.pos, input.lineno, prod) if prod.is_a?(String) || rule.terminal?
+          else
+            break
+          end
         end
         alt
       when :diff
         # matches any string that matches A but does not match B.
+        # XXX: Should this work for arbitrary rules?
         re1, re2 = Regexp.new(translate_codepoints(expr[1])), Regexp.new(translate_codepoints(expr[2]))
         matched = input.scan(re1)
-        !matched || re2.match?(matched) ? :unmatched : matched
+        if !matched || re2.match?(matched)
+          # Update furthest failure for terminals
+          parser.update_furthest_failure(input.pos, input.lineno, sym)
+          :unmatched
+        else
+          matched
+        end
       when :hex
         # Matches the given hex character if expression matches the character whose number (code point) in ISO/IEC 10646 is N. The number of leading zeros in the #xN form is insignificant.
-        input.scan(to_regexp) || :unmatched
+        input.scan(to_regexp) || begin
+          # Update furthest failure for terminals
+          parser.update_furthest_failure(input.pos, input.lineno, expr.last)
+          :unmatched
+        end
       when :opt
         # Always matches
         opt = case prod = expr[1]
@@ -92,7 +111,13 @@ module EBNF::PEG
         when String
           input.scan(Regexp.new(Regexp.quote(prod))) || :unmatched
         end
-        opt == :unmatched ? nil : opt
+        if opt == :unmatched
+          # Update furthest failure for terminals
+          parser.update_furthest_failure(input.pos, input.lineno, prod) if terminal?
+          nil
+        else
+          opt
+        end
       when :plus
         # Result is an array of all expressions while they match,
         # at least one must match
@@ -111,10 +136,16 @@ module EBNF::PEG
             plus << res
           end
         end
+        # Update furthest failure for strings and terminals
+        parser.update_furthest_failure(input.pos, input.lineno, prod)
         plus.empty? ? :unmatched : (terminal? ? plus.compact.join("") : plus.compact)
       when :range
         # Matches the specified character range
-        input.scan(to_regexp) || :unmatched
+        input.scan(to_regexp) || begin
+          # Update furthest failure for strings and terminals
+          parser.update_furthest_failure(input.pos, input.lineno, expr[1])
+          :unmatched
+        end
       when :seq
         # Evaluate each expression into an array of hashes where each hash contains a key from the associated production and the value is the parsed value of that production. Returns :unmatched if the input does not match the production. Value ordering is ensured by native Hash ordering.
         seq = expr[1..-1].each_with_object([]) do |prod, accumulator|
@@ -127,7 +158,11 @@ module EBNF::PEG
           when String
             input.scan(Regexp.new(Regexp.quote(prod))) || :unmatched
           end
-          break :unmatched if res == :unmatched
+          if res == :unmatched
+            # Update furthest failure for strings and terminals
+            parser.update_furthest_failure(input.pos, input.lineno, prod)
+            break :unmatched 
+          end
           accumulator << {prod.to_sym => res}
         end
         seq == :unmatched ?
@@ -153,6 +188,8 @@ module EBNF::PEG
             star << res
           end
         end
+        # Update furthest failure for strings and terminals
+        parser.update_furthest_failure(input.pos, input.lineno, prod)
         star.compact
       else
         raise "attempt to parse unknown rule type: #{expr.first}"
