@@ -35,8 +35,8 @@ module EBNF::LL1
       @options = options.merge(high_water: HIGH_WATER, low_water: LOW_WATER)
 
       @previous_lineno = @lineno = 1
-      @input = input
-      super(input.is_a?(String) ? input : "")
+      @input = input.is_a?(String) ? encode_utf8(input) : input
+      super(input.is_a?(String) ? @input : "")
       feed_me
       self
     end
