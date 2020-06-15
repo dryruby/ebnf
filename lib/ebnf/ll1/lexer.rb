@@ -43,10 +43,10 @@ module EBNF::LL1
       "\\'"  => '\'',   # \u0027 (apostrophe-quote, single quote mark)
       '\\\\' => '\\'    # \u005C (backslash)
     }.freeze
-    ESCAPE_CHAR4        = /\\u(?:[0-9A-Fa-f]{4,4})/.freeze    # \uXXXX
-    ESCAPE_CHAR8        = /\\U(?:[0-9A-Fa-f]{8,8})/.freeze    # \UXXXXXXXX
-    ECHAR               = /\\./                               # More liberal unescaping
-    UCHAR               = /#{ESCAPE_CHAR4}|#{ESCAPE_CHAR8}/.freeze
+    ESCAPE_CHAR4        = /\\u(?:[0-9A-Fa-f]{4,4})/u.freeze    # \uXXXX
+    ESCAPE_CHAR8        = /\\U(?:[0-9A-Fa-f]{8,8})/u.freeze    # \UXXXXXXXX
+    ECHAR               = /\\./u.freeze                        # More liberal unescaping
+    UCHAR               = /#{ESCAPE_CHAR4}|#{ESCAPE_CHAR8}/u.freeze
 
     ##
     # @return [Regexp] defines whitespace, including comments, otherwise whitespace must be explicit in terminals
