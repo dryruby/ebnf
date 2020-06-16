@@ -292,7 +292,23 @@ describe EBNF::LL1::Lexer do
     end
 
     describe EBNF::LL1::Lexer::Terminal do
-      it "needs specs to check for canonicalization"
+      {
+        "returns itself with no map entry": {
+          input: "FOO",
+          map: {},
+          expect: "FOO"
+        },
+        "returns map value if specified": {
+          input: "FOO",
+          map: {"foo" => 'bar'},
+          expect: "bar"
+        },
+      }.each do |name, params|
+        it name do
+          term = described_class.new(:nil, params[:regexp], map: params[:map])
+          expect(term.canonicalize(params[:input])).to eq params[:expect]
+        end
+      end
     end
   end
 

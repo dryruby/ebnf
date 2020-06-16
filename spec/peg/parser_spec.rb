@@ -157,10 +157,6 @@ describe EBNF::PEG::Parser do
         end
       end
     end
-
-    context "error reporting" do
-      it "should report better errors"
-    end
   end
 
   require_relative "data/parser"

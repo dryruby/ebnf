@@ -3,7 +3,7 @@ require 'scanf'
 module EBNF
   # Represent individual parsed rules
   class Rule
-    # Operations which are flattened to seprate rules in to_bnf
+    # Operations which are flattened to seprate rules in to_bnf.
     BNF_OPS = %w{
       alt opt plus seq star
     }.map(&:to_sym).freeze
@@ -89,7 +89,7 @@ module EBNF
     #    (rule ebnf "1" (star (alt declaration rule)))
     #    (terminal O_ENUM "17" (seq "[^" (plus CHAR) "]"))
     #
-    # Also may have (first ...), (follow ...), or (start #t)
+    # Also may have `(first ...)`, `(follow ...)`, or `(start #t)`.
     #
     # @param [Array] sxp
     # @return [Rule]
@@ -108,7 +108,7 @@ module EBNF
     end
 
     # Build a new rule creating a symbol and numbering from the current rule
-    # Symbol and number creation is handled by the top-most rule in such a chain
+    # Symbol and number creation is handled by the top-most rule in such a chain.
     #
     # @param [Array] expr
     # @param [Symbol] kind (nil)
@@ -124,7 +124,8 @@ module EBNF
                      **options)
     end
 
-    # Return representation for building S-Expressions
+    # Return representation for building S-Expressions.
+    #
     # @return [Array]
     def for_sxp
       elements = [kind, sym]
@@ -146,7 +147,8 @@ module EBNF
 
     alias_method :to_s, :to_sxp
     
-    # Serializes this rule to an Turtle
+    # Serializes this rule to an Turtle.
+    #
     # @return [String]
     def to_ttl
       @ebnf.debug("to_ttl") {inspect} if @ebnf
@@ -180,7 +182,8 @@ module EBNF
     #   * Transform (rule a (star b)) into (rule a (alt _empty (seq b a)))
     #   * Transform (rule a (plus b)) into (rule a (seq b (star b)
     #
-    # Transformation includes information used to re-construct non-transformed
+    # Transformation includes information used to re-construct non-transformed.
+    #
     # AST representation
     # @return [Array<Rule>]
     def to_bnf
@@ -277,7 +280,7 @@ module EBNF
     end
 
     ##
-    # For :hex or :range, create a regular expression
+    # For :hex or :range, create a regular expression.
     #
     # @return [Regexp]
     def to_regexp
@@ -292,7 +295,8 @@ module EBNF
     end
 
     # Return the non-terminals for this rule. For seq, this is the first
-    # non-terminals in the seq. For alt, this is every non-terminal ni the alt
+    # non-terminal in the sequence. For alt, this is every non-terminal in the alt.
+    #
     # @param [Array<Rule>] ast
     #   The set of rules, used to turn symbols into rules
     # @return [Array<Rule>]
@@ -309,7 +313,8 @@ module EBNF
     end
 
     # Return the terminals for this rule. For seq, this is the first
-    # terminals or strings in the seq. For alt, this is every non-terminal ni the alt
+    # terminals or strings in the seq. For alt, this is every non-terminal ni the alt.
+    #
     # @param [Array<Rule>] ast
     #   The set of rules, used to turn symbols into rules
     # @return [Array<Rule>]
@@ -329,7 +334,8 @@ module EBNF
 
     # Does this rule start with a sym? It does if expr is that sym,
     # expr starts with alt and contains that sym,
-    # or expr starts with seq and the next element is that sym
+    # or expr starts with seq and the next element is that sym.
+    #
     # @param [Symbol, class] sym
     #   Symbol matching any start element, or if it is String, any start element which is a String
     # @return [Array<Symbol, String>] list of symbol (singular), or strings which are start symbol, or nil if there are none
@@ -344,12 +350,14 @@ module EBNF
     end
 
     # Do the firsts of this rule include the empty string?
+    #
     # @return [Boolean]
     def first_includes_eps?
       @first && @first.include?(:_eps)
     end
 
-    # Add terminal as proceding this rule
+    # Add terminal as proceding this rule.
+    #
     # @param [Array<Rule, Symbol, String>] terminals
     # @return [Integer] if number of terminals added
     def add_first(terminals)
@@ -413,7 +421,8 @@ module EBNF
       ">"
     end
 
-    # Two rules are equal if they have the same {#sym}, {#kind} and {#expr}
+    # Two rules are equal if they have the same {#sym}, {#kind} and {#expr}.
+    #
     # @param [Rule] other
     # @return [Boolean]
     def ==(other)
@@ -422,26 +431,12 @@ module EBNF
       expr  == other.expr
     end
 
-    # Two rules are equivalent if they have the same {#expr}
+    # Two rules are equivalent if they have the same {#expr}.
+    #
     # @param [Rule] other
     # @return [Boolean]
     def equivalent?(other)
       expr == other.expr
-    end
-
-    # Rewrite the rule substituting src_rule for dst_rule wherever
-    # it is used in the production (first level only).
-    # @param [Symbol] src_rule
-    # @param [Symbol] dst_rule
-    # @return [self]
-    def rewrite(src_rule, dst_rule)
-      case @expr
-      when Array
-        @expr = @expr.map {|e| e == src_rule ? dst_rule : e}
-      else
-        @expr = dst_rule if @expr == src_rule
-      end
-      self
     end
 
     # Rules compare using their ids

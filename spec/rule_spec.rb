@@ -223,13 +223,4 @@ describe EBNF::Rule do
       expect(rule).to be_a(EBNF::PEG::Rule)
     end
   end
-
-  describe "#rewrite", pending: true do
-    it "updates rule references" do
-      subject.expr = [:do, :re, [:me, :fa, :do], :do]
-      rsrc = EBNF::Rule.new(:do, "0", [])
-      rdst = EBNF::Rule.new(:DO, "0", [])
-      expect(subject.rewrite(rsrc, rdst).expr).to eq [:DO, :re, [:me, :fa, :do], :DO]
-    end
-  end
 end
