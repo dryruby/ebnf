@@ -44,9 +44,10 @@ Output rules and terminals as S-Expressions, Turtle, HTML or BNF
     puts ebnf.to_html
     puts ebnf.to_s
 
-Transform EBNF to PEG (generates sub-rules for embedded expressions)
+Transform EBNF to PEG (generates sub-rules for embedded expressions) and the RULES table as Ruby for parsing grammars:
 
     ebnf.make_peg
+    ebnf.to_ruby
 
 Transform EBNF to BNF (generates sub-rules using `alt` or `seq` from `plus`, `star` or `opt`)
 

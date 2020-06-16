@@ -59,8 +59,8 @@ module EBNF
     # Determines preparation and cleanup rules for reconstituting EBNF ? * + from BNF
     attr_accessor :cleanup
 
-    # @param [Integer] id
     # @param [Symbol] sym
+    # @param [Integer] id
     # @param [Array] expr
     # @param [Symbol] kind (nil)
     # @param [String] ebnf (nil)
@@ -162,6 +162,12 @@ module EBNF
       
       statements += ttl_expr(expr, terminal? ? "re" : "g", 1, false)
       "\n" + statements.join("\n")
+    end
+
+    # Return a Ruby representation of this rule
+    # @return [String]
+    def to_ruby
+      "EBNF::Rule.new(#{sym.inspect}, #{id.inspect}, #{expr.inspect}#{', kind: ' + kind.inspect unless kind == :rule})"
     end
 
     ##

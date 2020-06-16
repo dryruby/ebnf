@@ -42,9 +42,9 @@ end
 
 namespace :etc do
   ETC_FILES = %w{
-    etc/ebnf.sxp etc/ebnf.ll1.sxp etc/ebnf.peg.sxp etc/ebnf.html etc/ebnf.rb
-    etc/turtle.sxp etc/turtle.ll1.sxp etc/turtle.peg.sxp etc/turtle.html etc/turtle.rb
-    etc/sparql.sxp etc/sparql.ll1.sxp etc/sparql.peg.sxp etc/sparql.html etc/sparql.rb
+    etc/ebnf.sxp etc/ebnf.ll1.sxp etc/ebnf.peg.sxp etc/ebnf.html etc/ebnf.ll1.rb etc/ebnf.peg.rb
+    etc/turtle.sxp etc/turtle.ll1.sxp etc/turtle.peg.sxp etc/turtle.html etc/turtle.peg.rb etc/turtle.ll1.rb
+    etc/sparql.sxp etc/sparql.ll1.sxp etc/sparql.peg.sxp etc/sparql.html etc/sparql.peg.rb etc/turtle.ll1.rb
   }
   desc 'Remove generated files in etc'
   task :clean do
@@ -89,9 +89,14 @@ file "etc/ebnf.ll1.sxp" => "etc/ebnf.ebnf" do |t|
   end
 end
 
-file "etc/ebnf.rb" => "etc/ebnf.ebnf" do |t|
+file "etc/ebnf.peg.rb" => "etc/ebnf.ebnf" do |t|
   puts "build #{t.name}"
-  %x(bin/ebnf --ll1 ebnf -f rb -o etc/ebnf.rb etc/ebnf.ebnf)
+  %x(bin/ebnf --peg -f rb -o etc/ebnf.peg.rb etc/ebnf.ebnf)
+end
+
+file "etc/ebnf.ll1.rb" => "etc/ebnf.ebnf" do |t|
+  puts "build #{t.name}"
+  %x(bin/ebnf --ll1 ebnf -f rb -o etc/ebnf.ll1.rb etc/ebnf.ebnf)
 end
 
 file "etc/turtle.ll1.sxp" => "etc/turtle.ebnf" do |t|
@@ -103,9 +108,14 @@ file "etc/turtle.ll1.sxp" => "etc/turtle.ebnf" do |t|
   end
 end
 
-file "etc/turtle.rb" => "etc/turtle.ebnf" do |t|
+file "etc/turtle.peg.rb" => "etc/turtle.ebnf" do |t|
   puts "build #{t.name}"
-  %x(bin/ebnf --ll1 turtleDoc -f rb -o etc/turtle.rb etc/turtle.ebnf)
+  %x(bin/ebnf --peg -f rb -o etc/turtle.peg.rb etc/turtle.ebnf)
+end
+
+file "etc/turtle.ll1.rb" => "etc/turtle.ebnf" do |t|
+  puts "build #{t.name}"
+  %x(bin/ebnf --ll1 turtleDoc -f rb -o etc/turtle.ll1.rb etc/turtle.ebnf)
 end
 
 file "etc/sparql.ll1.sxp" => "etc/sparql.ebnf" do |t|
@@ -117,7 +127,12 @@ file "etc/sparql.ll1.sxp" => "etc/sparql.ebnf" do |t|
   end
 end
 
-file "etc/sparql.rb" => "etc/sparql.ebnf" do |t|
+file "etc/sparql.peg.rb" => "etc/sparql.ebnf" do |t|
   puts "build #{t.name}"
-  %x(bin/ebnf --ll1 QueryUnit --ll1 UpdateUnit -f rb -o etc/sparql.rb etc/sparql.ebnf)
+  %x(bin/ebnf --peg -f rb -o etc/sparql.peg.rb etc/sparql.ebnf)
+end
+
+file "etc/sparql.ll1.rb" => "etc/sparql.ebnf" do |t|
+  puts "build #{t.name}"
+  %x(bin/ebnf --ll1 QueryUnit --ll1 UpdateUnit -f rb -o etc/sparql.ll1.rb etc/sparql.ebnf)
 end

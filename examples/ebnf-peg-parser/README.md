@@ -65,7 +65,7 @@ Note that sub-production `_ebnf_1` is created, could be useful for some producti
 
 ## Example Walkthrough
 
-This example uses the EBNF grammar from {file:/etc/ebnf.ebnf}.
+This example uses the EBNF grammar from {file:/etc/ebnf.ebnf} to generate {file:meta}, which includes the resulting `RULES` table, used by {file:parser} to implement a parser for the grammar.
 
 The first step is defining regular expressions for terminals used within the grammar. For the EBNF grammar, this is done in {EBNF::Terminals}. Note that the parser can operate without terminal definitions, but this can greatly improve parser performance.
 

@@ -23,5 +23,17 @@ module EBNF
       progress("make_peg") {"End: #{@ast.length} rules"}
       self
     end
+
+    ##
+    # Output Ruby parser files for PEG parsing
+    #
+    # @param [IO, StringIO] output
+    def to_ruby_peg(output, **options)
+      output.puts "  RULES = ["
+      ast.each do |rule|
+        output.puts "    " + rule.to_ruby + '.extend(EBNF::PEG::Rule),'
+      end
+      output.puts "  ]"
+    end
   end
 end

@@ -4,6 +4,7 @@
 require 'ebnf'
 require 'ebnf/terminals'
 require 'ebnf/peg/parser'
+require 'meta'
 require 'sxp'
 require 'logger'
 
@@ -295,12 +296,6 @@ class EBNFPegParser
   #   Trace level. 0(debug), 1(info), 2(warn), 3(error).
   # @return [EBNFParser]
   def initialize(input, **options, &block)
-    # Intantiate grammar from ebnf.ebnf
-    ebnf = File.expand_path("../../../etc/ebnf.peg.sxp", __FILE__)
-
-    # Perform PEG-specific transformation to the associated rules, which will be passed directly to the parser.
-    rules = EBNF.parse(File.open(ebnf), format: :sxp).make_peg.ast
-
     # If the `level` option is set, instantiate a logger for collecting trace information.
     if options.has_key?(:level)
       options[:logger] = Logger.new(STDERR)
@@ -313,7 +308,7 @@ class EBNFPegParser
 
     parsing_terminals = false
     @ast = []
-    parse(@input, :ebnf, rules,
+    parse(@input, :ebnf, EBNFPegMeta::RULES,
                          # Use an optimized Regexp for whitespace
                          whitespace: EBNF::Terminals::PASS,
                          **options
