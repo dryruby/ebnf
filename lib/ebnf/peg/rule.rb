@@ -45,7 +45,7 @@ module EBNF::PEG
         # otherwise,
         if regexp = parser.find_terminal_regexp(sym)
           matched = input.scan(regexp)
-          result = (matched ? parser.onTerminal(sym, matched, scanner: input) : :unmatched)
+          result = (matched ? parser.onTerminal(sym, matched) : :unmatched)
           # Update furthest failure for strings and terminals
           parser.update_furthest_failure(input.pos, input.lineno, sym) if result == :unmatched
           parser.packrat[sym][pos] = {
@@ -58,7 +58,7 @@ module EBNF::PEG
       else
         eat_whitespace(input)
       end
-      parser.onStart(sym, scanner: input)
+      parser.onStart(sym)
 
       result = case expr.first
       when :alt
@@ -199,7 +199,7 @@ module EBNF::PEG
         input.pos, input.lineno = pos, lineno
       end
 
-      result = parser.onFinish(result, scanner: input)
+      result = parser.onFinish(result)
       (parser.packrat[sym] ||= {})[pos] = {
         pos: input.pos,
         lineno: input.lineno,

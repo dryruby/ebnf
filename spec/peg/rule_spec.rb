@@ -123,9 +123,9 @@ describe EBNF::PEG::Rule do
         it name do
           rule = EBNF::Rule.new(:rule, "0", params[:rule]).extend(EBNF::PEG::Rule)
           rule.parser = parser
-          expect(parser).to receive(:onStart).with(Symbol, anything)
-          expect(parser).to receive(:onFinish).with(params[:expect], anything).and_return(params[:expect])
-          expect(parser).not_to receive(:onTerminal).with(Symbol, anything)
+          expect(parser).to receive(:onStart).with(Symbol)
+          expect(parser).to receive(:onFinish).with(params[:expect]).and_return(params[:expect])
+          expect(parser).not_to receive(:onTerminal).with(Symbol)
 
           expect(rule.parse(EBNF::LL1::Scanner.new(params[:input]))).to eql(params[:expect])
         end
@@ -253,8 +253,8 @@ describe EBNF::PEG::Rule do
         it name do
           rule = EBNF::Rule.new(:rule, "0", params[:rule], kind: :terminal).extend(EBNF::PEG::Rule)
           rule.parser = parser
-          expect(parser).to receive(:onStart).with(Symbol, anything)
-          expect(parser).to receive(:onFinish).with(params[:expect], anything).and_return(params[:expect])
+          expect(parser).to receive(:onStart).with(Symbol)
+          expect(parser).to receive(:onFinish).with(params[:expect]).and_return(params[:expect])
           expect(parser).not_to receive(:onTerminal)
           expect(parser).to receive(:find_terminal_regexp).with(:rule)
 

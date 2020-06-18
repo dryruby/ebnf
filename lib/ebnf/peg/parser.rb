@@ -7,6 +7,10 @@ module EBNF::PEG
     attr_reader :whitespace
 
     ##
+    # @return [Scanner] used for scanning input.
+    attr_reader :scanner
+
+    ##
     # A Hash structure used for memoizing rule results for a given input location.
     #
     #  @example Partial structure for memoizing results for a particular rule
@@ -210,7 +214,7 @@ module EBNF::PEG
       @error_log = []
       @prod_data = [{}]
 
-      scanner = EBNF::LL1::Scanner.new(input)
+      @scanner = EBNF::LL1::Scanner.new(input)
       start = start.split('#').last.to_sym unless start.is_a?(Symbol)
       start_rule = @rules[start]
       raise Error, "Starting production #{start.inspect} not defined" unless start_rule
@@ -338,7 +342,7 @@ module EBNF::PEG
 
     # Start for production
     # Adds data avoiable during the processing of the production
-    def onStart(prod, scanner: nil)
+    def onStart(prod)
       handler = self.class.start_handlers[prod]
       @productions << prod
       debug("#{prod}(:start)", "", depth: (depth + 1)) {"#{prod}, lineno: #{scanner ? scanner.lineno : '?'}, pos: #{scanner ? scanner.pos : '?'}, rest: #{scanner ? scanner.rest[0..20].inspect : '?'}"}
@@ -366,7 +370,7 @@ module EBNF::PEG
     #
     # @param [Object] result parse result
     # @return [Object] parse result, or the value returned from the handler
-    def onFinish(result, scanner: nil)
+    def onFinish(result)
       #puts "prod_data(f): " + @prod_data.inspect
       prod = @productions.last
       handler, clear_packrat = self.class.production_handlers[prod]
@@ -398,7 +402,7 @@ module EBNF::PEG
     # @param [Symbol] prod from the symbol of the associated rule
     # @param [String] value the scanned string
     # @return [String, Object] either the result from the handler, or the token
-    def onTerminal(prod, value, scanner: nil)
+    def onTerminal(prod, value)
       parentProd = @productions.last
       handler = self.class.terminal_handlers[prod]
       if handler && value != :unmatched
