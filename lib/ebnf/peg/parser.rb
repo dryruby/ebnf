@@ -265,7 +265,7 @@ module EBNF::PEG
     # @option options [Token] :token
     # @see #debug
     def error(node, message, **options)
-      lineno = options[:lineno]
+      lineno = options[:lineno] || (scanner.lineno if scanner)
       m = "ERROR "
       m += "[line: #{lineno}] " if lineno
       m += message
@@ -290,7 +290,7 @@ module EBNF::PEG
     # @option options [Token] :token
     # @see #debug
     def warn(node, message, **options)
-      lineno = options[:lineno]
+      lineno = options[:lineno] || (scanner.lineno if scanner)
       m = "WARNING "
       m += "[line: #{lineno}] " if lineno
       m += message
@@ -332,7 +332,7 @@ module EBNF::PEG
     def debug(*args)
       return unless @options[:logger]
       options = args.last.is_a?(Hash) ? args.pop : {}
-      lineno = options[:lineno]
+      lineno = options[:lineno] || (scanner.lineno if scanner)
       level = options.fetch(:level, 0)
 
       depth = options[:depth] || self.depth
@@ -345,7 +345,10 @@ module EBNF::PEG
     def onStart(prod)
       handler = self.class.start_handlers[prod]
       @productions << prod
-      debug("#{prod}(:start)", "", depth: (depth + 1)) {"#{prod}, lineno: #{scanner ? scanner.lineno : '?'}, pos: #{scanner ? scanner.pos : '?'}, rest: #{scanner ? scanner.rest[0..20].inspect : '?'}"}
+      debug("#{prod}(:start)", "",
+        lineno: (scanner.lineno if scanner),
+        pos: (scanner.pos if scanner),
+        depth: (depth + 1)) {"#{prod}, pos: #{scanner ? scanner.pos : '?'}, rest: #{scanner ? scanner.rest[0..20].inspect : '?'}"}
       if handler
         # Create a new production data element, potentially allowing handler
         # to customize before pushing on the @prod_data stack
@@ -388,7 +391,7 @@ module EBNF::PEG
       end
       progress("#{prod}(:finish)", "",
                depth: (depth + 1),
-               lineno: (scanner ? scanner.lineno : '?'),
+               lineno: (scanner.lineno if scanner),
                level: result == :unmatched ? 0 : 1) do
         "#{result.inspect}@(#{scanner ? scanner.pos : '?'}), rest: #{scanner ? scanner.rest[0..20].inspect : '?'}"
       end
@@ -417,7 +420,7 @@ module EBNF::PEG
       end
       progress("#{prod}(:terminal)", "",
                depth: (depth + 2),
-               lineno: (scanner ? scanner.lineno : '?'),
+               lineno: (scanner.lineno if scanner),
                level: value == :unmatched ? 0 : 1) do
         "#{value.inspect}@(#{scanner ? scanner.pos : '?'})"
       end
