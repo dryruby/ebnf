@@ -581,10 +581,18 @@ module EBNF::LL1
       options = args.last.is_a?(Hash) ? args.pop : {}
       lineno = @lineno || (options[:token].lineno if options[:token].respond_to?(:lineno))
       level = options.fetch(:level, 0)
-
       depth = options[:depth] || self.depth
-      args << yield if block_given?
-      @options[:logger].add(level, "[#{@lineno}]" + (" " * depth) + args.join(" "))
+
+      if self.respond_to?(:log_debug)
+        level = [:debug, :info, :warn, :error, :fatal][level]
+        log_debug(*args, **options.merge(level: level, lineno: lineno, depth: depth), &block)
+      elsif @options[:logger].respond_to?(:add)
+        args << yield if block_given?
+        @options[:logger].add(level, "[#{lineno}]" + (" " * depth) + args.join(" "))
+      elsif @options[:logger].respond_to?(:<<)
+        args << yield if block_given?
+        @options[:logger] << "[#{lineno}]" + (" " * depth) + args.join(" ")
+      end
     end
 
   private

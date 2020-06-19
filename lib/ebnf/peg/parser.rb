@@ -273,6 +273,7 @@ module EBNF::PEG
       m += ", production = #{options[:production].inspect}" if options[:production]
       @error_log << m unless @recovering
       @recovering = true
+      require 'byebug'; byebug
       debug(node, m, level: 3, **options)
       if options[:raise] || @options[:validate]
         raise Error.new(m, lineno: lineno, rest: options[:rest], production: options[:production])
@@ -329,15 +330,23 @@ module EBNF::PEG
     #   @option options [Integer] :depth
     #     Recursion depth for indenting output
     #   @yieldreturn [String] additional string appended to `message`.
-    def debug(*args)
+    def debug(*args, &block)
       return unless @options[:logger]
       options = args.last.is_a?(Hash) ? args.pop : {}
       lineno = options[:lineno] || (scanner.lineno if scanner)
       level = options.fetch(:level, 0)
-
       depth = options[:depth] || self.depth
-      args << yield if block_given?
-      @options[:logger].add(level, "[#{lineno}]" + (" " * depth) + args.join(" "))
+
+      if self.respond_to?(:log_debug)
+        level = [:debug, :info, :warn, :error, :fatal][level]
+        log_debug(*args, **options.merge(level: level, lineno: lineno, depth: depth), &block)
+      elsif @options[:logger].respond_to?(:add)
+        args << yield if block_given?
+        @options[:logger].add(level, "[#{lineno}]" + (" " * depth) + args.join(" "))
+      elsif @options[:logger].respond_to?(:<<)
+        args << yield if block_given?
+        @options[:logger] << "[#{lineno}]" + (" " * depth) + args.join(" ")
+      end
     end
 
     # Start for production
