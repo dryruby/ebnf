@@ -212,7 +212,7 @@ module EBNF::PEG
       @productions = []
       @parse_callback = block
       @error_log = []
-      @prod_data = [{}]
+      @prod_data = []
 
       @scanner = EBNF::LL1::Scanner.new(input)
       start = start.split('#').last.to_sym unless start.is_a?(Symbol)
@@ -249,7 +249,7 @@ module EBNF::PEG
     def depth; (@productions || []).length; end
 
     # Current ProdData element
-    def prod_data; @prod_data.last; end
+    def prod_data; @prod_data.last || {}; end
 
     # Clear out packrat memoizer. This is appropriate when completing a top-level rule when there is no possibility of backtracking.
     def clear_packrat; @packrat.clear; end
@@ -377,9 +377,9 @@ module EBNF::PEG
       #puts "prod_data(f): " + @prod_data.inspect
       prod = @productions.last
       handler, clear_packrat = self.class.production_handlers[prod]
+      data = @prod_data.pop if handler || self.class.start_handlers[prod]
       if handler && !@recovering && result != :unmatched
         # Pop production data element from stack, potentially allowing handler to use it
-        data = @prod_data.pop
         result = begin
           self.class.eval_with_binding(self) {
             handler.call(result, data, @parse_callback)
