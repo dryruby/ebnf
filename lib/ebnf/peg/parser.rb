@@ -273,7 +273,6 @@ module EBNF::PEG
       m += ", production = #{options[:production].inspect}" if options[:production]
       @error_log << m unless @recovering
       @recovering = true
-      require 'byebug'; byebug
       debug(node, m, level: 3, **options)
       if options[:raise] || @options[:validate]
         raise Error.new(m, lineno: lineno, rest: options[:rest], production: options[:production])
