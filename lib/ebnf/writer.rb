@@ -54,8 +54,9 @@ module EBNF
     ##
     # @param [Array<Rule>] rules
     # @param [Hash{Symbol => Object}] options
-    # @param [#write] :out ($stdout)
-    # @option options [Symbol] :format
+    # @param [#write] out ($stdout)
+    # @option options [Symbol] format
+    # @option options [Boolean] html (false)
     def initialize(rules, out: $stdout, html: false, **options)
       @options = options.dup
 

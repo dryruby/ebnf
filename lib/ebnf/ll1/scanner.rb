@@ -3,7 +3,7 @@ require 'strscan'    unless defined?(StringScanner)
 
 module EBNF::LL1
   ##
-  # Overload StringScanner with file operations
+  # Overload StringScanner with file operations and line counting
   #
   # * Reloads scanner as required until EOF.
   # * Loads to a high-water and reloads when remaining size reaches a low-water.
@@ -14,25 +14,14 @@ module EBNF::LL1
     LOW_WATER  = 4 * 1024
 
     ##
-    # @return [IO, StringIO]
+    # @return [String, IO, StringIO]
     attr_reader :input
 
     ##
-    # If we don't have an IO input, simply use StringScanner directly
-    # @private
-    def self.new(input, **options)
-      input ||= ""
-      if input.respond_to?(:read)
-        scanner = self.allocate
-        scanner.send(:initialize, input, **options)
-      else
-        if input.encoding != Encoding::UTF_8
-          input = input.dup if input.frozen?
-          input.force_encoding(Encoding::UTF_8)
-        end
-        StringScanner.new(input)
-      end
-    end
+    # The current line number (one-based).
+    #
+    # @return [Integer]
+    attr_accessor :lineno
 
     ##
     # Create a scanner, from an IO
@@ -45,32 +34,23 @@ module EBNF::LL1
     def initialize(input, **options)
       @options = options.merge(high_water: HIGH_WATER, low_water: LOW_WATER)
 
-      @input = input
-      super("")
+      @previous_lineno = @lineno = 1
+      @input = input.is_a?(String) ? encode_utf8(input) : input
+      super(input.is_a?(String) ? @input : "")
       feed_me
       self
     end
 
     ##
-    # Returns the "rest" of the line, or the next line if at EOL (i.e. everything after the scan pointer).
-    # If there is no more data (eos? = true), it returns "".
-    #
-    # @return [String]
-    def rest
-      feed_me
-      encode_utf8 super
-    end
-    
-    ##
-    # Attempts to skip over the given `pattern` beginning with the scan pointer.
-    # If it matches, the scan pointer is advanced to the end of the match,
-    # and the length of the match is returned. Otherwise, `nil` is returned.
-    #
-    # similar to `scan`, but without returning the matched string.
-    # @param [Regexp] pattern
-    def skip(pattern)
-      feed_me
-      super
+    # Ensures that the input buffer is full to the high water mark, or end of file. Useful when matching tokens that may be longer than the low water mark
+    def ensure_buffer_full
+      # Read up to high-water mark ensuring we're at an end of line
+      if @input.respond_to?(:eof?) && !@input.eof?
+        diff = @options[:high_water] - rest_size
+        string = encode_utf8(@input.read(diff))
+        string << encode_utf8(@input.gets) unless @input.eof?
+        self << string if string
+      end
     end
 
     ##
@@ -83,10 +63,14 @@ module EBNF::LL1
     end
 
     ##
-    # Set the scan pointer to the end of the string and clear matching data
-    def terminate
+    # Returns the "rest" of the line, or the next line if at EOL (i.e. everything after the scan pointer).
+    # If there is no more data (eos? = true), it returns "".
+    #
+    # @return [String]
+    def rest
       feed_me
-      super
+      @lineno += 1 if eos?
+      encode_utf8 super
     end
 
     ##
@@ -108,19 +92,68 @@ module EBNF::LL1
     # @return [String]
     def scan(pattern)
       feed_me
-      encode_utf8 super
+      @previous_lineno = @lineno
+      if matched = encode_utf8(super)
+        @lineno += matched.count("\n")
+      end
+      matched
     end
 
     ##
-    # Ensures that the input buffer is full to the high water mark, or end of file. Useful when matching tokens that may be longer than the low water mark
-    def ensure_buffer_full
-      # Read up to high-water mark ensuring we're at an end of line
-      if @input && !@input.eof?
-        diff = @options[:high_water] - rest_size
-        string = encode_utf8(@input.read(diff))
-        string << encode_utf8(@input.gets) unless @input.eof?
-        self << string if string
+    # Scans the string until the pattern is matched. Returns the substring up to and including the end of the match, advancing the scan pointer to that location. If there is no match, nil is returned.
+    #
+    # @example
+    #     s = StringScanner.new("Fri Dec 12 1975 14:39")
+    #     s.scan_until(/1/)        # -> "Fri Dec 1"
+    #     s.pre_match              # -> "Fri Dec "
+    #     s.scan_until(/XYZ/)      # -> nil
+    #
+    # @param [Regexp] pattern
+    # @return [String]
+    def scan_until(pattern)
+      feed_me
+      @previous_lineno = @lineno
+      if matched = encode_utf8(super)
+        @lineno += matched.count("\n")
       end
+      matched
+    end
+
+    ##
+    # Attempts to skip over the given `pattern` beginning with the scan pointer.
+    # If it matches, the scan pointer is advanced to the end of the match,
+    # and the length of the match is returned. Otherwise, `nil` is returned.
+    #
+    # similar to `scan`, but without returning the matched string.
+    # @param [Regexp] pattern
+    def skip(pattern)
+      scan(pattern)
+      nil
+    end
+
+    ##
+    # Advances the scan pointer until pattern is matched and consumed. Returns the number of bytes advanced, or nil if no match was found.
+    #
+    # Look ahead to match pattern, and advance the scan pointer to the end of the match. Return the number of characters advanced, or nil if the match was unsuccessful.
+    #
+    # It’s similar to scan_until, but without returning the intervening string.
+    # @param [Regexp] pattern
+    def skip_until(pattern)
+      (matched = scan_until(pattern)) && matched.length
+    end
+
+    ##
+    # Sets the scan pointer to the previous position. Only one previous position is remembered, and it changes with each scanning operation.
+    def unscan
+      @lineno = @previous_lineno
+      super
+    end
+
+    ##
+    # Set the scan pointer to the end of the string and clear matching data
+    def terminate
+      feed_me
+      super
     end
 
   private

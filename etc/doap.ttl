@@ -1,3 +1,4 @@
+@base         <https://rubygems.org/gems/ebnf> .
 @prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix dc:   <http://purl.org/dc/terms/> .
@@ -7,10 +8,10 @@
 @prefix ex:   <http://example.org/> .
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
 
-<http://rubygems.org/gems/ebnf> a doap:Project, earl:TestSubject, earl:Software ;
+<> a doap:Project, earl:TestSubject, earl:Software ;
   doap:name          "ebnf" ;
-  doap:homepage      <http://dryruby.github.com/ebnf> ;
-  doap:license       <http://creativecommons.org/licenses/publicdomain/> ;
+  doap:homepage      <https://github.com/dryruby/ebnf> ;
+  doap:license       <https://unlicense.org/1.0/> ;
   doap:shortdesc     "EBNF parser and parser generator"@en ;
   doap:description   "EBNF is a Ruby parser for W3C EBNF and a parser generator for compliant LL(1) grammars."@en ;
   doap:created       "2011-08-29"^^xsd:date ;
@@ -18,15 +19,15 @@
   doap:implements    <http://dbpedia.org/resource/Compiler-compiler> ;
   doap:category      <http://dbpedia.org/resource/Resource_Description_Framework>,
                      <http://dbpedia.org/resource/Ruby_(programming_language)> ;
-  doap:download-page <http://rubygems.org/gems/ebnf> ;
-  doap:mailing-list  <http://lists.w3.org/Archives/Public/public-rdf-ruby/> ;
-  doap:bug-database  <http://github.com/dryruby/ebnf/issues> ;
-  doap:blog          <http://greggkellogg.net/> ;
-  doap:developer     <http://greggkellogg.net/foaf#me> ;
-  doap:maintainer    <http://greggkellogg.net/foaf#me> ;
-  doap:documenter    <http://greggkellogg.net/foaf#me> ;
-  foaf:maker         <http://greggkellogg.net/foaf#me> ;
+  doap:download-page <> ;
+  doap:mailing-list  <https://lists.w3.org/Archives/Public/public-rdf-ruby/> ;
+  doap:bug-database  <https://github.com/dryruby/ebnf/issues> ;
+  doap:blog          <https://greggkellogg.net/> ;
+  doap:developer     <https://greggkellogg.net/foaf#me> ;
+  doap:maintainer    <https://greggkellogg.net/foaf#me> ;
+  doap:documenter    <https://greggkellogg.net/foaf#me> ;
+  foaf:maker         <https://greggkellogg.net/foaf#me> ;
   dc:title           "ebnf" ;
   dc:description     "EBNF is a Ruby parser for W3C EBNF and a parser generator for compliant LL(1) grammars."@en ;
   dc:date            "2011-08-29"^^xsd:date ;
-  dc:creator         <http://greggkellogg.net/foaf#me> .
+  dc:creator         <https://greggkellogg.net/foaf#me> .

@@ -27,7 +27,7 @@ describe EBNF::LL1::Lexer do
   ]}
   
   describe ".unescape_codepoints" do
-    # @see http://www.w3.org/TR/rdf-sparql-query/#codepointEscape
+    # @see https://www.w3.org/TR/rdf-sparql-query/#codepointEscape
 
     it "unescapes \\uXXXX codepoint escape sequences" do
       inputs = {
@@ -54,7 +54,6 @@ describe EBNF::LL1::Lexer do
       end
     end
 
-    
     context "escaped strings" do
       {
         'Dürst' => 'D\\u00FCrst',
@@ -70,7 +69,7 @@ describe EBNF::LL1::Lexer do
   end
 
   describe ".unescape_string" do
-    # @see http://www.w3.org/TR/rdf-sparql-query/#grammarEscapes
+    # @see https://www.w3.org/TR/rdf-sparql-query/#grammarEscapes
 
     context "escape sequences" do
       EBNF::LL1::Lexer::ESCAPE_CHARS.each do |escaped, unescaped|
@@ -97,7 +96,7 @@ describe EBNF::LL1::Lexer do
   end
 
   describe ".tokenize" do
-    describe "numeric literals" do
+    context "numeric literals" do
       it "tokenizes unsigned integer literals" do
         tokenize(%q(42)) do |tokens|
           expect(tokens.length).to eql 1
@@ -171,7 +170,7 @@ describe EBNF::LL1::Lexer do
       end
     end
 
-    describe "string terminals" do
+    context "string terminals" do
       %w|^^ ( ) [ ] , ; . a true false @base @prefix|.each do |string|
         it "tokenizes the #{string.inspect} string" do
           tokenize(string) do |tokens|
@@ -183,7 +182,7 @@ describe EBNF::LL1::Lexer do
       end
     end
 
-    describe "comments" do
+    context "comments" do
       it "ignores the remainder of the current line" do
         tokenize("# :foo :bar", "# :foo :bar\n", "# :foo :bar\r\n") do |tokens|
           expect(tokens.length).to eql 0
@@ -197,7 +196,7 @@ describe EBNF::LL1::Lexer do
       end
     end
 
-    describe "line numbers" do
+    describe "#lineno" do
       it "for white space" do
         inputs = {
           ""     => 1,
@@ -235,20 +234,20 @@ describe EBNF::LL1::Lexer do
           )
         end
       end
-
-      it "matches input longer than low water mark when buffer is low" do
-        input = StringIO.new %("""123456789 123456789 """ """123456789 123456789 """)
-        lexer = EBNF::LL1::Lexer.new(input, terminals,
-                                     unescape_terms: unescape_terms,
-                                     whitespace:     WHITESPACE,
-                                     low_water:      20,
-                                     high_water:     40)
-        expect(lexer.shift.type).to eq :STRING_LITERAL_LONG_QUOTE
-        expect(lexer.shift.type).to eq :STRING_LITERAL_LONG_QUOTE
-      end
     end
 
-    describe "yielding tokens" do
+    it "matches input longer than low water mark when buffer is low" do
+      input = StringIO.new %("""123456789 123456789 """ """123456789 123456789 """)
+      lexer = EBNF::LL1::Lexer.new(input, terminals,
+                                   unescape_terms: unescape_terms,
+                                   whitespace:     WHITESPACE,
+                                   low_water:      20,
+                                   high_water:     40)
+      expect(lexer.shift.type).to eq :STRING_LITERAL_LONG_QUOTE
+      expect(lexer.shift.type).to eq :STRING_LITERAL_LONG_QUOTE
+    end
+
+    context "yielding tokens" do
       it "annotates tokens with the current line number" do
         results = %w(1 2 3 4)
         tokenize("1\n2\n3\n4").each_token do |token|
@@ -293,7 +292,23 @@ describe EBNF::LL1::Lexer do
     end
 
     describe EBNF::LL1::Lexer::Terminal do
-      it "needs specs to check for canonicalization"
+      {
+        "returns itself with no map entry": {
+          input: "FOO",
+          map: {},
+          expect: "FOO"
+        },
+        "returns map value if specified": {
+          input: "FOO",
+          map: {"foo" => 'bar'},
+          expect: "bar"
+        },
+      }.each do |name, params|
+        it name do
+          term = described_class.new(:nil, params[:regexp], map: params[:map])
+          expect(term.canonicalize(params[:input])).to eq params[:expect]
+        end
+      end
     end
   end
 
@@ -324,5 +339,5 @@ describe EBNF::LL1::Lexer do
   STRING_LITERAL_SINGLE_QUOTE      = /"(?:[^\"\\\n\r])*"/
   STRING_LITERAL_LONG_SINGLE_QUOTE = /'''(?:(?:'|'')?(?:[^'\\]))*'''/m
   STRING_LITERAL_LONG_QUOTE        = /"""(?:(?:"|"")?(?:[^"\\]|#))*"""/m 
-  WHITESPACE                       = /(\s|(?:#.*$))+/m.freeze
+  WHITESPACE                       = /(\s|(?:#[^x]*$))+/m.freeze
 end

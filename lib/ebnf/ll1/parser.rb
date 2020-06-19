@@ -3,12 +3,52 @@ require 'ebnf/ll1/lexer'
 module EBNF::LL1
   ##
   # A Generic LL1 parser using a lexer and branch tables defined using the SWAP tool chain (modified).
+  #
+  #  # Creating terminal definitions and parser rules to parse generated grammars
+  #
+  #  The parser is initialized to callbacks invoked on entry and exit
+  #  to each `terminal` and `production`. A trivial parser loop can be described as follows:
+  #
+  #      require 'ebnf/ll1/parser'
+  #      require 'meta'
+  #
+  #      class Parser
+  #        include Meta
+  #        include EBNF::LL1::Parser
+  #
+  #        terminal(:SYMBOL, /([a-z]|[A-Z]|[0-9]|_)+/) do |prod, token, input|
+  #          # Add data based on scanned token to input
+  #          input[:symbol] = token.value
+  #        end
+  #
+  #        start_production(:rule) do |input, current, callback|
+  #          # Process on start of production
+  #          # Set state for entry into recursed rules through current
+  #
+  #          # Callback to parser loop with callback
+  #        end
+  #
+  #        production(:rule) do |input, current, callback|
+  #          # Process on end of production
+  #          # return results in input, retrieve results from recursed rules in current
+  #
+  #          # Callback to parser loop with callback
+  #        end
+  #
+  #        def initialize(input)
+  #          parse(input, start_symbol,
+  #            branch: BRANCH,
+  #            first: FIRST,
+  #            follow: FOLLOW,
+  #            cleanup: CLEANUP
+  #          ) do |context, *data|
+  #            # Process calls from callback from productions
+  #
+  #          rescue ArgumentError, RDF::LL1::Parser::Error => e
+  #            progress("Parsing completed with errors:\n\t#{e.message}")
+  #            raise RDF::ReaderError, e.message if validate?
+  #          end
   module Parser
-    ##
-    # @private
-    # level above which debug messages are supressed
-    DEBUG_LEVEL = 10
-
     ##
     # @return [Integer] line number of current token
     attr_reader :lineno
@@ -186,7 +226,7 @@ module EBNF::LL1
     #     def each_statement(&block)
     #       @callback = block
     #
-    #       parse(START.to_sym) do |context, *data|
+    #       parse(input, START.to_sym) do |context, *data|
     #         case context
     #         when :statement
     #           yield *data
@@ -205,16 +245,13 @@ module EBNF::LL1
     #   Lists valid terminals that can precede each production (for error recovery).
     # @option options [Hash{Symbol,String => Array<Symbol,String>}] :follow ({})
     #   Lists valid terminals that can follow each production (for error recovery).
-    # @option options [Boolean]  :validate     (false)
-    #   whether to validate the parsed statements and values. If not validating, the parser will attempt to recover from errors.
-    # @option options [Boolean] :progress
-    #   Show progress of parser productions
-    # @option options [Boolean] :debug
-    #   Detailed debug output
+    # @option options[Integer] :high_water passed to lexer
+    # @option options [Logger] :logger for errors/progress/debug.
+    # @option options[Integer] :low_water passed to lexer
     # @option options [Boolean] :reset_on_start
     #   Reset the parser state if the start token set with `prod` is found in a production. This reduces the production stack depth growth, which is appropriate for some grammars.
-    # @option options[Integer] :high_water passed to lexer
-    # @option options[Integer] :low_water passed to lexer
+    # @option options [Boolean]  :validate     (false)
+    #   whether to validate the parsed statements and values. If not validating, the parser will attempt to recover from errors.
     # @yield [context, *data]
     #   Yields for to return data to parser
     # @yieldparam [:statement, :trace] context
@@ -225,13 +262,9 @@ module EBNF::LL1
     # @raise [Exception] Raises exceptions for parsing errors
     #   or errors raised during processing callbacks. Internal
     #   errors are raised using {Error}.
-    # @see http://cs.adelaide.edu.au/~charles/lt/Lectures/07-ErrorRecovery.pdf
+    # @see https://cs.adelaide.edu.au/~charles/lt/Lectures/07-ErrorRecovery.pdf
     def parse(input = nil, start = nil, **options, &block)
       @options = options.dup
-      @options[:debug] ||= case
-      when @options[:progress] then 2
-      when @options[:validate] then 1
-      end
       @branch  = options[:branch]
       @first   = options[:first] ||= {}
       @follow  = options[:follow] ||= {}
@@ -356,9 +389,9 @@ module EBNF::LL1
           end
 
           # Get the list of follows for this sequence, this production and the stacked productions.
-          debug("recovery", "stack follows:", level: 4)
+          debug("recovery", "stack follows:")
           todo_stack.reverse.each do |todo|
-            debug("recovery", level: 4) {"  #{todo[:prod]}: #{@follow[todo[:prod]].inspect}"}
+            debug("recovery") {"  #{todo[:prod]}: #{@follow[todo[:prod]].inspect}"}
           end
 
           # Find all follows to the top of the stack
@@ -466,14 +499,15 @@ module EBNF::LL1
   protected
 
     ##
-    # Error information, used as level `0` debug messages.
+    # Error information, used as level `3` logger messages.
+    # Messages may be logged and are saved for reporting at end of parsing.
     #
     # @param [String] node Relevant location associated with message
     # @param [String] message Error string
-    # @param [Hash] options
+    # @param [Hash{Symbol => Object}] options
     # @option options [URI, #to_s] :production
     # @option options [Token] :token
-    # @see {#debug}
+    # @see #debug
     def error(node, message, **options)
       lineno = @lineno || (options[:token].lineno if options[:token].respond_to?(:lineno))
       m = "ERROR "
@@ -483,83 +517,74 @@ module EBNF::LL1
       m += ", production = #{options[:production].inspect}" if options[:production]
       @error_log << m unless @recovering
       @recovering = true
-      debug(node, m, level: 0, **options)
+      debug(node, m, level: options.fetch(:level, 3), **options)
       if options[:raise] || @options[:validate]
         raise Error.new(m, lineno: lineno, token: options[:token], production: options[:production])
       end
     end
 
     ##
-    # Warning information, used as level `1` debug messages.
+    # Warning information, used as level `2` logger messages.
+    # Messages may be logged and are saved for reporting at end of parsing.
     #
     # @param [String] node Relevant location associated with message
     # @param [String] message Error string
     # @param [Hash] options
     # @option options [URI, #to_s] :production
     # @option options [Token] :token
-    # @see {#debug}
+    # @see #debug
     def warn(node, message, **options)
+      lineno = @lineno || (options[:token].lineno if options[:token].respond_to?(:lineno))
       m = "WARNING "
-      m += "[line: #{@lineno}] " if @lineno
+      m += "[line: #{lineno}] " if lineno
       m += message
       m += " (found #{options[:token].inspect})" if options[:token]
       m += ", production = #{options[:production].inspect}" if options[:production]
       @error_log << m unless @recovering
-      debug(node, m, level: 1, **options)
+      debug(node, m, level: 2, lineno: lineno, **options)
     end
 
     ##
-    # Progress output when parsing. Passed as level `2` debug messages.
+    # Progress logged when parsing. Passed as level `1` logger messages.
     #
-    # @overload progress(node, message, **options)
+    # The call is ignored, unless `@options[:logger]` is set.
+    #
+    # @overload progress(node, message, **options, &block)
     #   @param [String] node Relevant location associated with message
     #   @param [String] message ("")
     #   @param [Hash] options
     #   @option options [Integer] :depth
     #       Recursion depth for indenting output
-    # @see {#debug}
+    # @see #debug
     def progress(node, *args, &block)
-      return unless @options[:progress] || @options[:debug]
+      return unless @options[:logger]
+      lineno = @lineno || (options[:token].lineno if options[:token].respond_to?(:lineno))
       args << {} unless args.last.is_a?(Hash)
-      args.last[:level] ||= 2
+      args.last[:level] ||= 1
+      args.last[:lineno] ||= lineno
       debug(node, *args, &block)
     end
 
     ##
-    # Progress output when debugging.
+    # Debug logging.
     #
-    # The call is ignored, unless `@options[:debug]` is set, in which
-    # case it yields tracing information as indicated. Additionally,
-    # if `@options[:debug]` is an Integer, the call is aborted if the
-    # `:level` option is less than than `:level`.
+    # The call is ignored, unless `@options[:logger]` is set.
     #
     # @overload debug(node, message, **options)
     #   @param [Array<String>] args Relevant location associated with message
     #   @param [Hash] options
     #   @option options [Integer] :depth
     #     Recursion depth for indenting output
-    #   @option options [Integer] :level
-    #     Level assigned to message, by convention, level `0` is for
-    #     errors, level `1` is for warnings, level `2` is for parser
-    #     progress information, and anything higher is for various levels
-    #     of debug information.
-    #
-    # @yield trace, level, lineno, depth, args
-    # @yieldparam [:trace] trace
-    # @yieldparam [Integer] level
-    # @yieldparam [Integer] lineno
-    # @yieldparam [Integer] depth Recursive depth of productions
-    # @yieldparam [Array<String>] args
-    # @yieldreturn [String] added to message
+    #   @yieldreturn [String] additional string appended to `message`.
     def debug(*args)
-      return unless @options[:debug] && @parse_callback
+      return unless @options[:logger]
       options = args.last.is_a?(Hash) ? args.pop : {}
-      debug_level = options.fetch(:level, 3)
-      return if @options[:debug].is_a?(Integer) && debug_level > @options[:debug]
+      lineno = @lineno || (options[:token].lineno if options[:token].respond_to?(:lineno))
+      level = options.fetch(:level, 0)
 
       depth = options[:depth] || self.depth
       args << yield if block_given?
-      @parse_callback.call(:trace, debug_level, @lineno, depth, *args)
+      @options[:logger].add(level, "[#{@lineno}]" + (" " * depth) + args.join(" "))
     end
 
   private
@@ -570,7 +595,7 @@ module EBNF::LL1
       if handler
         # Create a new production data element, potentially allowing handler
         # to customize before pushing on the @prod_data stack
-        progress("#{prod}(:start):#{@prod_data.length}") {@prod_data.last}
+        debug("#{prod}(:start):#{@prod_data.length}") {@prod_data.last}
         data = {}
         begin
           self.class.eval_with_binding(self) {
@@ -584,12 +609,12 @@ module EBNF::LL1
       elsif [:merge, :star].include?(@cleanup[prod])
         # Save current data to merge later
         @prod_data << {}
-        progress("#{prod}(:start}:#{@prod_data.length}:cleanup:#{@cleanup[prod]}") { get_token.inspect + (@recovering ? ' recovering' : '')}
+        debug("#{prod}(:start}:#{@prod_data.length}:cleanup:#{@cleanup[prod]}") { get_token.inspect + (@recovering ? ' recovering' : '')}
       else
         # Make sure we push as many was we pop, even if there is no
         # explicit start handler
         @prod_data << {} if self.class.production_handlers[prod]
-        progress("#{prod}(:start:#{@prod_data.length})") { get_token.inspect + (@recovering ? ' recovering' : '')}
+        debug("#{prod}(:start:#{@prod_data.length})") { get_token.inspect + (@recovering ? ' recovering' : '')}
       end
       #puts "prod_data(s): " + @prod_data.inspect
     end
@@ -623,7 +648,7 @@ module EBNF::LL1
           else Array(input[k]) + Array(v)
           end
         end
-        progress("#{prod}(:finish):#{@prod_data.length} cleanup:#{@cleanup[prod]}") {@prod_data.last}
+        debug("#{prod}(:finish):#{@prod_data.length} cleanup:#{@cleanup[prod]}") {@prod_data.last}
       else
         progress("#{prod}(:finish):#{@prod_data.length}") { "recovering" if @recovering }
       end
@@ -730,7 +755,7 @@ module EBNF::LL1
     #     "invalid token '%' on line 10",
     #     token: '%', lineno: 9, production: :turtleDoc)
     #
-    # @see http://ruby-doc.org/core/classes/StandardError.html
+    # @see https://ruby-doc.org/core/classes/StandardError.html
     class Error < StandardError
       ##
       # The current production.

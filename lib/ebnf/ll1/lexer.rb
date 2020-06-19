@@ -29,7 +29,7 @@ module EBNF::LL1
   #     warn error.inspect
   #   end
   #
-  # @see http://en.wikipedia.org/wiki/Lexical_analysis
+  # @see https://en.wikipedia.org/wiki/Lexical_analysis
   class Lexer
     include Enumerable
 
@@ -43,10 +43,10 @@ module EBNF::LL1
       "\\'"  => '\'',   # \u0027 (apostrophe-quote, single quote mark)
       '\\\\' => '\\'    # \u005C (backslash)
     }.freeze
-    ESCAPE_CHAR4        = /\\u(?:[0-9A-Fa-f]{4,4})/.freeze    # \uXXXX
-    ESCAPE_CHAR8        = /\\U(?:[0-9A-Fa-f]{8,8})/.freeze    # \UXXXXXXXX
-    ECHAR               = /\\./                               # More liberal unescaping
-    UCHAR               = /#{ESCAPE_CHAR4}|#{ESCAPE_CHAR8}/.freeze
+    ESCAPE_CHAR4        = /\\u(?:[0-9A-Fa-f]{4,4})/u.freeze    # \uXXXX
+    ESCAPE_CHAR8        = /\\U(?:[0-9A-Fa-f]{8,8})/u.freeze    # \UXXXXXXXX
+    ECHAR               = /\\./u.freeze                        # More liberal unescaping
+    UCHAR               = /#{ESCAPE_CHAR4}|#{ESCAPE_CHAR8}/n.freeze
 
     ##
     # @return [Regexp] defines whitespace, including comments, otherwise whitespace must be explicit in terminals
@@ -59,7 +59,7 @@ module EBNF::LL1
     #
     # @param  [String] string
     # @return [String]
-    # @see    http://www.w3.org/TR/rdf-sparql-query/#codepointEscape
+    # @see    https://www.w3.org/TR/rdf-sparql-query/#codepointEscape
     def self.unescape_codepoints(string)
       string = string.dup
       string.force_encoding(Encoding::ASCII_8BIT) if string.respond_to?(:force_encoding)
@@ -81,7 +81,7 @@ module EBNF::LL1
     #
     # @param  [String] input
     # @return [String]
-    # @see    http://www.w3.org/TR/rdf-sparql-query/#grammarEscapes
+    # @see    https://www.w3.org/TR/rdf-sparql-query/#grammarEscapes
     def self.unescape_string(input)
       input.gsub(ECHAR) { |escaped| ESCAPE_CHARS[escaped] || escaped[1..-1]}
     end
@@ -131,7 +131,6 @@ module EBNF::LL1
 
       raise Error, "Terminal patterns not defined" unless @terminals && @terminals.length > 0
 
-      @lineno = 1
       @scanner = Scanner.new(input, **options)
     end
 
@@ -146,12 +145,6 @@ module EBNF::LL1
     #
     # @return [String]
     attr_accessor :input
-
-    ##
-    # The current line number (zero-based).
-    #
-    # @return [Integer]
-    attr_reader   :lineno
 
     ##
     # Returns `true` if the input string is lexically valid.
@@ -194,7 +187,7 @@ module EBNF::LL1
 
       @first ||= begin
         {} while !scanner.eos? && skip_whitespace
-        return @scanner = nil if scanner.eos?
+        return nil if scanner.eos?
 
         token = match_token(*types)
 
@@ -233,7 +226,7 @@ module EBNF::LL1
     # @return [Token]
     def recover(*types)
        until scanner.eos? || tok = match_token(*types)
-        if scanner.skip_until(@whitespace || /\s/m).nil? # Skip past current "token"
+        if scanner.skip_until(@whitespace || /\s+/m).nil? # Skip past current "token"
           # No whitespace at the end, must be and end of string
           scanner.terminate
         else
@@ -242,6 +235,14 @@ module EBNF::LL1
       end
       scanner.unscan if tok
       first
+    end
+
+    ##
+    # The current line number (one-based).
+    #
+    # @return [Integer]
+    def lineno
+      scanner.lineno
     end
   protected
 
@@ -253,9 +254,7 @@ module EBNF::LL1
     def skip_whitespace
       # skip all white space, but keep track of the current line number
       while @whitespace && !scanner.eos?
-        if matched = scanner.scan(@whitespace)
-          @lineno += matched.count("\n")
-        else
+        unless scanner.scan(@whitespace)
           return
         end
       end
@@ -281,7 +280,6 @@ module EBNF::LL1
         if matched = scanner.scan(term.regexp)
           #STDERR.puts "  matched #{term.type.inspect}: #{matched.inspect}"
           tok = token(term.type, term.canonicalize(matched))
-          @lineno += matched.count("\n")
           return tok
         end
       end
@@ -372,7 +370,7 @@ module EBNF::LL1
     #   token.type   #=> :LANGTAG
     #   token.value  #=> "en"
     #
-    # @see http://en.wikipedia.org/wiki/Lexical_analysis#Token
+    # @see https://en.wikipedia.org/wiki/Lexical_analysis#Token
     class Token
       ##
       # The token's symbol type.
@@ -493,7 +491,7 @@ module EBNF::LL1
     #     "invalid token '%' on line 10",
     #     input: query, token: '%', lineno: 9)
     #
-    # @see http://ruby-doc.org/core/classes/StandardError.html
+    # @see https://ruby-doc.org/core/classes/StandardError.html
     class Error < StandardError
       ##
       # The input string associated with the error.

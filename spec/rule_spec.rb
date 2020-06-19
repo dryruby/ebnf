@@ -150,14 +150,77 @@ describe EBNF::Rule do
         end
       end
     end
+  end
 
-    describe "#rewrite" do
-      it "updates rule references" do
-        subject.expr = [:do, :re, [:me, :fa, :do], :do]
-        rsrc = EBNF::Rule.new(:do, "0", [])
-        rdst = EBNF::Rule.new(:DO, "0", [])
-        expect(subject.rewrite(rsrc, rdst).expr).to eq [:DO, :re, [:me, :fa, :do], :DO]
+  describe "#to_peg" do
+    {
+      "no-rewrite" => [
+        [:seq],
+        [EBNF::Rule.new(:rule, "0", [:seq])]
+      ],
+      "embedded rule" => [
+        [:seq, [:alt]],
+        [EBNF::Rule.new(:rule, "0", [:seq, :_rule_1]),
+         EBNF::Rule.new(:_rule_1, "0.1", [:alt])]
+      ],
+      "opt rule" => [
+        [:opt, :foo],
+        [EBNF::Rule.new(:rule, "0", [:opt, :foo])]
+      ],
+      "two opt rule" => [
+        [:alt, [:opt, :foo], [:opt, :bar]],
+        [EBNF::Rule.new(:rule, "0", [:alt, :_rule_1, :_rule_2]),
+         EBNF::Rule.new(:_rule_1, "0.1", [:opt, :foo]),
+         EBNF::Rule.new(:_rule_2, "0.2", [:opt, :bar])]
+      ],
+      "star rule" => [
+        [:star, :foo],
+        [EBNF::Rule.new(:rule, "0", [:star, :foo])]
+      ],
+      "plus rule" => [
+        [:plus, :foo],
+        [EBNF::Rule.new(:rule, "0", [:plus, :foo])]
+      ],
+      "diff rule" => [
+        [:diff, "a", "b"],
+        [EBNF::Rule.new(:rule, "0", [:diff, "a", "b"], kind: :terminal)]
+      ],
+      "hex rule" => [
+        [:hex, "#x00B7"],
+        [EBNF::Rule.new(:rule, "0", [:hex, "#x00B7"], kind: :terminal)]
+      ],
+      "range rule" => [
+        [:range, "a", "b"],
+        [EBNF::Rule.new(:rule, "0", [:range, "a", "b"], kind: :terminal)]
+      ],
+      "ebnf[1]" => [
+        [:star, [:alt, :declaration, :rule]],
+        [EBNF::Rule.new(:rule, "0", [:star, :_rule_1]),
+         EBNF::Rule.new(:_rule_1, "0.1", [:alt, :declaration, :rule])]
+      ],
+      "ebnf[9]" => [
+        [:seq, :primary, [:opt, [:range, "?*+"]]],
+        [EBNF::Rule.new(:rule, "0", [:seq, :primary, :_rule_1]),
+         EBNF::Rule.new(:_rule_1, "0.1", [:opt, :_rule_2]),
+         EBNF::Rule.new(:_rule_2, "0.2", [:range, "?*+"])]
+      ],
+      "IRIREF" => [
+        [:seq, "<", [:star, [:alt, [:range, "^#x00-#x20<>\"{}|^`\\"], :UCHAR]], ">"],
+        [EBNF::Rule.new(:rule, "0", [:seq, "<", :_rule_1, ">"]),
+         EBNF::Rule.new(:_rule_1, "0.1", [:star, :_rule_2]),
+         EBNF::Rule.new(:_rule_2, "0.2", [:alt, :_rule_3, :UCHAR]),
+         EBNF::Rule.new(:_rule_3, "0.3", [:range, "^#x00-#x20<>\"{}|^`\\"])]
+       ]
+    }.each do |title, (expr, expected)|
+      it title do
+        rule = EBNF::Rule.new(:rule, "0", expr)
+        expect(rule.to_peg).to eq expected
       end
+    end
+
+    it "extends with EBNF::PEG::Rule" do
+      rule = EBNF::Rule.new(:rule, "0", [:seq]).to_peg.first
+      expect(rule).to be_a(EBNF::PEG::Rule)
     end
   end
 end
