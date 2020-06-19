@@ -179,12 +179,12 @@ For a [PEG][] parser generator, there is a simpler transformation that reduces r
     (rule _ebnf_1 "1.1" (alt declaration rule))
 
 ## Example parsers
-For a [PEG][] parser for a simple grammar implementing a calculator see [Calc example](http://dryruby.github.io/ebnf/examples/calc/doc/calc.html
+For a [PEG][] parser for a simple grammar implementing a calculator see [Calc example](https://dryruby.github.io/ebnf/examples/calc/doc/calc.html)
 
-For an example parser built using this gem that parses the [EBNF][] grammar, see [EBNF PEG Parser example](http://dryruby.github.io/ebnf/examples/ebnf-peg-parser/doc/parser.html). This example creates a parser for the [EBNF][] grammar which generates the same Abstract Syntax Tree as the built-in parser in the gem.
+For an example parser built using this gem that parses the [EBNF][] grammar, see [EBNF PEG Parser example](https://dryruby.github.io/ebnf/examples/ebnf-peg-parser/doc/parser.html). This example creates a parser for the [EBNF][] grammar which generates the same Abstract Syntax Tree as the built-in parser in the gem.
 
 There is also an
-[EBNF LL(1) Parser example](http://dryruby.github.io/ebnf/examples/ebnf-peg-parser/doc/parser.html).
+[EBNF LL(1) Parser example](https://dryruby.github.io/ebnf/examples/ebnf-peg-parser/doc/parser.html).
 
 ##  Acknowledgements
 Much of this work, particularly the generic parser, is inspired by work originally done by
