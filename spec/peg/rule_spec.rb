@@ -29,6 +29,16 @@ describe EBNF::PEG::Rule do
           input: "C",
           expect: :unmatched
         },
+        "(not A) with 'A'" => {
+          rule: [:not, "A"],
+          input: "A",
+          expect: :unmatched
+        },
+        "(not A) with 'B'" => {
+          rule: [:not, "A"],
+          input: "B",
+          expect: nil
+        },
         "(opt A) with 'A'" => {
           rule: [:opt, "A"],
           input: "A",

@@ -372,6 +372,11 @@ describe EBNF::Base do
             expect(false).to produce(true, @debug)
           }.to raise_error("Table creation failed with errors")
           expect(ebnf.errors.to_s).to match(expected)
+
+          sio = StringIO.new
+          ebnf.to_ruby(sio)
+          sio.rewind
+          expect(sio.read).to match(/Note, grammar has errors/)
         end
       end
     end

@@ -3,9 +3,12 @@ $:.unshift "."
 require 'spec_helper'
 require 'ebnf'
 require 'sxp'
+require 'rdf/turtle'
 
 describe EBNF::Base do
-  describe ".new" do
+  subject {PARSED_EBNF_GRAMMAR.dup}
+
+  describe "#initialize" do
     {
       %{[2]     Prolog    ::=           BaseDecl? PrefixDecl*} =>
         %{((rule Prolog "2" (seq (opt BaseDecl) (star PrefixDecl))))},
@@ -60,10 +63,78 @@ describe EBNF::Base do
         expect(ast.to_sxp).to produce(expected, @debug)
       end
     end
+
+    it "rejects unknown format" do
+      expect {parse("foo", format: :unknown)}.to raise_error "unknown input format :unknown"
+    end
+  end
+
+  describe "#validate!" do
+    let(:simple) {EBNF.parse("a ::= b")}
+    it "notes invalid grammar" do
+      expect do
+        expect {simple.validate!}.to raise_error SyntaxError, "In rule a: No rule found for b"
+      end.to write(:something).to(:error)
+    end
+
+    it "validates EBNF" do
+      expect {subject.validate!}.not_to raise_error
+    end
+  end
+
+  describe "#valid?" do
+    let(:simple) {EBNF.parse("a ::= b")}
+    it "notes invalid grammar" do
+      expect do
+        expect(simple.valid?).to be_falsey
+      end.to write(:something).to(:error)
+    end
+
+    it "validates EBNF" do
+      expect(subject).to be_valid
+    end
+  end
+
+  describe "#each" do
+    it "yields each rule" do
+      rules = subject.ast.select {|r| r.rule?}
+      expect {|b| subject.each(:rule, &b)}.to yield_control.exactly(rules.length).times
+    end
+    it "yields each terminal" do
+      terminals = subject.ast.select {|r| r.terminal?}
+      expect {|b| subject.each(:terminal, &b)}.to yield_control.exactly(terminals.length).times
+    end
+  end
+
+  describe "#to_sxp" do
+    specify {expect(subject.to_sxp).to include("(rule ebnf")}
+  end
+
+  describe "#to_s" do
+    specify {expect(subject.to_s).to include("[1]  ebnf")}
+  end
+
+  describe "#to_html" do
+    specify {expect(subject.to_s).to include("[1]  ebnf")}
+  end
+
+  describe "#to_ruby" do
+    specify {expect {subject.to_ruby}.to write(:something).to(:output)}
+  end
+
+  describe "#to_ttl" do
+    let(:reader) {RDF::Turtle::Reader.new(subject.to_ttl, base_uri: 'http://example.org/')}
+    specify {expect(reader).to be_valid}
   end
 
   describe "#dup" do
     specify {expect(parse(%{[2]     Prolog    ::=           BaseDecl? PrefixDecl*}).dup).to be_a(EBNF::Base)}
+  end
+
+  describe "#find_rule" do
+    it "finds ebnf" do
+      expect(subject.find_rule(:ebnf).sym).to eql :ebnf
+    end
   end
 
   def parse(value, **options)

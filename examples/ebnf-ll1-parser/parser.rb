@@ -86,14 +86,14 @@ class EBNFLL1Parser
 
   # Terminal for `RANGE` is matched as part of a `primary` rule. Unescape the values to remove EBNF escapes in the input.
   #
-  #     [16] `RANGE`      ::= '[' (R_CHAR '-' R_CHAR) | (HEX - HEX) ']'
+  #     [16] `RANGE`      ::= '[' (R_CHAR '-' R_CHAR) | (HEX '-' HEX) ']'
   terminal(:RANGE, RANGE, unescape: true) do |prod, token, input|
     input[:terminal] = [:range, token.value[1..-2]]
   end
 
   # Terminal for `O_RANGE` is matched as part of a `primary` rule. Unescape the values to remove EBNF escapes in the input.
   #
-  #     [17] O_RANGE    ::= '[^' (R_CHAR '-' R_CHAR) | (HEX - HEX) ']'
+  #     [17] O_RANGE    ::= '[^' (R_CHAR '-' R_CHAR) | (HEX '-' HEX) ']'
   terminal(:O_RANGE, O_RANGE, unescape: true) do |prod, token, input|
     input[:terminal] = [:range, token.value[1..-2]]
   end

@@ -42,9 +42,9 @@
 
     [15] O_ENUM     ::= '[^' R_CHAR+ | HEX+ ']'
 
-    [16] RANGE      ::= '[' (R_CHAR '-' R_CHAR) | (HEX - HEX) ']'
+    [16] RANGE      ::= '[' (R_CHAR '-' R_CHAR) | (HEX '-' HEX) ']'
 
-    [17] O_RANGE    ::= '[^' (R_CHAR '-' R_CHAR) | (HEX - HEX) ']'
+    [17] O_RANGE    ::= '[^' (R_CHAR '-' R_CHAR) | (HEX '-' HEX) ']'
 
     # Strings are unescaped Unicode, excepting control characters and hash (#)
     [18] STRING1    ::= '"' (CHAR - '"')* '"'

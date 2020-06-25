@@ -82,14 +82,14 @@ class EBNFPegParser
 
   # Terminal for `RANGE` is matched as part of a `primary` rule.
   #
-  #     [16] `RANGE`      ::= '[' (R_CHAR '-' R_CHAR) | (HEX - HEX) ']'
+  #     [16] `RANGE`      ::= '[' (R_CHAR '-' R_CHAR) | (HEX '-' HEX) ']'
   terminal(:RANGE, RANGE) do |value|
     [:range, value[1..-2]]
   end
 
   # Terminal for `O_RANGE` is matched as part of a `primary` rule.
   #
-  #     [17] O_RANGE    ::= '[^' (R_CHAR '-' R_CHAR) | (HEX - HEX) ']'
+  #     [17] O_RANGE    ::= '[^' (R_CHAR '-' R_CHAR) | (HEX '-' HEX) ']'
   terminal(:O_RANGE, O_RANGE) do |value|
     [:range, value[1..-2]]
   end

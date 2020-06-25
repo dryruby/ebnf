@@ -161,6 +161,36 @@ module EBNF
       end
     end
 
+    ##
+    # Validate the grammar.
+    #
+    # Makes sure that rules reference either strings or other defined rules.
+    #
+    # @raise [RangeError]
+    def validate!
+      ast.each do |rule|
+        begin
+          rule.validate!(@ast)
+        rescue SyntaxError => e
+          error("In rule #{rule.sym}: #{e.message}")
+        end
+      end
+      raise SyntaxError, errors.join("\n") unless errors.empty?
+    end
+
+    ##
+    # Is the grammar valid?
+    #
+    # Uses `#validate!` and catches `RangeError`
+    #
+    # @return [Boolean]
+    def valid?
+      validate!
+      true
+    rescue SyntaxError
+      false
+    end
+
     # Iterate over each rule or terminal, except empty
     # @param [:termina, :rule] kind
     # @yield rule
@@ -210,14 +240,38 @@ module EBNF
       end
 
       # Either output LL(1) BRANCH tables or rules for PEG parsing
-      if ast.first.is_a?(EBNF::PEG::Rule)
-        to_ruby_peg(output)
-      else
+      if ast.first.first
         to_ruby_ll1(output)
+      else
+        to_ruby_peg(output)
       end
       unless output == $stdout
         output.puts "end"
       end
+    end
+
+    ##
+    # Write out syntax tree as Turtle
+    # @param [String] prefix for language
+    # @param [String] ns URI for language
+    # @return [String]
+    def to_ttl(prefix = nil, ns = "http://example.org/")
+      unless ast.empty?
+        [
+          "@prefix dc: <http://purl.org/dc/terms/>.",
+          "@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.",
+          "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.",
+          ("@prefix #{prefix}: <#{ns}>." if prefix),
+          "@prefix : <#{ns}>.",
+          "@prefix re: <http://www.w3.org/2000/10/swap/grammar/regex#>.",
+          "@prefix g: <http://www.w3.org/2000/10/swap/grammar/ebnf#>.",
+          "",
+          ":language rdfs:isDefinedBy <>; g:start :#{ast.first.id}.",
+          "",
+        ].compact
+      end.join("\n") +
+
+      ast.sort.map(&:to_ttl).join("\n")
     end
 
     def dup
@@ -232,29 +286,6 @@ module EBNF
     # @return [Rule]
     def find_rule(sym)
       (@find ||= {})[sym] ||= ast.detect {|r| r.sym == sym}
-    end
-
-    ##
-    # Write out syntax tree as Turtle
-    # @param [String] prefix for language
-    # @param [String] ns URI for language
-    # @return [String]
-    def to_ttl(prefix = nil, ns = "http://example.org/")
-      unless ast.empty?
-        [
-          "@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.",
-          "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.",
-          ("@prefix #{prefix}: <#{ns}>." if prefix),
-          "@prefix : <#{ns}>.",
-          "@prefix re: <http://www.w3.org/2000/10/swap/grammar/regex#>.",
-          "@prefix g: <http://www.w3.org/2000/10/swap/grammar/ebnf#>.",
-          "",
-          ":language rdfs:isDefinedBy <>; g:start :#{ast.first.id}.",
-          "",
-        ].compact
-      end.join("\n") +
-
-      ast.sort.map(&:to_ttl).join("\n")
     end
 
     def depth

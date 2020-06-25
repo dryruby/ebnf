@@ -59,7 +59,7 @@ describe EBNF do
     end
 
     context "README" do
-      let(:ebnf) {EBNF.parse(File.open(File.expand_path("../../etc/ebnf.ebnf", __FILE__)))}
+      let(:ebnf) {PARSED_EBNF_GRAMMAR.dup}
       subject {ebnf}
 
       it "creates ast" do
@@ -82,18 +82,24 @@ describe EBNF do
         expect(subject.to_s).not_to be_empty
       end
 
-      context "BNF" do
+      context "LL1" do
         before {subject.make_bnf}
 
-        context "LL1" do
-          before do
-            subject.first_follow(:ebnf)
-            subject.build_tables
-          end
+        before do
+          subject.first_follow(:ebnf)
+          subject.build_tables
+        end
 
-          it "#to_ruby" do
-            expect {subject.to_ruby}.to write(:something).to(:output)
-          end
+        it "#to_ruby" do
+          expect {subject.to_ruby}.to write(:something).to(:output)
+        end
+      end
+
+      context "PEG" do
+        before {subject.make_peg}
+
+        it "#to_ruby" do
+          expect {subject.to_ruby}.to write(:something).to(:output)
         end
       end
     end

@@ -22,6 +22,23 @@ describe EBNF::Writer do
     end
   end
 
+  describe ".print" do
+    {
+      prolog: [
+        %{[2]     Prolog    ::=           BaseDecl? PrefixDecl*},
+        %{[2] Prolog ::= BaseDecl? PrefixDecl*\n}
+      ],
+    }.each do |title, (grammar, plain)|
+      context title do
+        subject {EBNF::Base.new(grammar).ast}
+
+        it "generates plain" do
+          expect {EBNF::Writer.print(*subject)}.to write(plain).to(:output)
+        end
+      end
+    end
+  end
+
   context "Existing grammars" do
     {
       "EBNF Grammar" => File.expand_path("../../etc/ebnf.ebnf", __FILE__),

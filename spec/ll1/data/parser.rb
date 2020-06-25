@@ -61,6 +61,11 @@ class EBNFParser
     input[:terminal] = token.value
   end
 
+  production(:ebnf) do |input, current, callback|
+    # Cause method_missing to invoke something in our context
+    to_sxp
+  end
+
   production(:declaration) do |input, current, callback|
     # current contains a declaration.
     # Invoke callback
@@ -145,6 +150,8 @@ class EBNFParser
   end
 
   production(:_diff_1) do |input, current, callback|
+    # Gratuitous call to exercise method
+    add_prod_data(:_diff_1, "foo")
     input[:diff] ||= [:diff]
 
     # Add optimized value of `postfix`, if any
@@ -152,6 +159,8 @@ class EBNFParser
   end
 
   production(:postfix) do |input, current, callback|
+    # Gratuitous call to exercise method
+    add_prod_datum(:postfix, "foo")
     # Push result onto input stack, as the `diff` production can have some number of `postfix` values that are applied recursively
     input[:postfix] =  case current[:postfix]
     when "*" then [:star, current[:primary]]
@@ -162,6 +171,8 @@ class EBNFParser
   end
 
   production(:primary) do |input, current, callback|
+    # Gratuitous call to exercise method
+    add_prod_datum(:primary, ["foo"])
     input[:primary] = if current[:expression]
       v = current[:expression][1..-1]
       v = v.first if v.length == 1

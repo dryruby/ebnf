@@ -29,3 +29,7 @@ end
     not_jruby: lambda { RUBY_PLATFORM.to_s != 'jruby'}
   }
 end
+
+require 'ebnf'
+
+PARSED_EBNF_GRAMMAR = EBNF.parse(File.open(File.expand_path("../../etc/ebnf.ebnf", __FILE__))).freeze

@@ -214,8 +214,9 @@ module EBNF
           firsts, follows = 0, 0
           # add Fi(wi) to Fi(Ai) for every rule Ai → wi
           #
-          # For sequences, this is the first rule in the sequence.
-          # For alts, this is every rule in the sequence
+          # * For sequences, this is the first rule in the sequence.
+          # * For alts, this is every rule in the sequence
+          # * Other rules don't matter, as they don't appear in strict BNF
           each(:rule) do |ai|
             # Fi(a w' ) = { a } for every terminal a
             ai.terminals(ast).each do |t|

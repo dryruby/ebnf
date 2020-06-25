@@ -52,6 +52,11 @@ class EBNFPegParser
 
   terminal(:POSTFIX, POSTFIX)
 
+  production(:ebnf) do |input|
+    # Cause method_missing to invoke something in our context
+    to_sxp
+  end
+
   production(:declaration, clear_packrat: true) do |value, data, callback|
     # current contains a declaration.
     # Invoke callback

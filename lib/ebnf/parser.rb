@@ -208,7 +208,7 @@ module EBNF
               return [[:diff, e1, e2], s]
             else
               error("diff", "Syntax Error")
-              raise "Syntax Error"
+              raise SyntaxError, "diff missing second operand"
             end
           end
         end
@@ -297,10 +297,6 @@ module EBNF
         s.match(/([\w\.]+)(.*)$/)
         l, s = $1, $2
         [l.to_sym, s]
-      when '@' # @pass or @terminals
-        s.match(/@(#\w+)(.*)$/)
-        l, s = $1, $2
-        [[:"@", l], s]
       when '-'
         [[:diff], s[1..-1]]
       when '?'
@@ -315,7 +311,7 @@ module EBNF
         [[m.to_sym], s[1..-1]]
       else
         error("terminal", "unrecognized terminal: #{s.inspect}")
-        raise "Syntax Error, unrecognized terminal: #{s.inspect}"
+        raise SyntaxError, "unrecognized terminal: #{s.inspect}"
       end
     end
   end

@@ -15,7 +15,7 @@ Output rules and terminals as S-Expressions, Turtle or EBNF
 This generates a S-Expression form of the grammar suitable for use by {EBNF} for generating a BNF representation (avoiding `star`, `plus`, and `opt` expressions), LL(1) first/follow comprehensions and branch tables used for parsing input files based on the grammar.
 
     (
-     (pass (seq PASS))
+     (pass _pass (seq PASS))
      (rule ebnf "1" (star (alt declaration rule)))
      (rule declaration "2" (alt "@terminals" pass))
      (rule rule "3" (seq LHS expression))

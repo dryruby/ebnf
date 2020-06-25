@@ -133,7 +133,7 @@ HEX
 <td><code>RANGE</code></td>
 <td>::=</td>
 <td>
-"[" (R_CHAR "-" R_CHAR) | (HEX - HEX) "]"
+"[" (R_CHAR "-" R_CHAR) | (HEX "-" HEX) "]"
 </td>
 </tr>
 <tr id='grammar-production-O_RANGE'>
@@ -141,7 +141,7 @@ HEX
 <td><code>O_RANGE</code></td>
 <td>::=</td>
 <td>
-"[^" (R_CHAR "-" R_CHAR) | (HEX - HEX) "]"
+"[^" (R_CHAR "-" R_CHAR) | (HEX "-" HEX) "]"
 </td>
 </tr>
 <tr id='grammar-production-STRING1'>
@@ -195,7 +195,7 @@ CHAR - "]"
 ([#x00-#x20] | ("#" - "#x" | "//") ([^#x0A#x0Dx])* | "/*" ("*" [^/])? | [^*]* "*/" | "(*" ("*" [^)])? | [^*]* "*)")+
 </td>
 </tr>
-<tr id='grammar-production-'>
+<tr id='grammar-production-_pass'>
 <td colspan='3'>
 <code>@pass</code>
 </td>

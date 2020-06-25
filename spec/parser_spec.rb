@@ -67,7 +67,20 @@ describe EBNF::Base do
       end
     end
   end
-  
+
+  describe "errors" do
+    {
+      %(a - '')                   => /diff missing second operand/,
+      %(%foo%)                    => /unrecognized terminal/,
+    }.each do |input, expected|
+      it "given #{input.inspect} raises #{expected}" do
+        expect do
+          expect {ebnf(:expression, input)}.to raise_error(SyntaxError, expected)
+        end.to write(:something).to(:error)
+      end
+    end
+  end
+
   def ebnf(method, value, **options)
     @debug = []
     options = {debug: @debug}.merge(options)

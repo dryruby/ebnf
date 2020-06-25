@@ -25,6 +25,8 @@ As LL(1) grammars operate using `alt` and `seq` primitives, allowing for a match
 
 Of note in this implementation is that the tokenizer and parser are streaming, so that they can process inputs of arbitrary size.
 
+The _exception operator_ (`A - B`) is only supported on terminals.
+
 See {EBNF::LL1} and {EBNF::LL1::Parser} for further information.
 
 ### [PEG][]/[Packrat][] Parser
@@ -113,7 +115,7 @@ Within the expression on the right-hand side of a rule, the following expression
   <tr><td><code>A | B</code></td>
     <td>matches <code>A</code> or <code>B</code>.</td></tr>
   <tr><td><code>A - B</code></td>
-    <td>matches any string that matches <code>A</code> but does not match <code>B</code>.</td></tr>
+    <td>matches any string that matches <code>A</code> but does not match <code>B</code>. (Only supported on Terminals in LL(1) BNF).</td></tr>
   <tr><td><code>A+</code></td>
     <td>matches one or more occurrences of <code>A</code>. Concatenation has higher precedence than alternation; thus <code>A+ | B+</code> is identical to <code>(A+) | (B+)</code>.</td></tr>
   <tr><td><code>A*</code></td>
@@ -152,13 +154,17 @@ Different components of an EBNF rule expression are transformed into their own o
   <tr><td><code>"string"</code></td><td><code>"string"</code></td></tr>
   <tr><td><code>'string'</code></td><td><code>"string"</code></td></tr>
   <tr><td><code>A (B | C)</code></td><td><code>(seq (A (alt B C)))</code></td></tr>
+  <tr><td><code>A~</code> <em>extension</em></td><td><code>(not A)</code></td></tr>
   <tr><td><code>A?</code></td><td><code>(opt A)</code></td></tr>
   <tr><td><code>A B</code></td><td><code>(seq A B)</code></td></tr>
   <tr><td><code>A | B</code></td><td><code>(alt A B)</code></td></tr>
-  <tr><td><code>A - B</code></td><td><code>(diff A B)</code></td></tr>
+  <tr><td><code>A - B</code></td>
+    <td><code>(diff A B) for terminals.<br/>
+      <code>(seq (not B) A) for non-terminals (PEG parsing only)</code></code></td></tr>
   <tr><td><code>A+</code></td><td><code>(plus A)</code></td></tr>
   <tr><td><code>A*</code></td><td><code>(star A)</code></td></tr>
-  <tr><td><code>@pass " "*</code></td><td><code>(pass (star " "))</code></td></tr>
+  <tr><td><code>A{n*m}</code> <em>extension</em></td><td><code>(rept n m A)</code></td></tr>
+  <tr><td><code>@pass " "*</code></td><td><code>(pass _pass (star " "))</code></td></tr>
   <tr><td><code>@terminals</code></td><td></td></tr>
 </table>
 
