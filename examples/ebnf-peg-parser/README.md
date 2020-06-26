@@ -2,11 +2,11 @@
 
 This example implements an [EBNF][] parser equivalent to the built-in parser. The proximate result is an Abstract S-Expression composed of sub-rules which can be directly executed by the parser. Effectively, this is a re-implementation of {EBNF::Parser} itself.
 
-## Parsing an LL(1) Grammar
+## Parsing the Grammar
 
     require 'ebnf'
 
-    ebnf = EBNFPegParser.new(File.open(../../etc/ebnf.ebnf))
+    ebnf = EBNFPegParser.new(File.open("../../etc/ebnf.ebnf"))
 
 Output rules and terminals as S-Expressions, Turtle or EBNF
 

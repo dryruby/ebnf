@@ -1,0 +1,29 @@
+postal_address   = name_part, street, zip_part ;
+
+name_part        = {personal_part, SP}, last_name, [SP, suffix], CRLF
+                 | personal_part, CRLF
+                 ;
+
+personal_part    = first_name | (initial, ".") ;
+first_name       = {ALPHA} ;
+initial          = ALPHA ;
+last_name        = {ALPHA} ;
+suffix           = ("Jr." | "Sr." | ("I" | "V" | "X"), {"I" | "V" | "X"}) ;
+
+street           = [apt, SP], house_num, SP, street_name, CRLF ;
+apt              = DIGIT, [DIGIT, [DIGIT, [DIGIT]]] ;
+house_num        = (DIGIT | ALPHA),
+                   [(DIGIT | ALPHA),
+                    [(DIGIT | ALPHA),
+                     [(DIGIT | ALPHA),
+                      [(DIGIT | ALPHA),
+                       [(DIGIT | ALPHA),
+                        [(DIGIT | ALPHA),
+                         [(DIGIT | ALPHA)]]]]]]]
+                 ;
+street_name      = VCHAR, {VCHAR} ;
+
+zip_part         = town_name, ",", SP, state, SP, [SP], zip_code, CRLF ;
+town_name        = (ALPHA | SP), {ALPHA | SP} ;
+state            = 2*ALPHA ;
+zip_code         = 5*DIGIT, ["-", 4*DIGIT] ;

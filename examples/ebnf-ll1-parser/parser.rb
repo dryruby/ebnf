@@ -272,7 +272,7 @@ class EBNFLL1Parser
   #
   #     [10] pass       ::= '@pass' expression
   production(:pass) do |input, data, callback|
-    input[:pass] = data[:expression]
+    input[:pass] = data[:expression].to_ary
   end
 
   # ## Parser invocation.
@@ -309,7 +309,7 @@ class EBNFLL1Parser
         # After parsing `@terminals`
         # This changes the state of the parser to treat subsequent rules as terminals.
         parsing_terminals = true
-        rule = EBNF::Rule.new(nil, nil, data.first, kind: :terminal)
+        next
       when :pass
         # After parsing `@pass`
         # This defines a specific rule for whitespace.

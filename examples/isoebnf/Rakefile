@@ -1,0 +1,32 @@
+task default: ['iso-ebnf.sxp', 'iso-ebnf.peg.sxp', :meta, :doc]
+
+desc 'Build rules table'
+task meta: "meta.rb"
+
+file "meta.rb" => "iso-ebnf.ebnf" do |t|
+  sh %{
+    ebnf --peg --format rb \
+      --mod-name ISOEBNFMeta \
+      --output meta.rb \
+      #{t.prerequisites.first}
+  }
+end
+
+file 'iso-ebnf.sxp' => "iso-ebnf.ebnf" do |t|
+  sh %{
+    ebnf --output iso-ebnf.sxp #{t.prerequisites.first}
+  }
+end
+
+file 'iso-ebnf.peg.sxp' => "iso-ebnf.ebnf" do |t|
+  sh %{
+    ebnf --peg --output iso-ebnf.peg.sxp #{t.prerequisites.first}
+  }
+end
+
+desc "Generate literal documentation for parser"
+task doc: %w(doc/parser.html)
+
+file "doc/parser.html" => "parser.rb" do
+  `rocco -t doc/layout.mustache parser.rb -o doc`
+end

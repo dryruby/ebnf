@@ -7,7 +7,7 @@ module EBNF::Terminals
   R_CHAR  = %r([\u0009\u000A\u000D\u0020-\u005C\u005E-\uD7FF\u{10000}-\u{10FFFF}])u.freeze
   RANGE   = %r(\[(?:(?:#{R_CHAR})\-(?:#{R_CHAR})|(?:#{HEX})-(?:#{HEX}))\])u.freeze
   ENUM_BASE = %r(\[(?:(?:#{R_CHAR})+|(?:#{HEX})+)\])u.freeze
-  ENUM    = %r((?:#{ENUM_BASE})(?!\s+#{SYMBOL}))u.freeze
+  ENUM    = %r((?:#{ENUM_BASE})(?!\s+#{SYMBOL}\s*::=))u.freeze
   LHS     = %r(\[(?:(?:#{SYMBOL})+\]\s+)?(?:#{SYMBOL})\s*::=)u.freeze
   O_RANGE = %r(\[^(?:#{R_CHAR}\-#{R_CHAR})|(?:#{HEX}-#{HEX})\])u.freeze
   O_ENUM  = %r(\[^(?:#{R_CHAR})+\])u.freeze

@@ -12,23 +12,6 @@ class EBNFPegParser
   include EBNF::PEG::Parser
   include EBNF::Terminals
 
-  class ProdResult
-    attr_accessor :prod
-    attr_accessor :values
-
-    def initialize(prod, *values)
-      @prod, @values = prod, values
-    end
-
-    def to_ary
-      values.map {|v| v.respond_to?(:to_ary) ? v.to_ary : v}.unshift(@prod)
-    end
-
-    def inspect
-      "(#{prod} #{values.map(&:inspect).join(' ')})"
-    end
-  end
-
   # Abstract syntax tree from parse
   #
   # @return [Array<EBNF::Rule>]
@@ -318,7 +301,7 @@ class EBNFPegParser
         # After parsing `@terminals`
         # This changes the state of the parser to treat subsequent rules as terminals.
         parsing_terminals = true
-        rule = EBNF::Rule.new(nil, nil, data.first, kind: :terminal)
+        next
       when :pass
         # After parsing `@pass`
         # This defines a specific rule for whitespace.

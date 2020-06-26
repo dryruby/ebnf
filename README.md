@@ -192,6 +192,8 @@ For an example parser built using this gem that parses the [EBNF][] grammar, see
 There is also an
 [EBNF LL(1) Parser example](https://dryruby.github.io/ebnf/examples/ebnf-peg-parser/doc/parser.html).
 
+The [ISO EBNF Parser](https://dryruby.github.io/ebnf/examples/iso-ebnf/doc/parser.html) example parses [ISO/IEC 14977][] into S-Expressions, which can be used to parse compatible grammars using this parser (either PEG or LL(1)).
+
 ##  Acknowledgements
 Much of this work, particularly the generic parser, is inspired by work originally done by
 Tim Berners-Lee's Python [predictive parser](https://www.w3.org/2000/10/swap/grammar/predictiveParser.py).
@@ -239,6 +241,7 @@ A copy of the [Turtle EBNF][] and derived parser files are included in the repos
 [EBNF]:         https://www.w3.org/TR/REC-xml/#sec-notation
 [EBNF doc]:     https://rubydoc.info/github/dryruby/ebnf
 [First/Follow]: https://en.wikipedia.org/wiki/LL_parser#Constructing_an_LL.281.29_parsing_table
+[ISO/IEC 14977]:https://www.iso.org/standard/26153.html
 [LL(1)]:        https://www.csd.uwo.ca/~moreno//CS447/Lectures/Syntax.html/node14.html
 [LL(1) Parser]: https://en.wikipedia.org/wiki/LL_parser
 [Logger]:       https://ruby-doc.org/stdlib-2.4.0/libdoc/logger/rdoc/Logger.html
