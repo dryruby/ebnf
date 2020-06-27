@@ -107,31 +107,36 @@ class ISOEBNFPegParser
     nil
   end
 
+  # Setting `as_hash: true` in the start production makes the value of the form of a hash, rather than an array of hashes.
+  #
   # `[3]  definitions_list  ::= single_definition (definition_separator_symbol definitions_list)*`
+  start_production(:definitions_list, as_hash: true)
   production(:definitions_list) do |value|
-    if value.last[:_definitions_list_1].length > 0
-      [:alt, value.first[:single_definition]] + value.last[:_definitions_list_1]
+    if value[:_definitions_list_1].length > 0
+      [:alt, value[:single_definition]] + value[:_definitions_list_1]
     else
-      value.first[:single_definition]
+      value[:single_definition]
     end
   end
   production(:_definitions_list_1) do |value|
     Array(value.first)
   end
+  start_production(:_definitions_list_2, as_hash: true)
   production(:_definitions_list_2) do |value|
-    if Array(value.last[:definitions_list]).first == :alt
-      value.last[:definitions_list][1..-1]
+    if Array(value[:definitions_list]).first == :alt
+      value[:definitions_list][1..-1]
     else
-      [value.last[:definitions_list]]
+      [value[:definitions_list]]
     end
   end
 
   # `[4]  single_definition ::= term (',' term)*`
+  start_production(:single_definition, as_hash: true)
   production(:single_definition) do |value|
-    if value.last[:_single_definition_1].length > 0
-      [:seq, value.first[:term]] + value.last[:_single_definition_1]
+    if value[:_single_definition_1].length > 0
+      [:seq, value[:term]] + value[:_single_definition_1]
     else
-      value.first[:term]
+      value[:term]
     end
   end
   production(:_single_definition_1) do |value|
@@ -139,11 +144,12 @@ class ISOEBNFPegParser
   end
 
   # `[5]  term              ::= factor ('-' exception)?`
+  start_production(:term, as_hash: true)
   production(:term) do |value|
-    if value.last[:_diff_1]
-      [:diff, value.first[:postfix], value.last[:_term_1]]
+    if value[:_diff_1]
+      [:diff, value[:postfix], value[:_term_1]]
     else
-      value.first[:factor]
+      value[:factor]
     end
   end
   production(:_term_1) do |value|
@@ -151,31 +157,22 @@ class ISOEBNFPegParser
   end
 
   # `[6]  exception         ::= factor`
+  start_production(:exception, as_hash: true)
   production(:exception) do |value|
-    value.first[:factor]
+    value[:factor]
   end
 
   # `[7]  factor            ::= (integer '*')? primary`
+  start_production(:factor, as_hash: true)
   production(:factor) do |value|
-    if value.first[:_factor_1]
-      [:rept, value.first[:_factor_1], value.first[:_factor_1], value.last[:primary]]
+    if value[:_factor_1]
+      [:rept, value[:_factor_1], value[:_factor_1], value[:primary]]
     else
-      value.last[:primary]
+      value[:primary]
     end
   end
   production(:_factor_2) do |value|
     value.first[:integer]
-  end
-
-  # `[8]  primary           ::= optional_sequence`
-  # `                         | repeated_sequence`
-  # `                         | special_sequence`
-  # `                         | grouped_sequence`
-  # `                         | meta_identifier`
-  # `                         | terminal_string`
-  # `                         | empty`
-  production(:primary) do |value|
-    value
   end
 
   # `[9]  optional_sequence ::= start_option_symbol definitions_list end_option_symbol`

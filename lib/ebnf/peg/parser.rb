@@ -51,6 +51,7 @@ module EBNF::PEG
     # DSL for creating terminals and productions
     module ClassMethods
       def start_handlers; (@start_handlers ||= {}); end
+      def start_options; (@start_hoptions ||= {}); end
       def production_handlers; (@production_handlers ||= {}); end
       def terminal_handlers; (@terminal_handlers ||= {}); end
       def terminal_regexps; (@terminal_regexps ||= {}); end
@@ -97,6 +98,10 @@ module EBNF::PEG
       #
       # @param [Symbol] term
       #   The rule name
+      # @param [Hash{Symbol => Object}]
+      #   Options which are returned from {Parser#onStart}.
+      # @option options [Boolean] :as_hash (false)
+      #   If the production is a `seq`, causes the value to be represented as a single hash, rather than an array of individual hashes for each sub-production. Note that this is not always advisable due to the possibility of repeated productions within the sequence.
       # @yield [data, block]
       # @yieldparam [Hash] data
       #   A Hash defined for the current production, during :start
@@ -106,8 +111,9 @@ module EBNF::PEG
       #   Block passed to initialization for yielding to calling parser.
       #   Should conform to the yield specs for #initialize
       # Yield to generate a triple
-      def start_production(term, &block)
+      def start_production(term, **options, &block)
         start_handlers[term] = block
+        start_options[term] = options.freeze
       end
 
       ##
@@ -350,6 +356,9 @@ module EBNF::PEG
 
     # Start for production
     # Adds data avoiable during the processing of the production
+    #
+    # @return [Hash] composed of production options. Currently only `as_hash` is supported.
+    # @see ClassMethods#start_production
     def onStart(prod)
       handler = self.class.start_handlers[prod]
       @productions << prod
@@ -375,6 +384,7 @@ module EBNF::PEG
         # explicit start handler
         @prod_data << {}
       end
+      return self.class.start_options.fetch(prod, {}) # any options on this production
     end
 
     # Finish of production

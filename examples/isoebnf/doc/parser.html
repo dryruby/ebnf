@@ -515,7 +515,7 @@ but it is correct.</p>
 <span class="sr">    \[          | # start option symbol</span>
 <span class="sr">    \{          | # start repeat symbol</span>
 <span class="sr">    [;\.]       | # terminator symbol</span>
-<span class="sr">    [:+_%@&amp;$&lt;&gt;^\x20\x23\\]  # other character</span>
+<span class="sr">    [:+_%@&amp;$&lt;&gt;^\x20\x23\\`~]  # other character</span>
 <span class="sr">  }x</span>
 
   <span class="no">TERMINAL_CHARACTER</span>         <span class="o">=</span> <span class="sr">%r{</span><span class="si">#{</span><span class="no">TERMINAL_CHARACTER_BASE</span><span class="si">}</span><span class="sr">|[&#39;&quot;\?]}</span>
@@ -721,21 +721,23 @@ but it is correct.</p>
         <h2>Non-terminal productions</h2>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:definitions_list</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:_definitions_list_1</span><span class="o">].</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span>
-      <span class="o">[</span><span class="ss">:alt</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">first</span><span class="o">[</span><span class="ss">:single_definition</span><span class="o">]]</span> <span class="o">+</span> <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:_definitions_list_1</span><span class="o">]</span>
+        <div class='highlight'><pre>  <span class="n">start_production</span><span class="p">(</span><span class="ss">:definitions_list</span><span class="p">,</span> <span class="n">as_hash</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span>
+  <span class="n">production</span><span class="p">(</span><span class="ss">:definitions_list</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
+    <span class="k">if</span> <span class="n">value</span><span class="o">[</span><span class="ss">:_definitions_list_1</span><span class="o">].</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span>
+      <span class="o">[</span><span class="ss">:alt</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="ss">:single_definition</span><span class="o">]]</span> <span class="o">+</span> <span class="n">value</span><span class="o">[</span><span class="ss">:_definitions_list_1</span><span class="o">]</span>
     <span class="k">else</span>
-      <span class="n">value</span><span class="o">.</span><span class="n">first</span><span class="o">[</span><span class="ss">:single_definition</span><span class="o">]</span>
+      <span class="n">value</span><span class="o">[</span><span class="ss">:single_definition</span><span class="o">]</span>
     <span class="k">end</span>
   <span class="k">end</span>
   <span class="n">production</span><span class="p">(</span><span class="ss">:_definitions_list_1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
     <span class="nb">Array</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">first</span><span class="p">)</span>
   <span class="k">end</span>
+  <span class="n">start_production</span><span class="p">(</span><span class="ss">:_definitions_list_2</span><span class="p">,</span> <span class="n">as_hash</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span>
   <span class="n">production</span><span class="p">(</span><span class="ss">:_definitions_list_2</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="k">if</span> <span class="nb">Array</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:definitions_list</span><span class="o">]</span><span class="p">)</span><span class="o">.</span><span class="n">first</span> <span class="o">==</span> <span class="ss">:alt</span>
-      <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:definitions_list</span><span class="o">][</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="o">]</span>
+    <span class="k">if</span> <span class="nb">Array</span><span class="p">(</span><span class="n">value</span><span class="o">[</span><span class="ss">:definitions_list</span><span class="o">]</span><span class="p">)</span><span class="o">.</span><span class="n">first</span> <span class="o">==</span> <span class="ss">:alt</span>
+      <span class="n">value</span><span class="o">[</span><span class="ss">:definitions_list</span><span class="o">][</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="o">]</span>
     <span class="k">else</span>
-      <span class="o">[</span><span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:definitions_list</span><span class="o">]]</span>
+      <span class="o">[</span><span class="n">value</span><span class="o">[</span><span class="ss">:definitions_list</span><span class="o">]]</span>
     <span class="k">end</span>
   <span class="k">end</span></pre></div>
       </td>
@@ -748,11 +750,12 @@ but it is correct.</p>
         <p><code>[2]  syntax_rule       ::= meta_identifier &#39;=&#39; definitions_list terminator_symbol</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:single_definition</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:_single_definition_1</span><span class="o">].</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span>
-      <span class="o">[</span><span class="ss">:seq</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">first</span><span class="o">[</span><span class="ss">:term</span><span class="o">]]</span> <span class="o">+</span> <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:_single_definition_1</span><span class="o">]</span>
+        <div class='highlight'><pre>  <span class="n">start_production</span><span class="p">(</span><span class="ss">:single_definition</span><span class="p">,</span> <span class="n">as_hash</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span>
+  <span class="n">production</span><span class="p">(</span><span class="ss">:single_definition</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
+    <span class="k">if</span> <span class="n">value</span><span class="o">[</span><span class="ss">:_single_definition_1</span><span class="o">].</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span>
+      <span class="o">[</span><span class="ss">:seq</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="ss">:term</span><span class="o">]]</span> <span class="o">+</span> <span class="n">value</span><span class="o">[</span><span class="ss">:_single_definition_1</span><span class="o">]</span>
     <span class="k">else</span>
-      <span class="n">value</span><span class="o">.</span><span class="n">first</span><span class="o">[</span><span class="ss">:term</span><span class="o">]</span>
+      <span class="n">value</span><span class="o">[</span><span class="ss">:term</span><span class="o">]</span>
     <span class="k">end</span>
   <span class="k">end</span>
   <span class="n">production</span><span class="p">(</span><span class="ss">:_single_definition_1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
@@ -769,11 +772,12 @@ but it is correct.</p>
 Invoke callback</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:term</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:_diff_1</span><span class="o">]</span>
-      <span class="o">[</span><span class="ss">:diff</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">first</span><span class="o">[</span><span class="ss">:postfix</span><span class="o">]</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:_term_1</span><span class="o">]]</span>
+        <div class='highlight'><pre>  <span class="n">start_production</span><span class="p">(</span><span class="ss">:term</span><span class="p">,</span> <span class="n">as_hash</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span>
+  <span class="n">production</span><span class="p">(</span><span class="ss">:term</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
+    <span class="k">if</span> <span class="n">value</span><span class="o">[</span><span class="ss">:_diff_1</span><span class="o">]</span>
+      <span class="o">[</span><span class="ss">:diff</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="ss">:postfix</span><span class="o">]</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="ss">:_term_1</span><span class="o">]]</span>
     <span class="k">else</span>
-      <span class="n">value</span><span class="o">.</span><span class="n">first</span><span class="o">[</span><span class="ss">:factor</span><span class="o">]</span>
+      <span class="n">value</span><span class="o">[</span><span class="ss">:factor</span><span class="o">]</span>
     <span class="k">end</span>
   <span class="k">end</span>
   <span class="n">production</span><span class="p">(</span><span class="ss">:_term_1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
@@ -786,11 +790,14 @@ Invoke callback</p>
         <div class="pilwrap">
           <a class="pilcrow" href="#section-21">&#182;</a>
         </div>
-        <p><code>[3]  definitions_list  ::= single_definition (definition_separator_symbol definitions_list)*</code></p>
+        <p>Setting <code>as_hash: true</code> in the start production makes the value of the form of a hash, rather than an array of hashes.</p>
+
+<p><code>[3]  definitions_list  ::= single_definition (definition_separator_symbol definitions_list)*</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:exception</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="n">value</span><span class="o">.</span><span class="n">first</span><span class="o">[</span><span class="ss">:factor</span><span class="o">]</span>
+        <div class='highlight'><pre>  <span class="n">start_production</span><span class="p">(</span><span class="ss">:exception</span><span class="p">,</span> <span class="n">as_hash</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span>
+  <span class="n">production</span><span class="p">(</span><span class="ss">:exception</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
+    <span class="n">value</span><span class="o">[</span><span class="ss">:factor</span><span class="o">]</span>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
@@ -802,11 +809,12 @@ Invoke callback</p>
         <p><code>[4]  single_definition ::= term (&#39;,&#39; term)*</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:factor</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">first</span><span class="o">[</span><span class="ss">:_factor_1</span><span class="o">]</span>
-      <span class="o">[</span><span class="ss">:rept</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">first</span><span class="o">[</span><span class="ss">:_factor_1</span><span class="o">]</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">first</span><span class="o">[</span><span class="ss">:_factor_1</span><span class="o">]</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:primary</span><span class="o">]]</span>
+        <div class='highlight'><pre>  <span class="n">start_production</span><span class="p">(</span><span class="ss">:factor</span><span class="p">,</span> <span class="n">as_hash</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span>
+  <span class="n">production</span><span class="p">(</span><span class="ss">:factor</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
+    <span class="k">if</span> <span class="n">value</span><span class="o">[</span><span class="ss">:_factor_1</span><span class="o">]</span>
+      <span class="o">[</span><span class="ss">:rept</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="ss">:_factor_1</span><span class="o">]</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="ss">:_factor_1</span><span class="o">]</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="ss">:primary</span><span class="o">]]</span>
     <span class="k">else</span>
-      <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:primary</span><span class="o">]</span>
+      <span class="n">value</span><span class="o">[</span><span class="ss">:primary</span><span class="o">]</span>
     <span class="k">end</span>
   <span class="k">end</span>
   <span class="n">production</span><span class="p">(</span><span class="ss">:_factor_2</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
@@ -822,8 +830,8 @@ Invoke callback</p>
         <p><code>[5]  term              ::= factor (&#39;-&#39; exception)?</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:primary</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="n">value</span>
+        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:optional_sequence</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
+    <span class="o">[</span><span class="ss">:opt</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">][</span><span class="ss">:definitions_list</span><span class="o">]]</span>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
@@ -835,8 +843,8 @@ Invoke callback</p>
         <p><code>[6]  exception         ::= factor</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:optional_sequence</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="o">[</span><span class="ss">:opt</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">][</span><span class="ss">:definitions_list</span><span class="o">]]</span>
+        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:repeated_sequence</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
+    <span class="o">[</span><span class="ss">:star</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">][</span><span class="ss">:definitions_list</span><span class="o">]]</span>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
@@ -848,8 +856,8 @@ Invoke callback</p>
         <p><code>[7]  factor            ::= (integer &#39;*&#39;)? primary</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:repeated_sequence</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="o">[</span><span class="ss">:star</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">][</span><span class="ss">:definitions_list</span><span class="o">]]</span>
+        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:grouped_sequence</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
+    <span class="o">[</span><span class="ss">:seq</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">][</span><span class="ss">:definitions_list</span><span class="o">]]</span>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
@@ -858,35 +866,16 @@ Invoke callback</p>
         <div class="pilwrap">
           <a class="pilcrow" href="#section-26">&#182;</a>
         </div>
-        <p><code>[8]  primary           ::= optional_sequence</code>
-<code>| repeated_sequence</code>
-<code>| special_sequence</code>
-<code>| grouped_sequence</code>
-<code>| meta_identifier</code>
-<code>| terminal_string</code>
-<code>| empty</code></p>
-      </td>
-      <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:grouped_sequence</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="o">[</span><span class="ss">:seq</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">][</span><span class="ss">:definitions_list</span><span class="o">]]</span>
-  <span class="k">end</span></pre></div>
-      </td>
-    </tr>
-    <tr id='section-27'>
-      <td class=docs>
-        <div class="pilwrap">
-          <a class="pilcrow" href="#section-27">&#182;</a>
-        </div>
         <p><code>[9]  optional_sequence ::= start_option_symbol definitions_list end_option_symbol</code></p>
       </td>
       <td class=code>
         <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">input</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span></pre></div>
       </td>
     </tr>
-    <tr id='section-28'>
+    <tr id='section-27'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-28">&#182;</a>
+          <a class="pilcrow" href="#section-27">&#182;</a>
         </div>
         <p><code>[10] repeated_sequence ::= start_repeat_symbol definitions_list end_repeat_symbol</code></p>
       </td>
@@ -898,10 +887,10 @@ Invoke callback</p>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-29'>
+    <tr id='section-28'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-29">&#182;</a>
+          <a class="pilcrow" href="#section-28">&#182;</a>
         </div>
         <p><code>[11] grouped_sequence  ::= &#39;(&#39; definitions_list &#39;)&#39;</code></p>
       </td>
@@ -944,10 +933,10 @@ Invoke callback</p>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-31'>
+    <tr id='section-30'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-31">&#182;</a>
+          <a class="pilcrow" href="#section-30">&#182;</a>
         </div>
         <p>If the <code>level</code> option is set, instantiate a logger for collecting trace information.</p>
       </td>
@@ -956,10 +945,10 @@ Invoke callback</p>
     <span class="nb">require</span> <span class="s1">&#39;sxp&#39;</span> <span class="k">unless</span> <span class="n">defined?</span><span class="p">(</span><span class="no">SXP</span><span class="p">)</span></pre></div>
       </td>
     </tr>
-    <tr id='section-32'>
+    <tr id='section-31'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-32">&#182;</a>
+          <a class="pilcrow" href="#section-31">&#182;</a>
         </div>
         <p>Read input, if necessary, which will be used in a Scanner.</p>
       </td>
@@ -969,12 +958,23 @@ Invoke callback</p>
 <span class="k">end</span></pre></div>
       </td>
     </tr>
+    <tr id='section-32'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-32">&#182;</a>
+        </div>
+        <p>A rule which has already been turned into a <code>Rule</code> object.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
     <tr id='section-33'>
       <td class=docs>
         <div class="pilwrap">
           <a class="pilcrow" href="#section-33">&#182;</a>
         </div>
-        <p>A rule which has already been turned into a <code>Rule</code> object.</p>
+        <p>Output formatted S-Expression of grammar</p>
       </td>
       <td class=code>
         <div class='highlight'><pre></pre></div>
@@ -984,17 +984,6 @@ Invoke callback</p>
       <td class=docs>
         <div class="pilwrap">
           <a class="pilcrow" href="#section-34">&#182;</a>
-        </div>
-        <p>Output formatted S-Expression of grammar</p>
-      </td>
-      <td class=code>
-        <div class='highlight'><pre></pre></div>
-      </td>
-    </tr>
-    <tr id='section-35'>
-      <td class=docs>
-        <div class="pilwrap">
-          <a class="pilcrow" href="#section-35">&#182;</a>
         </div>
         <p>Output rules as a formatted S-Expression</p>
 

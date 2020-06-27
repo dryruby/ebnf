@@ -131,18 +131,19 @@ class EBNFPegParser
 
   # Production for end of `rule` non-terminal.
   #
-  # The `value` parameter, is of the form `[{LHS: "v"}, {expression: "v"}]`.
+  # By setting `as_hash: true` in the `start_production`, the `value` parameter will be in the form `{LHS: "v", expression: "v"}`. Otherwise, it would be expressed using an array of hashes of the form `[{LHS: "v"}, {expression: "v"}]`.
   #
   # Clears the packrat parser when called.
   #
   # Create rule from expression value and pass to callback
   #
   #     [3] rule        ::= LHS expression
+  start_production(:rule, as_hash: true)
   production(:rule, clear_packrat: true) do |value, data, callback|
     # value contains an expression.
     # Invoke callback
-    id, sym = value.first[:LHS]
-    expression = value.last[:expression]
+    id, sym = value[:LHS]
+    expression = value[:expression]
     callback.call(:rule, EBNF::Rule.new(sym.to_sym, id, expression))
     nil
   end
@@ -163,7 +164,7 @@ class EBNFPegParser
   # Production for end of `alt` non-terminal.
   # Passes through the optimized value of the seq production as follows:
   #
-  # The `value` parameter, is of the form `[{seq: "v"}, {_alt_1: "v"}]`.
+  # The `value` parameter, is of the form `{seq: "v", _alt_1: "v"}`.
   #
   #     [:seq foo] => foo
   #     [:seq foo bar] => [:seq foo bar]
@@ -171,11 +172,12 @@ class EBNFPegParser
   # Note that this also may just pass through from `_alt_1`
   #
   #     [5] alt         ::= seq ('|' seq)*
+  start_production(:alt, as_hash: true)
   production(:alt) do |value|
-    if value.last[:_alt_1].length > 0
-      [:alt, value.first[:seq]] + value.last[:_alt_1]
+    if value[:_alt_1].length > 0
+      [:alt, value[:seq]] + value[:_alt_1]
     else
-      value.first[:seq]
+      value[:seq]
     end
   end
 
@@ -206,14 +208,15 @@ class EBNFPegParser
 
   # `Diff` production returns concatenated postfix values
   #
-  # The `value` parameter, is of the form `[{postfix: "v"}, {_diff_1: "v"}]`.
+  # The `value` parameter, is of the form `{postfix: "v", _diff_1: "v"}`.
   #
   #     [7] diff        ::= postfix ('-' postfix)?
+  start_production(:diff, as_hash: true)
   production(:diff) do |value|
-    if value.last[:_diff_1]
-      [:diff, value.first[:postfix], value.last[:_diff_1]]
+    if value[:_diff_1]
+      [:diff, value[:postfix], value[:_diff_1]]
     else
-      value.first[:postfix]
+      value[:postfix]
     end
   end
 
@@ -224,7 +227,7 @@ class EBNFPegParser
   # Production for end of `postfix` non-terminal.
   # Either returns the `primary` production value, or as modified by the `postfix`.
   #
-  # The `value` parameter, is of the form `[{primary: "v"}, {_postfix_1: "v"}]`.
+  # The `value` parameter, is of the form `{primary: "v", _postfix_1: "v"}`.
   #
   #     [:primary] => [:primary]
   #     [:primary, '*'] => [:star, :primary]
@@ -232,13 +235,14 @@ class EBNFPegParser
   #     [:primary, '?'] => [:opt, :primary]
   #
   #     [8] postfix     ::= primary POSTFIX?
+  start_production(:postfix, as_hash: true)
   production(:postfix) do |value|
     # Push result onto input stack, as the `diff` production can have some number of `postfix` values that are applied recursively
-    case value.last[:_postfix_1]
-    when "*" then [:star, value.first[:primary]]
-    when "+" then [:plus, value.first[:primary]]
-    when "?" then [:opt, value.first[:primary]]
-    else value.first[:primary]
+    case value[:_postfix_1]
+    when "*" then [:star, value[:primary]]
+    when "+" then [:plus, value[:primary]]
+    when "?" then [:opt, value[:primary]]
+    else value[:primary]
     end
   end
 

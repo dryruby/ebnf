@@ -19,13 +19,14 @@ module EBNF::PEG
     # If matched, the input position is updated and the results returned in a Hash.
     #
     # * `alt`: returns the value of the matched production or `:unmatched`.
-    # * `diff`: returns the string value matched, or `:unmatched`.
+    # * `diff`: returns the value matched, or `:unmatched`.
     # * `hex`: returns a string composed of the matched hex character, or `:unmatched`.
-    # * `opt`: returns the matched production, or `nil` if unmatched.
-    # * `plus`: returns an array of the matches for the specified production, or `:unmatched`, if none are matched. For Terminals, these are concatenated into a single string.
-    # * `range`: returns a string composed of the character matching the range, or `:unmatched`.
-    # * `seq`: returns an array composed of single-entry hashes for each matched production indexed by the production name, or `:unmatched` if any production fails to match. For Terminals, returns a string created by concatenating these values.
-    # * `star`: returns an array of the matches for the specified production.For Terminals, these are concatenated into a single string.
+    # * `opt`: returns the value matched, or `nil` if unmatched.
+    # * `plus`: returns an array of the values matched for the specified production, or `:unmatched`, if none are matched. For Terminals, these are concatenated into a single string.
+    # * `range`: returns a string composed of the values matched, or `:unmatched`, if less than `min` are matched.
+    # * `seq`: returns an array composed of single-entry hashes for each matched production indexed by the production name, or `:unmatched` if any production fails to match. For Terminals, returns a string created by concatenating these values. Via option in a `production` or definition, the result can be a single hash with values for each matched production; note that this is not always possible due to the possibility of repeated productions within the sequence.
+    # * `star`: returns an array of the values matched for the specified production. For Terminals, these are concatenated into a single string.
+    #
     # @param [Scanner] input
     # @return [Hash{Symbol => Object}, :unmatched] A hash with keys for matched component of the expression. Returns :unmatched if the input does not match the production.
     def parse(input)
@@ -58,7 +59,7 @@ module EBNF::PEG
       else
         eat_whitespace(input)
       end
-      parser.onStart(sym)
+      start_options = parser.onStart(sym)
 
       result = case expr.first
       when :alt
@@ -160,11 +161,15 @@ module EBNF::PEG
           end
           accumulator << {prod.to_sym => res}
         end
-        seq == :unmatched ?
-          :unmatched :
-          (terminal? ?
-            seq.map(&:values).compact.join("") : # Concat values for terminal production
-            seq)
+        if seq == :unmatched
+          :unmatched
+        elsif terminal?
+          seq.map(&:values).compact.join("") # Concat values for terminal production
+        elsif start_options[:as_hash]
+          seq.inject {|memo, h| memo.merge(h)}
+        else
+          seq
+        end
       when :star
         # Result is an array of all expressions while they match,
         # an empty array of none match

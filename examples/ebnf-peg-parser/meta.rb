@@ -51,12 +51,12 @@ module EBNFPegMeta
     EBNF::Rule.new(:_RANGE_1, "16.1", [:seq, "[", :_RANGE_3], kind: :terminal).extend(EBNF::PEG::Rule),
     EBNF::Rule.new(:_RANGE_3, "16.3", [:seq, :R_CHAR, "-", :R_CHAR], kind: :terminal).extend(EBNF::PEG::Rule),
     EBNF::Rule.new(:_RANGE_2, "16.2", [:seq, :_RANGE_4, "]"], kind: :terminal).extend(EBNF::PEG::Rule),
-    EBNF::Rule.new(:_RANGE_4, "16.4", [:diff, :HEX, :HEX], kind: :terminal).extend(EBNF::PEG::Rule),
+    EBNF::Rule.new(:_RANGE_4, "16.4", [:seq, :HEX, "-", :HEX], kind: :terminal).extend(EBNF::PEG::Rule),
     EBNF::Rule.new(:O_RANGE, "17", [:alt, :_O_RANGE_1, :_O_RANGE_2], kind: :terminal).extend(EBNF::PEG::Rule),
     EBNF::Rule.new(:_O_RANGE_1, "17.1", [:seq, "[^", :_O_RANGE_3], kind: :terminal).extend(EBNF::PEG::Rule),
     EBNF::Rule.new(:_O_RANGE_3, "17.3", [:seq, :R_CHAR, "-", :R_CHAR], kind: :terminal).extend(EBNF::PEG::Rule),
     EBNF::Rule.new(:_O_RANGE_2, "17.2", [:seq, :_O_RANGE_4, "]"], kind: :terminal).extend(EBNF::PEG::Rule),
-    EBNF::Rule.new(:_O_RANGE_4, "17.4", [:diff, :HEX, :HEX], kind: :terminal).extend(EBNF::PEG::Rule),
+    EBNF::Rule.new(:_O_RANGE_4, "17.4", [:seq, :HEX, "-", :HEX], kind: :terminal).extend(EBNF::PEG::Rule),
     EBNF::Rule.new(:STRING1, "18", [:seq, "\"", :_STRING1_1, "\""], kind: :terminal).extend(EBNF::PEG::Rule),
     EBNF::Rule.new(:_STRING1_1, "18.1", [:star, :_STRING1_2], kind: :terminal).extend(EBNF::PEG::Rule),
     EBNF::Rule.new(:_STRING1_2, "18.2", [:diff, :CHAR, "\""], kind: :terminal).extend(EBNF::PEG::Rule),
@@ -92,7 +92,7 @@ module EBNFPegMeta
     EBNF::Rule.new(:_PASS_20, "23.20", [:seq, "*", :_PASS_21], kind: :terminal).extend(EBNF::PEG::Rule),
     EBNF::Rule.new(:_PASS_21, "23.21", [:range, "^)"], kind: :terminal).extend(EBNF::PEG::Rule),
     EBNF::Rule.new(:_PASS_19, "23.19", [:range, "^*"], kind: :terminal).extend(EBNF::PEG::Rule),
-    EBNF::Rule.new(nil, nil, [:seq, :PASS], kind: :pass).extend(EBNF::PEG::Rule),
+    EBNF::Rule.new(:_pass, nil, [:seq, :PASS], kind: :pass).extend(EBNF::PEG::Rule),
   ]
 end
 

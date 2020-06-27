@@ -63,11 +63,12 @@ class EBNFPegParser
     callback.call(:terminal) if value == '@terminals'
   end
 
+  start_production(:rule, as_hash: true)
   production(:rule, clear_packrat: true) do |value, data, callback|
     # current contains an expression.
     # Invoke callback
-    id, sym = value.first[:LHS]
-    expression = value.last[:expression]
+    id, sym = value[:LHS]
+    expression = value[:expression]
     callback.call(:rule, EBNF::Rule.new(sym.to_sym, id, expression))
   end
 
@@ -91,11 +92,12 @@ class EBNFPegParser
     value.length == 1 ? value.first : ([:seq] + value)
   end
 
+  start_production(:diff, as_hash: true)
   production(:diff) do |value|
-    if value.last[:_diff_1]
-      [:diff, value.first[:postfix], value.last[:_diff_1]]
+    if value[:_diff_1]
+      [:diff, value[:postfix], value[:_diff_1]]
     else
-      value.first[:postfix]
+      value[:postfix]
     end
   end
 
@@ -103,13 +105,14 @@ class EBNFPegParser
     value.last[:postfix] if value
   end
 
+  start_production(:postfix, as_hash: true)
   production(:postfix) do |value|
     # Push result onto input stack, as the `diff` production can have some number of `postfix` values that are applied recursively
-    case value.last[:_postfix_1]
-    when "*" then [:star, value.first[:primary]]
-    when "+" then [:plus, value.first[:primary]]
-    when "?" then [:opt, value.first[:primary]]
-    else value.first[:primary]
+    case value[:_postfix_1]
+    when "*" then [:star, value[:primary]]
+    when "+" then [:plus, value[:primary]]
+    when "?" then [:opt, value[:primary]]
+    else value[:primary]
     end
   end
 
@@ -117,9 +120,10 @@ class EBNFPegParser
     Array(value).length > 2 ? value[1][:expression] : value
   end
 
+  start_production(:pass, as_hash: true)
   production(:pass) do |value, data, callback|
     # Invoke callback
-    callback.call(:pass, value.last[:expression])
+    callback.call(:pass, value[:expression])
   end
 
   # ## Parser invocation.
