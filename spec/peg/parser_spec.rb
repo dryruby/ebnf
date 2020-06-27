@@ -81,9 +81,10 @@ describe EBNF::PEG::Parser do
 
       {
         "" => %r{syntax error, expecting "0-9", :integer },
-        "10 x 1" => %r{syntax error, expecting "0-9", "\+", :operator},
+        "10 x 1" => %r{syntax error, expecting "\+", :operator},
         "1-1" => %r{syntax error, expecting "0-9", "\+", :operator},
         "foo" => %r{syntax error, expecting "0-9", :integer},
+        "3 1 + 2" => %r{syntax error, expecting "\+", :operator}
       }.each do |input, expected|
         it "fails to parse #{input.inspect} to #{expected.inspect}" do
           expect {

@@ -66,11 +66,13 @@ This generates a S-Expression form of the grammar suitable for use by {EBNF}.
      (rule start_repeat_symbol (alt "{" "(:"))
      (rule end_repeat_symbol (alt "}" ":)")))
 
-Note, however, that ISO EBNF doesn't distinguish between terminal rules and non-terminal rules, so all rules are parsed as non-terminal rules with strings the only terminals. Whereas, the {file:iso-ebnf.ebnf W3C EBNF definition of the grammar} does use terminal rules.
-
 This can then be used as input to {EBNF.parse} to transform EBNF to PEG for parsing examples of the grammar using {EBNF::PEG::Parser}.
 
     ebnf --input-format sxp --peg ebnf.sxp -o ebnf.peg.sxp
+
+Note, however, that ISO EBNF doesn't distinguish between terminal rules and non-terminal rules, so all rules are parsed as non-terminal rules with strings the only terminals. Whereas, the {file:iso-ebnf.ebnf W3C EBNF definition of the grammar} does use terminal rules.
+
+When parsing files with this grammar, rules that are all capitalized _will_ be treated as terminal productions, although this is an proprietary interpretation of the specification.
 
 ## Example Walkthrough
 

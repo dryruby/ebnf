@@ -144,7 +144,7 @@ module EBNF::PEG
       when :seq
         # Evaluate each expression into an array of hashes where each hash contains a key from the associated production and the value is the parsed value of that production. Returns :unmatched if the input does not match the production. Value ordering is ensured by native Hash ordering.
         seq = expr[1..-1].each_with_object([]) do |prod, accumulator|
-          eat_whitespace(input) unless accumulator.empty?
+          eat_whitespace(input) unless accumulator.empty? || terminal?
           res = case prod
           when Symbol
             rule = parser.find_rule(prod)
@@ -209,12 +209,12 @@ module EBNF::PEG
         rule = parser.find_rule(prod)
         raise "No rule found for #{prod}" unless rule
         while (res = rule.parse(input)) != :unmatched && (max == '*' || result.length < max)
-          eat_whitespace(input)
+          eat_whitespace(input) unless terminal?
           result << res
         end
       when String
         while (res = input.scan(Regexp.new(Regexp.quote(prod)))) && (max == '*' || result.length < max)
-          eat_whitespace(input)
+          eat_whitespace(input) unless terminal?
           result << res
         end
       end
