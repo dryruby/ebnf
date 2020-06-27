@@ -20,6 +20,23 @@ describe EBNF::Base do
         expect(ebnf(:ruleParts, input).to_sxp).to produce(expected, @debug)
       end
     end
+
+    context "without rule identifiers" do
+      {
+        %{Prolog    ::=           BaseDecl? PrefixDecl*} =>
+          %{(rule Prolog (seq (opt BaseDecl) (star PrefixDecl)))},
+        %{declaration ::= '@terminals' | '@pass'} =>
+          %{(rule declaration (alt "@terminals" "@pass"))},
+        %{postfix     ::= primary ( [?*+] )?} =>
+          %{(rule postfix (seq primary (opt (range "?*+"))))},
+        %{STRING2    ::= "'" (CHAR - "'")* "'"} =>
+          %{(terminal STRING2 (seq "'" (star (diff CHAR "'")) "'"))},
+      }.each do |input, expected|
+        it "given #{input.inspect} produces #{expected}" do
+          expect(ebnf(:ruleParts, input).to_sxp).to produce(expected, @debug)
+        end
+      end
+    end
   end
   
   describe "#expression" do

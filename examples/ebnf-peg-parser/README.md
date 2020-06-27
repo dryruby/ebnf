@@ -27,13 +27,14 @@ This generates a S-Expression form of the grammar suitable for use by {EBNF}.
      (rule primary "9"
       (alt HEX SYMBOL ENUM O_ENUM RANGE O_RANGE STRING1 STRING2 (seq "(" expression ")")))
      (rule pass "10" (seq "@pass" expression))
-     (terminal LHS "11" (seq (opt (seq "[" (plus SYMBOL) "]" (plus " "))) SYMBOL (star " ") "::="))
+     (terminal LHS "11" (seq (opt (seq "[" SYMBOL "]" (plus " "))) SYMBOL (star " ") "::="))
      (terminal SYMBOL "12" (plus (alt (range "a-z") (range "A-Z") (range "0-9") "_" ".")))
      (terminal HEX "13" (seq "#x" (plus (alt (range "a-f") (range "A-F") (range "0-9")))))
      (terminal ENUM "14" (diff (alt (seq "[" (plus R_CHAR)) (seq (plus HEX) "]")) LHS))
      (terminal O_ENUM "15" (alt (seq "[^" (plus R_CHAR)) (seq (plus HEX) "]")))
-     (terminal RANGE "16" (alt (seq "[" (seq R_CHAR "-" R_CHAR)) (seq (diff HEX HEX) "]")))
-     (terminal O_RANGE "17" (alt (seq "[^" (seq R_CHAR "-" R_CHAR)) (seq (diff HEX HEX) "]")))
+     (terminal RANGE "16" (seq "[" (plus (alt (seq R_CHAR "-" R_CHAR) (seq HEX "-" HEX))) "]"))
+     (terminal O_RANGE "17"
+      (seq "[^" (plus (alt (seq R_CHAR "-" R_CHAR) (seq HEX "-" HEX))) "]"))
      (terminal STRING1 "18" (seq "\"" (star (diff CHAR "\"")) "\""))
      (terminal STRING2 "19" (seq "'" (star (diff CHAR "'")) "'"))
      (terminal CHAR "20"

@@ -531,7 +531,7 @@
       </td>
       <td class=code>
         <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:LHS</span><span class="p">,</span> <span class="no">LHS</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="p">,</span> <span class="n">prod</span><span class="o">|</span>
-    <span class="n">value</span><span class="o">.</span><span class="n">to_s</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span><span class="sr">/\[([^\]]+)\]\s*(\w+)\s*::=/</span><span class="p">)</span><span class="o">.</span><span class="n">first</span>
+    <span class="n">value</span><span class="o">.</span><span class="n">to_s</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span><span class="sr">/(?:\[([^\]]+)\])?\s*(\w+)\s*::=/</span><span class="p">)</span><span class="o">.</span><span class="n">first</span>
   <span class="k">end</span></pre></div>
       </td>
     </tr>

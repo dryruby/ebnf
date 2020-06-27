@@ -93,7 +93,7 @@ HEX
 <td><code>LHS</code></td>
 <td>::=</td>
 <td>
-("[" SYMBOL+ "]" #x20+)? SYMBOL #x20* "::="
+("[" SYMBOL "]" #x20+)? SYMBOL #x20* "::="
 </td>
 </tr>
 <tr id='grammar-production-SYMBOL'>
@@ -133,7 +133,7 @@ HEX
 <td><code>RANGE</code></td>
 <td>::=</td>
 <td>
-"[" (R_CHAR "-" R_CHAR) | (HEX "-" HEX) "]"
+"[" (R_CHAR "-" R_CHAR | HEX "-" HEX)+ "]"
 </td>
 </tr>
 <tr id='grammar-production-O_RANGE'>
@@ -141,7 +141,7 @@ HEX
 <td><code>O_RANGE</code></td>
 <td>::=</td>
 <td>
-"[^" (R_CHAR "-" R_CHAR) | (HEX "-" HEX) "]"
+"[^" (R_CHAR "-" R_CHAR | HEX "-" HEX)+ "]"
 </td>
 </tr>
 <tr id='grammar-production-STRING1'>

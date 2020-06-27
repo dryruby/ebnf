@@ -53,7 +53,7 @@ class EBNFLL1Parser
   #
   #     [11] LHS        ::= ('[' SYMBOL+ ']' ' '+)? SYMBOL ' '* '::='
   terminal(:LHS, LHS) do |prod, token, input|
-    input[:id], input[:symbol] = token.value.to_s.scan(/\[([^\]]+)\]\s*(\w+)\s*::=/).first
+    input[:id], input[:symbol] = token.value.to_s.scan(/(?:\[([^\]]+)\])?\s*(\w+)\s*::=/).first
   end
 
   # Match `SYMBOL` terminal
@@ -272,7 +272,9 @@ class EBNFLL1Parser
   #
   #     [10] pass       ::= '@pass' expression
   production(:pass) do |input, data, callback|
-    input[:pass] = data[:expression].to_ary
+    expression = data[:expression]
+    expression = expression.to_ary if expression.respond_to?(:to_ary)
+    input[:pass] = expression
   end
 
   # ## Parser invocation.

@@ -34,7 +34,7 @@ class EBNFPegParser
   #
   #     [11] LHS        ::= ('[' SYMBOL+ ']' ' '+)? SYMBOL ' '* '::='
   terminal(:LHS, LHS) do |value, prod|
-    value.to_s.scan(/\[([^\]]+)\]\s*(\w+)\s*::=/).first
+    value.to_s.scan(/(?:\[([^\]]+)\])?\s*(\w+)\s*::=/).first
   end
 
   # Match `SYMBOL` terminal

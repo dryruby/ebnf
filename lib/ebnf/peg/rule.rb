@@ -46,7 +46,7 @@ module EBNF::PEG
         # otherwise,
         if regexp = parser.find_terminal_regexp(sym)
           matched = input.scan(regexp)
-          result = (matched ? parser.onTerminal(sym, matched) : :unmatched)
+          result = parser.onTerminal(sym, (matched ? matched : :unmatched))
           # Update furthest failure for strings and terminals
           parser.update_furthest_failure(input.pos, input.lineno, sym) if result == :unmatched
           parser.packrat[sym][pos] = {
