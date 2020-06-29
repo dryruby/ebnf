@@ -210,6 +210,7 @@ module EBNF::PEG
       @whitespace = case options[:whitespace]
       when Regexp then options[:whitespace]
       when Symbol then @rules[options[:whitespace]]
+      else options[:whitespace]
       end ||
         @rules.values.detect(&:pass?) ||
         /(?:\s|(?:#[^x][^\n\r]*))+/m.freeze
