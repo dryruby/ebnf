@@ -1,0 +1,38 @@
+task default: ['abnf.sxp', 'abnf.peg.sxp', "meta.rb", "core.rb", :doc]
+
+file "meta.rb" => "abnf.ebnf" do |t|
+  sh %{
+    ebnf --peg --format rb \
+      --mod-name ABNFMeta \
+      --output meta.rb \
+      #{t.prerequisites.first}
+  }
+end
+
+file "core.rb" => "abnf-core.ebnf" do |t|
+  sh %{
+    ebnf --format rb \
+      --mod-name ABNFCore \
+      --output core.rb \
+      #{t.prerequisites.first}
+  }
+end
+
+file 'abnf.sxp' => "abnf.ebnf" do |t|
+  sh %{
+    ebnf --output abnf.sxp #{t.prerequisites.first}
+  }
+end
+
+file 'abnf.peg.sxp' => "abnf.ebnf" do |t|
+  sh %{
+    ebnf --peg --output abnf.peg.sxp #{t.prerequisites.first}
+  }
+end
+
+desc "Generate literal documentation for parser"
+task doc: %w(doc/parser.html)
+
+file "doc/parser.html" => "parser.rb" do
+  `rocco -t doc/layout.mustache parser.rb -o doc`
+end

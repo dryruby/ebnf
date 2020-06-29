@@ -1,0 +1,53 @@
+#!/usr/bin/env ruby
+# parse --- Process EBNF to generate AST S-Expression
+
+$:.unshift(File.expand_path("../../../lib", __FILE__))
+$:.unshift(File.expand_path("..", __FILE__))
+require 'rubygems'
+require 'getoptlong'
+require 'parser'
+require 'sxp'
+
+out = STDOUT
+
+OPT_ARGS = [
+  ["--evaluate","-e",   GetoptLong::REQUIRED_ARGUMENT,  "Evaluate argument"],
+  ["--trace",           GetoptLong::OPTIONAL_ARGUMENT,  "Trace output level (0-3)"],
+  ["--help", "-?",      GetoptLong::NO_ARGUMENT,        "This message"]
+]
+def usage
+  require 'ebnf'
+  STDERR.puts %{#{$0} Version #{EBNF::VERSION}}
+  STDERR.puts %{Usage: #{$0} [options] file ...}
+  width = OPT_ARGS.map do |o|
+    l = o.first.length
+    l += o[1].length + 2 if o[1].is_a?(String)
+    l
+  end.max
+  OPT_ARGS.each do |o|
+    s = "  %-*s  " % [width, (o[1].is_a?(String) ? "#{o[0,2].join(', ')}" : o[0])]
+    s += o.last
+    STDERR.puts s
+  end
+  exit(1)
+end
+
+options = {}
+input = nil
+
+opts = GetoptLong.new(*OPT_ARGS.map {|o| o[0..-2]})
+
+opts.each do |opt, arg|
+  case opt
+  when '--evaluate'     then input = arg
+  when '--trace'        then options[:level] = arg.to_i
+  when '--help'         then usage
+  end
+end
+
+input = File.open(ARGV[0]) if ARGV[0]
+
+# Collect rules
+ebnf = ABNFParser.new(input || STDIN, **options)
+
+puts ebnf.to_sxp

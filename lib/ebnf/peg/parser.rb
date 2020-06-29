@@ -98,7 +98,7 @@ module EBNF::PEG
       #
       # @param [Symbol] term
       #   The rule name
-      # @param [Hash{Symbol => Object}]
+      # @param [Hash{Symbol => Object}] options
       #   Options which are returned from {Parser#onStart}.
       # @option options [Boolean] :as_hash (false)
       #   If the production is a `seq`, causes the value to be represented as a single hash, rather than an array of individual hashes for each sub-production. Note that this is not always advisable due to the possibility of repeated productions within the sequence.

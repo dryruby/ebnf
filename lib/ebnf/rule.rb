@@ -479,6 +479,23 @@ module EBNF
       end.flatten.compact.uniq
     end
 
+    # Return the symbols used in the rule.
+    #
+    # @param [Array<Symbol,String,Array>] expr (@expr)
+    #   The expression to check, defaults to the rule expression.
+    #   Typically, if the expression is recursive, the embedded expression is called recursively.
+    # @return [Array<Rule>]
+    def symbols(expr = @expr)
+      expr[1..-1].map do |sym|
+        case sym
+        when Symbol
+          sym
+        when Array
+          symbols(sym)
+        end
+      end.flatten.compact.uniq
+    end
+
     ##
     # The following are used for LL(1) transformation.
     ##

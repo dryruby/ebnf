@@ -70,11 +70,6 @@ opts.each do |opt, arg|
   end
 end
 
-if options[:output_format] == :rb && !(options[:ll1] || options[:peg])
-  STDERR.puts "outputing in .rb format requires --ll or --peg"
-  exit(1)
-end
-
 input = File.open(ARGV[0]) if ARGV[0]
 
 ebnf = EBNF.parse(input || STDIN, **options)
