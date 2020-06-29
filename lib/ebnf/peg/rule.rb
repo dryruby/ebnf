@@ -213,7 +213,7 @@ module EBNF::PEG
       when Symbol
         rule = parser.find_rule(prod)
         raise "No rule found for #{prod}" unless rule
-        while (res = rule.parse(input)) != :unmatched && (max == '*' || result.length < max)
+        while (max == '*' || result.length < max) && (res = rule.parse(input)) != :unmatched
           eat_whitespace(input) unless terminal?
           result << res
         end
