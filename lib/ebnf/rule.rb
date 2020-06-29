@@ -660,7 +660,7 @@ module EBNF
     def make_sym_id(variation = nil)
       @id_seq ||= 0
       @id_seq += 1
-      ["_#{@sym}_#{@id_seq}#{variation}".to_sym, "#{@id}.#{@id_seq}#{variation}"]
+      ["_#{@sym}_#{@id_seq}#{variation}".to_sym, ("#{@id}.#{@id_seq}#{variation}" if @id)]
     end
   end
 end
