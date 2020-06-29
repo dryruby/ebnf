@@ -314,6 +314,24 @@ describe EBNF::PEG::Rule do
           input: "B",
           expect: :unmatched
         },
+        '(nocase "foo") with "foo"' => {
+          rule: [:nocase, "foo"],
+          
+          input: "foo",
+          expect: "foo"
+        },
+        '(nocase "foo") with "FOO"' => {
+          rule: [:nocase, "foo"],
+          
+          input: "FOO",
+          expect: "FOO"
+        },
+        '(nocase "fOo") with "FoO"' => {
+          rule: [:nocase, "fOo"],
+          
+          input: "FoO",
+          expect: "FoO"
+        },
         "(range A-C) with 'A'" => {
           rule: [:range, "A-C"],
           input: "A",

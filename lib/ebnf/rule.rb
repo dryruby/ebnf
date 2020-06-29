@@ -9,7 +9,7 @@ module EBNF
     }.map(&:to_sym).freeze
 
     TERM_OPS = %w{
-      hex range
+      hex nocase range
     }.map(&:to_sym).freeze
 
     # Symbol of rule
@@ -63,6 +63,17 @@ module EBNF
     #   `nil` is allowed only for @pass
     # @param [Integer, nil] id
     # @param [Array] expr
+    #   The expression is an internal-representation of an S-Expression with one of the following oparators:
+    #
+    #   * `alt` – A list of alternative rules, which are attempted in order. It terminates with the first matching rule, or is terminated as unmatched, if no such rule is found.
+    #   * `hex` – A single character represented using the hexadecimal notation `#xnn`.
+    #   * `nocase` – A string which matches in a case-insensitive manner, so that `(nocase "fOo")` will match either of the strings `"foo"`, `"FOO"` or any other combination.
+    #   * `opt` – An optional rule or terminal. It either results in the matching rule or returns `nil`.
+    #   * `plus` – A sequence of one or more of the matching rule. If there is no such rule, it is terminated as unmatched; otherwise, the result is an array containing all matched input.
+    #   * `range` – A range of characters, possibly repeated, of the form `(range "a-z")`. May also use hexadecimal notation.
+    #   * `rept m n` – A sequence of at lest `m` and at most `n` of the matching rule. It will always return an array.
+    #   * `seq` – A sequence of rules or terminals. If any (other than `opt` or `star`) to not parse, the rule is terminated as unmatched.
+    #   * `star` – A sequence of zero or more of the matching rule. It will always return an array.
     # @param [:rule, :terminal, :pass, ] kind (nil)
     # @param [String] ebnf (nil)
     #   When parsing, records the EBNF string used to create the rule.
@@ -100,7 +111,7 @@ module EBNF
         raise ArgumentError, "#{@expr.first} operation must have at least one operand, had #{@expr.length - 1}" unless @expr.length > 1
       when :diff
         raise ArgumentError, "#{@expr.first} operation must have exactly two operands, had #{@expr.length - 1}" unless @expr.length == 3
-      when :hex, :not, :opt, :plus, :range, :star
+      when :hex, :nocase, :not, :opt, :plus, :range, :star
         raise ArgumentError, "#{@expr.first} operation must have exactly one operand, had #{@expr.length - 1}" unless @expr.length == 2
       when :rept
         raise ArgumentError, "#{@expr.first} operation must have exactly three, had #{@expr.length - 1}" unless @expr.length == 4
@@ -153,11 +164,11 @@ module EBNF
     # @param [Hash{Symbol => Symbol}] cleanup (nil)
     # @param [Hash{Symbol => Object}] options
     def build(expr, kind: nil, cleanup: nil, **options)
-      new_sym, new_id = (@top_rule ||self).send(:make_sym_id)
+      new_sym, new_id = @top_rule.send(:make_sym_id)
       self.class.new(new_sym, new_id, expr,
                      kind: kind,
                      ebnf: @ebnf,
-                     top_rule: (@top_rule || self),
+                     top_rule: @top_rule,
                      cleanup: cleanup,
                      **options)
     end
@@ -319,7 +330,7 @@ module EBNF
         this.expr = [:seq, new_rule.sym, expr[1]]
         new_rules << this
         new_rules << new_rule
-      elsif [:hex, :range].include?(expr.first)
+      elsif [:hex, :nocase, :range].include?(expr.first)
         # This rules are fine, they just need to be terminals
         raise "Encountered #{expr.first.inspect}, which is a #{self.kind}, not :terminal" unless self.terminal?
         new_rules << self
@@ -338,6 +349,8 @@ module EBNF
       case expr.first
       when :hex
         Regexp.new(translate_codepoints(expr[1]))
+      when :nocase
+        /#{expr.last}/ui
       when :range
         Regexp.new("[#{translate_codepoints(expr[1])}]")
       else
@@ -622,6 +635,8 @@ module EBNF
         statements << %{#{indent}"g:#{op.to_s[1..-1]}"}
       when :"'"
         statements << %{#{indent}"#{esc(expr)}"}
+      when :nocase
+        statements << %{#{indent}#{bra} re:matches #{expr.first.inspect} #{ket}}
       when :range
         statements << %{#{indent}#{bra} re:matches #{cclass(expr.first).inspect} #{ket}}
       when :hex

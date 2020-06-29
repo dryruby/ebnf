@@ -6,8 +6,8 @@ require 'sxp'
 
 describe EBNF::Rule do
   let(:debug) {[]}
-  let(:ebnf) {EBNF.parse("", debug: debug)}
-  subject {EBNF::Rule.new(:rule, "0", [:seq, :foo], ebnf: ebnf)}
+  let(:ebnf) {EBNF.parse(File.open(File.expand_path("../../etc/ebnf.ebnf", __FILE__)))}
+  subject {EBNF::Rule.new(:rule, "0", [:seq, :foo])}
 
   describe ".from_sxp" do
     context "accepts valid variations" do
@@ -35,6 +35,10 @@ describe EBNF::Rule do
         "diff": [
           %{(terminal R_CHAR "21" (diff CHAR "]"))},
           EBNF::Rule.new(:R_CHAR, "21", [:diff, :CHAR, "]"], kind: :terminal)
+        ],
+        "nocase": [
+          %{(terminal nc (nocase "foo"))},
+          EBNF::Rule.new(:nc, nil, [:nocase, "foo"], kind: :terminal)
         ],
         "not": [
           %{(rule _a_1 "n.1" (not op1))},
@@ -78,6 +82,8 @@ describe EBNF::Rule do
         "diff (empty)": %{(terminal R_CHAR "21" (diff))},
         "diff (one)": %{(terminal R_CHAR "21" (diff CHAR))},
         "diff (three)": %{(terminal R_CHAR "21" (diff CHAR "]" ","))},
+        "nocase (empty)": %{(terminal nc (nocase))},
+        "nocase (two)": %{(terminal nc (nocase "foo" "bar"))},
         "not (empty)": %{(rule _a_1 "n.1" (not))},
         "not (two)": %{(rule _a_1 "n.1" (not op1 op2))},
         "opt (empty)": %{(rule _diff_1 "7.1" (opt))},
@@ -123,6 +129,10 @@ describe EBNF::Rule do
       "diff": [
         EBNF::Rule.new(:R_CHAR, "21", [:diff, :CHAR, "]"], kind: :terminal),
         %{(terminal R_CHAR "21" (diff CHAR "]"))},
+      ],
+      "nocase": [
+        EBNF::Rule.new(:nc, nil, [:nocase, "foo"], kind: :terminal),
+        %{(terminal nc (nocase "foo"))},
       ],
       "not": [
         EBNF::Rule.new(:_a_1, "n.1", [:not, :op1], kind: :rule),
@@ -198,12 +208,18 @@ describe EBNF::Rule do
           dc:identifier "21";
           re:diff ( :CHAR "]" ) .},
       ],
+      "nocase": [
+        EBNF::Rule.new(:nc, nil, [:nocase, "foo"], kind: :terminal),
+        %{
+        :nc rdfs:label "nc";
+          re:matches "foo" .},
+      ],
       "not": [
         EBNF::Rule.new(:_a_1, "n.1", [:not, :op1], kind: :rule),
         %{
-         :_a_1 rdfs:label "_a_1";
-           dc:identifier "n.1";
-           g:not :op1 .},
+        :_a_1 rdfs:label "_a_1";
+          dc:identifier "n.1";
+          g:not :op1 .},
       ],
       "opt": [
         EBNF::Rule.new(:_diff_1, "7.1", [:opt, :_diff_2], kind: :rule),
@@ -482,6 +498,7 @@ describe EBNF::Rule do
   describe "#to_regexp" do
     {
       hex: ["#x20", / /],
+      nocase: ["foo", /foo/ui],
       range: ["a-b", /[a-b]/],
     }.each do |title, (exp, regexp)|
       it title do
@@ -514,6 +531,10 @@ describe EBNF::Rule do
       ],
       "diff": [
         EBNF::Rule.new(:R_CHAR, "21", [:diff, :CHAR, "]"], kind: :terminal),
+        true,
+      ],
+      "nocase": [
+        EBNF::Rule.new(:nc, nil, [:nocase, "foo"], kind: :terminal),
         true,
       ],
       "not": [
@@ -573,6 +594,10 @@ describe EBNF::Rule do
         EBNF::Rule.new(:R_CHAR, "21", [:diff, :CHAR, "]"], kind: :terminal),
         false,
       ],
+      "nocase": [
+        EBNF::Rule.new(:nc, nil, [:nocase, "foo"], kind: :terminal),
+        false,
+      ],
       "not": [
         EBNF::Rule.new(:_a_1, "n.1", [:not, :op1], kind: :rule),
         false,
@@ -628,6 +653,10 @@ describe EBNF::Rule do
       ],
       "diff": [
         EBNF::Rule.new(:R_CHAR, "21", [:diff, :CHAR, "]"], kind: :terminal),
+        false,
+      ],
+      "nocase": [
+        EBNF::Rule.new(:nc, nil, [:nocase, "foo"], kind: :terminal),
         false,
       ],
       "not": [
@@ -687,6 +716,10 @@ describe EBNF::Rule do
         EBNF::Rule.new(:R_CHAR, "21", [:diff, :CHAR, "]"], kind: :terminal),
         false,
       ],
+      "nocase": [
+        EBNF::Rule.new(:nc, nil, [:nocase, "foo"], kind: :terminal),
+        false,
+      ],
       "not": [
         EBNF::Rule.new(:_a_1, "n.1", [:not, :op1], kind: :rule),
         false,
@@ -742,6 +775,10 @@ describe EBNF::Rule do
       ],
       "diff": [
         EBNF::Rule.new(:R_CHAR, "21", [:diff, :CHAR, "]"], kind: :terminal),
+        false,
+      ],
+      "nocase": [
+        EBNF::Rule.new(:nc, nil, [:nocase, "foo"], kind: :terminal),
         false,
       ],
       "not": [
@@ -821,7 +858,7 @@ describe EBNF::Rule do
   end
 
   describe "#non_terminals" do
-    subject {EBNF.parse(File.read File.expand_path("../../etc/ebnf.ebnf", __FILE__))}
+    subject {ebnf}
     {
       _pass: [],
       ebnf: [:declaration, :rule],
@@ -854,7 +891,7 @@ describe EBNF::Rule do
   end
 
   describe "#terminals" do
-    subject {EBNF.parse(File.read File.expand_path("../../etc/ebnf.ebnf", __FILE__))}
+    subject {ebnf}
     {
       _pass: [:PASS],
       ebnf: [],
@@ -882,6 +919,39 @@ describe EBNF::Rule do
       it "#{sym} => #{expected.inspect}" do
         res = subject.ast.find {|r| r.sym == sym}
         expect(res.terminals(subject.ast).map {|r| r.is_a?(EBNF::Rule) ? r.sym : r}).to eq expected
+      end
+    end
+  end
+
+  describe "#symbols" do
+    subject {ebnf}
+    {
+      _pass: [:PASS],
+      ebnf: [:declaration, :rule],
+      declaration: [:pass],
+      alt: [:seq],
+      seq: [:diff],
+      diff: [:postfix],
+      postfix: [:primary, :POSTFIX],
+      primary: [:HEX, :SYMBOL, :ENUM, :O_ENUM, :RANGE, :O_RANGE, :STRING1, :STRING2, :expression],
+      pass: [:expression],
+      LHS: [:SYMBOL],
+      SYMBOL: [],
+      HEX: [],
+      ENUM: [:R_CHAR, :HEX, :LHS],
+      O_ENUM: [:R_CHAR, :HEX],
+      RANGE: [:R_CHAR, :HEX],
+      O_RANGE: [:R_CHAR, :HEX],
+      STRING1: [:CHAR],
+      STRING2: [:CHAR],
+      CHAR: [],
+      R_CHAR: [:CHAR],
+      POSTFIX: [],
+      PASS: []
+    }.each do |sym, expected|
+      it "#{sym} => #{expected.inspect}" do
+        res = subject.ast.find {|r| r.sym == sym}
+        expect(res.symbols).to eq expected
       end
     end
   end

@@ -158,7 +158,6 @@ Different components of an EBNF rule expression are transformed into their own o
   <tr><td><code>"string"</code></td><td><code>"string"</code></td></tr>
   <tr><td><code>'string'</code></td><td><code>"string"</code></td></tr>
   <tr><td><code>A (B | C)</code></td><td><code>(seq (A (alt B C)))</code></td></tr>
-  <tr><td><code>A~</code> <em>extension</em></td><td><code>(not A)</code></td></tr>
   <tr><td><code>A?</code></td><td><code>(opt A)</code></td></tr>
   <tr><td><code>A B</code></td><td><code>(seq A B)</code></td></tr>
   <tr><td><code>A | B</code></td><td><code>(alt A B)</code></td></tr>
@@ -167,9 +166,16 @@ Different components of an EBNF rule expression are transformed into their own o
       <code>(seq (not B) A) for non-terminals (PEG parsing only)</code></code></td></tr>
   <tr><td><code>A+</code></td><td><code>(plus A)</code></td></tr>
   <tr><td><code>A*</code></td><td><code>(star A)</code></td></tr>
-  <tr><td><code>A{n*m}</code> <em>extension</em></td><td><code>(rept n m A)</code></td></tr>
   <tr><td><code>@pass " "*</code></td><td><code>(pass _pass (star " "))</code></td></tr>
   <tr><td><code>@terminals</code></td><td></td></tr>
+</table>
+
+Other rule operators are not directly supported in [EBNF][], but are included to support other notations (e.g., [ABNF][] and [ISO/IEC 14977][]):
+
+<table>
+  <tr><td><code>%i"StRiNg"</code></td><td><code>(nocase "StRiNg")</code></td><td>Case-insensitive string matching</td></tr>
+  <tr><td><code>'' - A</code></td><td><code>(not A)</code></td><td>Negative look-ahead, used for non-terminal uses of `B - A`.</td></tr>
+  <tr><td><code>n*mA</code></td><td><code>(rept n m A)</code></td><td>Explicit repetition.</td></tr>
 </table>
 
 Additionally, rules defined with an UPPERCASE symbol are treated as terminals.

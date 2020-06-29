@@ -83,18 +83,27 @@ The parser starts with the specified rule, `rulelist` in this case, and executes
 
 Non-terminal rules have an expression using one of the following:
 
-`seq`
-: A sequence of rules or terminals. If any (other than `opt` or `star`) to not parse, the rule is terminated as unmatched.
-`opt`
-: An optional rule or terminal. It either results in the matching rule or returns `nil`.
 `alt`
 : A list of alternative rules, which are attempted in order. It terminates with the first matching rule, or is terminated as unmatched, if no such rule is found.
+`opt`
+: An optional rule or terminal. It either results in the matching rule or returns `nil`.
 `plus`
 : A sequence of one or more of the matching rule. If there is no such rule, it is terminated as unmatched; otherwise, the result is an array containing all matched input.
 `rept m n`
 : A sequence of at lest `m` and at most `n` of the matching rule. It will always return an array.
+`seq`
+: A sequence of rules or terminals. If any (other than `opt` or `star`) to not parse, the rule is terminated as unmatched.
 `star`
 : A sequence of zero or more of the matching rule. It will always return an array.
+
+Terminal rules may be expressed using any of the above operators, and additionally the following:
+
+`hex`
+: A single character represented using the hexadecimal notation `#xnn`.
+`nocase`
+: A string which matches in a case-insensitive manner, so that `(nocase "fOo")` will match either of the strings `"foo"`, `"FOO"` or any other combination.
+`range`
+: A range of characters, possibly repeated, of the form `(range "a-z")`. May also use hexadecimal notation.
 
 The starting rule is of the form `(rule rulelist (plus (alt rule (seq (star c_wsp) c_nl))))` which will attempt to parse the aliteration repeatedly until the end of input.
 

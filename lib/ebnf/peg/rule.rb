@@ -135,7 +135,7 @@ module EBNF::PEG
         # Update furthest failure for strings and terminals
         parser.update_furthest_failure(input.pos, input.lineno, expr[1]) if terminal?
         plus.is_a?(Array) && terminal? ? plus.join("") : plus
-      when :range
+      when :range, :nocase
         # Matches the specified character range
         input.scan(to_regexp) || begin
           # Update furthest failure for strings and terminals

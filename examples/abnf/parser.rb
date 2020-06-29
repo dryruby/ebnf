@@ -206,9 +206,14 @@ class ABNFParser
     [:opt, value[:alternation]]
   end
 
-  # `char_val     ::=  case_insensitive_string | case_sensitive_string`
-  production(:char_val) do |value|
-    # FIXME: need rule logic for insensitive matching of strings
+  # `case_insensitive_string ::= "%i"? quoted_string`
+  production(:case_insensitive_string) do |value|
+    require 'byebug'; byebug if value.first.has_key?(:case_sensitive_string)
+    [:nocase, value.last[:quoted_string]]
+  end
+
+  # `case_sensitive_string ::= "%s" quoted_string`
+  production(:case_sensitive_string) do |value|
     value.last[:quoted_string]
   end
 
