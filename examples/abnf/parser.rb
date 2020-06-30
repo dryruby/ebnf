@@ -209,7 +209,7 @@ class ABNFParser
   # `case_insensitive_string ::= "%i"? quoted_string`
   production(:case_insensitive_string) do |value|
     require 'byebug'; byebug if value.first.has_key?(:case_sensitive_string)
-    [:nocase, value.last[:quoted_string]]
+    [:istr, value.last[:quoted_string]]
   end
 
   # `case_sensitive_string ::= "%s" quoted_string`

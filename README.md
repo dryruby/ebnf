@@ -173,7 +173,7 @@ Different components of an EBNF rule expression are transformed into their own o
 Other rule operators are not directly supported in [EBNF][], but are included to support other notations (e.g., [ABNF][] and [ISO/IEC 14977][]):
 
 <table>
-  <tr><td><code>%i"StRiNg"</code></td><td><code>(nocase "StRiNg")</code></td><td>Case-insensitive string matching</td></tr>
+  <tr><td><code>%i"StRiNg"</code></td><td><code>(istr "StRiNg")</code></td><td>Case-insensitive string matching</td></tr>
   <tr><td><code>'' - A</code></td><td><code>(not A)</code></td><td>Negative look-ahead, used for non-terminal uses of `B - A`.</td></tr>
   <tr><td><code>n*mA</code></td><td><code>(rept n m A)</code></td><td>Explicit repetition.</td></tr>
 </table>

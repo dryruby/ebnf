@@ -100,8 +100,8 @@ Terminal rules may be expressed using any of the above operators, and additional
 
 `hex`
 : A single character represented using the hexadecimal notation `#xnn`.
-`nocase`
-: A string which matches in a case-insensitive manner, so that `(nocase "fOo")` will match either of the strings `"foo"`, `"FOO"` or any other combination.
+`istr`
+: A string which matches in a case-insensitive manner, so that `(istr "fOo")` will match either of the strings `"foo"`, `"FOO"` or any other combination.
 `range`
 : A range of characters, possibly repeated, of the form `(range "a-z")`. May also use hexadecimal notation.
 

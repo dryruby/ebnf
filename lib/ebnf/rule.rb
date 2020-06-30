@@ -9,7 +9,7 @@ module EBNF
     }.map(&:to_sym).freeze
 
     TERM_OPS = %w{
-      hex nocase range
+      hex istr range
     }.map(&:to_sym).freeze
 
     # Symbol of rule
@@ -67,7 +67,7 @@ module EBNF
     #
     #   * `alt` – A list of alternative rules, which are attempted in order. It terminates with the first matching rule, or is terminated as unmatched, if no such rule is found.
     #   * `hex` – A single character represented using the hexadecimal notation `#xnn`.
-    #   * `nocase` – A string which matches in a case-insensitive manner, so that `(nocase "fOo")` will match either of the strings `"foo"`, `"FOO"` or any other combination.
+    #   * `istr` – A string which matches in a case-insensitive manner, so that `(istr "fOo")` will match either of the strings `"foo"`, `"FOO"` or any other combination.
     #   * `opt` – An optional rule or terminal. It either results in the matching rule or returns `nil`.
     #   * `plus` – A sequence of one or more of the matching rule. If there is no such rule, it is terminated as unmatched; otherwise, the result is an array containing all matched input.
     #   * `range` – A range of characters, possibly repeated, of the form `(range "a-z")`. May also use hexadecimal notation.
@@ -111,7 +111,7 @@ module EBNF
         raise ArgumentError, "#{@expr.first} operation must have at least one operand, had #{@expr.length - 1}" unless @expr.length > 1
       when :diff
         raise ArgumentError, "#{@expr.first} operation must have exactly two operands, had #{@expr.length - 1}" unless @expr.length == 3
-      when :hex, :nocase, :not, :opt, :plus, :range, :star
+      when :hex, :istr, :not, :opt, :plus, :range, :star
         raise ArgumentError, "#{@expr.first} operation must have exactly one operand, had #{@expr.length - 1}" unless @expr.length == 2
       when :rept
         raise ArgumentError, "#{@expr.first} operation must have exactly three, had #{@expr.length - 1}" unless @expr.length == 4
@@ -330,7 +330,7 @@ module EBNF
         this.expr = [:seq, new_rule.sym, expr[1]]
         new_rules << this
         new_rules << new_rule
-      elsif [:hex, :nocase, :range].include?(expr.first)
+      elsif [:hex, :istr, :range].include?(expr.first)
         # This rules are fine, they just need to be terminals
         raise "Encountered #{expr.first.inspect}, which is a #{self.kind}, not :terminal" unless self.terminal?
         new_rules << self
@@ -349,7 +349,7 @@ module EBNF
       case expr.first
       when :hex
         Regexp.new(translate_codepoints(expr[1]))
-      when :nocase
+      when :istr
         /#{expr.last}/ui
       when :range
         Regexp.new("[#{translate_codepoints(expr[1])}]")
@@ -635,7 +635,7 @@ module EBNF
         statements << %{#{indent}"g:#{op.to_s[1..-1]}"}
       when :"'"
         statements << %{#{indent}"#{esc(expr)}"}
-      when :nocase
+      when :istr
         statements << %{#{indent}#{bra} re:matches #{expr.first.inspect} #{ket}}
       when :range
         statements << %{#{indent}#{bra} re:matches #{cclass(expr.first).inspect} #{ket}}

@@ -36,9 +36,9 @@ describe EBNF::Rule do
           %{(terminal R_CHAR "21" (diff CHAR "]"))},
           EBNF::Rule.new(:R_CHAR, "21", [:diff, :CHAR, "]"], kind: :terminal)
         ],
-        "nocase": [
-          %{(terminal nc (nocase "foo"))},
-          EBNF::Rule.new(:nc, nil, [:nocase, "foo"], kind: :terminal)
+        "istr": [
+          %{(terminal nc (istr "foo"))},
+          EBNF::Rule.new(:nc, nil, [:istr, "foo"], kind: :terminal)
         ],
         "not": [
           %{(rule _a_1 "n.1" (not op1))},
@@ -82,8 +82,8 @@ describe EBNF::Rule do
         "diff (empty)": %{(terminal R_CHAR "21" (diff))},
         "diff (one)": %{(terminal R_CHAR "21" (diff CHAR))},
         "diff (three)": %{(terminal R_CHAR "21" (diff CHAR "]" ","))},
-        "nocase (empty)": %{(terminal nc (nocase))},
-        "nocase (two)": %{(terminal nc (nocase "foo" "bar"))},
+        "istr (empty)": %{(terminal nc (istr))},
+        "istr (two)": %{(terminal nc (istr "foo" "bar"))},
         "not (empty)": %{(rule _a_1 "n.1" (not))},
         "not (two)": %{(rule _a_1 "n.1" (not op1 op2))},
         "opt (empty)": %{(rule _diff_1 "7.1" (opt))},
@@ -130,9 +130,9 @@ describe EBNF::Rule do
         EBNF::Rule.new(:R_CHAR, "21", [:diff, :CHAR, "]"], kind: :terminal),
         %{(terminal R_CHAR "21" (diff CHAR "]"))},
       ],
-      "nocase": [
-        EBNF::Rule.new(:nc, nil, [:nocase, "foo"], kind: :terminal),
-        %{(terminal nc (nocase "foo"))},
+      "istr": [
+        EBNF::Rule.new(:nc, nil, [:istr, "foo"], kind: :terminal),
+        %{(terminal nc (istr "foo"))},
       ],
       "not": [
         EBNF::Rule.new(:_a_1, "n.1", [:not, :op1], kind: :rule),
@@ -208,8 +208,8 @@ describe EBNF::Rule do
           dc:identifier "21";
           re:diff ( :CHAR "]" ) .},
       ],
-      "nocase": [
-        EBNF::Rule.new(:nc, nil, [:nocase, "foo"], kind: :terminal),
+      "istr": [
+        EBNF::Rule.new(:nc, nil, [:istr, "foo"], kind: :terminal),
         %{
         :nc rdfs:label "nc";
           re:matches "foo" .},
@@ -498,7 +498,7 @@ describe EBNF::Rule do
   describe "#to_regexp" do
     {
       hex: ["#x20", / /],
-      nocase: ["foo", /foo/ui],
+      istr: ["foo", /foo/ui],
       range: ["a-b", /[a-b]/],
     }.each do |title, (exp, regexp)|
       it title do
@@ -533,8 +533,8 @@ describe EBNF::Rule do
         EBNF::Rule.new(:R_CHAR, "21", [:diff, :CHAR, "]"], kind: :terminal),
         true,
       ],
-      "nocase": [
-        EBNF::Rule.new(:nc, nil, [:nocase, "foo"], kind: :terminal),
+      "istr": [
+        EBNF::Rule.new(:nc, nil, [:istr, "foo"], kind: :terminal),
         true,
       ],
       "not": [
@@ -594,8 +594,8 @@ describe EBNF::Rule do
         EBNF::Rule.new(:R_CHAR, "21", [:diff, :CHAR, "]"], kind: :terminal),
         false,
       ],
-      "nocase": [
-        EBNF::Rule.new(:nc, nil, [:nocase, "foo"], kind: :terminal),
+      "istr": [
+        EBNF::Rule.new(:nc, nil, [:istr, "foo"], kind: :terminal),
         false,
       ],
       "not": [
@@ -655,8 +655,8 @@ describe EBNF::Rule do
         EBNF::Rule.new(:R_CHAR, "21", [:diff, :CHAR, "]"], kind: :terminal),
         false,
       ],
-      "nocase": [
-        EBNF::Rule.new(:nc, nil, [:nocase, "foo"], kind: :terminal),
+      "istr": [
+        EBNF::Rule.new(:nc, nil, [:istr, "foo"], kind: :terminal),
         false,
       ],
       "not": [
@@ -716,8 +716,8 @@ describe EBNF::Rule do
         EBNF::Rule.new(:R_CHAR, "21", [:diff, :CHAR, "]"], kind: :terminal),
         false,
       ],
-      "nocase": [
-        EBNF::Rule.new(:nc, nil, [:nocase, "foo"], kind: :terminal),
+      "istr": [
+        EBNF::Rule.new(:nc, nil, [:istr, "foo"], kind: :terminal),
         false,
       ],
       "not": [
@@ -777,8 +777,8 @@ describe EBNF::Rule do
         EBNF::Rule.new(:R_CHAR, "21", [:diff, :CHAR, "]"], kind: :terminal),
         false,
       ],
-      "nocase": [
-        EBNF::Rule.new(:nc, nil, [:nocase, "foo"], kind: :terminal),
+      "istr": [
+        EBNF::Rule.new(:nc, nil, [:istr, "foo"], kind: :terminal),
         false,
       ],
       "not": [

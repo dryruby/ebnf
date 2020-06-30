@@ -314,20 +314,20 @@ describe EBNF::PEG::Rule do
           input: "B",
           expect: :unmatched
         },
-        '(nocase "foo") with "foo"' => {
-          rule: [:nocase, "foo"],
+        '(istr "foo") with "foo"' => {
+          rule: [:istr, "foo"],
           
           input: "foo",
           expect: "foo"
         },
-        '(nocase "foo") with "FOO"' => {
-          rule: [:nocase, "foo"],
+        '(istr "foo") with "FOO"' => {
+          rule: [:istr, "foo"],
           
           input: "FOO",
           expect: "FOO"
         },
-        '(nocase "fOo") with "FoO"' => {
-          rule: [:nocase, "fOo"],
+        '(istr "fOo") with "FoO"' => {
+          rule: [:istr, "fOo"],
           
           input: "FoO",
           expect: "FoO"
