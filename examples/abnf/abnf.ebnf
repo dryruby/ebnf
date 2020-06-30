@@ -93,7 +93,7 @@ DIGIT        ::=  [#x30-#x39]
 DQUOTE       ::=  #x22
                        # " (Double Quote)
 
-HEXDIG       ::=  DIGIT | [A-F]
+HEXDIG       ::=  DIGIT | "A" | "B" | "C" | "D" | "E" | "F"
 
 HTAB         ::=  #x09
                        # horizontal tab

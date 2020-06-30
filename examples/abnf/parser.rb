@@ -72,7 +72,7 @@ class ABNFParser
   end
 
   # `hex_val      ::=  "x" HEXDIG+  (("." HEXDIG+)+ | ("-" HEXDIG+))?`
-  terminal(:hex_val, /x[0-9A-F]+(?:(?:(?:\.[0-9A-F]+)+)|(?:-[0-9A-F]+))?/) do |value|
+  terminal(:hex_val, /x[0-9A-F]+(?:(?:(?:\.[0-9A-F]+)+)|(?:-[0-9A-F]+))?/i) do |value|
     if value.include?('.')
       # Interpret segments in hexadecimal creating a string
       value[1..-1].split('.').map {|h| h.to_i(base=16).chr}.join("")
@@ -122,6 +122,7 @@ class ABNFParser
       raise "Redefining rule #{sym}" if parsed_rules.has_key?(sym)
       parsed_rules[sym] = EBNF::Rule.new(sym.to_sym, nil, elements)
     end
+    progress(:rule, level: 2) {parsed_rules[sym].to_sxp}
     sym
   end
 
