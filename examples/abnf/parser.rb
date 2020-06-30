@@ -208,8 +208,13 @@ class ABNFParser
 
   # `case_insensitive_string ::= "%i"? quoted_string`
   production(:case_insensitive_string) do |value|
-    require 'byebug'; byebug if value.first.has_key?(:case_sensitive_string)
-    [:istr, value.last[:quoted_string]]
+    str = value.last[:quoted_string]
+    if str.match?(/[[:alpha:]]/)
+      # Only need to use case-insensitive if there are alphabetic characters in the string.
+      [:istr, value.last[:quoted_string]]
+    else
+      value.last[:quoted_string]
+    end
   end
 
   # `case_sensitive_string ::= "%s" quoted_string`
