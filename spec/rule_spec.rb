@@ -498,10 +498,17 @@ describe EBNF::Rule do
   describe "#to_regexp" do
     {
       hex: ["#x20", / /],
-      istr: ["foo", /foo/ui],
       range: ["a-b", /[a-b]/],
     }.each do |title, (exp, regexp)|
       it title do
+        expect(EBNF::Rule.new(title, nil, [title, exp]).to_regexp).to eql regexp
+      end
+    end
+
+    {
+      istr: ["foo", /foo/ui],
+    }.each do |title, (exp, regexp)|
+      it title, ruby: "!jruby" do
         expect(EBNF::Rule.new(title, nil, [title, exp]).to_regexp).to eql regexp
       end
     end
