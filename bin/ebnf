@@ -24,8 +24,8 @@ OPT_ARGS = [
   ["--bnf",             GetoptLong::NO_ARGUMENT,      "Transform EBNF to BNF"],
   ["--evaluate","-e",   GetoptLong::REQUIRED_ARGUMENT,"Evaluate argument as an EBNF document"],
   ["--ll1",             GetoptLong::REQUIRED_ARGUMENT,"Generate First/Follow rules, argument is start symbol"],
-  ["--format", "-f",    GetoptLong::REQUIRED_ARGUMENT,"Specify output format one of ebnf, html, ttl, sxp, or rb"],
-  ["--input-format",    GetoptLong::REQUIRED_ARGUMENT,"Specify input format one of ebnf or sxp"],
+  ["--format", "-f",    GetoptLong::REQUIRED_ARGUMENT,"Specify output format one of abnf, abnfh, ebnf, html, ttl, sxp, or rb"],
+  ["--input-format",    GetoptLong::REQUIRED_ARGUMENT,"Specify input format one of abnf, ebnf or sxp"],
   ["--mod-name",        GetoptLong::REQUIRED_ARGUMENT,"Module name used when creating ruby tables"],
   ["--output", "-o",    GetoptLong::REQUIRED_ARGUMENT,"Output to the specified file path"],
   ["--peg",             GetoptLong::NO_ARGUMENT,      "Transform EBNF to PEG"],
@@ -81,6 +81,8 @@ if options[:ll1]
 end
 
 res = case options[:output_format]
+when :abnf    then ebnf.to_s(:abnf)
+when :abnfh   then ebnf.to_html(:abnf)
 when :ebnf    then ebnf.to_s
 when :html    then ebnf.to_html
 when :sxp     then ebnf.to_sxp

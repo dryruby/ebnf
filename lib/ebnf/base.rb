@@ -118,7 +118,7 @@ module EBNF
     #
     # @param [#read, #to_s] input
     # @param [Symbol] format (:ebnf)
-    #   Format of input, one of :ebnf, or :sxp
+    #   Format of input, one of :abnf, :ebnf, or :sxp
     # @param [Hash{Symbol => Object}] options
     # @option options [Boolean, Array] :debug
     #   Output debug information to an array or $stdout.
@@ -156,6 +156,9 @@ module EBNF
             @ast << rule
           end
         end
+      when :abnf
+        abnf = ABNF.new(input, **options)
+        @ast = abnf.ast
       else
         raise "unknown input format #{format.inspect}"
       end
@@ -209,16 +212,20 @@ module EBNF
 
     ##
     # Output formatted EBNF
+    #
+    # @param [:abnf, :ebnf] format (:ebnf)
     # @return [String]
-    def to_s
-      Writer.string(*ast)
+    def to_s(format: :ebnf)
+      Writer.string(*ast, format: format)
     end
 
     ##
     # Output formatted EBNF as HTML
+    #
+    # @param [:abnf, :ebnf] format (:ebnf)
     # @return [String]
-    def to_html
-      Writer.html(*ast)
+    def to_html(format: :ebnf)
+      Writer.html(*ast, format: format)
     end
 
     ##

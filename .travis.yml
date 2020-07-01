@@ -1,6 +1,7 @@
 language: ruby
 script: "bundle exec rspec spec"
 env:
+  - NOKOGIRI_USE_SYSTEM_LIBRARIES=true
   - CI=true
 rvm:
   - 2.4

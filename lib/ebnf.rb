@@ -1,4 +1,5 @@
 module EBNF
+  autoload :ABNF,     "ebnf/abnf"
   autoload :Base,     "ebnf/base"
   autoload :BNF,      "ebnf/bnf"
   autoload :LL1,      "ebnf/ll1"
