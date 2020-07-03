@@ -32,7 +32,7 @@
      (terminal PASS "23"
       (plus
        (alt
-        (range "#x00-#x20")
-        (seq (alt (diff "#" "#x") "//") (star (range "^#x0A#x0Dx")))
+        (range "#x9#xA#xD#x20")
+        (seq (alt (diff "#" "#x") "//") (star (range "^#xA#xD")))
         (seq "/*" (star (alt (opt (seq "*" (range "^/"))) (range "^*"))) "*/")
         (seq "(*" (star (alt (opt (seq "*" (range "^)"))) (range "^*"))) "*)")) )) )

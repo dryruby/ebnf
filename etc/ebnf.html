@@ -77,7 +77,7 @@ HEX
 | O_RANGE
 | STRING1
 | STRING2
-| "(" expression ")"
+| ("(" expression ")")
 </td>
 </tr>
 <tr id='grammar-production-pass'>
@@ -117,7 +117,7 @@ HEX
 <td><code>ENUM</code></td>
 <td>::=</td>
 <td>
-"[" R_CHAR+ | HEX+ "]" - LHS
+(("[" R_CHAR+) | (HEX+ "]")) - LHS
 </td>
 </tr>
 <tr id='grammar-production-O_ENUM'>
@@ -125,7 +125,7 @@ HEX
 <td><code>O_ENUM</code></td>
 <td>::=</td>
 <td>
-"[^" R_CHAR+ | HEX+ "]"
+("[^" R_CHAR+) | (HEX+ "]")
 </td>
 </tr>
 <tr id='grammar-production-RANGE'>
@@ -133,7 +133,7 @@ HEX
 <td><code>RANGE</code></td>
 <td>::=</td>
 <td>
-"[" (R_CHAR "-" R_CHAR | HEX "-" HEX)+ "]"
+"[" ((R_CHAR "-" R_CHAR) | (HEX "-" HEX))+ "]"
 </td>
 </tr>
 <tr id='grammar-production-O_RANGE'>
@@ -141,7 +141,7 @@ HEX
 <td><code>O_RANGE</code></td>
 <td>::=</td>
 <td>
-"[^" (R_CHAR "-" R_CHAR | HEX "-" HEX)+ "]"
+"[^" ((R_CHAR "-" R_CHAR) | (HEX "-" HEX))+ "]"
 </td>
 </tr>
 <tr id='grammar-production-STRING1'>
@@ -192,11 +192,11 @@ CHAR - "]"
 <td><code>PASS</code></td>
 <td>::=</td>
 <td>
-([#x00-#x20] | ("#" - "#x" | "//") ([^#x0A#x0Dx])* | "/*" ("*" [^/])? | [^*]* "*/" | "(*" ("*" [^)])? | [^*]* "*)")+
+([#x9#xA#xD#x20] | ((("#" - "#x") | "//") [^#xA#xD]*) | ("/*" (("*" [^/])? | [^*])* "*/") | ("(*" (("*" [^)])? | [^*])* "*)"))+
 </td>
 </tr>
 <tr id='grammar-production-_pass'>
-<td colspan='3'>
+<td colspan='2'>
 <code>@pass</code>
 </td>
 <td>

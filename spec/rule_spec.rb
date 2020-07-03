@@ -921,7 +921,7 @@ describe EBNF::Rule do
       CHAR: ["#x9#xA#xD", "#x20-#xD7FF", "#xE000-#xFFFD", "#x10000-#x10FFFF"],
       R_CHAR: [:CHAR, "]"],
       POSTFIX: ["?*+"],
-      PASS: ["#x00-#x20", "#", "#x", "//", "/*", "(*"]
+      PASS: ["#x9#xA#xD#x20", "#", "#x", "//", "/*", "(*"]
     }.each do |sym, expected|
       it "#{sym} => #{expected.inspect}" do
         res = subject.ast.find {|r| r.sym == sym}

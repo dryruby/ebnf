@@ -55,14 +55,13 @@
 
     [21] R_CHAR     ::= CHAR - ']'
 
-    # Should be able to do this inline, but not until terminal regular expressions are created automatically
     [22] POSTFIX    ::= [?*+]
 
-    [23] PASS       ::= ( [#x00-#x20]
-                        | ( ('#' - '#x') | '//' ) [^#x0A#x0Dx]*
+    # Ignore all whitespace and comments between non-terminals
+    [23] PASS       ::= ( [#x9#xA#xD#x20]
+                        | ( ('#' - '#x') | '//' ) [^#xA#xD]*
                         | '/*' (( '*' [^/] )? | [^*] )* '*/'
                         | '(*' (( '*' [^)] )? | [^*] )* '*)'
                         )+
 
-    # Should be able to do this inline, but not until terminal regular expressions are created automatically
     @pass           PASS
