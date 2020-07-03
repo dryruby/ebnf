@@ -16,18 +16,20 @@
  (rule repeated_sequence
   (seq start_repeat_symbol definitions_list end_repeat_symbol))
  (rule grouped_sequence (seq "(" definitions_list ")"))
- (terminal letter (range "a-zA-Z"))
- (terminal decimal_digit (range "0-9"))
- (terminal integer (plus decimal_digit))
- (terminal meta_identifier (seq letter (star meta_identifier_character)))
- (terminal meta_identifier_character (alt letter decimal_digit "_"))
  (terminal terminal_string
   (alt
    (seq "'" (plus first_terminal_character) "'")
    (seq "\"" (plus second_terminal_character) "\"")) )
+ (terminal meta_identifier (seq letter (star meta_identifier_character)))
+ (terminal integer (plus decimal_digit))
+ (terminal special_sequence (seq "?" (star special_sequence_character) "?"))
+ (terminal comment (seq start_comment_symbol (star comment_symbol) end_comment_symbol))
+ (terminal comment_symbol (alt comment terminal_string special_sequence character))
+ (terminal letter (range "a-zA-Z"))
+ (terminal decimal_digit (range "0-9"))
+ (terminal meta_identifier_character (alt letter decimal_digit "_"))
  (terminal first_terminal_character (diff terminal_character "'"))
  (terminal second_terminal_character (diff terminal_character "\""))
- (terminal special_sequence (seq "?" (star special_sequence_character) "?"))
  (terminal special_sequence_character (diff terminal_character "?"))
  (terminal terminal_character
   (alt letter decimal_digit concatenate_symbol defining_symbol
@@ -38,7 +40,7 @@
    start_repeat_symbol terminator_symbol other_character ))
  (terminal other_character (alt (range ":+_%@&$<>^` ̃#x20#x23") "\\"))
  (terminal gap_separator (range "#x9#xa#xb#xc#xd#x20"))
- (pass _pass (plus gap_separator))
+ (pass _pass (alt (plus gap_separator) comment))
  (terminal empty (seq ()))
  (terminal defining_symbol (alt "=" ":"))
  (terminal definition_separator_symbol (alt "|" "/" "!"))
