@@ -41,42 +41,60 @@ See {EBNF::LL1} and {EBNF::LL1::Parser} for further information.
 
     require 'ebnf'
 
-    ebnf = EBNF.parse(File.open('./etc/ebnf.ebnf'))
+    grammar = EBNF.parse(File.open('./etc/ebnf.ebnf'))
 
 Output rules and terminals as [S-Expressions][S-Expression], [Turtle][], HTML or [BNF][]
 
-    puts ebnf.to_sxp
-    puts ebnf.to_ttl
-    puts ebnf.to_html
-    puts ebnf.to_s
+    puts grammar.to_sxp
+    puts grammar.to_ttl
+    puts grammar.to_html
+    puts grammar.to_s
 
 Transform [EBNF][] to [PEG][] (generates sub-rules for embedded expressions) and the RULES table as Ruby for parsing grammars:
 
-    ebnf.make_peg
-    ebnf.to_ruby
+    grammar.make_peg
+    grammar.to_ruby
 
 Transform [EBNF][] to [BNF][] (generates sub-rules using `alt` or `seq` from `plus`, `star` or `opt`)
 
-    ebnf.make_bnf
+    grammar.make_bnf
 
 Generate [First/Follow][] rules for BNF grammars (using "ebnf" as the starting production):
 
-    ebnf.first_follow(:ebnf)
+    grammar.first_follow(:ebnf)
 
 Generate Terminal, [First/Follow][], Cleanup and Branch tables as Ruby for parsing grammars:
 
-    ebnf.build_tables
-    ebnf.to_ruby
+    grammar.build_tables
+    grammar.to_ruby
 
 Generate formatted grammar using HTML (requires [Haml][Haml] gem):
 
-    ebnf.to_html
+    grammar.to_html
 
-### Parser debugging
+### Parsing an ISO/IEC 14977 Grammar
+
+The EBNF gem can also parse [ISO/EIC 14977] Grammars (ISOEBNF) to [S-Expressions][S-Expression].
+
+    grammar = EBNF.parse(File.open('./etc/iso-ebnf.isoebnf', format: :isoebnf))
+
+### Parsing an ABNF Grammar
+
+The EBNF gem can also parse [ABNF] Grammars to [S-Expressions][S-Expression].
+
+    grammar = EBNF.parse(File.open('./etc/abnf.abnf', format: :abnf))
+
+### Parser Debugging
 
 Inevitably while implementing a parser for some specific grammar, a developer will need greater insight into the operation of the parser. While this can involve sorting through a tremendous amount of data, the parser can be provided a [Logger][] instance which will output messages at varying levels of detail to document the state of the parser at any given point. Most useful is likely the `INFO` level of debugging, but even more detail is revealed using the `DEBUG` level. `WARN` and `ERROR` statements will typically also be provided as part of an exception if parsing fails, but can be shown in the context of other parsing state with appropriate indentation as part of the logger.
 
-### Parser errors
+### Writing Grammars
+
+The {EBNF::Writer} class can be used to write parsed grammars out, either as formatted text, or HTML. Because grammars are written from the Abstract Syntax Tree, represented as [S-Expressions][S-Expression], this provides a means of transforming between grammar formats (e.g., W3C [EBNF][] to [ABNF][]), although with some potential loss in semantic fidelity (case-insensitive string matching vs. case-sensitive matching).
+
+The formatted HTML results are designed to be appropriate for including in specifications.
+
+### Parser Errors
 On a parsing failure, and exception is raised with information that may be useful in determining the source of the error.
 
 ## EBNF Grammar

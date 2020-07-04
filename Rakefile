@@ -42,9 +42,10 @@ end
 
 namespace :etc do
   ETC_FILES = %w{
+    etc/abnf.sxp etc/iso-ebnf.sxp
     etc/ebnf.sxp etc/ebnf.ll1.sxp etc/ebnf.peg.sxp etc/ebnf.html etc/ebnf.ll1.rb etc/ebnf.peg.rb
-    etc/turtle.sxp etc/turtle.ll1.sxp etc/turtle.peg.sxp etc/turtle.html etc/turtle.peg.rb etc/turtle.ll1.rb
-    etc/sparql.sxp etc/sparql.ll1.sxp etc/sparql.peg.sxp etc/sparql.html etc/sparql.peg.rb etc/turtle.ll1.rb
+    etc/turtle.sxp
+    etc/sparql.sxp
   }
   desc 'Remove generated files in etc'
   task :clean do
@@ -55,6 +56,20 @@ namespace :etc do
   task build: ETC_FILES
 end
 
+desc "Build meta files for ISO EBNF and ABNF"
+task :meta => %w{lib/ebnf/abnf/meta.rb lib/ebnf/abnf/core.rb lib/ebnf/isoebnf/meta.rb} do
+  file "lib/ebnf/abnf/meta.rb" => "etc/abnf.ebnf" do
+    %x(bin/ebnf --peg -f rb --mod-name ABNFMeta -o lib/ebnf/abnf/meta.rb etc/abnf.ebnf)
+  end
+
+  file "lib/ebnf/abnf/core.rb" => "etc/abnf-core.ebnf" do
+    %x(bin/ebnf --peg -f rb --mod-name ABNFCore -o lib/ebnf/abnf/core.rb etc/abnf-core.ebnf)
+  end
+
+  file "lib/ebnf/isoebnf/meta.rb" => "etc/iso-ebnf.ebnf" do
+    %x(bin/ebnf --peg -f rb --mod-name ISOEBNFMeta -o lib/ebnf/isoebnf/meta.rb etc/iso-ebnf.ebnf)
+  end
+end
 
 # Build SXP output with leading space to allow for Markdown formatting.
 rule ".sxp" => %w{.ebnf} do |t|
@@ -97,42 +112,4 @@ end
 file "etc/ebnf.ll1.rb" => "etc/ebnf.ebnf" do |t|
   puts "build #{t.name}"
   %x(bin/ebnf --ll1 ebnf -f rb -o etc/ebnf.ll1.rb etc/ebnf.ebnf)
-end
-
-file "etc/turtle.ll1.sxp" => "etc/turtle.ebnf" do |t|
-  puts "build #{t.name}"
-  File.open(t.name, "w") do |f|
-    IO.popen(%(bin/ebnf --ll1 turtleDoc #{t.source})).each_line do |line|
-      f.puts '    ' + line
-    end
-  end
-end
-
-file "etc/turtle.peg.rb" => "etc/turtle.ebnf" do |t|
-  puts "build #{t.name}"
-  %x(bin/ebnf --peg -f rb -o etc/turtle.peg.rb etc/turtle.ebnf)
-end
-
-file "etc/turtle.ll1.rb" => "etc/turtle.ebnf" do |t|
-  puts "build #{t.name}"
-  %x(bin/ebnf --ll1 turtleDoc -f rb -o etc/turtle.ll1.rb etc/turtle.ebnf)
-end
-
-file "etc/sparql.ll1.sxp" => "etc/sparql.ebnf" do |t|
-  puts "build #{t.name}"
-  File.open(t.name, "w") do |f|
-    IO.popen(%(bin/ebnf --ll1 QueryUnit --ll1 UpdateUnit #{t.source})).each_line do |line|
-      f.puts '    ' + line
-    end
-  end
-end
-
-file "etc/sparql.peg.rb" => "etc/sparql.ebnf" do |t|
-  puts "build #{t.name}"
-  %x(bin/ebnf --peg -f rb -o etc/sparql.peg.rb etc/sparql.ebnf)
-end
-
-file "etc/sparql.ll1.rb" => "etc/sparql.ebnf" do |t|
-  puts "build #{t.name}"
-  %x(bin/ebnf --ll1 QueryUnit --ll1 UpdateUnit -f rb -o etc/sparql.ll1.rb etc/sparql.ebnf)
 end

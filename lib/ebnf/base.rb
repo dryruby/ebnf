@@ -66,22 +66,6 @@ require 'strscan'
 # [Cwm Release 1.1.0rc1]: https://lists.w3.org/Archives/Public/public-cwm-announce/2005JulSep/0000.html
 # [bnf-rules.n3]: https://www.w3.org/2000/10/swap/grammar/bnf-rules.n3
 # 
-# Open Issues and Future Work
-# ---------------------------
-# 
-# The yacker output also has the terminals compiled to elaborate regular
-# expressions. The best strategy for dealing with lexical tokens is not
-# yet clear. Many tokens in SPARQL are case insensitive; this is not yet
-# captured formally.
-# 
-# The schema for the EBNF vocabulary used here (``g:seq``, ``g:alt``, ...)
-# is not yet published; it should be aligned with [swap/grammar/bnf][]
-# and the [bnf2html.n3][] rules (and/or the style of linked XHTML grammar
-# in the SPARQL and XML specificiations).
-# 
-# It would be interesting to corroborate the claim in the SPARQL spec
-# that the grammar is LL(1) with a mechanical proof based on N3 rules.
-# 
 # [swap/grammar/bnf]: https://www.w3.org/2000/10/swap/grammar/bnf
 # [bnf2html.n3]: https://www.w3.org/2000/10/swap/grammar/bnf2html.n3  
 # 
@@ -118,7 +102,7 @@ module EBNF
     #
     # @param [#read, #to_s] input
     # @param [Symbol] format (:ebnf)
-    #   Format of input, one of :abnf, :ebnf, or :sxp
+    #   Format of input, one of :abnf, :ebnf, :isoebnf, :isoebnf, or :sxp
     # @param [Hash{Symbol => Object}] options
     # @option options [Boolean, Array] :debug
     #   Output debug information to an array or $stdout.
@@ -159,6 +143,9 @@ module EBNF
       when :abnf
         abnf = ABNF.new(input, **options)
         @ast = abnf.ast
+      when :isoebnf
+        iso = ISOEBNF.new(input, **options)
+        @ast = iso.ast
       else
         raise "unknown input format #{format.inspect}"
       end
@@ -213,7 +200,7 @@ module EBNF
     ##
     # Output formatted EBNF
     #
-    # @param [:abnf, :ebnf] format (:ebnf)
+    # @param [:abnf, :ebnf, :isoebnf] format (:ebnf)
     # @return [String]
     def to_s(format: :ebnf)
       Writer.string(*ast, format: format)
@@ -222,7 +209,7 @@ module EBNF
     ##
     # Output formatted EBNF as HTML
     #
-    # @param [:abnf, :ebnf] format (:ebnf)
+    # @param [:abnf, :ebnf, :isoebnf] format (:ebnf)
     # @return [String]
     def to_html(format: :ebnf)
       Writer.html(*ast, format: format)

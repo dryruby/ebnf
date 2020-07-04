@@ -22,7 +22,7 @@
      (rule String "17"
       (alt STRING_LITERAL_QUOTE STRING_LITERAL_SINGLE_QUOTE
        STRING_LITERAL_LONG_SINGLE_QUOTE STRING_LITERAL_LONG_QUOTE ))
-     (terminal IRIREF "18" (seq "<" (range "^#x00-#x20<>\"{}|^`] | UCHAR)* '>'")))
+     (terminal IRIREF "18" (seq "<" (star (alt (range "^<>\"{}|^`]-[#x00-#x20") UCHAR)) ">"))
      (terminal INTEGER "19" (seq (opt (range "+-")) (plus (range "0-9"))))
      (terminal DECIMAL "20"
       (seq (opt (range "+-")) (seq (star (range "0-9")) "." (plus (range "0-9")))))

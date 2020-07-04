@@ -15,6 +15,8 @@ describe EBNF::Base do
         %{(rule postfix "9" (seq primary (opt (range "?*+"))))},
       %{[18] STRING2    ::= "'" (CHAR - "'")* "'"} =>
         %{(terminal STRING2 "18" (seq "'" (star (diff CHAR "'")) "'"))},
+      %([18] IRIREF     ::= '<' ([^<>"{}|^`\]-[#x00-#x20] | UCHAR)* '>') =>
+        %{(terminal IRIREF "18" (seq "<" (star (alt (diff (range "^<>\\\"{}|^`") (range "#x00-#x20")) UCHAR)) ">"))}
     }.each do |input, expected|
       it "given #{input.inspect} produces #{expected}" do
         expect(ebnf(:ruleParts, input).to_sxp).to produce(expected, @debug)
@@ -31,6 +33,8 @@ describe EBNF::Base do
           %{(rule postfix (seq primary (opt (range "?*+"))))},
         %{STRING2    ::= "'" (CHAR - "'")* "'"} =>
           %{(terminal STRING2 (seq "'" (star (diff CHAR "'")) "'"))},
+        %(IRIREF     ::=  '<' ([^<>"{}|^`\]-[#x00-#x20] | UCHAR)* '>') =>
+          %{(terminal IRIREF (seq "<" (star (alt (diff (range "^<>\\\"{}|^`") (range "#x00-#x20")) UCHAR)) ">"))}
       }.each do |input, expected|
         it "given #{input.inspect} produces #{expected}" do
           expect(ebnf(:ruleParts, input).to_sxp).to produce(expected, @debug)
@@ -59,7 +63,9 @@ describe EBNF::Base do
       %{a) b c} => %{(a " b c")},
       %(BaseDecl? PrefixDecl*) => %{((seq (opt BaseDecl) (star PrefixDecl)) "")},
       %(NCCHAR1 | '-' | [0-9] | #x00B7 | [#x0300-#x036F] | [#x203F-#x2040]) =>
-        %{((alt NCCHAR1 "-" (range "0-9") (hex "#x00B7") (range "#x0300-#x036F") (range "#x203F-#x2040")) "")}
+        %{((alt NCCHAR1 "-" (range "0-9") (hex "#x00B7") (range "#x0300-#x036F") (range "#x203F-#x2040")) "")},
+      %('<' ([^<>"{}|^`\]-[#x00-#x20] | UCHAR)* '>') =>
+        %{((seq "<" (star (alt (diff (range "^<>\\\"{}|^`") (range "#x00-#x20")) UCHAR)) ">") "")}
     }.each do |input, expected|
       it "given #{input.inspect} produces #{expected}" do
         expect(ebnf(:expression, input).to_sxp).to produce(expected, @debug)

@@ -2,6 +2,7 @@ module EBNF
   autoload :ABNF,     "ebnf/abnf"
   autoload :Base,     "ebnf/base"
   autoload :BNF,      "ebnf/bnf"
+  autoload :ISOEBNF,  "ebnf/isoebnf"
   autoload :LL1,      "ebnf/ll1"
   autoload :Parser,   "ebnf/parser"
   autoload :PEG,      "ebnf/peg"

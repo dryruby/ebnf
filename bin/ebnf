@@ -24,8 +24,8 @@ OPT_ARGS = [
   ["--bnf",             GetoptLong::NO_ARGUMENT,      "Transform EBNF to BNF"],
   ["--evaluate","-e",   GetoptLong::REQUIRED_ARGUMENT,"Evaluate argument as an EBNF document"],
   ["--ll1",             GetoptLong::REQUIRED_ARGUMENT,"Generate First/Follow rules, argument is start symbol"],
-  ["--format", "-f",    GetoptLong::REQUIRED_ARGUMENT,"Specify output format one of abnf, abnfh, ebnf, html, ttl, sxp, or rb"],
-  ["--input-format",    GetoptLong::REQUIRED_ARGUMENT,"Specify input format one of abnf, ebnf or sxp"],
+  ["--format", "-f",    GetoptLong::REQUIRED_ARGUMENT,"Specify output format one of abnf, abnfh, ebnf, html, isoebnf, isoebnfh, ttl, sxp, or rb"],
+  ["--input-format",    GetoptLong::REQUIRED_ARGUMENT,"Specify input format one of abnf, ebnf isoebnf, or sxp"],
   ["--mod-name",        GetoptLong::REQUIRED_ARGUMENT,"Module name used when creating ruby tables"],
   ["--output", "-o",    GetoptLong::REQUIRED_ARGUMENT,"Output to the specified file path"],
   ["--peg",             GetoptLong::NO_ARGUMENT,      "Transform EBNF to PEG"],
@@ -57,8 +57,18 @@ opts.each do |opt, arg|
   when '--debug'        then options[:debug] = true
   when '--bnf'          then options[:bnf] = true
   when '--evaluate'     then input = arg
-  when '--input-format' then options[:format] = arg.to_sym
-  when '--format'       then options[:output_format] = arg.to_sym
+  when '--input-format'
+    unless %w(abnf ebnf isoebnf sxp).include?(arg)
+      STDERR.puts("unrecognized input format #{arg}")
+      usage
+    end
+    options[:format] = arg.to_sym
+  when '--format'
+    unless %w(abnf abnfh ebnf html isoebnf isoebnfh rb sxp).include?(arg)
+      STDERR.puts("unrecognized output format #{arg}")
+      usage
+    end
+    options[:output_format] = arg.to_sym
   when '--ll1'          then (options[:ll1] ||= []) << arg.to_sym
   when '--mod-name'     then options[:mod_name] = arg
   when '--output'       then out = File.open(arg, "w")
@@ -81,14 +91,16 @@ if options[:ll1]
 end
 
 res = case options[:output_format]
-when :abnf    then ebnf.to_s(:abnf)
-when :abnfh   then ebnf.to_html(:abnf)
-when :ebnf    then ebnf.to_s
-when :html    then ebnf.to_html
-when :sxp     then ebnf.to_sxp
-when :ttl     then ebnf.to_ttl(options[:prefix], options[:namespace])
-when :rb      then ebnf.to_ruby(out, grammarFile: ARGV[0], **options)
-else          ebnf.ast.inspect
+when :abnf      then ebnf.to_s(format: :abnf)
+when :abnfh     then ebnf.to_html(format: :abnf)
+when :ebnf      then ebnf.to_s
+when :html      then ebnf.to_html
+when :isoebnf   then ebnf.to_s(format: :isoebnf)
+when :isoebnfh  then ebnf.to_html(format: :isoebnf)
+when :sxp       then ebnf.to_sxp
+when :ttl       then ebnf.to_ttl(options[:prefix], options[:namespace])
+when :rb        then ebnf.to_ruby(out, grammarFile: ARGV[0], **options)
+else            ebnf.ast.inspect
 end
 
 out.puts res
