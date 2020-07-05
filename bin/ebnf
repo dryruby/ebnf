@@ -32,6 +32,7 @@ OPT_ARGS = [
   ["--prefix", "-p",    GetoptLong::REQUIRED_ARGUMENT,"Prefix to use when generating Turtle"],
   ["--progress", "-v",  GetoptLong::NO_ARGUMENT,      "Detail on execution"],
   ["--namespace", "-n", GetoptLong::REQUIRED_ARGUMENT,"Namespace to use when generating Turtle"],
+  ["--validate",        GetoptLong::NO_ARGUMENT,      "Validate grammar"],
   ["--help", "-?",      GetoptLong::NO_ARGUMENT,      "This message"]
 ]
 def usage
@@ -76,6 +77,7 @@ opts.each do |opt, arg|
   when '--prefix'       then options[:prefix] = arg
   when '--namespace'    then options[:namespace] = arg
   when '--progress'     then options[:progress] = true
+  when '--validate'     then options[:validate] = true
   when '--help'         then usage
   end
 end

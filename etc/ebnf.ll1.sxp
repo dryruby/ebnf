@@ -168,7 +168,7 @@
        (range "#x20-#xD7FF")
        (range "#xE000-#xFFFD")
        (range "#x10000-#x10FFFF")) )
-     (terminal R_CHAR "21" (diff CHAR "]"))
+     (terminal R_CHAR "21" (diff CHAR (alt "]" "-")))
      (terminal POSTFIX "22" (range "?*+"))
      (terminal PASS "23"
       (plus

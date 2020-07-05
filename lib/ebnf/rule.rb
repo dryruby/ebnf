@@ -1,4 +1,5 @@
 require 'scanf'
+require 'strscan'
 
 module EBNF
   # Represent individual parsed rules
@@ -11,6 +12,20 @@ module EBNF
     TERM_OPS = %w{
       hex istr range
     }.map(&:to_sym).freeze
+
+    # The number of arguments expected per operator. `nil` for unspecified
+    OP_ARGN =       {
+      alt: nil,
+      diff: 2,
+      hex: 1,
+      not: 1,
+      opt: 1,
+      plus: 1,
+      range: 1,
+      rept: 3,
+      seq: nil,
+      star: 1
+    }
 
     # Symbol of rule
     #
@@ -66,6 +81,7 @@ module EBNF
     #   The expression is an internal-representation of an S-Expression with one of the following oparators:
     #
     #   * `alt` – A list of alternative rules, which are attempted in order. It terminates with the first matching rule, or is terminated as unmatched, if no such rule is found.
+    #   * `diff` – matches any string that matches `A` but does not match `B`.
     #   * `hex` – A single character represented using the hexadecimal notation `#xnn`.
     #   * `istr` – A string which matches in a case-insensitive manner, so that `(istr "fOo")` will match either of the strings `"foo"`, `"FOO"` or any other combination.
     #   * `opt` – An optional rule or terminal. It either results in the matching rule or returns `nil`.
@@ -120,7 +136,7 @@ module EBNF
         raise ArgumentError, "#{@expr.first} operation must an non-negative integer maximum or '*', was #{@expr[2]}" unless
           @expr[2] == '*' || @expr[2].is_a?(Integer) && @expr[2] >= 0
       when :seq
-        # It's legal to have a zero-lenght sequence
+        # It's legal to have a zero-length sequence
       else
         raise ArgumentError, "Rule expression must be an array using a known operator, was #{@expr.first}"
       end
@@ -431,7 +447,9 @@ module EBNF
     # * `alt` => this is every non-terminal.
     # * `diff` => this is every non-terminal.
     # * `hex` => nil
+    # * `istr` => nil
     # * `not` => this is the last expression, if any.
+    # * `opt` => this is the last expression, if any.
     # * `plus` => this is the last expression, if any.
     # * `range` => nil
     # * `rept` => this is the last expression, if any.
@@ -464,7 +482,9 @@ module EBNF
     # * `alt` => this is every terminal.
     # * `diff` => this is every terminal.
     # * `hex` => nil
+    # * `istr` => nil
     # * `not` => this is the last expression, if any.
+    # * `opt` => this is the last expression, if any.
     # * `plus` => this is the last expression, if any.
     # * `range` => nil
     # * `rept` => this is the last expression, if any.
@@ -540,17 +560,52 @@ module EBNF
     #   Typically, if the expression is recursive, the embedded expression is called recursively.
     # @raise [RangeError]
     def validate!(ast, expr = @expr)
-      ([:alt, :diff].include?(expr.first) ? expr[1..-1] : expr[1,1]).each do |sym|
-        case sym
-        when Symbol
-          r = ast.detect {|r| r.sym == sym}
-          raise SyntaxError, "No rule found for #{sym}" unless r
-        when Array
-          validate!(ast, sym)
+      op = expr.first
+      raise SyntaxError, "Unknown operator: #{op}" unless OP_ARGN.key?(op)
+      raise SyntaxError, "Argument count missmatch on operator #{op}, had #{expr.length - 1} expected #{OP_ARGN[op]}" if
+        OP_ARGN[op] && OP_ARGN[op] != expr.length - 1
+
+      # rept operator needs min and max
+      if op == :alt
+        raise SyntaxError, "alt operation must have at least one operand, had #{expr.length - 1}" unless expr.length > 1
+      elsif op == :rept
+        raise SyntaxError, "rept operation must an non-negative integer minimum, was #{expr[1]}" unless
+          expr[1].is_a?(Integer) && expr[1] >= 0
+        raise SyntaxError, "rept operation must an non-negative integer maximum or '*', was #{expr[2]}" unless
+          expr[2] == '*' || expr[2].is_a?(Integer) && expr[2] >= 0
+      end
+
+      case op
+      when :hex
+        raise SyntaxError, "Hex operand must be of form '#xN+': #{sym}" unless expr.last.match?(/^#x\h+$/)
+      when :range
+        str = expr.last.dup
+        str = str[1..-1] if str.start_with?('^')
+        if str.include?('-')
+          # If range is RANGE or O_RANGE, must be of form R_CHAR-R_CHAR or HEX-HEX
+          raise SyntaxError, "Range must be of form HEX-HEX or R_CHAR-R_CHAR: was #{str.inspect}" unless
+            str.match?(/^\^?(?:(?:#{Terminals::HEX}-#{Terminals::HEX})|(?:#{Terminals::R_CHAR}-#{Terminals::R_CHAR}))$/)
         else
-          nil
+          if str.match?(/^#{Terminals::HEX}+$/)
+            # Okay
+          elsif str.match?(Terminals::HEX) || !str.match?(/^#{Terminals::R_CHAR}+$/)
+            # Can't include both CHAR and HEX
+            raise SyntaxError, "Range must be of form  HEX+ or R_CHAR+: was #{str.inspect}"
+          end
         end
-      end.compact
+      else
+        ([:alt, :diff].include?(expr.first) ? expr[1..-1] : expr[1,1]).each do |sym|
+          case sym
+          when Symbol
+            r = ast.detect {|r| r.sym == sym}
+            raise SyntaxError, "No rule found for #{sym}" unless r
+          when Array
+            validate!(ast, sym)
+          when String
+            raise SyntaxError, "String must be of the form CHAR*" unless sym.match?(/^#{Terminals::CHAR}*$/)
+          end
+        end
+      end
     end
 
     ##

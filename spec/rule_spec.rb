@@ -21,8 +21,8 @@ describe EBNF::Rule do
           EBNF::Rule.new(:ebnf, "1", [:star, [:alt, :declaration, :rule]], kind: :rule)
         ],
         "pass": [
-          %{(pass _pass (plus (range "#x20\\\\t\\\\r\\\\n")))},
-          EBNF::Rule.new(nil, nil, [:plus, [:range, "#x20\\t\\r\\n"]], kind: :pass)
+          %{(pass _pass (plus (range "#x9#xA#xD#x20")))},
+          EBNF::Rule.new(nil, nil, [:plus, [:range, "#x9#xA#xD#x20"]], kind: :pass)
         ],
         "terminal": [
           %{(terminal O_ENUM "17" (seq "[^" (plus CHAR) "]"))},
@@ -82,6 +82,8 @@ describe EBNF::Rule do
         "diff (empty)": %{(terminal R_CHAR "21" (diff))},
         "diff (one)": %{(terminal R_CHAR "21" (diff CHAR))},
         "diff (three)": %{(terminal R_CHAR "21" (diff CHAR "]" ","))},
+        "hex (empty)": %{(terminal hex (hex))},
+        "hex (two)": %{(terminal hex (hex #x01 #x02))},
         "istr (empty)": %{(terminal nc (istr))},
         "istr (two)": %{(terminal nc (istr "foo" "bar"))},
         "not (empty)": %{(rule _a_1 "n.1" (not))},
@@ -919,7 +921,7 @@ describe EBNF::Rule do
       STRING1: ['"'],
       STRING2: ["'"],
       CHAR: ["#x9#xA#xD", "#x20-#xD7FF", "#xE000-#xFFFD", "#x10000-#x10FFFF"],
-      R_CHAR: [:CHAR, "]"],
+      R_CHAR: [:CHAR, "]", "-"],
       POSTFIX: ["?*+"],
       PASS: ["#x9#xA#xD#x20", "#", "#x", "//", "/*", "(*"]
     }.each do |sym, expected|
@@ -964,9 +966,94 @@ describe EBNF::Rule do
   end
 
   describe "#validate!" do
-    subject {EBNF.parse("a ::= b")}
-    it "notes missing rule" do
-      expect {subject.ast.first.validate!(subject.ast)}.to raise_error SyntaxError, "No rule found for b"
+    let(:gram) {EBNF.parse("a ::= 'b'?")}
+    subject {gram.ast.first}
+
+    {
+      "missing rule": [
+        "a ::= b",
+        "No rule found for b"
+      ],
+      "illegal string": [
+        %{a ::= "\u{01}"},
+        'String must be of the form CHAR*'
+      ],
+      "empty range": [
+        "a ::= []",
+        /Range must be of form  HEX\+ or R_CHAR\+/
+      ],
+      "mixed enum char and hex": [
+        "a ::= [b#x20]",
+        %(Range must be of form  HEX+ or R_CHAR+: was "b#x20")
+      ],
+      "mixed enum char and hex (2)": [
+        "a ::= [#x20z]",
+        %(Range must be of form  HEX+ or R_CHAR+: was "#x20z")
+      ],
+      "mixed range char and hex": [
+        "a ::= [b-#x20]",
+        %(Range must be of form HEX-HEX or R_CHAR-R_CHAR: was "b-#x20")
+      ],
+      "mixed range char and hex (2)": [
+        "a ::= [#x20-b]",
+        %(Range must be of form HEX-HEX or R_CHAR-R_CHAR: was "#x20-b")
+      ],
+      "incomplete range": [
+        "a ::= [a-]",
+        %(Range must be of form HEX-HEX or R_CHAR-R_CHAR: was "a-")
+      ],
+      "incomplete range (2)": [
+        "a ::= [-b]",
+        %(Range must be of form HEX-HEX or R_CHAR-R_CHAR: was "-b")
+      ],
+      "extra range": [
+        "a ::= [a-b-c]",
+        %(Range must be of form HEX-HEX or R_CHAR-R_CHAR: was "a-b-c")
+      ],
+      "extra range (2)": [
+        "a ::= [a-zA-Z]",
+        %(Range must be of form HEX-HEX or R_CHAR-R_CHAR: was "a-zA-Z")
+      ],
+    }.each do |name, (rule, message)|
+      it name do
+        gram = EBNF.parse(rule)
+        rule = gram.ast.first
+        expect {rule.validate!(gram.ast)}.to raise_error SyntaxError, message
+      end
+    end
+
+    # Validate rules that can only be created through modification
+    {
+      "alt (empty)":          [:alt],
+      "diff (empty)":         [:diff],
+      "diff (one)":           [:diff, 'A'],
+      "diff (three)":         [:diff, 'A', 'B', 'C'],
+      "hex (empty)":          [:hex],
+      "hex (two)":            [:hex, '#x01', '#x02'],
+      "hex (string)":         [:hex, 'string'],
+      "istr (empty)":         [:istr],
+      "istr (two)":           [:istr, 'A', 'B'],
+      "not (empty)":          [:not],
+      "not (two)":            [:not, 'A', 'B'],
+      "opt (empty)":          [:opt],
+      "plus (empty)":         [:plus],
+      "plus (two)":           [:plus, 'A', 'B'],
+      "rept (empty)":         [:rept],
+      "rept (one)":           [:rept, 1],
+      "rept (two)":           [:rept, 1, 2],
+      "rept (four)":          [:rept, 1, 2, 'A', 'B'],
+      "rept (float min)":     [:rept, 1.1, 2, 'A'],
+      "rept (negative min)":  [:rept, -1, 2, 'A'],
+      "rept (float max)":     [:rept, 1, 2.1, 'A'],
+      "rept (negative max)":  [:rept, 1, -1, 'A'],
+      "star (empty)":         [:star],
+      "star (two)":           [:star, 'A', 'B'],
+      "not op":               [:bad]
+    }.each do |title, expr|
+      it title do
+        subject.expr = expr
+        expect {subject.validate!(gram.ast)}.to raise_error(SyntaxError)
+      end
     end
   end
 

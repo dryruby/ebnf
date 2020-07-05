@@ -38,7 +38,7 @@
 
     [13] HEX        ::= '#x' ([a-f] | [A-F] | [0-9])+
 
-    [14] ENUM       ::= ('[' R_CHAR+ | HEX+ ']') - LHS
+    [14] ENUM       ::= ('[' R_CHAR+ | HEX+ ']') - LHS  # exclusively R_CHAR or HEX
 
     [15] O_ENUM     ::= '[^' R_CHAR+ | HEX+ ']'
 
@@ -53,7 +53,7 @@
 
     [20] CHAR       ::= [#x9#xA#xD] | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
 
-    [21] R_CHAR     ::= CHAR - ']'
+    [21] R_CHAR     ::= CHAR - (']' | '-')
 
     [22] POSTFIX    ::= [?*+]
 

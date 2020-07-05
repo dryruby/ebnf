@@ -106,6 +106,8 @@ module EBNF
     # @param [Hash{Symbol => Object}] options
     # @option options [Boolean, Array] :debug
     #   Output debug information to an array or $stdout.
+    # @option options [Boolean, Array] :validate
+    #   Validate resulting grammar.
     def initialize(input, format: :ebnf, **options)
       @options = options.dup
       @lineno, @depth, @errors = 1, 0, []
@@ -115,9 +117,9 @@ module EBNF
       input = input.respond_to?(:read) ? input.read : input.to_s
 
       case format
-      when :sxp
-        require 'sxp' unless defined?(SXP)
-        @ast = SXP::Reader::Basic.read(input).map {|e| Rule.from_sxp(e)}
+      when :abnf
+        abnf = ABNF.new(input, **options)
+        @ast = abnf.ast
       when :ebnf
         scanner = StringScanner.new(input)
 
@@ -140,15 +142,17 @@ module EBNF
             @ast << rule
           end
         end
-      when :abnf
-        abnf = ABNF.new(input, **options)
-        @ast = abnf.ast
       when :isoebnf
         iso = ISOEBNF.new(input, **options)
         @ast = iso.ast
+      when :sxp
+        require 'sxp' unless defined?(SXP)
+        @ast = SXP::Reader::Basic.read(input).map {|e| Rule.from_sxp(e)}
       else
         raise "unknown input format #{format.inspect}"
       end
+
+      validate! if @options[:validate]
     end
 
     ##
