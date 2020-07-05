@@ -347,18 +347,10 @@ module EBNF
     # FIXME: O_RANGE
     def format_abnf_range(string)
       if string.include?('-')
-        # Might include multiple ranges
-        # #x01-#x03#x05-#x06
-        # a-bc-d
         dash = (@options[:html] ? "<code>-</code> " : "-")
         # Split into separate range segments
         if string.start_with?('#x')
-          ranges = []
-          scanner = StringScanner.new(string)
-          while !scanner.eos?
-            ranges << scanner.scan(/#x\h+-#x\h+/)
-          end
-          ranges.map {|range|"%x" + range.gsub('#x', '').sub('-', dash)}.join(" / ")
+          '%x' + string[2..-1].gsub('#x', '')
         else
           '%d' + string.gsub(/[^-]/) {|c| c.ord}
         end
@@ -473,55 +465,31 @@ module EBNF
     # FIXME: O_RANGE
     def format_isoebnf_range(string)
       chars = []
-      scanner = StringScanner.new(string)
       if string.include?('-')
-        ranges = []
-        # Might include multiple ranges
-        # #x01-#x03#x05-#x06
-        # a-bc-d
-        # Split into separate range segments
-        if string.start_with?('#x')
-          while !scanner.eos?
-            ranges << scanner.scan(/#x\h+-#x\h+/)
-          end
-          ranges.each do |range|
-            first, last = range.split('-').map {|h| h[2..-1].hex.ord}
-            while first <= last
-              c = first.chr(Encoding::UTF_8)
-              raise RangeError, "cannot format #{string.inspect} as an ISO EBNF String: #{c.inspect} is out of range" unless
-                ISOEBNF::TERMINAL_CHARACTER.match?(c)
-              chars << c
-              first += 1
-            end
-          end
+        first, last = if string.start_with?('#x')
+          string.split('-').map {|h| h[2..-1].hex.ord}
         else
-          while !scanner.eos?
-            r = scanner.scan(/.-./)
-            require 'byebug'; byebug unless r
-            ranges << r
-          end
-          ranges.each do |range|
-            first, last = range.split('-').map {|c| c.ord}
-            while first <= last
-              c = first.chr(Encoding::UTF_8)
-              raise RangeError, "cannot format #{string.inspect} as an ISO EBNF String: #{c.inspect} is out of range" unless
-                ISOEBNF::TERMINAL_CHARACTER.match?(c)
-              chars << c
-              first += 1
-            end
-          end
+          string.split('-').map {|c| c.ord}
+        end
+        while first <= last
+          c = first.chr(Encoding::UTF_8)
+          raise RangeError, "cannot format #{string.inspect} as an ISO EBNF String: #{c.inspect} is out of range" unless
+            ISOEBNF::TERMINAL_CHARACTER.match?(c)
+          chars << c
+          first += 1
         end
       else
+        scanner = StringScanner.new(string)
         while !scanner.eos?
-          c = if hex = scanner.scan(/#x\h+/)
-            hex[2..-1].hex.ord.chr(Encoding::UTF_8)
+          c = if h = scanner.scan(/#x\h+/)
+            h[2..-1].hex.ord.chr(Encoding::UTF_8)
           else
             scanner.scan(/./)
           end
+          raise RangeError, "cannot format #{string.inspect} as an ISO EBNF String: #{c.inspect} is out of range" unless
+            ISOEBNF::TERMINAL_CHARACTER.match?(c)
+          chars << c
         end
-        raise RangeError, "cannot format #{string.inspect} as an ISO EBNF String: #{c.inspect} is out of range" unless
-          ISOEBNF::TERMINAL_CHARACTER.match?(c)
-        chars << c
       end
     end
 

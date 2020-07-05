@@ -16,9 +16,8 @@
      (terminal HEX "13" (seq "#x" (plus (alt (range "a-f") (range "A-F") (range "0-9")))))
      (terminal ENUM "14" (diff (alt (seq "[" (plus R_CHAR)) (seq (plus HEX) "]")) LHS))
      (terminal O_ENUM "15" (alt (seq "[^" (plus R_CHAR)) (seq (plus HEX) "]")))
-     (terminal RANGE "16" (seq "[" (plus (alt (seq R_CHAR "-" R_CHAR) (seq HEX "-" HEX))) "]"))
-     (terminal O_RANGE "17"
-      (seq "[^" (plus (alt (seq R_CHAR "-" R_CHAR) (seq HEX "-" HEX))) "]"))
+     (terminal RANGE "16" (seq "[" (alt (seq R_CHAR "-" R_CHAR) (seq HEX "-" HEX)) "]"))
+     (terminal O_RANGE "17" (seq "[^" (alt (seq R_CHAR "-" R_CHAR) (seq HEX "-" HEX)) "]"))
      (terminal STRING1 "18" (seq "\"" (star (diff CHAR "\"")) "\""))
      (terminal STRING2 "19" (seq "'" (star (diff CHAR "'")) "'"))
      (terminal CHAR "20"

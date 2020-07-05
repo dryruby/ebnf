@@ -25,7 +25,7 @@
      (terminal special_sequence (seq "?" (star special_sequence_character) "?"))
      (terminal comment (seq start_comment_symbol (star comment_symbol) end_comment_symbol))
      (terminal comment_symbol (alt comment terminal_string special_sequence character))
-     (terminal letter (range "a-zA-Z"))
+     (terminal letter (alt (range "a-z") (range "A-Z")))
      (terminal decimal_digit (range "0-9"))
      (terminal meta_identifier_character (alt letter decimal_digit "_"))
      (terminal first_terminal_character (diff terminal_character "'"))

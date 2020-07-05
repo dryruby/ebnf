@@ -19,14 +19,15 @@
      (terminal c_wsp (alt WSP (seq c_nl WSP)))
      (terminal c_nl (alt COMMENT CRLF))
      (terminal comment (seq ";" (star (alt WSP VCHAR)) CRLF))
-     (terminal quoted_string (seq DQUOTE (star (range "#x20-#x21#x23-#x7E")) DQUOTE))
+     (terminal quoted_string
+      (seq DQUOTE (star (alt (range "#x20-#x21") (range "#x23-#x7E"))) DQUOTE))
      (terminal bin_val (seq "b" (plus BIT) (opt (alt (plus (seq "." (plus BIT))) (seq "-" (plus BIT))))))
      (terminal dec_val
       (seq "d" (plus DIGIT) (opt (alt (plus (seq "." (plus DIGIT))) (seq "-" (plus DIGIT))))))
      (terminal hex_val
       (seq "x" (plus HEXDIG) (opt (alt (plus (seq "." (plus HEXDIG))) (seq "-" (plus HEXDIG))))))
-     (terminal prose_val (seq "<" (star (range "#x20-#x3D#x3F-#x7E")) ">"))
-     (terminal ALPHA (range "#x41-#x5A#x61-#x7A"))
+     (terminal prose_val (seq "<" (star (alt (range "#x20-#x3D") (range "#x3F-#x7E"))) ">"))
+     (terminal ALPHA (alt (range "#x41-#x5A") (range "#x61-#x7A")))
      (terminal BIT (alt "0" "1"))
      (terminal CHAR (range "#x01-#x7F"))
      (terminal CR (hex "#x0D"))
