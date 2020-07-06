@@ -18,6 +18,7 @@ module EBNF
       alt: nil,
       diff: 2,
       hex: 1,
+      istr: 1,
       not: 1,
       opt: 1,
       plus: 1,
@@ -429,10 +430,14 @@ module EBNF
 
     # Rules compare using their ids
     def <=>(other)
-      if id.to_i == other.id.to_i
-        id.to_s <=> other.id.to_s
+      if id && other.id
+        if id == other.id
+          id.to_s <=> other.id.to_s
+        else
+          id.to_f <=> other.id.to_f
+        end
       else
-        id.to_i <=> other.id.to_i
+        sym.to_s <=> other.sym.to_s
       end
     end
 

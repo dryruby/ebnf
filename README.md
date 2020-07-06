@@ -101,6 +101,8 @@ On a parsing failure, and exception is raised with information that may be usefu
 The [EBNF][] variant used here is based on [W3C](https://w3.org/) [EBNF][] (see {file:etc/ebnf.ebnf EBNF grammar}) as defined in the
 [XML 1.0 recommendation](https://www.w3.org/TR/REC-xml/), with minor extensions:
 
+The character set for EBNF is UTF-8.
+
 The general form of a rule is:
 
     symbol ::= expression
@@ -121,9 +123,9 @@ Within the expression on the right-hand side of a rule, the following expression
   <tr><td><code>[abc], [#xN#xN#xN]</code></td>
     <td>matches any Char with a value among the characters enumerated. Enumerations and ranges can be mixed in one set of brackets.</td></tr>
   <tr><td><code>[^a-z], [^#xN-#xN]</code></td>
-    <td>matches any Char with a value outside the range indicated.</td></tr>
+    <td>matches any UTF-8 Char with a value outside the range indicated.</td></tr>
   <tr><td><code>[^abc], [^#xN#xN#xN]</code></td>
-    <td>matches any Char with a value not among the characters given. Enumerations and ranges of forbidden values can be mixed in one set of brackets.</td></tr>
+    <td>matches any UTF-8 Char with a value not among the characters given. Enumerations and ranges of forbidden values can be mixed in one set of brackets.</td></tr>
   <tr><td><code>"string"</code></td>
     <td>matches a literal string matching that given inside the double quotes.</td></tr>
   <tr><td><code>'string'</code></td>

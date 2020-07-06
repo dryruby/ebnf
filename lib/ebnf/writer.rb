@@ -499,7 +499,7 @@ module EBNF
           - rules.each do |rule|
             %tr{id: "grammar-production-#{rule.sym}"}
               - if rule.pass?
-                %td{colspan: (format == :ebnf && rule.id ? 3 : 2)}
+                %td{colspan: (format == :ebnf && rule.id ? 4 : 3)}
                   %code<="@pass"
               - else
                 - if format == :ebnf && rule.id

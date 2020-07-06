@@ -16,7 +16,9 @@ describe EBNF::Base do
       %{[18] STRING2    ::= "'" (CHAR - "'")* "'"} =>
         %{(terminal STRING2 "18" (seq "'" (star (diff CHAR "'")) "'"))},
       %([18] IRIREF     ::= '<' ([^<>"{}|^`\]-[#x00-#x20] | UCHAR)* '>') =>
-        %{(terminal IRIREF "18" (seq "<" (star (alt (diff (range "^<>\\\"{}|^`") (range "#x00-#x20")) UCHAR)) ">"))}
+        %{(terminal IRIREF "18" (seq "<" (star (alt (diff (range "^<>\\\"{}|^`") (range "#x00-#x20")) UCHAR)) ">"))},
+      #%{[xx]minimal::=whitespace[yy]whitespace::=PASS} =>
+      #  %{(rule Prolog "2" (seq (opt BaseDecl) (star PrefixDecl)))},
     }.each do |input, expected|
       it "given #{input.inspect} produces #{expected}" do
         expect(ebnf(:ruleParts, input).to_sxp).to produce(expected, @debug)
