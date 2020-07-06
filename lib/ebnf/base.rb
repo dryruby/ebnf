@@ -198,7 +198,7 @@ module EBNF
     # @return [String]
     def to_sxp
       require 'sxp' unless defined?(SXP)
-      SXP::Generator.string(ast.sort_by{|r| r.id.to_f}.map(&:for_sxp))
+      SXP::Generator.string(ast.map(&:for_sxp))
     end
 
     ##

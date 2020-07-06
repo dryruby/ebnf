@@ -1,5 +1,4 @@
     (
-     (pass _pass (seq PASS))
      (rule ebnf "1" (star _ebnf_1))
      (rule _ebnf_1 "1.1" (alt declaration rule))
      (rule declaration "2" (alt "@terminals" pass))
@@ -79,8 +78,8 @@
      (terminal _PASS_17 "23.17" (alt _PASS_18 _PASS_19))
      (terminal _PASS_18 "23.18" (opt _PASS_20))
      (terminal _PASS_19 "23.19" (range "^*"))
-     (terminal _PASS_2 "23.2" (range "#x9#xA#xD#x20"))
      (terminal _PASS_20 "23.20" (seq "*" _PASS_21))
+     (terminal _PASS_2 "23.2" (range "#x9#xA#xD#x20"))
      (terminal _PASS_21 "23.21" (range "^)"))
      (terminal _PASS_3 "23.3" (seq _PASS_6 _PASS_7))
      (terminal _PASS_4 "23.4" (seq "/*" _PASS_10 "*/"))
@@ -88,4 +87,5 @@
      (terminal _PASS_6 "23.6" (alt _PASS_8 "//"))
      (terminal _PASS_7 "23.7" (star _PASS_9))
      (terminal _PASS_8 "23.8" (diff "#" "#x"))
-     (terminal _PASS_9 "23.9" (range "^#xA#xD")))
+     (terminal _PASS_9 "23.9" (range "^#xA#xD"))
+     (pass _pass (seq PASS)))

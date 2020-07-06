@@ -1,6 +1,5 @@
     (
      (rule _empty "0" (first _eps) (seq))
-     (pass _pass (seq PASS))
      (rule ebnf "1"
       (start #t)
       (first "@pass" "@terminals" LHS _eps)
@@ -60,6 +59,7 @@
       (first "(" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 SYMBOL)
       (follow ")" "@pass" "@terminals" LHS _eof "|")
       (seq seq))
+     (pass _pass (seq PASS))
      (rule seq "6"
       (first "(" ENUM HEX O_ENUM O_RANGE RANGE STRING1 STRING2 SYMBOL)
       (follow ")" "@pass" "@terminals" LHS _eof "|")

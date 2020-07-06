@@ -170,6 +170,6 @@ class EBNFPegParser
   def to_sxp
     require 'sxp' unless defined?(SXP)
     # Output rules as a formatted S-Expression
-    SXP::Generator.string(@ast.sort_by{|r| r.id.to_f}.map(&:for_sxp))
+    SXP::Generator.string(@ast.map(&:for_sxp))
   end
 end

@@ -86,12 +86,12 @@ describe EBNF::Base do
             [18] IRIREF                           ::=  '<' ("range" | UCHAR)* '>'
             [29t] SPARQL_BASE                     ::= [Bb][Aa][Ss][Ee]
           },
-          %{
-            ((rule _empty "0" (first _eps) (seq))
-             (terminal IRIREF "18" (seq "<" (star (alt "range" UCHAR)) ">"))
-             (rule sparqlBase "29s" (first SPARQL_BASE) (seq SPARQL_BASE IRIREF))
-             (rule _sparqlBase_1 "29s.1" (first IRIREF) (seq IRIREF))
-             (terminal SPARQL_BASE "29t" (seq (range "Bb") (range "Aa") (range "Ss") (range "Ee"))))
+          %{(
+            (rule _empty "0" (first _eps) (seq))
+            (terminal IRIREF "18" (seq "<" (star (alt "range" UCHAR)) ">"))
+            (rule sparqlBase "29s" (first SPARQL_BASE) (seq SPARQL_BASE IRIREF))
+            (terminal SPARQL_BASE "29t" (seq (range "Bb") (range "Aa") (range "Ss") (range "Ee")))
+            (rule _sparqlBase_1 "29s.1" (first IRIREF) (seq IRIREF)))
           }, nil
         ],
         "declaration (FF.1)" => [
