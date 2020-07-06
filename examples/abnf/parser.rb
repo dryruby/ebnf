@@ -46,8 +46,8 @@ class ABNFParser
   # `bin_val      ::=  "b" BIT+ (("." BIT+)+ | ("-" BIT+))?`
   terminal(:bin_val, /b[01]+(?:(?:(?:\.[01]+)+)|(?:-[01]+))?/) do |value|
     if value.include?('.')
-      # Interpret segments in binary creating a string
-      value[1..-1].split('.').map {|b| b.to_i(base=2).chr}.join("")
+      # Interpret segments in binary creating a sequence of hex characters or a string
+      hex_or_string(value[1..-1].split('.').map {|b| b.to_i(base=2).chr(Encoding::UTF_8)})
     elsif value.include?('-')
       # Interpret as a range
       [:range, value[1..-1].split('-').map {|b| "#x%x" % b.to_i(base=2)}.join("-")]
@@ -60,8 +60,8 @@ class ABNFParser
   # `dec_val      ::=  "d" DIGIT+ (("." DIGIT+)+ | ("-" DIGIT+))?`
   terminal(:dec_val, /d[0-9]+(?:(?:(?:\.[0-9]+)+)|(?:-[0-9]+))?/) do |value|
     if value.include?('.')
-      # Interpret segments in decimal creating a string
-      value[1..-1].split('.').map {|d| d.to_i.chr}.join("")
+      # Interpret segments in decimal creating a sequence of hex characters or a string
+      hex_or_string(value[1..-1].split('.').map {|b| b.to_i.chr(Encoding::UTF_8)})
     elsif value.include?('-')
       # Interpret as a range
       [:range, value[1..-1].split('-').map {|d| "#x%x" % d.to_i}.join("-")]
@@ -74,8 +74,8 @@ class ABNFParser
   # `hex_val      ::=  "x" HEXDIG+  (("." HEXDIG+)+ | ("-" HEXDIG+))?`
   terminal(:hex_val, /x[0-9A-F]+(?:(?:(?:\.[0-9A-F]+)+)|(?:-[0-9A-F]+))?/i) do |value|
     if value.include?('.')
-      # Interpret segments in hexadecimal creating a string
-      value[1..-1].split('.').map {|h| h.to_i(base=16).chr}.join("")
+      # Interpret segments in hexadecimal creating a sequence of hex characters or a string
+      hex_or_string(value[1..-1].split('.').map {|b| b.to_i(base=16).chr(Encoding::UTF_8)})
     elsif value.include?('-')
       # Interpret as a range
       [:range, value[1..-1].split('-').map {|h| "#x%x" % h.to_i(base=16)}.join("-")]
@@ -265,7 +265,7 @@ class ABNFParser
     # Add built-in rules for standard ABNF rules not 
     parsed_rules.values.map(&:symbols).flatten.uniq.each do |sym|
       rule = ABNFCore::RULES.detect {|r| r.sym == sym}
-      parsed_rules[sym] ||= rule
+      parsed_rules[sym] ||= rule if rule
     end
 
     parsed_rules.values
@@ -276,5 +276,34 @@ class ABNFParser
     require 'sxp' unless defined?(SXP)
     # Output rules as a formatted S-Expression
     SXP::Generator.string(ast.map(&:for_sxp))
+  end
+
+private
+  # Generate a combination of seq and string to represent a sequence of characters
+  #
+  # @param [Array<String>] characters
+  # @return [String,Array]
+  def hex_or_string(characters)
+    seq = [:seq]
+    str_result = ""
+    characters.each do |c|
+      if VCHAR.match?(c)
+        str_result << c
+      else
+        if str_result.length > 0
+          seq << str_result
+          str_result = ""
+        end
+        seq << [:hex, "#x%x" % c.hex]
+      end
+    end
+    seq << str_result if str_result.length > 0
+
+    # Either return the sequence, or a string
+    if seq.length == 2 && seq.last.is_a?(String)
+      seq.last
+    else
+      seq
+    end
   end
 end
