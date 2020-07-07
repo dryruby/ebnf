@@ -110,6 +110,7 @@ describe EBNF::Parser do
       %{[a-zA-Z]} => %{(range "a-zA-Z")},
       %{[#x20-#x22]} => %{(range "#x20-#x22")},
       %{[abc]} => %{(range "abc")},
+      %{[abc-]} => %{(range "abc-")},
       %{[#x20#x21#x22]} => %{(range "#x20#x21#x22")},
       %{BaseDecl? PrefixDecl*} => %{(seq (opt BaseDecl) (star PrefixDecl))},
       %{NCCHAR1 | '-' | [0-9] | #x00B7 | [#x0300-#x036F] | [#x203F-#x2040]} =>

@@ -291,9 +291,7 @@
      (terminal VAR1 "143" (seq "?" VARNAME))
      (terminal VAR2 "144" (seq "$" VARNAME))
      (terminal LANGTAG "145"
-      (seq "@"
-       (plus (alt (range "a-z") (range "A-Z")))
-       (star (seq "-" (plus (alt (range "a-z") (range "A-Z") (range "0-9")))))) )
+      (seq "@" (plus (range "a-zA-Z")) (star (seq "-" (plus (range "a-zA-Z0-9"))))))
      (terminal INTEGER "146" (plus (range "0-9")))
      (terminal DECIMAL "147" (seq (star (range "0-9")) "." (plus (range "0-9"))))
      (terminal DOUBLE "148"
@@ -307,7 +305,7 @@
      (terminal INTEGER_NEGATIVE "152" (seq "-" INTEGER))
      (terminal DECIMAL_NEGATIVE "153" (seq "-" DECIMAL))
      (terminal DOUBLE_NEGATIVE "154" (seq "-" DOUBLE))
-     (terminal EXPONENT "155" (seq (range "eE") (opt (range "#x2b#x2d")) (plus (range "0-9"))))
+     (terminal EXPONENT "155" (seq (range "eE") (opt (range "+-")) (plus (range "0-9"))))
      (terminal STRING_LITERAL1 "156"
       (seq "'" (star (alt (range "^#x27#x5C#xA#xD") ECHAR)) "'"))
      (terminal STRING_LITERAL2 "157"
@@ -322,8 +320,7 @@
      (terminal ANON "163" (seq "[" (star WS) "]"))
      (terminal PN_CHARS_BASE "164"
       (alt
-       (range "A-Z")
-       (range "a-z")
+       (range "A-Za-z")
        (range "#x00C0-#x00D6")
        (range "#x00D8-#x00F6")
        (range "#x00F8-#x02FF")
@@ -358,7 +355,7 @@
       (seq (alt PN_CHARS_U (range "0-9")) (opt (seq (star (alt PN_CHARS ".")) PN_CHARS))))
      (terminal PLX "170" (alt PERCENT PN_LOCAL_ESC))
      (terminal PERCENT "171" (seq "%" HEX HEX))
-     (terminal HEX "172" (alt (range "0-9") (range "A-F") (range "a-f")))
+     (terminal HEX "172" (range "0-9A-Fa-f"))
      (terminal PN_LOCAL_ESC "173"
       (seq "\\"
        (alt "_" "~" "." "-" "!" "$" "&" "'" "(" ")" "*" "+" "," ";" "=" "/" "?" "#"

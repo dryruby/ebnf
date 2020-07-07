@@ -346,7 +346,7 @@ module EBNF
     # Format a range
     # FIXME: O_RANGE
     def format_abnf_range(string)
-      if string.include?('-')
+      if string.include?('-') && !string.end_with?('-')
         # Might include multiple ranges
         # #x01-#x03#x05-#x06
         # a-bc-d
@@ -474,7 +474,7 @@ module EBNF
     def format_isoebnf_range(string)
       chars = []
       scanner = StringScanner.new(string)
-      if string.include?('-')
+      if string.include?('-') && !string.end_with?('-')
         ranges = []
         # Might include multiple ranges
         # #x01-#x03#x05-#x06

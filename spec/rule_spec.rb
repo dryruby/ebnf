@@ -499,11 +499,13 @@ describe EBNF::Rule do
 
   describe "#to_regexp" do
     {
-      hex: ["#x20", / /],
-      range: ["a-b", /[a-b]/],
-    }.each do |title, (exp, regexp)|
+      hex: [:hex, "#x20", / /],
+      range: [:range, "a-b", /[a-b]/],
+      range2: [:range, "a-zA-Z", /[a-zA-Z]/],
+      range3: [:range, "abc-", /[abc-]/],
+    }.each do |title, (op, exp, regexp)|
       it title do
-        expect(EBNF::Rule.new(title, nil, [title, exp]).to_regexp).to eql regexp
+        expect(EBNF::Rule.new(title, nil, [op, exp]).to_regexp).to eql regexp
       end
     end
 
@@ -914,8 +916,8 @@ describe EBNF::Rule do
       LHS: ["["],
       SYMBOL: ["a-z", "A-Z", "0-9", "_", "."],
       HEX: ["#x"],
-      ENUM: ["[", :HEX, :LHS],
-      O_ENUM: ["[^", :HEX],
+      ENUM: ["[", :LHS],
+      O_ENUM: ["[^"],
       RANGE: ["["],
       O_RANGE: ["[^"],
       STRING1: ['"'],
@@ -999,10 +1001,6 @@ describe EBNF::Rule do
         /syntax error/
       ],
       "incomplete range": [
-        "a ::= [a-]",
-        /syntax error/
-      ],
-      "incomplete range (2)": [
         "a ::= [-b]",
         /syntax error/
       ],

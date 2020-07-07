@@ -123,6 +123,10 @@ describe EBNF::Writer do
         [:alt, :A, :B],
         "A | B"
       ],
+      "enum": [
+        [:range, "abc-"],
+        "[abc-]"
+      ],
       "hex": [
         [:hex, "#x20"],
         "#x20"

@@ -38,9 +38,9 @@
 
     [13] HEX        ::= '#x' ([a-f] | [A-F] | [0-9])+
 
-    [14] ENUM       ::= ('[' R_CHAR+ | HEX+ ']') - LHS  # exclusively R_CHAR or HEX
+    [14] ENUM       ::= ('[' (R_CHAR+ | HEX+) '-'? ']') - LHS  # exclusively R_CHAR or HEX
 
-    [15] O_ENUM     ::= '[^' R_CHAR+ | HEX+ ']'
+    [15] O_ENUM     ::= '[^' (R_CHAR+ | HEX+) '-'? ']' # both ENUM and O_ENUM can end with '-'
 
     [16] RANGE      ::= '[' ((R_CHAR '-' R_CHAR) | (HEX '-' HEX))+ ']'
 

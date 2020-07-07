@@ -117,7 +117,7 @@ HEX
 <td><code>ENUM</code></td>
 <td>::=</td>
 <td>
-(("[" R_CHAR+) | (HEX+ "]")) - LHS
+("[" (R_CHAR+ | HEX+) "-"? "]") - LHS
 </td>
 </tr>
 <tr id='grammar-production-O_ENUM'>
@@ -125,7 +125,7 @@ HEX
 <td><code>O_ENUM</code></td>
 <td>::=</td>
 <td>
-("[^" R_CHAR+) | (HEX+ "]")
+"[^" (R_CHAR+ | HEX+) "-"? "]"
 </td>
 </tr>
 <tr id='grammar-production-RANGE'>

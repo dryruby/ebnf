@@ -249,7 +249,7 @@
     [142] BLANK_NODE_LABEL        ::= '_:' ( PN_CHARS_U | [0-9] ) ((PN_CHARS|'.')* PN_CHARS)?
     [143] VAR1                    ::= '?' VARNAME
     [144] VAR2                    ::= '$' VARNAME
-    [145] LANGTAG                 ::= '@' ([a-z] | [A-Z])+ ('-' ([a-z] | [A-Z] | [0-9])+)*
+    [145] LANGTAG                 ::= '@' ([a-zA-Z])+ ('-' ([a-zA-Z0-9])+)*
     [146] INTEGER                 ::= [0-9]+
     [147] DECIMAL                 ::= [0-9]* '.' [0-9]+
     [148] DOUBLE                  ::= [0-9]+ '.' [0-9]* EXPONENT
@@ -260,7 +260,7 @@
     [152] INTEGER_NEGATIVE        ::= '-' INTEGER
     [153] DECIMAL_NEGATIVE        ::= '-' DECIMAL
     [154] DOUBLE_NEGATIVE         ::= '-' DOUBLE
-    [155] EXPONENT                ::= [eE] [#x2b#x2d]? [0-9]+
+    [155] EXPONENT                ::= [eE] [+-]? [0-9]+
     [156] STRING_LITERAL1         ::= "'" ( ([^#x27#x5C#xA#xD]) | ECHAR )* "'"
     [157] STRING_LITERAL2         ::= '"' ( ([^#x22#x5C#xA#xD]) | ECHAR )* '"'
     [158] STRING_LITERAL_LONG1    ::= "'''" ( ( "'" | "''" )? ( [^'\] | ECHAR ) )* "'''"
@@ -269,7 +269,7 @@
     [161] NIL                     ::= '(' WS* ')'
     [162] WS                      ::= #x20 | #x9 | #xD | #xA
     [163] ANON                    ::= '[' WS* ']'
-    [164] PN_CHARS_BASE           ::= [A-Z] | [a-z] | [#x00C0-#x00D6]
+    [164] PN_CHARS_BASE           ::= [A-Za-z] | [#x00C0-#x00D6]
                                     | [#x00D8-#x00F6] | [#x00F8-#x02FF] | [#x0370-#x037D]
                                     | [#x037F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F]
                                     | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF]
@@ -283,6 +283,6 @@
     [169] PN_LOCAL                ::= ( PN_CHARS_U | [0-9] ) ((PN_CHARS|'.')* PN_CHARS)?
     [170] PLX                     ::= PERCENT | PN_LOCAL_ESC
     [171] PERCENT                 ::= '%' HEX HEX
-    [172] HEX                     ::= [0-9] | [A-F] | [a-f]
+    [172] HEX                     ::= [0-9A-Fa-f]
     [173] PN_LOCAL_ESC            ::= '\' ( '_' | '~' | '.' | '-' | '!' | '$' | '&' | "'" | '(' | ')' | '*' | '+' | ',' | ';' | '='
                                     | '/' | '?' | '#' | '@' | '%' )
