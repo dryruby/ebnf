@@ -47,7 +47,9 @@ class EBNFPegParser
   # Match `HEX` terminal
   #
   #     [13] HEX        ::= #x' ([a-f] | [A-F] | [0-9])+
-  terminal(:HEX, HEX)
+  terminal(:HEX, HEX) do |value|
+    [:hex, value]
+  end
 
   # Terminal for `ENUM` is matched as part of a `primary` rule.
   #

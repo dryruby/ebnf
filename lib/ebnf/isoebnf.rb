@@ -1,4 +1,5 @@
 require_relative 'isoebnf/meta'
+require 'logger'
 
 # ABNF parser
 # Parses ABNF into an array of {EBNF::Rule}.
@@ -221,6 +222,8 @@ module EBNF
         end
         @ast << rule if rule
       end
+    rescue EBNF::PEG::Parser::Error => e
+      raise SyntaxError, e.message
     end
   end
 end

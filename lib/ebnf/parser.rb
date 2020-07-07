@@ -1,318 +1,321 @@
+require_relative 'ebnf/meta'
+require 'logger'
+
 module EBNF
-  module Parser
-    ##
-    # Iterate over rule strings.
-    # a line that starts with '\[' or '@' starts a new rule
-    #
-    # @param [StringScanner] scanner
-    # @yield rule_string
-    # @yieldparam [String] rule_string
-    def eachRule(scanner)
-      cur_lineno = 1
-      r = ''
-      until scanner.eos?
-        case
-        when s = scanner.scan(%r(\s+)m)
-          # Eat whitespace
-          cur_lineno += s.count("\n")
-          #debug("eachRule(ws)") { "[#{cur_lineno}] #{s.inspect}" }
-        when s = scanner.scan(%r(/\*([^\*]|\*[^\/])*\*/)m)
-          # Eat comments /* .. */
-          cur_lineno += s.count("\n")
-          debug("eachRule(comment)") { "[#{cur_lineno}] #{s.inspect}" }
-        when s = scanner.scan(%r(\(\*([^\*]|\*[^\)])*\*\))m)
-          # Eat comments (* .. *)
-          cur_lineno += s.count("\n")
-          debug("eachRule(comment)") { "[#{cur_lineno}] #{s.inspect}" }
-        when s = scanner.scan(%r((#(?!x)|//).*$))
-          # Eat comments // & #
-          cur_lineno += s.count("\n")
-          debug("eachRule(comment)") { "[#{cur_lineno}] #{s.inspect}" }
-        when s = scanner.scan(/\A["']/)
-          # Found a quote, scan until end of matching quote
-          s += scanner.scan_until(/#{scanner.matched}|$/)
-          r += s
-        when s = scanner.scan(%r(^@terminals))
-          #debug("eachRule(@terminals)") { "[#{cur_lineno}] #{s.inspect}" }
-          yield(r) unless r.empty?
-          @lineno = cur_lineno
-          yield(s)
-          r = ''
-        when s = scanner.scan(/@pass/)
-          # Found rule start, if we've already collected a rule, yield it
-          #debug("eachRule(@pass)") { "[#{cur_lineno}] #{s.inspect}" }
-          yield r unless r.empty?
-          @lineno = cur_lineno
-          r = s
-        when s = scanner.scan(EBNF::Terminals::LHS)
-          # Found rule start, if we've already collected a rule, yield it
-          yield r unless r.empty?
-          #debug("eachRule(rule)") { "[#{cur_lineno}] #{s.inspect}" }
-          @lineno = cur_lineno
-          r = s
-        else
-          # Collect until end of line, or start of comment or quote
-          s = scanner.scan_until(%r{(?:[/\(]\*)|#(?!x)|//|["']|$})
-          if scanner.matched.length > 0
-            # Back up scan head before ending match
-            scanner.pos = scanner.pos - scanner.matched.length
+  class Parser
+    include EBNF::PEG::Parser
+    include EBNF::Terminals
 
-            # Remove matched from end of string
-            s = s[0..-(scanner.matched.length+1)]
-          end
-          cur_lineno += s.count("\n")
-          #debug("eachRule(rest)") { "[#{cur_lineno}] #{s.inspect}" }
-          r += s
-        end
-      end
-      yield r unless r.empty?
-    end
-  
-    ##
-    # Parse a rule into an optional rule number, a symbol and an expression
+    # Abstract syntax tree from parse
     #
-    # @param [String] rule
-    # @return [Rule]
-    def ruleParts(rule)
-      num_sym, expr = rule.split('::=', 2).map(&:strip)
-      num, sym = num_sym.split(']', 2).map(&:strip)
-      num, sym = "", num if sym.nil?
-      num = num[1..-1]
-      r = Rule.new(sym && sym.to_sym, num, expression(expr).first, ebnf: self)
-      debug("ruleParts") { r.inspect }
-      r
+    # @return [Array<EBNF::Rule>]
+    attr_reader :ast
+
+    # ## Terminals
+    # Define rules for Terminals, placing results on the input stack, making them available to upstream non-Terminal rules.
+    #
+    # Terminals are defined with a symbol matching the associated rule name, and an optional (although strongly encouraged) regular expression used to match the head of the input stream.
+    #
+    # The result of the terminal block is the semantic value of that terminal, which if often a string, but may be any instance which reflects the semantic interpretation of that terminal.
+    #
+    # The `value` parameter is the value matched by the regexp, if defined, or by the sub-terminal rules otherwise.
+    #
+    # The `prod` parameter is the name of the parent rule for which this terminal is matched, which may have a bearing in some circumstances, although not used in this example.
+    #
+    # If no block is provided, then the value which would have been passed to the block is used as the result directly.
+
+    # Match the Left hand side of a rule or terminal
+    #
+    #     [11] LHS        ::= ('[' SYMBOL+ ']' ' '+)? SYMBOL ' '* '::='
+    terminal(:LHS, LHS) do |value, prod|
+      value.to_s.scan(/(?:\[([^\]]+)\])?\s*(\w+)\s*::=/).first
     end
 
-    ##
-    # Parse a string into an expression tree and a remaining string
+    # Match `SYMBOL` terminal
     #
-    # @example
-    #     >>> expression("a b c")
-    #     ((seq a b c) '')
-    #     
-    #     >>> expression("a? b+ c*")
-    #     ((seq (opt a) (plus b) (star c)) '')
-    #     
-    #     >>> expression(" | x xlist")
-    #     ((alt (seq) (seq x xlist)) '')
-    #     
-    #     >>> expression("a | (b - c)")
-    #     ((alt a (diff b c)) '')
-    #     
-    #     >>> expression("a b | c d")
-    #     ((alt (seq a b) (seq c d)) '')
-    #     
-    #     >>> expression("a | b | c")
-    #     ((alt a b c) '')
-    #     
-    #     >>> expression("a) b c")
-    #     (a ' b c')
-    #     
-    #     >>> expression("BaseDecl? PrefixDecl*")
-    #     ((seq (opt BaseDecl) (star PrefixDecl)) '')
-    #     
-    #     >>> expression("NCCHAR1 | diff | [0-9] | #x00B7 | [#x0300-#x036F] | \[#x203F-#x2040\]")
-    #     ((alt NCCHAR1 diff
-    #           (range '0-9')
-    #           (hex '#x00B7')
-    #           (range '#x0300-#x036F')
-    #           (range, '#x203F-#x2040')) '')
-    #     
-    # @param [String] s
-    # @return [Array]
-    def expression(s)
-      debug("expression") {"(#{s.inspect})"}
-      e, s = depth {alt(s)}
-      debug {"=> alt returned #{[e, s].inspect}"}
-      unless s.to_s.empty?
-        t, ss = depth {terminal(s)}
-        debug {"=> terminal returned #{[t, ss].inspect}"}
-        return [e, ss] if t.is_a?(Array) && t.first == :")"
-      end
-      [e, s]
-    end
-  
-    ##
-    # Parse alt
-    #     >>> alt("a | b | c")
-    #     ((alt a b c) '')
-    # @param [String] s
-    # @return [Array]
-    def alt(s)
-      debug("alt") {"(#{s.inspect})"}
-      args = []
-      while !s.to_s.empty?
-        e, s = depth {seq(s)}
-        debug {"=> seq returned #{[e, s].inspect}"}
-        if e.to_s.empty?
-          break unless args.empty?
-          e = [:seq, []] # empty sequence
-        end
-        args << e
-        unless s.to_s.empty?
-          t, ss = depth {terminal(s)}
-          break unless t[0] == :alt
-          s = ss
-        end
-      end
-      args.length > 1 ? [args.unshift(:alt), s] : [e, s]
-    end
-  
-    ##
-    # parse seq
-    #
-    #     >>> seq("a b c")
-    #     ((seq a b c) '')
-    #     
-    #     >>> seq("a b? c")
-    #     ((seq a (opt b) c) '')
-    def seq(s)
-      debug("seq") {"(#{s.inspect})"}
-      args = []
-      while !s.to_s.empty?
-        e, ss = depth {diff(s)}
-        debug {"=> diff returned #{[e, ss].inspect}"}
-        unless e.to_s.empty?
-          args << e
-          s = ss
-        else
-          break;
-        end
-      end
-      if args.length > 1
-        [args.unshift(:seq), s]
-      elsif args.length == 1
-        args + [s]
-      else
-        ["", s]
-      end
-    end
-  
-    ##
-    # parse diff
-    # 
-    #     >>> diff("a - b")
-    #     ((diff a b) '')
-    def diff(s)
-      debug("diff") {"(#{s.inspect})"}
-      e1, s = depth {postfix(s)}
-      debug {"=> postfix returned #{[e1, s].inspect}"}
-      unless e1.to_s.empty?
-        unless s.to_s.empty?
-          t, ss = depth {terminal(s)}
-          debug {"diff #{[t, ss].inspect}"}
-          if t.is_a?(Array) && t.first == :diff
-            s = ss
-            e2, s = primary(s)
-            unless e2.to_s.empty?
-              return [[:diff, e1, e2], s]
-            else
-              error("diff", "Syntax Error")
-              raise SyntaxError, "diff missing second operand"
-            end
-          end
-        end
-      end
-      [e1, s]
-    end
-  
-    ##
-    # parse postfix
-    # 
-    #     >>> postfix("a b c")
-    #     (a ' b c')
-    #     
-    #     >>> postfix("a? b c")
-    #     ((opt, a) ' b c')
-    def postfix(s)
-      debug("postfix") {"(#{s.inspect})"}
-      e, s = depth {primary(s)}
-      debug {"=> primary returned #{[e, s].inspect}"}
-      return ["", s] if e.to_s.empty?
-      if !s.to_s.empty?
-        t, ss = depth {terminal(s)}
-        debug {"=> #{[t, ss].inspect}"}
-        if t.is_a?(Array) && [:opt, :star, :plus].include?(t.first)
-          return [[t.first, e], ss]
-        end
-      end
-      [e, s]
+    #     [12] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | '_' | '.')+
+    terminal(:SYMBOL, SYMBOL) do |value|
+      value.to_sym
     end
 
-    ##
-    # parse primary
-    # 
-    #     >>> primary("a b c")
-    #     (a ' b c')
-    def primary(s)
-      debug("primary") {"(#{s.inspect})"}
-      t, s = depth {terminal(s)}
-      debug {"=> terminal returned #{[t, s].inspect}"}
-      if t.is_a?(Symbol) || t.is_a?(String)
-        [t, s]
-      elsif %w(range hex).map(&:to_sym).include?(t.first)
-        [t, s]
-      elsif t.first == :"("
-        e, s = depth {expression(s)}
-        debug {"=> expression returned #{[e, s].inspect}"}
-        [e, s]
+    # Match `HEX` terminal
+    #
+    #     [13] HEX        ::= #x' ([a-f] | [A-F] | [0-9])+
+    terminal(:HEX, HEX) do |value|
+      [:hex, value]
+    end
+
+    # Terminal for `ENUM` is matched as part of a `primary` rule.
+    #
+    #     [14] ENUM       ::= ('[' R_CHAR+ | HEX+ ']') - LHS
+    terminal(:ENUM, ENUM) do |value|
+      [:range, value[1..-2]]
+    end
+
+    # Terminal for `O_ENUM` is matched as part of a `primary` rule.
+    #
+    #     [15] O_ENUM     ::= '[^' R_CHAR+ | HEX+ ']'
+    terminal(:O_ENUM, O_ENUM) do |value|
+      [:range, value[1..-2]]
+    end
+
+    # Terminal for `RANGE` is matched as part of a `primary` rule.
+    #
+    #     [16] `RANGE`      ::= '[' (R_CHAR '-' R_CHAR) | (HEX '-' HEX) ']'
+    terminal(:RANGE, RANGE) do |value|
+      [:range, value[1..-2]]
+    end
+
+    # Terminal for `O_RANGE` is matched as part of a `primary` rule.
+    #
+    #     [17] O_RANGE    ::= '[^' (R_CHAR '-' R_CHAR) | (HEX '-' HEX) ']'
+    terminal(:O_RANGE, O_RANGE) do |value|
+      [:range, value[1..-2]]
+    end
+
+    # Match double quote string
+    #
+    #     [18] STRING1    ::= '"' (CHAR - '"')* '"'
+    terminal(:STRING1, STRING1) do |value|
+      value[1..-2]
+    end
+
+    # Match single quote string
+    #
+    #     [19] STRING2    ::= "'" (CHAR - "'")* "'"
+    terminal(:STRING2, STRING2) do |value|
+      value[1..-2]
+    end
+
+    # The `CHAR` and `R_CHAR` productions are not used explicitly
+
+    # Match `POSTFIX` terminal
+    #
+    #     [22] POSTFIX    ::= [?*+]
+    terminal(:POSTFIX, POSTFIX)
+
+    # The `PASS` productions is not used explicitly
+
+    # ## Non-terminal productions
+    # Define productions for non-Termainals. This can include `start_production` as well as `production` to hook into rule start and end. In some cases, we need to use sub-productions as generated when turning EBNF into PEG.
+    #
+    # Productions are defined with a symbol matching the associated rule name.
+    #
+    # The result of the productions is typically the abstract syntax tree matched by the rule, so far, but could be a specific semantic value, or could be ignored with the result being returned via the `callback`.
+    #
+    # The `value` parameter is the result returned from child productions
+    #
+    # The `data` parameter other data which may be returned by child productions placing information onto their input (unused in this example).
+    #
+    # The `callback` parameter provides access to a callback defined in the call to `parse`).
+
+    # Production for end of `declaration` non-terminal.
+    #
+    # Look for `@terminals` to change parser state to parsing terminals.
+    #
+    # Clears the packrat parser when called.
+    #
+    # `@pass` is ignored here.
+    #
+    #     [2] declaration ::= '@terminals' | pass
+    production(:declaration, clear_packrat: true) do |value, data, callback|
+      # value contains a declaration.
+      # Invoke callback
+      callback.call(:terminal) if value == '@terminals'
+      nil
+    end
+
+    # Production for end of `rule` non-terminal.
+    #
+    # By setting `as_hash: true` in the `start_production`, the `value` parameter will be in the form `{LHS: "v", expression: "v"}`. Otherwise, it would be expressed using an array of hashes of the form `[{LHS: "v"}, {expression: "v"}]`.
+    #
+    # Clears the packrat parser when called.
+    #
+    # Create rule from expression value and pass to callback
+    #
+    #     [3] rule        ::= LHS expression
+    start_production(:rule, as_hash: true)
+    production(:rule, clear_packrat: true) do |value, data, callback|
+      # value contains an expression.
+      # Invoke callback
+      id, sym = value[:LHS]
+      expression = value[:expression]
+      callback.call(:rule, EBNF::Rule.new(sym.to_sym, id, expression))
+      nil
+    end
+
+    # Production for end of `expression` non-terminal.
+    # Passes through the optimized value of the alt production as follows:
+    #
+    # The `value` parameter, is of the form `[{alt: "v"}]`.
+    #
+    #     [:alt foo] => foo
+    #     [:alt foo bar] => [:alt foo bar]
+    #
+    #     [4] expression  ::= alt
+    production(:expression) do |value|
+      value.first[:alt]
+    end
+
+    # Production for end of `alt` non-terminal.
+    # Passes through the optimized value of the seq production as follows:
+    #
+    # The `value` parameter, is of the form `{seq: "v", _alt_1: "v"}`.
+    #
+    #     [:seq foo] => foo
+    #     [:seq foo bar] => [:seq foo bar]
+    #
+    # Note that this also may just pass through from `_alt_1`
+    #
+    #     [5] alt         ::= seq ('|' seq)*
+    start_production(:alt, as_hash: true)
+    production(:alt) do |value|
+      if value[:_alt_1].length > 0
+        [:alt, value[:seq]] + value[:_alt_1]
       else
-        ["", s]
+        value[:seq]
       end
     end
-  
-    ##
-    # parse one terminal; return the terminal and the remaining string
-    # 
-    # A terminal is represented as a tuple whose 1st item gives the type;
-    # some types have additional info in the tuple.
-    # 
-    # @example
-    #     >>> terminal("'abc' def")
-    #     ('abc' ' def')
-    #     
-    #     >>> terminal("[0-9]")
-    #     ((range '0-9') '')
-    #     >>> terminal("#x00B7")
-    #     ((hex '#x00B7') '')
-    #     >>> terminal ("\[#x0300-#x036F\]")
-    #     ((range '#x0300-#x036F') '')
-    #     >>> terminal("\[^<>'{}|^`\]-\[#x00-#x20\]")
-    #     ((range "^<>'{}|^`") '-\[#x00-#x20\]')
-    def terminal(s)
-      s = s.strip
-      #STDERR.puts s.inspect
-      case m = s[0,1]
-      when '"', "'" # STRING1 or STRING2
-        l, s = s[1..-1].split(m.rstrip, 2)
-        [LL1::Lexer.unescape_string(l), s]
-      when '[' # RANGE, O_RANGE
-        l, s = s[1..-1].split(/(?<=[^\\])\]/, 2)
-        [[:range, LL1::Lexer.unescape_string(l)], s]
-      when '#' # HEX
-        s.match(/(#x\h+)(.*)$/)
-        l, s = $1, $2
-        [[:hex, l], s]
-      when /[\w\.]/ # SYMBOL
-        s.match(/([\w\.]+)(.*)$/)
-        l, s = $1, $2
-        [l.to_sym, s]
-      when '-'
-        [[:diff], s[1..-1]]
-      when '?'
-        [[:opt], s[1..-1]]
-      when '|'
-        [[:alt], s[1..-1]]
-      when '+'
-        [[:plus], s[1..-1]]
-      when '*'
-        [[:star], s[1..-1]]
-      when /[\(\)]/ # '(' or ')'
-        [[m.to_sym], s[1..-1]]
+
+    # Production for end of `_alt_1` non-terminal.
+    # Used to collect the `('|' seq)*` portion of the `alt` non-terminal:
+    #
+    # The `value` parameter, is of the form `[{seq: ["v"]}]`.
+    #
+    #     [5] _alt_1         ::= ('|' seq)*
+    production(:_alt_1) do |value|
+      value.map {|a1| a1.last[:seq]}.compact # Get rid of '|'
+    end
+
+    # Production for end of `seq` non-terminal.
+    # Passes through the optimized value of the `diff` production as follows:
+    #
+    # The `value` parameter, is an array of values, which cannot be empty.
+    #
+    #     [:diff foo] => foo
+    #     [:diff foo bar] => [:diff foo bar]
+    #
+    # Note that this also may just pass through from `_seq_1`
+    #
+    #     [6] seq         ::= diff+
+    production(:seq) do |value|
+      value.length == 1 ? value.first : ([:seq] + value)
+    end
+
+    # `Diff` production returns concatenated postfix values
+    #
+    # The `value` parameter, is of the form `{postfix: "v", _diff_1: "v"}`.
+    #
+    #     [7] diff        ::= postfix ('-' postfix)?
+    start_production(:diff, as_hash: true)
+    production(:diff) do |value|
+      if value[:_diff_1]
+        [:diff, value[:postfix], value[:_diff_1]]
       else
-        error("terminal", "unrecognized terminal: #{s.inspect}")
-        raise SyntaxError, "unrecognized terminal: #{s.inspect}"
+        value[:postfix]
       end
+    end
+
+    production(:_diff_1) do |value|
+      value.last[:postfix] if value
+    end
+
+    # Production for end of `postfix` non-terminal.
+    # Either returns the `primary` production value, or as modified by the `postfix`.
+    #
+    # The `value` parameter, is of the form `{primary: "v", _postfix_1: "v"}`.
+    #
+    #     [:primary] => [:primary]
+    #     [:primary, '*'] => [:star, :primary]
+    #     [:primary, '+'] => [:plus, :primary]
+    #     [:primary, '?'] => [:opt, :primary]
+    #
+    #     [8] postfix     ::= primary POSTFIX?
+    start_production(:postfix, as_hash: true)
+    production(:postfix) do |value|
+      # Push result onto input stack, as the `diff` production can have some number of `postfix` values that are applied recursively
+      case value[:_postfix_1]
+      when "*" then [:star, value[:primary]]
+      when "+" then [:plus, value[:primary]]
+      when "?" then [:opt, value[:primary]]
+      else value[:primary]
+      end
+    end
+
+    # Production for end of `primary` non-terminal.
+    # Places `:primary` on the stack
+    #
+    # The `value` parameter, is either a string (for a terminal) or an array of the form `['(': '(', expression: "v", ')', ')']`.
+    #
+    # This may either be a terminal, or the result of an `expression`.
+    #
+    #     [9] primary     ::= HEX
+    #                     |   SYMBOL
+    #                     |   RANGE
+    #                     |   ENUM
+    #                     |   O_RANGE
+    #                     |   O_ENUM
+    #                     |   STRING1
+    #                     |   STRING2
+    #                     |   '(' expression ')'
+    production(:primary) do |value|
+      Array(value).length > 2 ? value[1][:expression] : value
+    end
+
+    # Production for end of pass non-terminal.
+    #
+    #     [10] pass       ::= '@pass' expression
+    production(:pass) do |value, data, callback|
+      # Invoke callback
+      callback.call(:pass, value.last[:expression])
+    end
+
+    # ## Parser invocation.
+    # On start, yield ourselves if a block is given, otherwise, return this parser instance
+    #
+    # @param  [#read, #to_s]          input
+    # @param  [Hash{Symbol => Object}] options
+    # @option options [Boolean] :level
+    #   Trace level. 0(debug), 1(info), 2(warn), 3(error).
+    # @return [EBNFParser]
+    def initialize(input, **options, &block)
+      # If the `level` option is set, instantiate a logger for collecting trace information.
+      if options.has_key?(:level)
+        options[:logger] = Logger.new(STDERR)
+        options[:logger].level = options[:level]
+        options[:logger].formatter = lambda {|severity, datetime, progname, msg| "#{severity} #{msg}\n"}
+      end
+
+      # Read input, if necessary, which will be used in a Scanner.
+      @input = input.respond_to?(:read) ? input.read : input.to_s
+
+      parsing_terminals = false
+      @ast = []
+      parse(@input, :ebnf, EBNFMeta::RULES,
+                           # Use an optimized Regexp for whitespace
+                           whitespace: EBNF::Terminals::PASS,
+                           **options
+      ) do |context, *data|
+        rule = case context
+        when :terminal
+          # After parsing `@terminals`
+          # This changes the state of the parser to treat subsequent rules as terminals.
+          parsing_terminals = true
+          next
+        when :pass
+          # After parsing `@pass`
+          # This defines a specific rule for whitespace.
+          rule = EBNF::Rule.new(nil, nil, data.first, kind: :pass)
+        when :rule
+          # A rule which has already been turned into a `Rule` object.
+          rule = data.first
+          rule.kind = :terminal if parsing_terminals
+          rule
+        end
+        @ast << rule if rule
+      end
+    rescue EBNF::PEG::Parser::Error => e
+      raise SyntaxError, e.message
     end
   end
 end

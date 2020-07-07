@@ -1,5 +1,6 @@
 require_relative 'abnf/core'
 require_relative 'abnf/meta'
+require 'logger'
 
 # ABNF parser
 # Parses ABNF into an array of {EBNF::Rule}.
@@ -250,6 +251,8 @@ module EBNF
             ABNFMeta::RULES,  # PEG rules
             whitespace: '',   # No implicit whitespace
             **options)
+    rescue EBNF::PEG::Parser::Error => e
+      raise SyntaxError, e.message
     end
 
     ##

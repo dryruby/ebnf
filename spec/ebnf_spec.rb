@@ -11,8 +11,8 @@ describe EBNF do
         %{((rule Prolog "2" (seq (opt BaseDecl) (star PrefixDecl))))},
       %{
         @terminals
-        [3] terminal ::= [A-Z_]+
-      } => %{((terminal terminal "3" (plus (range "A-Z_"))))},
+        [3] terminal ::= [A-Z]+
+      } => %{((terminal terminal "3" (plus (range "A-Z"))))},
       %{
         [9] primary     ::= HEX
                         |   RANGE

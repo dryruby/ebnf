@@ -14,8 +14,8 @@ describe EBNF::Base do
         %{((rule Prolog "2" (seq (opt BaseDecl) (star PrefixDecl))))},
       %{
         @terminals
-        [3] terminal ::= [A-Z_]+
-      } => %{((terminal terminal "3" (plus (range "A-Z_"))))},
+        [3] terminal ::= [A-Z]+
+      } => %{((terminal terminal "3" (plus (range "A-Z"))))},
       %{
         [9] primary     ::= HEX
                         |   RANGE
@@ -33,8 +33,8 @@ describe EBNF::Base do
         %{((rule SolutionModifier "18" (seq _SolutionModifier_1 _SolutionModifier_2)))},
       %{[18.1]  _SolutionModifier_1 ::= _empty | GroupClause} =>
         %{((rule _SolutionModifier_1 "18.1" (alt _empty GroupClause)))},
-      %q{[18] STRING1    ::= '"' (CHAR | [\t\'\[\]\(\)\-])* '"'} =>
-        %q{((terminal STRING1 "18" (seq "\"" (star (alt CHAR (range "\t'[]()-"))) "\"")))},
+      %q{[18] STRING1    ::= '"' (CHAR - '"')* '"'} =>
+        %q{((terminal STRING1 "18" (seq "\"" (star (diff CHAR "\"")) "\"")))},
       %q{[161s] WS ::= #x20 | #x9 | #xD | #xA} =>
         %q{((terminal WS "161s" (alt (hex "#x20") (hex "#x9") (hex "#xD") (hex "#xA"))))},
       %q{[1] shexDoc ::= directive* # leading CODE} =>
@@ -47,7 +47,7 @@ describe EBNF::Base do
         %q{((rule shexDoc "1" (star directive)))},
       %q{[1] shexDoc ::= /* leading CODE */ directive*} =>
         %q{((rule shexDoc "1" (star directive)))},
-      %q{[1] shexDoc (* leading CODE *) ::= directive*} =>
+      %q{[1] shexDoc ::= (* leading CODE *) directive*} =>
         %q{((rule shexDoc "1" (star directive)))},
       %q{[156s]  STRING_LITERAL1       ::= "'" ([^#x27#x5C#xA#xD] | ECHAR | UCHAR)* "'" /* #x27=' #x5C=\ #xA=new line #xD=carriage return */} =>
         %q{((terminal STRING_LITERAL1 "156s"

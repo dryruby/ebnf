@@ -15,5 +15,10 @@ module EBNF::Terminals
   STRING1 = %r("[\u0009\u000A\u000D\u0020\u0021\u0023-\uD7FF\u{10000}-\u{10FFFF}]*")u.freeze
   STRING2 = %r('[\u0009\u000A\u000D\u0020-\u0026\u0028-\uD7FF\u{10000}-\u{10FFFF}]*')u.freeze
   POSTFIX = %r([?*+])u.freeze
-  PASS    = %r((\s|(?:(#[^x]|//)[^\n\r]*$)|(?:/\*(?:(?:\*[^/])|[^*])*\*/))+)mu.freeze
+  PASS    = %r((
+    \s
+  | (?:(?:\#[^x]|//)[^\n\r]*)
+  | (?:/\*(?:(?:\*[^/])|[^*])*\*/)
+  | (?:\(\*(?:(?:\*[^\)])|[^*])*\*\))
+  )+)xmu.freeze
 end

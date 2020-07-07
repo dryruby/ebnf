@@ -228,7 +228,7 @@ describe EBNF::ABNF do
       "illegal hex range": "hex = %x22-4060-80\n",
     }.each do |title, input|
       it title do
-        expect {parse(input)}.to raise_error(EBNF::PEG::Parser::Error)
+        expect {parse(input)}.to raise_error(SyntaxError)
       end
     end
   end

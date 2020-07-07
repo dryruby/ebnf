@@ -972,53 +972,51 @@ describe EBNF::Rule do
     {
       "missing rule": [
         "a ::= b",
-        "No rule found for b"
+        /In rule a: No rule found for b/
       ],
       "illegal string": [
         %{a ::= "\u{01}"},
-        'String must be of the form CHAR*'
+        /syntax error/
       ],
       "empty range": [
         "a ::= []",
-        /Range must be of form  HEX\+ or R_CHAR\+/
+        /syntax error/
       ],
       "mixed enum char and hex": [
         "a ::= [b#x20]",
-        %(Range must be of form  HEX+ or R_CHAR+: was "b#x20")
+        %(In rule a: Range must be of form  HEX+ or R_CHAR+: was "b#x20")
       ],
       "mixed enum char and hex (2)": [
         "a ::= [#x20z]",
-        %(Range must be of form  HEX+ or R_CHAR+: was "#x20z")
+        %(In rule a: Range must be of form  HEX+ or R_CHAR+: was "#x20z")
       ],
       "mixed range char and hex": [
         "a ::= [b-#x20]",
-        %(Range must be of form HEX-HEX or R_CHAR-R_CHAR: was "b-#x20")
+        /syntax error/
       ],
       "mixed range char and hex (2)": [
         "a ::= [#x20-b]",
-        %(Range must be of form HEX-HEX or R_CHAR-R_CHAR: was "#x20-b")
+        /syntax error/
       ],
       "incomplete range": [
         "a ::= [a-]",
-        %(Range must be of form HEX-HEX or R_CHAR-R_CHAR: was "a-")
+        /syntax error/
       ],
       "incomplete range (2)": [
         "a ::= [-b]",
-        %(Range must be of form HEX-HEX or R_CHAR-R_CHAR: was "-b")
+        /syntax error/
       ],
       "extra range": [
         "a ::= [a-b-c]",
-        %(Range must be of form HEX-HEX or R_CHAR-R_CHAR: was "a-b-c")
+        /syntax error/
       ],
       "extra range (2)": [
         "a ::= [a-zA-Z]",
-        %(Range must be of form HEX-HEX or R_CHAR-R_CHAR: was "a-zA-Z")
+        /syntax error/
       ],
     }.each do |name, (rule, message)|
       it name do
-        gram = EBNF.parse(rule)
-        rule = gram.ast.first
-        expect {rule.validate!(gram.ast)}.to raise_error SyntaxError, message
+        expect {EBNF.parse(rule, validate: true)}.to raise_error SyntaxError, message
       end
     end
 

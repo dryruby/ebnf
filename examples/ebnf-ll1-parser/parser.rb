@@ -67,7 +67,7 @@ class EBNFLL1Parser
   #
   #     [13] HEX        ::= '#x' ([a-f] | [A-F] | [0-9])+
   terminal(:HEX, HEX) do |prod, token, input|
-    input[:terminal] = token.value
+    input[:terminal] = [:hex, token.value]
   end
 
   # Terminal for `ENUM` is matched as part of a `primary` rule. Unescape the values to remove EBNF escapes in the input.
