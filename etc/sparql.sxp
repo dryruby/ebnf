@@ -282,7 +282,8 @@
      (rule iri "136" (alt IRIREF PrefixedName))
      (rule PrefixedName "137" (alt PNAME_LN PNAME_NS))
      (rule BlankNode "138" (alt BLANK_NODE_LABEL ANON))
-     (terminal IRIREF "139" (seq "<" (star (range "^<>\"{}|^`]-[#x00-#x20")) ">"))
+     (terminal IRIREF "139"
+      (seq "<" (star (diff (range "^<>\"{}|^`\\") (range "#x00-#x20"))) ">"))
      (terminal PNAME_NS "140" (seq (opt PN_PREFIX) ":"))
      (terminal PNAME_LN "141" (seq PNAME_NS PN_LOCAL))
      (terminal BLANK_NODE_LABEL "142"
@@ -290,7 +291,9 @@
      (terminal VAR1 "143" (seq "?" VARNAME))
      (terminal VAR2 "144" (seq "$" VARNAME))
      (terminal LANGTAG "145"
-      (seq "@" (plus (range "a-zA-Z")) (star (seq "-" (plus (range "a-zA-Z0-9"))))))
+      (seq "@"
+       (plus (alt (range "a-z") (range "A-Z")))
+       (star (seq "-" (plus (alt (range "a-z") (range "A-Z") (range "0-9")))))) )
      (terminal INTEGER "146" (plus (range "0-9")))
      (terminal DECIMAL "147" (seq (star (range "0-9")) "." (plus (range "0-9"))))
      (terminal DOUBLE "148"
@@ -304,16 +307,16 @@
      (terminal INTEGER_NEGATIVE "152" (seq "-" INTEGER))
      (terminal DECIMAL_NEGATIVE "153" (seq "-" DECIMAL))
      (terminal DOUBLE_NEGATIVE "154" (seq "-" DOUBLE))
-     (terminal EXPONENT "155" (seq (range "eE") (opt (range "+-")) (plus (range "0-9"))))
+     (terminal EXPONENT "155" (seq (range "eE") (opt (range "#x2b#x2d")) (plus (range "0-9"))))
      (terminal STRING_LITERAL1 "156"
       (seq "'" (star (alt (range "^#x27#x5C#xA#xD") ECHAR)) "'"))
      (terminal STRING_LITERAL2 "157"
       (seq "\"" (star (alt (range "^#x22#x5C#xA#xD") ECHAR)) "\""))
      (terminal STRING_LITERAL_LONG1 "158"
-      (seq "'''" (seq (opt (alt "'" "''")) (range "^'] | ECHAR ))* \"'''\""))))
+      (seq "'''" (star (seq (opt (alt "'" "''")) (alt (range "^'\\") ECHAR))) "'''"))
      (terminal STRING_LITERAL_LONG2 "159"
-      (seq "\"\"\"" (seq (opt (alt "\"" "\"\"")) (range "^\"] | ECHAR ))* '\"\"\"'"))))
-     (terminal ECHAR "160" (seq "\\" (range "tbnrf\"'")))
+      (seq "\"\"\"" (star (seq (opt (alt "\"" "\"\"")) (alt (range "^\"\\") ECHAR))) "\"\"\""))
+     (terminal ECHAR "160" (seq "\\" (range "tbnrf\\\"'")))
      (terminal NIL "161" (seq "(" (star WS) ")"))
      (terminal WS "162" (alt (hex "#x20") (hex "#x9") (hex "#xD") (hex "#xA")))
      (terminal ANON "163" (seq "[" (star WS) "]"))

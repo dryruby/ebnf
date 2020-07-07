@@ -4,6 +4,8 @@
      (rule directive "3" (alt prefixID base sparqlPrefix sparqlBase))
      (rule prefixID "4" (seq "@prefix" PNAME_NS IRIREF "."))
      (rule base "5" (seq "@base" IRIREF "."))
+     (rule sparqlPrefix "28s" (seq SPARQL_PREFIX PNAME_NS IRIREF))
+     (rule sparqlBase "29s" (seq SPARQL_BASE IRIREF))
      (rule triples "6"
       (alt
        (seq subject predicateObjectList)
@@ -19,48 +21,49 @@
      (rule blankNodePropertyList "14" (seq "[" predicateObjectList "]"))
      (rule collection "15" (seq "(" (star object) ")"))
      (rule NumericLiteral "16" (alt INTEGER DECIMAL DOUBLE))
+     (rule RDFLiteral "128s" (seq String (opt (alt LANGTAG (seq "^^" iri)))))
+     (rule BooleanLiteral "133s" (alt "true" "false"))
      (rule String "17"
       (alt STRING_LITERAL_QUOTE STRING_LITERAL_SINGLE_QUOTE
        STRING_LITERAL_LONG_SINGLE_QUOTE STRING_LITERAL_LONG_QUOTE ))
-     (terminal IRIREF "18" (seq "<" (star (alt (range "^<>\"{}|^`]-[#x00-#x20") UCHAR)) ">"))
-     (terminal INTEGER "19" (seq (opt (range "+-")) (plus (range "0-9"))))
-     (terminal DECIMAL "20"
-      (seq (opt (range "+-")) (seq (star (range "0-9")) "." (plus (range "0-9")))))
-     (terminal DOUBLE "21"
-      (seq
-       (opt (range "+-"))
-       (alt
-        (seq (plus (range "0-9")) "." (star (range "0-9")) EXPONENT)
-        (seq "." (plus (range "0-9")) EXPONENT)
-        (seq (plus (range "0-9")) EXPONENT)) ))
-     (terminal STRING_LITERAL_QUOTE "22"
-      (seq "\"" (star (alt (range "^#x22#x5C#xA#xD") ECHAR UCHAR)) "\""))
-     (terminal STRING_LITERAL_SINGLE_QUOTE "23"
-      (seq "'" (star (alt (range "^#x27#x5C#xA#xD") ECHAR UCHAR)) "'"))
-     (terminal STRING_LITERAL_LONG_SINGLE_QUOTE "24"
-      (seq "'''" (seq (opt (alt "'" "''")) (range "^'] | ECHAR | UCHAR ))* \"'''\""))))
-     (terminal STRING_LITERAL_LONG_QUOTE "25"
-      (seq "\"\"\"" (seq (opt (alt "\"" "\"\"")) (range "^\"] | ECHAR | UCHAR ))* '\"\"\"'"))))
-     (terminal UCHAR "26"
-      (alt (seq "u" HEX HEX HEX HEX) (seq "U" HEX HEX HEX HEX HEX HEX HEX HEX)))
-     (rule sparqlPrefix "28s" (seq SPARQL_PREFIX PNAME_NS IRIREF))
-     (terminal SPARQL_PREFIX "28t"
-      (seq (range "Pp") (range "Rr") (range "Ee") (range "Ff") (range "Ii") (range "Xx")))
-     (terminal SPARQL_BASE "29t" (seq (range "Bb") (range "Aa") (range "Ss") (range "Ee")))
-     (rule sparqlBase "29s" (seq SPARQL_BASE IRIREF))
-     (rule RDFLiteral "128s" (seq String (opt (alt LANGTAG (seq "^^" iri)))))
-     (rule BooleanLiteral "133s" (alt "true" "false"))
      (rule iri "135s" (alt IRIREF PrefixedName))
      (rule PrefixedName "136s" (alt PNAME_LN PNAME_NS))
      (rule BlankNode "137s" (alt BLANK_NODE_LABEL ANON))
+     (terminal IRIREF "18"
+      (seq "<" (star (alt (diff (range "^<>\"{}|^`\\") (range "#x00-#x20")) UCHAR)) ">"))
      (terminal PNAME_NS "139s" (seq (opt PN_PREFIX) ":"))
      (terminal PNAME_LN "140s" (seq PNAME_NS PN_LOCAL))
      (terminal BLANK_NODE_LABEL "141s"
       (seq "_:" (alt PN_CHARS_U (range "0-9")) (opt (seq (star (alt PN_CHARS ".")) PN_CHARS))))
      (terminal LANGTAG "144s"
-      (seq "@" (plus (range "a-zA-Z")) (star (seq "-" (plus (range "a-zA-Z0-9"))))))
-     (terminal EXPONENT "154s" (seq (range "eE") (opt (range "+-")) (plus (range "0-9"))))
-     (terminal ECHAR "159s" (seq "\\" (range "tbnrf\"'")))
+      (seq "@"
+       (plus (alt (range "a-z") (range "A-Z")))
+       (star (seq "-" (plus (alt (range "a-z") (range "A-Z") (range "0-9")))))) )
+     (terminal INTEGER "19" (seq (opt (range "#x2b#x2d")) (plus (range "0-9"))))
+     (terminal DECIMAL "20"
+      (seq (opt (range "#x2b#x2d")) (seq (star (range "0-9")) "." (plus (range "0-9")))))
+     (terminal DOUBLE "21"
+      (seq
+       (opt (range "#x2b#x2d"))
+       (alt
+        (seq (plus (range "0-9")) "." (star (range "0-9")) EXPONENT)
+        (seq "." (plus (range "0-9")) EXPONENT)
+        (seq (plus (range "0-9")) EXPONENT)) ))
+     (terminal EXPONENT "154s" (seq (range "eE") (opt (range "#x2b#x2d")) (plus (range "0-9"))))
+     (terminal STRING_LITERAL_QUOTE "22"
+      (seq "\"" (star (alt (range "^#x22#x5C#xA#xD") ECHAR UCHAR)) "\""))
+     (terminal STRING_LITERAL_SINGLE_QUOTE "23"
+      (seq "'" (star (alt (range "^#x27#x5C#xA#xD") ECHAR UCHAR)) "'"))
+     (terminal STRING_LITERAL_LONG_SINGLE_QUOTE "24"
+      (seq "'''" (star (seq (opt (alt "'" "''")) (alt (range "^'\\") ECHAR UCHAR))) "'''"))
+     (terminal STRING_LITERAL_LONG_QUOTE "25"
+      (seq "\"\"\"" (star (seq (opt (alt "\"" "\"\"")) (alt (range "^\"\\") ECHAR UCHAR))) "\"\"\""))
+     (terminal UCHAR "26"
+      (alt (seq "\\u" HEX HEX HEX HEX) (seq "\\U" HEX HEX HEX HEX HEX HEX HEX HEX)))
+     (terminal ECHAR "159s" (seq "\\" (range "tbnrf\\\"'")))
+     (terminal SPARQL_PREFIX "28t"
+      (seq (range "Pp") (range "Rr") (range "Ee") (range "Ff") (range "Ii") (range "Xx")))
+     (terminal SPARQL_BASE "29t" (seq (range "Bb") (range "Aa") (range "Ss") (range "Ee")))
      (terminal WS "161s" (alt (hex "#x20") (hex "#x9") (hex "#xD") (hex "#xA")))
      (terminal ANON "162s" (seq "[" (star WS) "]"))
      (terminal PN_CHARS_BASE "163s"

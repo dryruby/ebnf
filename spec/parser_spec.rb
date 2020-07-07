@@ -106,11 +106,16 @@ describe EBNF::Parser do
       %{foo | x xlist} => %{(alt foo (seq x xlist))},
       %{a | (b - c)} => %{(alt a (diff b c))},
       %{a b | c d} => %{(alt (seq a b) (seq c d))},
+      %{[a-z]} => %{(range "a-z")},
+      %{[a-zA-Z]} => %{(range "a-zA-Z")},
+      %{[#x20-#x22]} => %{(range "#x20-#x22")},
+      %{[abc]} => %{(range "abc")},
+      %{[#x20#x21#x22]} => %{(range "#x20#x21#x22")},
       %{BaseDecl? PrefixDecl*} => %{(seq (opt BaseDecl) (star PrefixDecl))},
       %{NCCHAR1 | '-' | [0-9] | #x00B7 | [#x0300-#x036F] | [#x203F-#x2040]} =>
         %{(alt NCCHAR1 "-" (range "0-9") (hex "#x00B7") (range "#x0300-#x036F") (range "#x203F-#x2040"))},
       %{'<' ([^<>"{}|^`\]-[#x00-#x20] | UCHAR)* '>'} =>
-        %{(seq "<" (star (alt (diff (range "^<>\\\"{}|^`") (range "#x00-#x20")) UCHAR)) ">")}
+        %{(seq "<" (star (alt (diff (range "^<>\\\"{}|^`") (range "#x00-#x20")) UCHAR)) ">")},
     }.each do |input, expected|
       it "given #{input.inspect} produces #{expected}" do
         rule = parse("rule ::= #{input}").ast.first

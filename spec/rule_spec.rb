@@ -1010,10 +1010,6 @@ describe EBNF::Rule do
         "a ::= [a-b-c]",
         /syntax error/
       ],
-      "extra range (2)": [
-        "a ::= [a-zA-Z]",
-        /syntax error/
-      ],
     }.each do |name, (rule, message)|
       it name do
         expect {EBNF.parse(rule, validate: true)}.to raise_error SyntaxError, message

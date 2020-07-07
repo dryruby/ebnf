@@ -32,50 +32,39 @@ This generates a [S-Expression][] form of the grammar suitable for use by {EBNF}
      (rule repeated_sequence
       (seq start_repeat_symbol definitions_list end_repeat_symbol))
      (rule grouped_sequence (seq "(" definitions_list ")"))
-     (terminal terminal_string
+     (rule letter
+      (alt "A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P" "Q" "R"
+       "S" "T" "U" "V" "W" "X" "Y" "Z" "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k"
+       "l" "m" "n" "o" "p" "q" "r" "s" "t" "u" "v" "w" "x" "y" "z" ))
+     (rule decimal_digit (alt "0" "1" "2" "3" "4" "5" "6" "7" "8" "9"))
+     (rule integer (seq decimal_digit (star decimal_digit)))
+     (rule meta_identifier (seq letter (star meta_identifier_character)))
+     (rule meta_identifier_character (alt letter decimal_digit "_"))
+     (rule terminal_string
       (alt
-       (seq "'" (plus first_terminal_character) "'")
-       (seq "\"" (plus second_terminal_character) "\"")) )
-     (terminal meta_identifier (seq letter (star meta_identifier_character)))
-     (terminal integer (plus decimal_digit))
-     (terminal special_sequence (seq "?" (star special_sequence_character) "?"))
-     (terminal comment (seq start_comment_symbol (star comment_symbol) end_comment_symbol))
-     (terminal comment_symbol (alt comment terminal_string special_sequence character))
-     (terminal letter (range "a-zA-Z"))
-     (terminal decimal_digit (range "0-9"))
-     (terminal meta_identifier_character (alt letter decimal_digit "_"))
-     (terminal first_terminal_character (diff terminal_character "'"))
-     (terminal second_terminal_character (diff terminal_character "\""))
-     (terminal special_sequence_character (diff terminal_character "?"))
-     (terminal terminal_character
+       (seq (seq "'" first_terminal_character (star first_terminal_character) "'"))
+       (seq (seq "\"" second_terminal_character (star second_terminal_character) "\""))) )
+     (rule first_terminal_character (seq terminal_character))
+     (rule second_terminal_character (seq terminal_character))
+     (rule special_sequence (seq "?" (star special_sequence_character) "?"))
+     (rule special_sequence_character (seq terminal_character))
+     (rule terminal_character
       (alt letter decimal_digit concatenate_symbol defining_symbol
        definition_separator_symbol end_comment_symbol end_group_symbol
        end_option_symbol end_repeat_symbol except_symbol first_quote_symbol
        repetition_symbol second_quote_symbol special_sequence_symbol
        start_comment_symbol start_group_symbol start_option_symbol
        start_repeat_symbol terminator_symbol other_character ))
-     (terminal other_character (alt (range ":+_%@&$<>^` ̃#x20#x23") "\\"))
-     (terminal gap_separator (range "#x9#xa#xb#xc#xd#x20"))
-     (pass _pass (alt (plus gap_separator) comment))
-     (terminal empty (seq ()))
-     (terminal defining_symbol (alt "=" ":"))
-     (terminal definition_separator_symbol (alt "|" "/" "!"))
-     (terminal terminator_symbol (alt ";" "."))
-     (terminal start_option_symbol (alt "[" "(/"))
-     (terminal end_option_symbol (alt "]" "/)"))
-     (terminal start_repeat_symbol (alt "{" "(:"))
-     (terminal end_repeat_symbol (alt "}" ":)"))
-     (terminal gap_free_symbol (alt (diff terminal_character (range "'\"")) terminal_string))
-     (terminal repetition_symbol (seq "*"))
-     (terminal except_symbol (seq "-"))
-     (terminal concatenate_symbol (seq ","))
-     (terminal first_quote_symbol (seq "'"))
-     (terminal second_quote_symbol (seq "\""))
-     (terminal start_comment_symbol (seq "(*"))
-     (terminal end_comment_symbol (seq "*)"))
-     (terminal start_group_symbol (seq "("))
-     (terminal end_group_symbol (seq ")"))
-     (terminal special_sequence_symbol (seq "?")))
+     (rule other_character
+      (alt " " ":" "+" "_" "%" "@" "&" "#" "$" "<" ">" "\\" "^" "`" "~"))
+     (rule empty (seq ""))
+     (rule defining_symbol (alt "=" ":"))
+     (rule definition_separator_symbol (alt "|" "/" "!"))
+     (rule terminator_symbol (alt ";" "."))
+     (rule start_option_symbol (alt "[" "(/"))
+     (rule end_option_symbol (alt "]" "/)"))
+     (rule start_repeat_symbol (alt "{" "(:"))
+     (rule end_repeat_symbol (alt "}" ":)")))
 
 This can then be used as input to {EBNF.parse} to transform [EBNF][] to [PEG][] for parsing examples of the grammar using {EBNF::PEG::Parser}.
 

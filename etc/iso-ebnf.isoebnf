@@ -47,7 +47,7 @@ grouped_sequence  = '(', definitions_list, ')'
 terminal_string             = ("'", first_terminal_character, {first_terminal_character}, "'")
                             | ('"', second_terminal_character, {second_terminal_character}, '"')
                               (* A <terminal string> represents the
-                                 <characters> between the quote symbols '_' or "_" *);
+                                 <characters> between the quote symbols ’_’ or "_" *);
 
 meta_identifier   = letter, {meta_identifier_character}
                     (* A <meta identifier> is the name of a syntactic element of the language being defined *);
@@ -57,7 +57,7 @@ integer           = decimal_digit, {decimal_digit} ;
 special_sequence  = '?', {special_sequence_character}, '?'
                     (* The meaning of a <special sequence> is not defined in the standard metalanguage. *);
 
-comment           = '(*', {comment_symbol}, '*)'
+comment           = ’(*’, {comment_symbol}, ’*)’
                     (* A comment is allowed anywhere outside a
                        <terminal string>, <meta identifier>,
                        <integer> or <special sequence> *);
