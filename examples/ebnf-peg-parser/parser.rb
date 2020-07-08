@@ -127,7 +127,7 @@ class EBNFPegParser
   production(:declaration, clear_packrat: true) do |value, data, callback|
     # value contains a declaration.
     # Invoke callback
-    callback.call(:terminal) if value == '@terminals'
+    callback.call(:terminals) if value == '@terminals'
     nil
   end
 
@@ -303,11 +303,11 @@ class EBNFPegParser
                          **options
     ) do |context, *data|
       rule = case context
-      when :terminal
+      when :terminals
         # After parsing `@terminals`
         # This changes the state of the parser to treat subsequent rules as terminals.
         parsing_terminals = true
-        next
+        rule = EBNF::Rule.new(nil, nil, data.first, kind: :terminals)
       when :pass
         # After parsing `@pass`
         # This defines a specific rule for whitespace.

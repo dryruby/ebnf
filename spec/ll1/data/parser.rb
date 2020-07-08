@@ -69,7 +69,7 @@ class EBNFParser
   production(:declaration) do |input, current, callback|
     # current contains a declaration.
     # Invoke callback
-    callback.call(:terminal) if current[:terminal] == '@terminals'
+    callback.call(:terminals) if current[:terminal] == '@terminals'
   end
 
   production(:rule) do |input, current, callback|
@@ -210,9 +210,9 @@ class EBNFParser
                                 **options
     ) do |context, *data|
       rule = case context
-      when :terminal
+      when :terminals
         parsing_terminals = true
-        next
+        rule = EBNF::Rule.new(nil, nil, data.first, kind: :terminals)
       when :pass
         rule = EBNF::Rule.new(nil, nil, data.first, kind: :pass)
       when :rule

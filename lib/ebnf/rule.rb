@@ -44,7 +44,7 @@ module EBNF
 
     # Kind of rule
     #
-    # @return [:rule, :terminal, or :pass]
+    # @return [:rule, :terminal, :terminals, or :pass]
     attr_accessor :kind
 
     # Rule expression
@@ -76,7 +76,7 @@ module EBNF
     attr_accessor :cleanup
 
     # @param [Symbol, nil] sym
-    #   `nil` is allowed only for @pass
+    #   `nil` is allowed only for @pass or @terminals
     # @param [Integer, nil] id
     # @param [Array] expr
     #   The expression is an internal-representation of an S-Expression with one of the following oparators:
@@ -91,7 +91,7 @@ module EBNF
     #   * `rept m n` – A sequence of at lest `m` and at most `n` of the matching rule. It will always return an array.
     #   * `seq` – A sequence of rules or terminals. If any (other than `opt` or `star`) to not parse, the rule is terminated as unmatched.
     #   * `star` – A sequence of zero or more of the matching rule. It will always return an array.
-    # @param [:rule, :terminal, :pass, ] kind (nil)
+    # @param [:rule, :terminal, :terminals, :pass] kind (nil)
     # @param [String] ebnf (nil)
     #   When parsing, records the EBNF string used to create the rule.
     # @param [Array] first (nil)
@@ -106,7 +106,7 @@ module EBNF
     #   Records information useful for cleaning up converted :plus, and :star expansions (LL(1)).
     def initialize(sym, id, expr, kind: nil, ebnf: nil, first: nil, follow: nil, start: nil, top_rule: nil, cleanup: nil)
       @sym, @id = sym, id
-      @expr = expr.is_a?(Array) ? expr : [:seq, expr]
+      @expr = expr.is_a?(Array) ? expr : [:seq, expr].compact
       @ebnf, @kind, @first, @follow, @start, @cleanup, @top_rule = ebnf, kind, first, follow, start, cleanup, top_rule
       @top_rule ||= self
       @kind ||= case
@@ -115,13 +115,14 @@ module EBNF
       else :rule
       end
 
-      # Allow @pass to not be named
+      # Allow @pass and @terminals to not be named
       @sym ||= :_pass if @kind == :pass
+      @sym ||= :_terminals if @kind == :terminals
 
       raise ArgumentError, "Rule sym must be a symbol, was #{@sym.inspect}" unless @sym.is_a?(Symbol)
       raise ArgumentError, "Rule id must be a string or nil, was #{@id.inspect}" unless (@id || "").is_a?(String)
-      raise ArgumentError, "Rule kind must be one of :rule, :terminal, or :pass, was #{@kind.inspect}" unless
-        @kind.is_a?(Symbol) && %w(rule terminal pass).map(&:to_sym).include?(@kind)
+      raise ArgumentError, "Rule kind must be one of :rule, :terminal, :terminals, or :pass, was #{@kind.inspect}" unless
+        @kind.is_a?(Symbol) && %w(rule terminal terminals pass).map(&:to_sym).include?(@kind)
 
       case @expr.first
       when :alt

@@ -150,7 +150,7 @@ class EBNFLL1Parser
     # data contains a declaration.
     # Invoke callback
     if data[:terminal]
-      callback.call(:terminal, data[:terminal])
+      callback.call(:terminals, data[:terminal])
     elsif data[:pass]
       callback.call(:pass, data[:pass])
     end
@@ -307,11 +307,11 @@ class EBNFLL1Parser
                                 **options
     ) do |context, *data|
       rule = case context
-      when :terminal
+      when :terminals
         # After parsing `@terminals`
         # This changes the state of the parser to treat subsequent rules as terminals.
         parsing_terminals = true
-        next
+        rule = EBNF::Rule.new(nil, nil, data.first, kind: :terminals)
       when :pass
         # After parsing `@pass`
         # This defines a specific rule for whitespace.

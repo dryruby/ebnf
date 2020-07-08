@@ -122,9 +122,18 @@ module EBNF
           require 'erubis'
           eruby = Erubis::Eruby.new(ERB_DESC)
           formatted_rules = rules.map do |rule|
-            formatted_expr = self.send(format_meth, rule.expr)
-            formatted_expr.length > rhs_length ? self.send(format_meth, rule.expr, sep: "\n") : formatted_expr
-            OpenStruct.new(id: rule.id, sym: rule.sym, pass: rule.pass?, formatted: formatted_expr)
+            if rule.kind == :terminals
+              formatted_expr = "<strong>Productions for terminals</strong>"
+              formatted_expr.length > rhs_length ? self.send(format_meth, rule.expr, sep: "\n") : formatted_expr
+            else
+              formatted_expr = self.send(format_meth, rule.expr)
+              formatted_expr.length > rhs_length ? self.send(format_meth, rule.expr, sep: "\n") : formatted_expr
+            end
+            OpenStruct.new(id: rule.id,
+                           sym: rule.sym,
+                           pass: rule.pass?,
+                           terminals: (rule.kind == :terminals),
+                           formatted: formatted_expr)
           end
           out.write eruby.evaluate(format: format, rules: formatted_rules)
           return
@@ -136,7 +145,9 @@ module EBNF
       # Format each rule, considering the available rhs size
       rules.each do |rule|
         buffer = if rule.pass?
-          "%-#{lhs_length-2}s" % "@pass"
+          "\n%-#{lhs_length-2}s" % "@pass"
+        elsif rule.kind == :terminals
+          "\n%-#{lhs_length-2}s" % "@terminals"
         else
           lhs_fmt % {id: "[#{rule.id}]", sym: rule.sym}
         end
@@ -147,6 +158,7 @@ module EBNF
         else
           buffer << formatted_expr
         end
+        buffer << "\n\n" if rule.kind == :terminals
         out.puts(buffer)
       end
     end
@@ -597,6 +609,8 @@ module EBNF
             <tr id="grammar-production-<%=rule.sym%>">
               <% if rule.pass %>
               <td colspan="<%=rule.id ? 4 : 3%>"><code>@pass</code></td>
+              <% elsif rule.terminals %>
+              <td colspan="<%=rule.id ? 4 : 3%>"><code>@terminals</code></td>
               <% else %>
               <% if rule.id %>
               <td>[<%==rule.id%>]</td>

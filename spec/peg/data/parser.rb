@@ -60,7 +60,7 @@ class EBNFPegParser
   production(:declaration, clear_packrat: true) do |value, data, callback|
     # current contains a declaration.
     # Invoke callback
-    callback.call(:terminal) if value == '@terminals'
+    callback.call(:terminals) if value == '@terminals'
   end
 
   start_production(:rule, as_hash: true)
@@ -151,9 +151,9 @@ class EBNFPegParser
                          **options
     ) do |context, *data|
       rule = case context
-      when :terminal
+      when :terminals
         parsing_terminals = true
-        next
+        rule = EBNF::Rule.new(nil, nil, data.first, kind: :terminals)
       when :pass
         rule = EBNF::Rule.new(nil, nil, data.first, kind: :pass)
       when :rule
