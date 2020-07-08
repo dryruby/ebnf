@@ -1,12 +1,50 @@
 # -*- encoding: utf-8 -*-
 require 'rdf'
 require 'strscan'    unless defined?(StringScanner)
+require "ostruct"
 
 ##
 # Serialize ruleset back to EBNF
 module EBNF
   class Writer
     LINE_LENGTH = 80
+
+    # ASCII escape names
+    ASCII_ESCAPE_NAMES = [
+      "null",                 #x00
+      "start of heading",     #x01
+      "start of text",        #x02
+      "end of text",          #x03
+      "end of transmission",  #x04
+      "enquiry",              #x05
+      "acknowledge",          #x06
+      "bell",                 #x07
+      "backspace",            #x08
+      "horizontal tab",       #x09
+      "new line",             #x0A
+      "vertical tab",         #x0B
+      "form feed",            #x0C
+      "carriage return",      #x0D
+      "shift out",            #x0E
+      "shift in",             #x0F
+      "data link escape",     #x10
+      "device control 1",     #x11
+      "device control 2",     #x12
+      "device control 3",     #x13
+      "device control 4",     #x14
+      "negative acknowledge", #x15
+      "synchronous idle",     #x16
+      "end of trans. block",  #x17
+      "cancel",               #x18
+      "end of medium",        #x19
+      "substitute",           #x1A
+      "escape",               #x1B
+      "file separator",       #x1C
+      "group separator",      #x1D
+      "record separator",     #x1E
+      "unit separator",       #x1F
+      "space"                 #x20
+    ].freeze
 
     ##
     # Format rules to a String
@@ -63,7 +101,7 @@ module EBNF
     # @option options [Symbol] format
     # @option options [Boolean] html (false)
     def initialize(rules, out: $stdout, html: false, format: :ebnf, **options)
-      @options = options.dup
+      @options = options.merge(html: html)
       return if rules.empty?
 
       # Determine max LHS length
@@ -81,15 +119,17 @@ module EBNF
       if html
         # Output as formatted HTML
         begin
-          require 'haml'
-          hout = Haml::Engine.new(HAML_DESC).render(self, rules: rules, format: format) do |rule|
+          require 'erubis'
+          eruby = Erubis::Eruby.new(ERB_DESC)
+          formatted_rules = rules.map do |rule|
             formatted_expr = self.send(format_meth, rule.expr)
             formatted_expr.length > rhs_length ? self.send(format_meth, rule.expr, sep: "\n") : formatted_expr
+            OpenStruct.new(id: rule.id, sym: rule.sym, pass: rule.pass?, formatted: formatted_expr)
           end
-          out.write hout
+          out.write eruby.evaluate(format: format, rules: formatted_rules)
           return
         rescue LoadError
-          $stderr.puts "Generating HTML requires haml gem to be loaded"
+          $stderr.puts "Generating HTML requires erubis gem to be loaded"
         end
       end
 
@@ -124,7 +164,7 @@ module EBNF
         if expr.length == 1
           return format_ebnf_char(expr)
         elsif expr =~ /\A#x\h+/
-          return (@options[:html] ? %(<code class="grammar-char-escape">#{expr}</code>) : expr)
+          return format_ebnf_hex(expr[2..-1].hex.chr)
         elsif expr =~ /"/
           return (@options[:html] ? %('<code class="grammar-literal">#{escape_ebnf(expr, "'")}</code>') : %('#{escape_ebnf(expr, "'")}'))
         else
@@ -199,9 +239,11 @@ module EBNF
     # Format a single-character string, prefering hex for non-main ASCII
     def format_ebnf_char(c)
       case c.ord
-      when 0x22         then (@options[:html] ? %('<code class="grammar-literal">"</code>') : %{'"'})
-      when (0x23..0x7e) then (@options[:html] ? %("<code class="grammar-literal">#{c}</code>") : %{"#{c}"})
-      else                   (@options[:html] ? %(<code class="grammar-char-escape">#{escape_ebnf_hex(c)}</code>) : escape_ebnf_hex(c))
+      when (0x21)         then (@options[:html] ? %("<code class="grammar-literal">#{c}</code>") : %{"#{c}"})
+      when 0x22           then (@options[:html] ? %('<code class="grammar-literal">"</code>') : %{'"'})
+      when (0x23..0x7e)   then (@options[:html] ? %("<code class="grammar-literal">#{c}</code>") : %{"#{c}"})
+      when (0x80..0xFFFD) then (@options[:html] ? %("<code class="grammar-literal">#{c}</code>") : %{"#{c}"})
+      else                     escape_ebnf_hex(c)
       end
     end
 
@@ -218,11 +260,11 @@ module EBNF
         when s.scan(/\A[!"\u0024-\u007e]+/)
           buffer << (@options[:html] ? %(<code class="grammar-literal">#{s.matched}</code>) : s.matched)
         when s.scan(/\A#x\h+/)
-          buffer << (@options[:html] ? %(<code class="grammar-char-escape">#{s.matched}</code>) : s.matched)
+          buffer << escape_ebnf_hex(s.matched[2..-1].hex.chr(Encoding::UTF_8))
         when s.scan(/\A-/)
           buffer << dash
         else
-          buffer << (@options[:html] ? %(<code class="grammar-char-escape">#{escape_ebnf_hex(s.getch)}</code>) : escape_ebnf_hex(s.getch))
+          buffer << escape_ebnf_hex(s.getch)
         end
       end
       buffer + rbrac
@@ -243,11 +285,22 @@ module EBNF
 
     def escape_ebnf_hex(u)
       fmt = case u.ord
+      when 0x00..0x20     then "#x%02X"
       when 0x0000..0x00ff then "#x%02X"
       when 0x0100..0xffff then "#x%04X"
       else                     "#x%08X"
       end
-      sprintf(fmt, u.ord)
+      char = fmt % u.ord
+      if @options[:html]
+        if u.ord <= 0x20
+          char = %(<abbr title="#{ASCII_ESCAPE_NAMES[u.ord]}">#{char}</abbr>)
+        elsif u.ord == 0x7F
+          char = %(<abbr title="delete">#{char}</abbr>)
+        end
+        %(<code class="grammar-char-escape">#{char}</code>)
+      else
+        char
+      end
     end
 
     ##
@@ -337,9 +390,9 @@ module EBNF
     # Format a single-character string, prefering hex for non-main ASCII
     def format_abnf_char(c)
       if /[\x20-\x21\x23-\x7E]/.match?(c)
-        return c.inspect
+        c.inspect
       else
-        (@options[:html] ? %(<code class="grammar-char-escape">#{escape_abnf_hex(c)}</code>) : escape_abnf_hex(c))
+        escape_abnf_hex(c)
       end
     end
 
@@ -373,11 +426,23 @@ module EBNF
 
     def escape_abnf_hex(u)
       fmt = case u.ord
-      when 0x0000..0x00ff then "%02X"
-      when 0x0100..0xffff then "%04X"
-      else                     "%08X"
+      when 0x0000..0x00ff then "#x%02X"
+      when 0x0100..0xffff then "#x%04X"
+      else                     "#x%08X"
       end
-      "%x" + (fmt % u.ord)
+      char =  "%x" + (fmt % u.ord)
+      if @options[:html]
+        if u.ord <= 0x20
+          char = %(<abbr title="#{ASCII_ESCAPE_NAMES[u.ord]}">#{char}</abbr>)
+        elsif u.ord == 0x7F
+          char = %(<abbr title="delete">#{char}</abbr>)
+        else
+          char = %(<abbr title="#{u.ord.char(Encoding::UTF_8)}">#{char}</abbr>)
+        end
+        %(<code class="grammar-char-escape">#{char}</code>)
+      else
+        char
+      end
     end
 
     ##
@@ -525,25 +590,25 @@ module EBNF
       end
     end
 
-    HAML_DESC = %q(
-      %table.grammar
-        %tbody#grammar-productions
-          - rules.each do |rule|
-            %tr{id: "grammar-production-#{rule.sym}"}
-              - if rule.pass?
-                %td{colspan: (format == :ebnf && rule.id ? 4 : 3)}
-                  %code<="@pass"
-              - else
-                - if format == :ebnf && rule.id
-                  %td<= "[#{rule.id}]"
-                %td<
-                  %code<= rule.sym
-                - if format == :ebnf
-                  %td<= "::="
-                - else
-                  %td<= "="
-              %td
-                != yield rule
+    ERB_DESC = %q(
+      <table class="grammar">
+        <tbody id="grammar-productions" class="<%= @format %>">
+          <% for rule in @rules %>
+            <tr id="grammar-production-<%=rule.sym%>">
+              <% if rule.pass %>
+              <td colspan="<%=rule.id ? 4 : 3%>"><code>@pass</code></td>
+              <% else %>
+              <% if rule.id %>
+              <td>[<%==rule.id%>]</td>
+              <% end %>
+              <td><code><%== rule.sym %></td>
+              <td><%= @format == :ebnf ? '::=' : '='%></td>
+              <% end %>
+              <td><%= rule.formatted %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
     ).gsub(/^      /, '')
   end
 end
