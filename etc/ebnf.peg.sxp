@@ -17,6 +17,7 @@
       (alt HEX SYMBOL ENUM O_ENUM RANGE O_RANGE STRING1 STRING2 _primary_1))
      (rule _primary_1 "9.1" (seq "(" expression ")"))
      (rule pass "10" (seq "@pass" expression))
+     (terminals _terminals (seq))
      (terminal LHS "11" (seq _LHS_1 SYMBOL _LHS_2 "::="))
      (terminal _LHS_1 "11.1" (opt _LHS_3))
      (terminal _LHS_3 "11.3" (seq "[" SYMBOL "]" _LHS_4))

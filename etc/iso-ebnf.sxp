@@ -16,6 +16,7 @@
      (rule repeated_sequence
       (seq start_repeat_symbol definitions_list end_repeat_symbol))
      (rule grouped_sequence (seq "(" definitions_list ")"))
+     (terminals _terminals (seq))
      (terminal terminal_string
       (alt
        (seq "'" (plus first_terminal_character) "'")

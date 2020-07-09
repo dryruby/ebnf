@@ -19,6 +19,7 @@ module Meta
     EBNF::Rule.new(:primary, "9", [:alt, :HEX, :SYMBOL, :ENUM, :O_ENUM, :RANGE, :O_RANGE, :STRING1, :STRING2, :_primary_1]).extend(EBNF::PEG::Rule),
     EBNF::Rule.new(:_primary_1, "9.1", [:seq, "(", :expression, ")"]).extend(EBNF::PEG::Rule),
     EBNF::Rule.new(:pass, "10", [:seq, "@pass", :expression]).extend(EBNF::PEG::Rule),
+    EBNF::Rule.new(:_terminals, nil, [:seq], kind: :terminals).extend(EBNF::PEG::Rule),
     EBNF::Rule.new(:LHS, "11", [:seq, :_LHS_1, :SYMBOL, :_LHS_2, "::="], kind: :terminal).extend(EBNF::PEG::Rule),
     EBNF::Rule.new(:_LHS_1, "11.1", [:opt, :_LHS_3], kind: :terminal).extend(EBNF::PEG::Rule),
     EBNF::Rule.new(:_LHS_3, "11.3", [:seq, "[", :SYMBOL, "]", :_LHS_4], kind: :terminal).extend(EBNF::PEG::Rule),

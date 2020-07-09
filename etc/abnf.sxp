@@ -14,6 +14,7 @@
      (rule case_insensitive_string (seq (opt "%i") quoted_string))
      (rule case_sensitive_string (seq "%s" quoted_string))
      (rule num_val (seq "%" (alt bin_val dec_val hex_val)))
+     (terminals _terminals (seq))
      (terminal rulename (seq ALPHA (star (alt ALPHA DIGIT "-"))))
      (terminal defined_as (seq (star c_wsp) (alt "=" "=/") (star c_wsp)))
      (terminal c_wsp (alt WSP (seq c_nl WSP)))

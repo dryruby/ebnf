@@ -15,7 +15,8 @@ describe EBNF::Base do
       %{
         @terminals
         [3] terminal ::= [A-Z]+
-      } => %{((terminal terminal "3" (plus (range "A-Z"))))},
+      } => %{((terminals _terminals (seq))
+              (terminal terminal "3" (plus (range "A-Z"))))},
       %{
         [9] primary     ::= HEX
                         |   RANGE

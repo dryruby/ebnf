@@ -178,9 +178,9 @@ module EBNF
         elsif expr =~ /\A#x\h+/
           return format_ebnf_hex(expr[2..-1].hex.chr)
         elsif expr =~ /"/
-          return escape_ebnf(expr, "'")
+          return "'" + escape_ebnf(expr, "'") + "'"
         else
-          return escape_ebnf(expr, '"')
+          return '"' + escape_ebnf(expr, '"') + '"'
         end
       end
       parts = {

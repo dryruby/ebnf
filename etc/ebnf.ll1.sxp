@@ -98,6 +98,7 @@
       (first "@pass")
       (follow "@pass" "@terminals" LHS _eof)
       (seq "@pass" expression))
+     (terminals _terminals (seq))
      (terminal LHS "11" (seq (opt (seq "[" SYMBOL "]" (plus " "))) SYMBOL (star " ") "::="))
      (terminal SYMBOL "12" (plus (alt (range "a-z") (range "A-Z") (range "0-9") "_" ".")))
      (terminal HEX "13" (seq "#x" (plus (alt (range "a-f") (range "A-F") (range "0-9")))))

@@ -282,6 +282,7 @@
      (rule iri "136" (alt IRIREF PrefixedName))
      (rule PrefixedName "137" (alt PNAME_LN PNAME_NS))
      (rule BlankNode "138" (alt BLANK_NODE_LABEL ANON))
+     (terminals _terminals (seq))
      (terminal IRIREF "139"
       (seq "<" (star (diff (range "^<>\"{}|^`\\") (range "#x00-#x20"))) ">"))
      (terminal PNAME_NS "140" (seq (opt PN_PREFIX) ":"))

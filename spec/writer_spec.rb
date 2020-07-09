@@ -127,7 +127,7 @@ describe EBNF::Writer do
           [:range, "abc-"],
           "[abc-]"
         ],
-      "hex": [
+        "hex": [
           [:hex, "#x20"],
           "#x20"
         ],
