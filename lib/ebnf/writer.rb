@@ -44,7 +44,7 @@ module EBNF
       "record separator",     #x1E
       "unit separator",       #x1F
       "space"                 #x20
-    ].freeze
+      ]
 
     ##
     # Format rules to a String
@@ -178,9 +178,9 @@ module EBNF
         elsif expr =~ /\A#x\h+/
           return format_ebnf_hex(expr[2..-1].hex.chr)
         elsif expr =~ /"/
-          return (@options[:html] ? %('<code class="grammar-literal">#{escape_ebnf(expr, "'")}</code>') : %('#{escape_ebnf(expr, "'")}'))
+          return escape_ebnf(expr, "'")
         else
-          return (@options[:html] ? %("<code class="grammar-literal">#{escape_ebnf(expr, '"')}</code>") : %("#{escape_ebnf(expr, '"')}"))
+          return escape_ebnf(expr, '"')
         end
       end
       parts = {
@@ -206,7 +206,7 @@ module EBNF
         r = format_ebnf(expr[1], embedded: true)
         "#{r}#{char}"
       when :hex
-        (@options[:html] ? %(<code class="grammar-char-escape">#{expr.last}</code>) : expr.last)
+        escape_ebnf_hex(expr.last[2..-1].hex.chr(Encoding::UTF_8))
       when :range
         format_ebnf_range(expr.last)
       when :seq
@@ -287,12 +287,17 @@ module EBNF
       buffer = ""
       string.each_char do |c|
         buffer << case (u = c.ord)
-        when (0x00..0x1f) then "#x%02X" % u
-        when quote.ord    then "#x%02X" % u
+        when 0x00..0x20   then escape_ebnf_hex(c)
+        when quote.ord    then escape_ebnf_hex(c)
+        when 0x7F         then escape_ebnf_hex(c)
         else                   c
         end
       end
-      buffer
+      if @options[:html]
+        %('<code class="grammar-literal">#{buffer}</code>')
+      else
+        buffer
+      end
     end
 
     def escape_ebnf_hex(u)
@@ -306,8 +311,14 @@ module EBNF
       if @options[:html]
         if u.ord <= 0x20
           char = %(<abbr title="#{ASCII_ESCAPE_NAMES[u.ord]}">#{char}</abbr>)
+        elsif u.ord <= 0x7F
+          char = %(<abbr title="ascii '#{u}'">#{char}</abbr>)
         elsif u.ord == 0x7F
           char = %(<abbr title="delete">#{char}</abbr>)
+        elsif u.ord <= 0xFF
+          char = %(<abbr title="extended ascii '#{u}'">#{char}</abbr>)
+        else
+          char = %(<abbr title="unicode '#{u}'">#{char}</abbr>)
         end
         %(<code class="grammar-char-escape">#{char}</code>)
       else
@@ -371,8 +382,7 @@ module EBNF
         r = format_abnf(expr[1], embedded: true)
         "#{char}#{r}"
       when :hex
-        hex = expr.last.sub('#', '%')
-        (@options[:html] ? %(<code class="grammar-char-escape">#{hex}</code>) : hex)
+        escape_abnf_hex(expr.last[2..-1].hex.chr)
       when :range
         format_abnf_range(expr.last)
       when :seq
@@ -446,10 +456,14 @@ module EBNF
       if @options[:html]
         if u.ord <= 0x20
           char = %(<abbr title="#{ASCII_ESCAPE_NAMES[u.ord]}">#{char}</abbr>)
+        elsif u.ord <= 0x7F
+          char = %(<abbr title="ascii '#{u}'">#{char}</abbr>)
         elsif u.ord == 0x7F
           char = %(<abbr title="delete">#{char}</abbr>)
+        elsif u.ord <= 0xFF
+          char = %(<abbr title="extended ascii '#{u}'">#{char}</abbr>)
         else
-          char = %(<abbr title="#{u.ord.char(Encoding::UTF_8)}">#{char}</abbr>)
+          char = %(<abbr title="unicode '#{u}'">#{char}</abbr>)
         end
         %(<code class="grammar-char-escape">#{char}</code>)
       else
