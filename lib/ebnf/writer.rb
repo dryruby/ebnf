@@ -294,7 +294,7 @@ module EBNF
         end
       end
       if @options[:html]
-        %('<code class="grammar-literal">#{buffer}</code>')
+        %(<code class="grammar-literal">#{buffer}</code>)
       else
         buffer
       end
