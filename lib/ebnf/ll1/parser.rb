@@ -576,7 +576,7 @@ module EBNF::LL1
     #   @option options [Integer] :depth
     #     Recursion depth for indenting output
     #   @yieldreturn [String] additional string appended to `message`.
-    def debug(*args)
+    def debug(*args, &block)
       return unless @options[:logger]
       options = args.last.is_a?(Hash) ? args.pop : {}
       lineno = @lineno || (options[:token].lineno if options[:token].respond_to?(:lineno))
