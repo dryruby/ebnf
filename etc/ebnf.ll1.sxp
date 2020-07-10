@@ -118,12 +118,11 @@
      (terminal R_CHAR "21" (diff CHAR (alt "]" "-")))
      (terminal POSTFIX "22" (range "?*+"))
      (terminal PASS "23"
-      (plus
-       (alt
-        (range "#x9#xA#xD#x20")
-        (seq (alt (diff "#" "#x") "//") (star (range "^#xA#xD")))
-        (seq "/*" (star (alt (opt (seq "*" (range "^/"))) (range "^*"))) "*/")
-        (seq "(*" (star (alt (opt (seq "*" (range "^)"))) (range "^*"))) "*)")) ))
+      (alt
+       (range "#x9#xA#xD#x20")
+       (seq (alt (diff "#" "#x") "//") (star (range "^#xA#xD")))
+       (seq "/*" (star (alt (opt (seq "*" (range "^/"))) (range "^*"))) "*/")
+       (seq "(*" (star (alt (opt (seq "*" (range "^)"))) (range "^*"))) "*)")) )
      (pass _pass (seq PASS))
      (rule _ebnf_3 "1.3" (first "@pass" "@terminals" LHS _eps) (follow _eof) (seq ebnf))
      (rule _rule_1 "3.1"

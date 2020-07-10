@@ -109,7 +109,11 @@ module EBNF
       max_id = rules.max_by {|r| r.id.to_s.length}.id.to_s.length
       max_sym = rules.max_by {|r| r.sym.to_s.length}.sym.to_s.length
       lhs_length = max_sym + 1
-      lhs_fmt = "%<sym>-#{max_sym}s #{format == :ebnf ? '::=' : '='} "
+      lhs_fmt = case format
+      when :abnf    then "%<sym>-#{max_sym}s = "
+      when :ebnf    then "%<sym>-#{max_sym}s ::= "
+      when :isoebnf then "%<sym>-#{max_sym}s = "
+      end
       if format == :ebnf && max_id > 0
         lhs_fmt = "%<id>-#{max_id+2}s " + lhs_fmt
         lhs_length += max_id + 3
@@ -122,19 +126,48 @@ module EBNF
           require 'erubis'
           eruby = Erubis::Eruby.new(ERB_DESC)
           formatted_rules = rules.map do |rule|
-            if rule.kind == :terminals
-              formatted_expr = "<strong>Productions for terminals</strong>"
-              formatted_expr.length > rhs_length ? self.send(format_meth, rule.expr, sep: "\n") : formatted_expr
+            if rule.kind == :terminals || rule.kind == :pass
+              OpenStruct.new(id: ("@#{rule.kind}"),
+                             sym: nil,
+                             assign: nil,
+                             formatted: ("<strong>Productions for terminals</strong>" if rule.kind == :terminals))
             else
               formatted_expr = self.send(format_meth, rule.expr)
-              formatted_expr.length > rhs_length ? self.send(format_meth, rule.expr, sep: "\n") : formatted_expr
+              # Measure text without markup
+              formatted_expr_text = formatted_expr.gsub(%r{</?\w+[^>]*>}, '')
+              if formatted_expr_text.length > rhs_length && (format != :abnf || rule.alt?)
+                lines = []
+                # Can only reasonably split apart alts
+                self.send(format_meth, rule.expr, sep: "--rule-extensions--").
+                split(/\s*--rule-extensions--\s*/).each_with_index do |formatted, ndx|
+                  assign = case format
+                  when :ebnf
+                    formatted.sub!(%r{\s*<code>\|</code>\s*}, '')
+                    (ndx > 0 ? (rule.alt? ? '|' : '') : '::=')
+                  when :abnf
+                    formatted.sub!(%r{\s*<code>/</code>\s*}, '')
+                    (ndx > 0 ? '=/' : '=')
+                  else
+                    formatted.sub!(%r{\s*<code>\|</code>\s*}, '')
+                    (ndx > 0 ? (rule.alt? ? '|' : '') : '=')
+                  end
+                  lines << OpenStruct.new(id: ("[#{rule.id}]" if rule.id),
+                                          sym: (rule.sym if ndx == 0 || format == :abnf),
+                                          assign: assign,
+                                          formatted: formatted)
+                end
+                if format == :isoebnf
+                  lines << OpenStruct.new(assign: ';')
+                end
+                lines
+              else
+                OpenStruct.new(id: ("[#{rule.id}]" if rule.id),
+                               sym: rule.sym,
+                               assign: (format == :ebnf ? '::=' : '='),
+                               formatted: (formatted_expr + (format == :isoebnf ? ' ;' : '')))
+              end
             end
-            OpenStruct.new(id: rule.id,
-                           sym: rule.sym,
-                           pass: rule.pass?,
-                           terminals: (rule.kind == :terminals),
-                           formatted: formatted_expr)
-          end
+          end.flatten
           out.write eruby.evaluate(format: format, rules: formatted_rules)
           return
         rescue LoadError
@@ -145,20 +178,32 @@ module EBNF
       # Format each rule, considering the available rhs size
       rules.each do |rule|
         buffer = if rule.pass?
-          "\n%-#{lhs_length-2}s" % "@pass"
+          "\n%-#{lhs_length-2}s      " % "@pass"
         elsif rule.kind == :terminals
           "\n%-#{lhs_length-2}s" % "@terminals"
         else
           lhs_fmt % {id: "[#{rule.id}]", sym: rule.sym}
         end
         formatted_expr = self.send(format_meth, rule.expr)
-        if formatted_expr.length > rhs_length
-          # Space out past "= "
-          buffer << self.send(format_meth, rule.expr, sep: ("\n" + " " * (lhs_length + (format == :ebnf ? 4 : 2))))
+        if formatted_expr.length > rhs_length && (format != :abnf || rule.alt?)
+          if format == :abnf
+            # No whitespace, use =/
+            self.send(format_meth, rule.expr, sep: "--rule-extensions--").
+            split(/\s*--rule-extensions--\s*/).each_with_index do |formatted, ndx|
+              if ndx > 0
+                buffer << "\n" + lhs_fmt.sub('= ', '=/') % {id: "[#{rule.id}]", sym: rule.sym}
+              end
+              buffer << formatted.sub(/\s*\/\s*/, '')
+            end
+          else
+            # Space out past "= "
+            buffer << self.send(format_meth, rule.expr, sep: ("\n" + " " * (lhs_length + (rule.alt? ? 2 : 4) - (format == :ebnf ? 0 : 2))))
+            buffer << ("\n" + " " * (lhs_length) + ';') if format == :isoebnf
+          end
         else
-          buffer << formatted_expr
+          buffer << formatted_expr + (format == :isoebnf ? ' ;'  : '')
         end
-        buffer << "\n\n" if rule.kind == :terminals
+        buffer << "\n\n" if [:terminals, :pass].include?(rule.kind)
         out.puts(buffer)
       end
     end
@@ -353,7 +398,7 @@ module EBNF
         end
       end
       parts = {
-        alt:    (@options[:html] ? "<code>|</code> " : "| "),
+        alt:    (@options[:html] ? "<code>/</code> " : "/ "),
         star:   (@options[:html] ? "<code>*</code> " : "*"),
         plus:   (@options[:html] ? "<code>+</code> " : "1*"),
         opt:    (@options[:html] ? "<code>?</code> " : "?")
@@ -620,20 +665,14 @@ module EBNF
       <table class="grammar">
         <tbody id="grammar-productions" class="<%= @format %>">
           <% for rule in @rules %>
-            <tr id="grammar-production-<%=rule.sym%>">
-              <% if rule.pass %>
-              <td colspan="<%=rule.id ? 4 : 3%>"><code>@pass</code></td>
-              <% elsif rule.terminals %>
-              <td colspan="<%=rule.id ? 4 : 3%>"><code>@terminals</code></td>
-              <% else %>
-              <% if rule.id %>
-              <td>[<%==rule.id%>]</td>
-              <% end %>
-              <td><code><%== rule.sym %></td>
-              <td><%= @format == :ebnf ? '::=' : '='%></td>
-              <% end %>
-              <td><%= rule.formatted %></td>
-            </tr>
+          <tr<%= %{ id="grammar-production-#{rule.sym}"} unless %w(=/ |).include?(rule.assign)%>>
+            <% if rule.id %>
+            <td><%= rule.id %></td>
+            <% end %>
+            <td><code><%== rule.sym %></code></td>
+            <td><%= rule.assign %></td>
+            <td><%= rule.formatted %></td>
+          </tr>
           <% end %>
         </tbody>
       </table>

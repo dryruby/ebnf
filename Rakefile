@@ -56,20 +56,25 @@ namespace :etc do
   task build: ETC_FILES
 end
 
-desc "Build meta files for ISO EBNF and ABNF"
-task :meta => %w{lib/ebnf/abnf/meta.rb lib/ebnf/abnf/core.rb lib/ebnf/isoebnf/meta.rb} do
-  file "lib/ebnf/abnf/meta.rb" => "etc/abnf.ebnf" do
-    %x(bin/ebnf --peg -f rb --mod-name ABNFMeta -o lib/ebnf/abnf/meta.rb etc/abnf.ebnf)
-  end
+desc "Build meta files for ABNF, EBNF and ISO EBNF"
+task :meta => %w{lib/ebnf/ebnf/meta.rb lib/ebnf/isoebnf/meta.rb lib/ebnf/abnf/meta.rb lib/ebnf/abnf/core.rb}
 
-  file "lib/ebnf/abnf/core.rb" => "etc/abnf-core.ebnf" do
-    %x(bin/ebnf --peg -f rb --mod-name ABNFCore -o lib/ebnf/abnf/core.rb etc/abnf-core.ebnf)
-  end
-
-  file "lib/ebnf/isoebnf/meta.rb" => "etc/iso-ebnf.ebnf" do
-    %x(bin/ebnf --peg -f rb --mod-name ISOEBNFMeta -o lib/ebnf/isoebnf/meta.rb etc/iso-ebnf.ebnf)
-  end
+file "lib/ebnf/abnf/meta.rb" => "etc/abnf.ebnf" do
+  %x(bin/ebnf --peg -f rb --mod-name ABNFMeta -o lib/ebnf/abnf/meta.rb etc/abnf.ebnf)
 end
+
+file "lib/ebnf/abnf/core.rb" => "etc/abnf-core.ebnf" do
+  %x(bin/ebnf --peg -f rb --mod-name ABNFCore -o lib/ebnf/abnf/core.rb etc/abnf-core.ebnf)
+end
+
+file "lib/ebnf/ebnf/meta.rb" => "etc/ebnf.peg.rb" do
+  %x(cp etc/ebnf.peg.rb lib/ebnf/ebnf/meta.rb)
+end
+
+file "lib/ebnf/isoebnf/meta.rb" => "etc/iso-ebnf.ebnf" do
+  %x(bin/ebnf --peg -f rb --mod-name ISOEBNFMeta -o lib/ebnf/isoebnf/meta.rb etc/iso-ebnf.ebnf)
+end
+
 
 # Build SXP output with leading space to allow for Markdown formatting.
 rule ".sxp" => %w{.ebnf} do |t|
@@ -106,7 +111,7 @@ end
 
 file "etc/ebnf.peg.rb" => "etc/ebnf.ebnf" do |t|
   puts "build #{t.name}"
-  %x(bin/ebnf --peg -f rb -o etc/ebnf.peg.rb etc/ebnf.ebnf)
+  %x(bin/ebnf --peg --mod-name EBNFMeta -f rb -o etc/ebnf.peg.rb etc/ebnf.ebnf)
 end
 
 file "etc/ebnf.ll1.rb" => "etc/ebnf.ebnf" do |t|
