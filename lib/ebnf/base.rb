@@ -84,6 +84,7 @@ module EBNF
   class Base
     include BNF
     include LL1
+    include Native
     include PEG
 
     # Abstract syntax tree from parse
@@ -101,7 +102,8 @@ module EBNF
     #
     # @param [#read, #to_s] input
     # @param [Symbol] format (:ebnf)
-    #   Format of input, one of :abnf, :ebnf, :isoebnf, :isoebnf, or :sxp
+    #   Format of input, one of `:abnf`, `:ebnf`, `:isoebnf`, `:isoebnf`, `:native`, or `:sxp`.
+    #   Use `:native` for the native EBNF parser, rather than the PEG parser.
     # @param [Hash{Symbol => Object}] options
     # @option options [Boolean, Array] :debug
     #   Output debug information to an array or $stdout.
@@ -125,6 +127,28 @@ module EBNF
       when :isoebnf
         iso = ISOEBNF.new(input, **options)
         @ast = iso.ast
+      when :native
+        scanner = StringScanner.new(input)
+
+        eachRule(scanner) do |r|
+          debug("rule string") {r.inspect}
+          case r
+          when /^@terminals/
+            # Switch mode to parsing terminals
+            terminal = true
+          when /^@pass\s*(.*)$/m
+            expr = expression($1).first
+            rule = Rule.new(nil, nil, expr, kind: :pass, ebnf: self)
+            rule.orig = expr
+            @ast << rule
+          else
+            rule = depth {ruleParts(r)}
+
+            rule.kind = :terminal if terminal # Override after we've parsed @terminals
+            rule.orig = r
+            @ast << rule
+          end
+        end
       when :sxp
         require 'sxp' unless defined?(SXP)
         @ast = SXP::Reader::Basic.read(input).map {|e| Rule.from_sxp(e)}
