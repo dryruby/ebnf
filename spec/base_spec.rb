@@ -20,14 +20,12 @@ describe EBNF::Base do
       %{
         [9] primary     ::= HEX
                         |   RANGE
-                        |   ENUM 
                         |   O_RANGE
-                        |   O_ENUM
                         |   STRING1
                         |   STRING2
                         |   '(' expression ')'
         
-      } => %{((rule primary "9" (alt HEX RANGE ENUM O_RANGE O_ENUM STRING1 STRING2 (seq "(" expression ")"))))},
+      } => %{((rule primary "9" (alt HEX RANGE O_RANGE STRING1 STRING2 (seq "(" expression ")"))))},
       %{#[1] rule ::= 'FOO'} => %{()},
       %{//[1] rule ::= 'FOO'} => %{()},
       %{[18] SolutionModifier ::= _SolutionModifier_1 _SolutionModifier_2} =>

@@ -17,23 +17,19 @@ describe EBNF do
       %{
         [9] primary     ::= HEX
                         |   RANGE
-                        |   ENUM 
                         |   O_RANGE
-                        |   O_ENUM
                         |   STRING1
                         |   STRING2
                         |   '(' expression ')'
-      } => %{((rule primary "9" (alt HEX RANGE ENUM O_RANGE O_ENUM STRING1 STRING2 (seq "(" expression ")"))))},
+      } => %{((rule primary "9" (alt HEX RANGE O_RANGE STRING1 STRING2 (seq "(" expression ")"))))},
       %{
         primary     ::= HEX
                     |   RANGE
-                    |   ENUM 
                     |   O_RANGE
-                    |   O_ENUM
                     |   STRING1
                     |   STRING2
                     |   '(' expression ')'
-      } => %{((rule primary (alt HEX RANGE ENUM O_RANGE O_ENUM STRING1 STRING2 (seq "(" expression ")"))))},
+      } => %{((rule primary (alt HEX RANGE O_RANGE STRING1 STRING2 (seq "(" expression ")"))))},
     }.each do |input, expected|
       context input do
         subject {EBNF.parse(input)}

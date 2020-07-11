@@ -42,7 +42,7 @@
      (terminal other_character (alt (range ":+_%@&$<>^` ̃#x20#x23") "\\"))
      (terminal gap_separator (range "#x9#xa#xb#xc#xd#x20"))
      (pass _pass (alt (plus gap_separator) comment))
-     (terminal empty (seq ""))
+     (terminal empty (seq ()))
      (terminal defining_symbol (alt "=" ":"))
      (terminal definition_separator_symbol (alt "|" "/" "!"))
      (terminal terminator_symbol (alt ";" "."))

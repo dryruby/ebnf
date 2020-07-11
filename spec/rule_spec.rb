@@ -24,10 +24,6 @@ describe EBNF::Rule do
           %{(pass _pass (plus (range "#x9#xA#xD#x20")))},
           EBNF::Rule.new(nil, nil, [:plus, [:range, "#x9#xA#xD#x20"]], kind: :pass)
         ],
-        "terminal": [
-          %{(terminal O_ENUM "17" (seq "[^" (plus CHAR) "]"))},
-          EBNF::Rule.new(:O_ENUM, "17", [:seq, "[^", [:plus, :CHAR], "]"])
-        ],
         "alt": [
           %{(rule alt (alt a b c))},
           EBNF::Rule.new(:alt, nil, [:alt, :a, :b, :c], kind: :rule)
@@ -120,10 +116,6 @@ describe EBNF::Rule do
         EBNF::Rule.new(nil, nil, [:plus, [:range, "#x20\\t\\r\\n"]], kind: :pass),
         %{(pass _pass (plus (range "#x20\\\\t\\\\r\\\\n")))},
       ],
-      "terminal": [
-        EBNF::Rule.new(:O_ENUM, "17", [:seq, "[^", [:plus, :CHAR], "]"]),
-        %{(terminal O_ENUM "17" (seq "[^" (plus CHAR) "]"))},
-      ],
       "alt": [
         EBNF::Rule.new(:alt, nil, [:alt, :a, :b, :c], kind: :rule),
         %{(rule alt (alt a b c))},
@@ -189,13 +181,6 @@ describe EBNF::Rule do
         %{
         :_pass rdfs:label "_pass";
           g:plus [ re:matches "[\\\\u0020\\\\t\\\\r\\\\n]" ] .},
-      ],
-      "terminal": [
-        EBNF::Rule.new(:O_ENUM, "17", [:seq, "[^", [:plus, :CHAR], "]"]),
-        %{
-        :O_ENUM rdfs:label "O_ENUM";
-          dc:identifier "17";
-          re:seq ( "[^" [ re:plus :CHAR ] "]" ) .},
       ],
       "alt": [
         EBNF::Rule.new(:alt, nil, [:alt, :a, :b, :c], kind: :rule),
@@ -284,10 +269,6 @@ describe EBNF::Rule do
       "pass": [
         EBNF::Rule.new(nil, nil, [:plus, [:range, "#x20\\t\\r\\n"]], kind: :pass),
         %{EBNF::Rule.new(:_pass, nil, [:plus, [:range, \"#x20\\\\t\\\\r\\\\n\"]], kind: :pass)},
-      ],
-      "terminal": [
-        EBNF::Rule.new(:O_ENUM, "17", [:seq, "[^", [:plus, :CHAR], "]"]),
-        %{EBNF::Rule.new(:O_ENUM, "17", [:seq, "[^", [:plus, :CHAR], "]"], kind: :terminal)},
       ],
       "alt": [
         EBNF::Rule.new(:alt, nil, [:alt, :a, :b, :c], kind: :rule),
@@ -532,10 +513,6 @@ describe EBNF::Rule do
         EBNF::Rule.new(nil, nil, [:plus, [:range, "#x20\\t\\r\\n"]], kind: :pass),
         false,
       ],
-      "terminal": [
-        EBNF::Rule.new(:O_ENUM, "17", [:seq, "[^", [:plus, :CHAR], "]"]),
-        true,
-      ],
       "alt": [
         EBNF::Rule.new(:alt, nil, [:alt, :a, :b, :c], kind: :rule),
         false,
@@ -593,10 +570,6 @@ describe EBNF::Rule do
         EBNF::Rule.new(nil, nil, [:plus, [:range, "#x20\\t\\r\\n"]], kind: :pass),
         true,
       ],
-      "terminal": [
-        EBNF::Rule.new(:O_ENUM, "17", [:seq, "[^", [:plus, :CHAR], "]"]),
-        false,
-      ],
       "alt": [
         EBNF::Rule.new(:alt, nil, [:alt, :a, :b, :c], kind: :rule),
         false,
@@ -652,10 +625,6 @@ describe EBNF::Rule do
       ],
       "pass": [
         EBNF::Rule.new(nil, nil, [:plus, [:range, "#x20\\t\\r\\n"]], kind: :pass),
-        false,
-      ],
-      "terminal": [
-        EBNF::Rule.new(:O_ENUM, "17", [:seq, "[^", [:plus, :CHAR], "]"]),
         false,
       ],
       "alt": [
@@ -715,10 +684,6 @@ describe EBNF::Rule do
         EBNF::Rule.new(nil, nil, [:plus, [:range, "#x20\\t\\r\\n"]], kind: :pass),
         false,
       ],
-      "terminal": [
-        EBNF::Rule.new(:O_ENUM, "17", [:seq, "[^", [:plus, :CHAR], "]"]),
-        false,
-      ],
       "alt": [
         EBNF::Rule.new(:alt, nil, [:alt, :a, :b, :c], kind: :rule),
         true,
@@ -775,10 +740,6 @@ describe EBNF::Rule do
       "pass": [
         EBNF::Rule.new(nil, nil, [:plus, [:range, "#x20\\t\\r\\n"]], kind: :pass),
         false,
-      ],
-      "terminal": [
-        EBNF::Rule.new(:O_ENUM, "17", [:seq, "[^", [:plus, :CHAR], "]"]),
-        true,
       ],
       "alt": [
         EBNF::Rule.new(:alt, nil, [:alt, :a, :b, :c], kind: :rule),
@@ -883,8 +844,6 @@ describe EBNF::Rule do
       LHS: [],
       SYMBOL: [],
       HEX: [],
-      ENUM: [],
-      O_ENUM: [],
       RANGE: [],
       O_RANGE: [],
       STRING1: [],
@@ -911,19 +870,17 @@ describe EBNF::Rule do
       seq: [],
       diff: [],
       postfix: [],
-      primary: [:HEX, :SYMBOL, :ENUM, :O_ENUM, :RANGE, :O_RANGE, :STRING1, :STRING2, "("],
+      primary: [:HEX, :SYMBOL, :RANGE, :O_RANGE, :STRING1, :STRING2, "("],
       pass: ["@pass"],
       LHS: ["["],
       SYMBOL: ["a-z", "A-Z", "0-9", "_", "."],
       HEX: ["#x"],
-      ENUM: ["[", :LHS],
-      O_ENUM: ["[^"],
       RANGE: ["["],
       O_RANGE: ["[^"],
       STRING1: ['"'],
       STRING2: ["'"],
       CHAR: ["#x9#xA#xD", "#x20-#xD7FF", "#xE000-#xFFFD", "#x10000-#x10FFFF"],
-      R_CHAR: [:CHAR, "]", "-"],
+      R_CHAR: [:CHAR, "]", "-", :HEX],
       POSTFIX: ["?*+"],
       PASS: ["#x9#xA#xD#x20", "#", "#x", "//", "/*", "(*"]
     }.each do |sym, expected|
@@ -944,19 +901,17 @@ describe EBNF::Rule do
       seq: [:diff],
       diff: [:postfix],
       postfix: [:primary, :POSTFIX],
-      primary: [:HEX, :SYMBOL, :ENUM, :O_ENUM, :RANGE, :O_RANGE, :STRING1, :STRING2, :expression],
+      primary: [:HEX, :SYMBOL, :RANGE, :O_RANGE, :STRING1, :STRING2, :expression],
       pass: [:expression],
       LHS: [:SYMBOL],
       SYMBOL: [],
       HEX: [],
-      ENUM: [:R_CHAR, :HEX, :LHS],
-      O_ENUM: [:R_CHAR, :HEX],
-      RANGE: [:R_CHAR, :HEX],
+      RANGE: [:R_CHAR, :HEX, :LHS],
       O_RANGE: [:R_CHAR, :HEX],
       STRING1: [:CHAR],
       STRING2: [:CHAR],
       CHAR: [],
-      R_CHAR: [:CHAR],
+      R_CHAR: [:CHAR, :HEX],
       POSTFIX: [],
       PASS: []
     }.each do |sym, expected|
@@ -1001,19 +956,19 @@ describe EBNF::Rule do
       ],
       "mixed range char and hex": [
         "a ::= [b-#x20]",
-        /syntax error/
+        /Range contains illegal components/
       ],
       "mixed range char and hex (2)": [
         "a ::= [#x20-b]",
-        /syntax error/
+        /Range contains illegal components/
       ],
       "incomplete range": [
         "a ::= [-b]",
-        /syntax error/
+        /syntax error,/
       ],
       "extra range": [
         "a ::= [a-b-c]",
-        /syntax error/
+        /syntax error,/
       ],
     }.each do |name, (rule, message)|
       it name do

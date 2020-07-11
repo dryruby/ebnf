@@ -112,7 +112,6 @@ module EBNF
     def initialize(input, format: :ebnf, **options)
       @options = options.dup
       @lineno, @depth, @errors = 1, 0, []
-      terminal = false
       @ast = []
 
       input = input.respond_to?(:read) ? input.read : input.to_s
@@ -128,6 +127,7 @@ module EBNF
         iso = ISOEBNF.new(input, **options)
         @ast = iso.ast
       when :native
+        terminals = false
         scanner = StringScanner.new(input)
 
         eachRule(scanner) do |r|
@@ -135,7 +135,9 @@ module EBNF
           case r
           when /^@terminals/
             # Switch mode to parsing terminals
-            terminal = true
+            terminals = true
+            rule = Rule.new(nil, nil, nil, kind: :terminals, ebnf: self)
+            @ast << rule
           when /^@pass\s*(.*)$/m
             expr = expression($1).first
             rule = Rule.new(nil, nil, expr, kind: :pass, ebnf: self)
@@ -144,7 +146,7 @@ module EBNF
           else
             rule = depth {ruleParts(r)}
 
-            rule.kind = :terminal if terminal # Override after we've parsed @terminals
+            rule.kind = :terminal if terminals # Override after we've parsed @terminals
             rule.orig = r
             @ast << rule
           end

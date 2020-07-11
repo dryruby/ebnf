@@ -590,7 +590,7 @@
       </td>
       <td class=code>
         <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:HEX</span><span class="p">,</span> <span class="no">HEX</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">prod</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">input</span><span class="o">|</span>
-    <span class="n">input</span><span class="o">[</span><span class="ss">:terminal</span><span class="o">]</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">value</span>
+    <span class="n">input</span><span class="o">[</span><span class="ss">:terminal</span><span class="o">]</span> <span class="o">=</span> <span class="o">[</span><span class="ss">:hex</span><span class="p">,</span> <span class="n">token</span><span class="o">.</span><span class="n">value</span><span class="o">]</span>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
@@ -599,13 +599,13 @@
         <div class="pilwrap">
           <a class="pilcrow" href="#section-8">&#182;</a>
         </div>
-        <p>Terminal for <code>ENUM</code> is matched as part of a <code>primary</code> rule. Unescape the values to remove EBNF escapes in the input.</p>
+        <p>Terminal for <code>RANGE</code> is matched as part of a <code>primary</code> rule. Unescape the values to remove EBNF escapes in the input.</p>
 
-<pre><code>[14] ENUM       ::= (&#39;[&#39; R_CHAR+ | HEX+ &#39;]&#39;) - LHS
+<pre><code>[14] `RANGE`      ::= &#39;[&#39; (R_CHAR &#39;-&#39; R_CHAR) | (HEX &#39;-&#39; HEX) &#39;]&#39;
 </code></pre>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:ENUM</span><span class="p">,</span> <span class="no">ENUM</span><span class="p">,</span> <span class="n">unescape</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">prod</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">input</span><span class="o">|</span>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:RANGE</span><span class="p">,</span> <span class="no">RANGE</span><span class="p">,</span> <span class="n">unescape</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">prod</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">input</span><span class="o">|</span>
     <span class="n">input</span><span class="o">[</span><span class="ss">:terminal</span><span class="o">]</span> <span class="o">=</span> <span class="o">[</span><span class="ss">:range</span><span class="p">,</span> <span class="n">token</span><span class="o">.</span><span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">2</span><span class="o">]]</span>
   <span class="k">end</span></pre></div>
       </td>
@@ -615,13 +615,13 @@
         <div class="pilwrap">
           <a class="pilcrow" href="#section-9">&#182;</a>
         </div>
-        <p>Terminal for <code>O_ENUM</code> is matched as part of a <code>primary</code> rule. Unescape the values to remove EBNF escapes in the input.</p>
+        <p>Terminal for <code>O_RANGE</code> is matched as part of a <code>primary</code> rule. Unescape the values to remove EBNF escapes in the input.</p>
 
-<pre><code>[15] O_ENUM     ::= &#39;[^&#39; R_CHAR+ | HEX+ &#39;]&#39;
+<pre><code>[15] O_RANGE    ::= &#39;[^&#39; (R_CHAR &#39;-&#39; R_CHAR) | (HEX &#39;-&#39; HEX) &#39;]&#39;
 </code></pre>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:O_ENUM</span><span class="p">,</span> <span class="no">O_ENUM</span><span class="p">,</span> <span class="n">unescape</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">prod</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">input</span><span class="o">|</span>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:O_RANGE</span><span class="p">,</span> <span class="no">O_RANGE</span><span class="p">,</span> <span class="n">unescape</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">prod</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">input</span><span class="o">|</span>
     <span class="n">input</span><span class="o">[</span><span class="ss">:terminal</span><span class="o">]</span> <span class="o">=</span> <span class="o">[</span><span class="ss">:range</span><span class="p">,</span> <span class="n">token</span><span class="o">.</span><span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">2</span><span class="o">]]</span>
   <span class="k">end</span></pre></div>
       </td>
@@ -631,15 +631,10 @@
         <div class="pilwrap">
           <a class="pilcrow" href="#section-10">&#182;</a>
         </div>
-        <p>Terminal for <code>RANGE</code> is matched as part of a <code>primary</code> rule. Unescape the values to remove EBNF escapes in the input.</p>
-
-<pre><code>[16] `RANGE`      ::= &#39;[&#39; (R_CHAR &#39;-&#39; R_CHAR) | (HEX &#39;-&#39; HEX) &#39;]&#39;
-</code></pre>
+        <p>Strings have internal escape sequences expanded and are passed through without surrounding quotes as terminals</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:RANGE</span><span class="p">,</span> <span class="no">RANGE</span><span class="p">,</span> <span class="n">unescape</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">prod</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">input</span><span class="o">|</span>
-    <span class="n">input</span><span class="o">[</span><span class="ss">:terminal</span><span class="o">]</span> <span class="o">=</span> <span class="o">[</span><span class="ss">:range</span><span class="p">,</span> <span class="n">token</span><span class="o">.</span><span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">2</span><span class="o">]]</span>
-  <span class="k">end</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-11'>
@@ -647,36 +642,9 @@
         <div class="pilwrap">
           <a class="pilcrow" href="#section-11">&#182;</a>
         </div>
-        <p>Terminal for <code>O_RANGE</code> is matched as part of a <code>primary</code> rule. Unescape the values to remove EBNF escapes in the input.</p>
-
-<pre><code>[17] O_RANGE    ::= &#39;[^&#39; (R_CHAR &#39;-&#39; R_CHAR) | (HEX &#39;-&#39; HEX) &#39;]&#39;
-</code></pre>
-      </td>
-      <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:O_RANGE</span><span class="p">,</span> <span class="no">O_RANGE</span><span class="p">,</span> <span class="n">unescape</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">prod</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">input</span><span class="o">|</span>
-    <span class="n">input</span><span class="o">[</span><span class="ss">:terminal</span><span class="o">]</span> <span class="o">=</span> <span class="o">[</span><span class="ss">:range</span><span class="p">,</span> <span class="n">token</span><span class="o">.</span><span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">2</span><span class="o">]]</span>
-  <span class="k">end</span></pre></div>
-      </td>
-    </tr>
-    <tr id='section-12'>
-      <td class=docs>
-        <div class="pilwrap">
-          <a class="pilcrow" href="#section-12">&#182;</a>
-        </div>
-        <p>Strings have internal escape sequences expanded and are passed through without surrounding quotes as terminals</p>
-      </td>
-      <td class=code>
-        <div class='highlight'><pre></pre></div>
-      </td>
-    </tr>
-    <tr id='section-13'>
-      <td class=docs>
-        <div class="pilwrap">
-          <a class="pilcrow" href="#section-13">&#182;</a>
-        </div>
         <p>Match double quote string</p>
 
-<pre><code>[18] STRING1    ::= &#39;&quot;&#39; (CHAR - &#39;&quot;&#39;)* &#39;&quot;&#39;
+<pre><code>[16] STRING1    ::= &#39;&quot;&#39; (CHAR - &#39;&quot;&#39;)* &#39;&quot;&#39;
 </code></pre>
       </td>
       <td class=code>
@@ -685,14 +653,14 @@
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-14'>
+    <tr id='section-12'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-14">&#182;</a>
+          <a class="pilcrow" href="#section-12">&#182;</a>
         </div>
         <p>Match single quote string</p>
 
-<pre><code>[19] STRING2    ::= &quot;&#39;&quot; (CHAR - &quot;&#39;&quot;)* &quot;&#39;&quot;
+<pre><code>[17] STRING2    ::= &quot;&#39;&quot; (CHAR - &quot;&#39;&quot;)* &quot;&#39;&quot;
 </code></pre>
       </td>
       <td class=code>
@@ -701,12 +669,39 @@
   <span class="k">end</span></pre></div>
       </td>
     </tr>
+    <tr id='section-13'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-13">&#182;</a>
+        </div>
+        <p>The <code>CHAR</code> and <code>R_CHAR</code> productions are not used explicitly</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-14'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-14">&#182;</a>
+        </div>
+        <p>Match <code>POSTFIX</code> terminal</p>
+
+<pre><code>[20] POSTFIX    ::= [?*+]
+</code></pre>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:POSTFIX</span><span class="p">,</span> <span class="no">POSTFIX</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">prod</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">input</span><span class="o">|</span>
+    <span class="n">input</span><span class="o">[</span><span class="ss">:postfix</span><span class="o">]</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">value</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
     <tr id='section-15'>
       <td class=docs>
         <div class="pilwrap">
           <a class="pilcrow" href="#section-15">&#182;</a>
         </div>
-        <p>The <code>CHAR</code> and <code>R_CHAR</code> productions are not used explicitly</p>
+        <p>The <code>PASS</code> productions is not used explicitly</p>
       </td>
       <td class=code>
         <div class='highlight'><pre></pre></div>
@@ -716,33 +711,6 @@
       <td class=docs>
         <div class="pilwrap">
           <a class="pilcrow" href="#section-16">&#182;</a>
-        </div>
-        <p>Match <code>POSTFIX</code> terminal</p>
-
-<pre><code>[22] POSTFIX    ::= [?*+]
-</code></pre>
-      </td>
-      <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:POSTFIX</span><span class="p">,</span> <span class="no">POSTFIX</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">prod</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">input</span><span class="o">|</span>
-    <span class="n">input</span><span class="o">[</span><span class="ss">:postfix</span><span class="o">]</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">value</span>
-  <span class="k">end</span></pre></div>
-      </td>
-    </tr>
-    <tr id='section-17'>
-      <td class=docs>
-        <div class="pilwrap">
-          <a class="pilcrow" href="#section-17">&#182;</a>
-        </div>
-        <p>The <code>PASS</code> productions is not used explicitly</p>
-      </td>
-      <td class=code>
-        <div class='highlight'><pre></pre></div>
-      </td>
-    </tr>
-    <tr id='section-18'>
-      <td class=docs>
-        <div class="pilwrap">
-          <a class="pilcrow" href="#section-18">&#182;</a>
         </div>
         <p>Make sure we recognize string terminals, even though they&#39;re not actually used in processing. This defines a &quot;catch-all&quot; terminal for the lexer.</p>
       </td>
@@ -771,10 +739,10 @@
         <div class='highlight'><pre></pre></div>
       </td>
     </tr>
-    <tr id='section-20'>
+    <tr id='section-18'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-20">&#182;</a>
+          <a class="pilcrow" href="#section-18">&#182;</a>
         </div>
         <p>Production for end of <code>declaration</code> non-terminal.</p>
 
@@ -789,27 +757,27 @@
         <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:declaration</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">input</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">callback</span><span class="o">|</span></pre></div>
       </td>
     </tr>
-    <tr id='section-21'>
+    <tr id='section-19'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-21">&#182;</a>
+          <a class="pilcrow" href="#section-19">&#182;</a>
         </div>
         <p>data contains a declaration.
 Invoke callback</p>
       </td>
       <td class=code>
         <div class='highlight'><pre>    <span class="k">if</span> <span class="n">data</span><span class="o">[</span><span class="ss">:terminal</span><span class="o">]</span>
-      <span class="n">callback</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="ss">:terminal</span><span class="p">,</span> <span class="n">data</span><span class="o">[</span><span class="ss">:terminal</span><span class="o">]</span><span class="p">)</span>
+      <span class="n">callback</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="ss">:terminals</span><span class="p">,</span> <span class="n">data</span><span class="o">[</span><span class="ss">:terminal</span><span class="o">]</span><span class="p">)</span>
     <span class="k">elsif</span> <span class="n">data</span><span class="o">[</span><span class="ss">:pass</span><span class="o">]</span>
       <span class="n">callback</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="ss">:pass</span><span class="p">,</span> <span class="n">data</span><span class="o">[</span><span class="ss">:pass</span><span class="o">]</span><span class="p">)</span>
     <span class="k">end</span>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-22'>
+    <tr id='section-20'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-22">&#182;</a>
+          <a class="pilcrow" href="#section-20">&#182;</a>
         </div>
         <p>Production for end of <code>rule</code> non-terminal.
 The <code>input</code> parameter includes information placed by previous productions at the same level, or at the start of the current production.
@@ -825,10 +793,10 @@ The <code>callback</code> parameter provides access to a callback defined in the
         <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:rule</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">input</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">callback</span><span class="o">|</span></pre></div>
       </td>
     </tr>
-    <tr id='section-23'>
+    <tr id='section-21'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-23">&#182;</a>
+          <a class="pilcrow" href="#section-21">&#182;</a>
         </div>
         <p>data contains an expression.
 Invoke callback</p>
@@ -839,10 +807,10 @@ Invoke callback</p>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-24'>
+    <tr id='section-22'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-24">&#182;</a>
+          <a class="pilcrow" href="#section-22">&#182;</a>
         </div>
         <p>Production for end of <code>expression</code> non-terminal.
 Passes through the optimized value of the alt production as follows:</p>
@@ -859,10 +827,10 @@ Passes through the optimized value of the alt production as follows:</p>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-25'>
+    <tr id='section-23'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-25">&#182;</a>
+          <a class="pilcrow" href="#section-23">&#182;</a>
         </div>
         <p>Production for end of <code>alt</code> non-terminal.
 Passes through the optimized value of the seq production as follows:</p>
@@ -886,10 +854,10 @@ Passes through the optimized value of the seq production as follows:</p>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-26'>
+    <tr id='section-24'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-26">&#182;</a>
+          <a class="pilcrow" href="#section-24">&#182;</a>
         </div>
         <p>Production for end of <code>seq</code> non-terminal.
 Passes through the optimized value of the <code>diff</code> production as follows:</p>
@@ -914,10 +882,10 @@ Passes through the optimized value of the <code>diff</code> production as follow
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-27'>
+    <tr id='section-25'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-27">&#182;</a>
+          <a class="pilcrow" href="#section-25">&#182;</a>
         </div>
         <p><code>Diff</code> production returns concatenated postfix values</p>
 
@@ -936,10 +904,10 @@ Passes through the optimized value of the <code>diff</code> production as follow
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-28'>
+    <tr id='section-26'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-28">&#182;</a>
+          <a class="pilcrow" href="#section-26">&#182;</a>
         </div>
         <p>Production for end of <code>postfix</code> non-terminal.
 Either returns the <code>primary</code> production value, or as modified by the <code>postfix</code>.</p>
@@ -956,10 +924,10 @@ Either returns the <code>primary</code> production value, or as modified by the 
         <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:postfix</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">input</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">callback</span><span class="o">|</span></pre></div>
       </td>
     </tr>
-    <tr id='section-29'>
+    <tr id='section-27'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-29">&#182;</a>
+          <a class="pilcrow" href="#section-27">&#182;</a>
         </div>
         <p>Push result onto input stack, as the <code>diff</code> production can have some number of <code>postfix</code> values that are applied recursively</p>
       </td>
@@ -974,10 +942,10 @@ Either returns the <code>primary</code> production value, or as modified by the 
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-30'>
+    <tr id='section-28'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-30">&#182;</a>
+          <a class="pilcrow" href="#section-28">&#182;</a>
         </div>
         <p>Production for end of <code>primary</code> non-terminal.
 Places <code>:primary</code> on the stack</p>
@@ -1001,10 +969,10 @@ Places <code>:primary</code> on the stack</p>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-31'>
+    <tr id='section-29'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-31">&#182;</a>
+          <a class="pilcrow" href="#section-29">&#182;</a>
         </div>
         <p>Production for end of pass non-terminal.</p>
 
@@ -1038,10 +1006,10 @@ Places <code>:primary</code> on the stack</p>
         <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">input</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span></pre></div>
       </td>
     </tr>
-    <tr id='section-33'>
+    <tr id='section-31'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-33">&#182;</a>
+          <a class="pilcrow" href="#section-31">&#182;</a>
         </div>
         <p>Read input, if necessary, which will be used in a Scanner which feads the Lexer.</p>
       </td>
@@ -1049,10 +1017,10 @@ Places <code>:primary</code> on the stack</p>
         <div class='highlight'><pre>    <span class="vi">@input</span> <span class="o">=</span> <span class="n">input</span><span class="o">.</span><span class="n">respond_to?</span><span class="p">(</span><span class="ss">:read</span><span class="p">)</span> <span class="p">?</span> <span class="n">input</span><span class="o">.</span><span class="n">read</span> <span class="p">:</span> <span class="n">input</span><span class="o">.</span><span class="n">to_s</span></pre></div>
       </td>
     </tr>
-    <tr id='section-34'>
+    <tr id='section-32'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-34">&#182;</a>
+          <a class="pilcrow" href="#section-32">&#182;</a>
         </div>
         <p>If the <code>level</code> option is set, instantiate a logger for collecting trace information.</p>
       </td>
@@ -1074,27 +1042,27 @@ Places <code>:primary</code> on the stack</p>
                                 <span class="o">**</span><span class="n">options</span>
     <span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">context</span><span class="p">,</span> <span class="o">*</span><span class="n">data</span><span class="o">|</span>
       <span class="n">rule</span> <span class="o">=</span> <span class="k">case</span> <span class="n">context</span>
-      <span class="k">when</span> <span class="ss">:terminal</span></pre></div>
+      <span class="k">when</span> <span class="ss">:terminals</span></pre></div>
       </td>
     </tr>
-    <tr id='section-35'>
+    <tr id='section-33'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-35">&#182;</a>
+          <a class="pilcrow" href="#section-33">&#182;</a>
         </div>
         <p>After parsing <code>@terminals</code>
 This changes the state of the parser to treat subsequent rules as terminals.</p>
       </td>
       <td class=code>
         <div class='highlight'><pre>        <span class="n">parsing_terminals</span> <span class="o">=</span> <span class="kp">true</span>
-        <span class="k">next</span>
+        <span class="n">rule</span> <span class="o">=</span> <span class="no">EBNF</span><span class="o">::</span><span class="no">Rule</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="kp">nil</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">first</span><span class="p">,</span> <span class="n">kind</span><span class="p">:</span> <span class="ss">:terminals</span><span class="p">)</span>
       <span class="k">when</span> <span class="ss">:pass</span></pre></div>
       </td>
     </tr>
-    <tr id='section-36'>
+    <tr id='section-34'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-36">&#182;</a>
+          <a class="pilcrow" href="#section-34">&#182;</a>
         </div>
         <p>After parsing <code>@pass</code>
 This defines a specific rule for whitespace.</p>
@@ -1104,10 +1072,10 @@ This defines a specific rule for whitespace.</p>
       <span class="k">when</span> <span class="ss">:rule</span></pre></div>
       </td>
     </tr>
-    <tr id='section-37'>
+    <tr id='section-35'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-37">&#182;</a>
+          <a class="pilcrow" href="#section-35">&#182;</a>
         </div>
         <p>A rule which has already been turned into a <code>Rule</code> object.</p>
       </td>
@@ -1122,10 +1090,10 @@ This defines a specific rule for whitespace.</p>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-38'>
+    <tr id='section-36'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-38">&#182;</a>
+          <a class="pilcrow" href="#section-36">&#182;</a>
         </div>
         <p>Output formatted S-Expression of grammar</p>
       </td>
@@ -1134,10 +1102,10 @@ This defines a specific rule for whitespace.</p>
     <span class="nb">require</span> <span class="s1">&#39;sxp&#39;</span> <span class="k">unless</span> <span class="n">defined?</span><span class="p">(</span><span class="no">SXP</span><span class="p">)</span></pre></div>
       </td>
     </tr>
-    <tr id='section-39'>
+    <tr id='section-37'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-39">&#182;</a>
+          <a class="pilcrow" href="#section-37">&#182;</a>
         </div>
         <p>Output rules as a formatted S-Expression</p>
 

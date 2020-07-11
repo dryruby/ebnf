@@ -9,9 +9,7 @@ module EBNF
   #      BRANCH = {
   #        :alt => {
   #          "(" => [:seq, :_alt_1],
-  #          :ENUM => [:seq, :_alt_1],
   #          :HEX => [:seq, :_alt_1],
-  #          :O_ENUM => [:seq, :_alt_1],
   #          :O_RANGE => [:seq, :_alt_1],
   #          :RANGE => [:seq, :_alt_1],
   #          :STRING1 => [:seq, :_alt_1],
@@ -38,8 +36,6 @@ module EBNF
   #        :alt => [
   #          :HEX,
   #          :SYMBOL,
-  #          :ENUM,
-  #          :O_ENUM,
   #          :RANGE,
   #          :O_RANGE,
   #          :STRING1,
@@ -54,7 +50,7 @@ module EBNF
   #
   #      TERMINALS = ["(", ")", "-",
   #        "@pass", "@terminals",
-  #        :ENUM, :HEX, :LHS, :O_ENUM, :O_RANGE,:POSTFIX,
+  #         :HEX, :LHS, :O_RANGE,:POSTFIX,
   #        :RANGE, :STRING1, :STRING2, :SYMBOL,"|"
   #      ].freeze
   #

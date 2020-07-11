@@ -26,14 +26,6 @@ class EBNFPegParser
 
   terminal(:HEX, HEX)
 
-  terminal(:ENUM, ENUM, unescape: true) do |value|
-    [:range, value[1..-2]]
-  end
-
-  terminal(:O_ENUM, O_ENUM, unescape: true) do |value|
-    [:range, value[1..-2]]
-  end
-
   terminal(:RANGE, RANGE, unescape: true) do |value|
     [:range, value[1..-2]]
   end

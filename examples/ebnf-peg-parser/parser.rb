@@ -51,44 +51,30 @@ class EBNFPegParser
     [:hex, value]
   end
 
-  # Terminal for `ENUM` is matched as part of a `primary` rule.
-  #
-  #     [14] ENUM       ::= ('[' R_CHAR+ | HEX+ ']') - LHS
-  terminal(:ENUM, ENUM) do |value|
-    [:range, value[1..-2]]
-  end
-
-  # Terminal for `O_ENUM` is matched as part of a `primary` rule.
-  #
-  #     [15] O_ENUM     ::= '[^' R_CHAR+ | HEX+ ']'
-  terminal(:O_ENUM, O_ENUM) do |value|
-    [:range, value[1..-2]]
-  end
-
   # Terminal for `RANGE` is matched as part of a `primary` rule.
   #
-  #     [16] `RANGE`      ::= '[' (R_CHAR '-' R_CHAR) | (HEX '-' HEX) ']'
+  #     [14] `RANGE`      ::= '[' (R_CHAR '-' R_CHAR) | (HEX '-' HEX) ']'
   terminal(:RANGE, RANGE) do |value|
     [:range, value[1..-2]]
   end
 
   # Terminal for `O_RANGE` is matched as part of a `primary` rule.
   #
-  #     [17] O_RANGE    ::= '[^' (R_CHAR '-' R_CHAR) | (HEX '-' HEX) ']'
+  #     [15] O_RANGE    ::= '[^' (R_CHAR '-' R_CHAR) | (HEX '-' HEX) ']'
   terminal(:O_RANGE, O_RANGE) do |value|
     [:range, value[1..-2]]
   end
 
   # Match double quote string
   #
-  #     [18] STRING1    ::= '"' (CHAR - '"')* '"'
+  #     [16] STRING1    ::= '"' (CHAR - '"')* '"'
   terminal(:STRING1, STRING1) do |value|
     value[1..-2]
   end
 
   # Match single quote string
   #
-  #     [19] STRING2    ::= "'" (CHAR - "'")* "'"
+  #     [17] STRING2    ::= "'" (CHAR - "'")* "'"
   terminal(:STRING2, STRING2) do |value|
     value[1..-2]
   end
@@ -97,7 +83,7 @@ class EBNFPegParser
 
   # Match `POSTFIX` terminal
   #
-  #     [22] POSTFIX    ::= [?*+]
+  #     [20] POSTFIX    ::= [?*+]
   terminal(:POSTFIX, POSTFIX)
 
   # The `PASS` productions is not used explicitly

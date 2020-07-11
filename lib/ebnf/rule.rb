@@ -150,7 +150,7 @@ module EBNF
     # @example inputs
     #    (pass _pass (plus (range "#x20\\t\\r\\n")))
     #    (rule ebnf "1" (star (alt declaration rule)))
-    #    (terminal O_ENUM "17" (seq "[^" (plus CHAR) "]"))
+    #    (terminal R_CHAR "19" (diff CHAR (alt "]" "-")))
     #
     # Also may have `(first ...)`, `(follow ...)`, or `(start #t)`.
     #
@@ -589,11 +589,28 @@ module EBNF
         str = str[1..-1] if str.start_with?('^')
         str = str[0..-2] if str.end_with?('-')  # Allowed at end of range
         scanner = StringScanner.new(str)
+        hex = rchar = in_range = false
         while !scanner.eos?
-          scanner.scan(/#{Terminals::HEX}-#{Terminals::HEX}/) ||
-          scanner.scan(/#{Terminals::R_CHAR}-#{Terminals::R_CHAR}/) ||
-          scanner.scan(/#{Terminals::HEX}|#{Terminals::R_CHAR}/) ||
-          raise(SyntaxError, "Range contains illegal components at offset #{scanner.pos}: was #{expr.last}")
+          begin
+            if scanner.scan(Terminals::HEX)
+              raise SyntaxError if in_range && rchar
+              rchar = in_range = false
+              hex = true
+            elsif scanner.scan(Terminals::R_CHAR)
+              raise SyntaxError if in_range && hex
+              hex = in_range = false
+              rchar = true
+            else
+              raise(SyntaxError, "Range contains illegal components at offset #{scanner.pos}: was #{expr.last}")
+            end
+
+            if scanner.scan(/\-/)
+              raise SyntaxError if in_range
+              in_range = true
+            end
+          rescue SyntaxError
+            raise(SyntaxError, "Range contains illegal components at offset #{scanner.pos}: was #{expr.last}")
+          end
         end
       else
         ([:alt, :diff].include?(expr.first) ? expr[1..-1] : expr[1,1]).each do |sym|

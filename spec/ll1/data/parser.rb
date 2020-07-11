@@ -29,14 +29,6 @@ class EBNFParser
     input[:terminal] = token.value
   end
 
-  terminal(:ENUM, ENUM, unescape: true) do |prod, token, input|
-    input[:terminal] = [:range, token.value[1..-2]]
-  end
-
-  terminal(:O_ENUM, O_ENUM, unescape: true) do |prod, token, input|
-    input[:terminal] = [:range, token.value[1..-2]]
-  end
-
   terminal(:RANGE, RANGE, unescape: true) do |prod, token, input|
     input[:terminal] = [:range, token.value[1..-2]]
   end

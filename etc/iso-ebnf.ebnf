@@ -70,6 +70,7 @@ comment                     ::= start_comment_symbol comment_symbol* end_comment
 comment_symbol              ::= comment | terminal_string | special_sequence | character
 
 letter                      ::= [a-zA-Z]
+# gratuitous comment
 decimal_digit               ::= [0-9]
 
 # Extended to allow '_'

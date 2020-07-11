@@ -111,6 +111,8 @@ which can also be proceeded by an optional number enclosed in square brackets to
 
     [1] symbol ::= expression
 
+(Note, this can introduce an ambiguity if the previous rule ends in a range or enum and the current rule has no identifier. In this case, enclosing `expression` within parentheses, or adding intervening comments can resolve the ambiguity.)
+
 Symbols are written in CAPITAL CASE if they are the start symbol of a regular language (terminals), otherwise with they are treated as non-terminal rules. Literal strings are quoted.
 
 Within the expression on the right-hand side of a rule, the following expressions are used to match strings of one or more characters:
@@ -121,11 +123,11 @@ Within the expression on the right-hand side of a rule, the following expression
   <tr><td><code>[a-zA-Z], [#xN-#xN]</code>
     <td>matches any Char or HEX with a value in the range(s) indicated (inclusive).</td></tr>
   <tr><td><code>[abc], [#xN#xN#xN]</code></td>
-    <td>matches any UTF-8 Char or HEX with a value among the characters enumerated. The last component may be '-'. Enumerations and ranges may be mixed in one set of brackets.</td></tr>
+    <td>matches any UTF-8 R\_CHAR or HEX with a value among the characters enumerated. The last component may be '-'. Enumerations and ranges may be mixed in one set of brackets.</td></tr>
   <tr><td><code>[^a-z], [^#xN-#xN]</code></td>
     <td>matches any UTF-8 Char or HEX a value outside the range indicated.</td></tr>
   <tr><td><code>[^abc], [^#xN#xN#xN]</code></td>
-    <td>matches any UTF-8 Char or HEX with a value not among the characters given. The last component may be '-'. Enumerations and ranges of forbidden values may be mixed in one set of brackets.</td></tr>
+    <td>matches any UTF-8 R\_CHAR or HEX with a value not among the characters given. The last component may be '-'. Enumerations and ranges of excluded values may be mixed in one set of brackets.</td></tr>
   <tr><td><code>"string"</code></td>
     <td>matches a literal string matching that given inside the double quotes.</td></tr>
   <tr><td><code>'string'</code></td>
