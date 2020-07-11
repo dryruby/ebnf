@@ -221,11 +221,9 @@ module EBNF
         if expr.length == 1
           return format_ebnf_char(expr)
         elsif expr =~ /\A#x\h+/
-          return format_ebnf_hex(expr[2..-1].hex.chr)
-        elsif expr =~ /"/
-          return "'" + escape_ebnf(expr, "'") + "'"
+          return escape_ebnf_hex(expr[2..-1].hex.chr)
         else
-          return '"' + escape_ebnf(expr, '"') + '"'
+          return format_ebnf_string(expr, expr.include?('"') ? "'" : '"')
         end
       end
       parts = {
@@ -328,21 +326,16 @@ module EBNF
     end
 
     # Escape a string, using as many UTF-8 characters as possible
-    def escape_ebnf(string, quote = '"')
-      buffer = ""
+    def format_ebnf_string(string, quote = '"')
       string.each_char do |c|
-        buffer << case (u = c.ord)
-        when 0x00..0x20   then escape_ebnf_hex(c)
-        when quote.ord    then escape_ebnf_hex(c)
-        when 0x7F         then escape_ebnf_hex(c)
-        else                   c
+        case c.ord
+        when 0x00..0x19, quote.ord
+          raise RangeError, "cannot format #{string.inspect} as an EBNF String: #{c.inspect} is out of range" unless
+            ISOEBNF::TERMINAL_CHARACTER.match?(c)
         end
       end
-      if @options[:html]
-        %(<code class="grammar-literal">#{buffer}</code>)
-      else
-        buffer
-      end
+
+      "#{quote}#{string}#{quote}"
     end
 
     def escape_ebnf_hex(u)
@@ -633,7 +626,6 @@ module EBNF
         else
           while !scanner.eos?
             r = scanner.scan(/.-./)
-            require 'byebug'; byebug unless r
             ranges << r
           end
           ranges.each do |range|

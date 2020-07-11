@@ -118,78 +118,110 @@ describe EBNF::Writer do
     describe "#format_ebnf" do
       subject {EBNF::Writer.new([])}
 
-      {
-        "alt": [
-          [:alt, :A, :B],
-          "A | B"
-        ],
-         "enum": [
-          [:range, "abc-"],
-          "[abc-]"
-        ],
-        "hex": [
-          [:hex, "#x20"],
-          "#x20"
-        ],
-        "istr": [
-          [:istr, "foo"],
-          %("foo")
-        ],
-        "opt": [
-          [:opt, :A],
-          "A?"
-        ],
-        "plus": [
-          [:plus, :A],
-          "A+"
-        ],
-        "range": [
-          [:range, "a-z"],
-          "[a-z]"
-        ],
-        "rept 0 1": [
-          [:rept, 0, 1, :A],
-          "A?"
-        ],
-        "rept 0 *": [
-          [:rept, 0, '*', :A],
-          "A*"
-        ],
-        "rept 1 1": [
-          [:rept, 1, 1, :A],
-          "A"
-        ],
-        "rept 1 *": [
-          [:rept, 1, '*', :A],
-          "A+"
-        ],
-        "rept 1 2": [
-          [:rept, 1, 2, :A],
-          "A A?"
-        ],
-        "rept 1 3": [
-          [:rept, 1, 3, :A],
-          "A (A A?)?"
-        ],
-        "rept 1 3 (A B)": [
-          [:rept, 1, 3, [:seq, :A, :B]],
-          "(A B) ((A B) (A B)?)?"
-        ],
-        "rept 1 3 (A | B)": [
-          [:rept, 1, 3, [:alt, :A, :B]],
-          "(A | B) ((A | B) (A | B)?)?"
-        ],
-        "star": [
-          [:star, :A],
-          "A*"
-        ],
-        "n3 path": [
-          [:seq, :pathItem, [:alt, [:seq, "!", :path], [:seq, "^", :path]]],
-          %{pathItem (("!" path) | ("^" path))}
-        ],
-      }.each do |title, (expr, result)|
-        it title do
-          expect(subject.send(:format_ebnf, expr)).to eql result
+      context "legal expressions" do
+        {
+          "alt": [
+            [:alt, :A, :B],
+            "A | B"
+          ],
+           "enum": [
+            [:range, "abc-"],
+            "[abc-]"
+          ],
+          "hex": [
+            [:hex, "#x20"],
+            "#x20"
+          ],
+          "istr": [
+            [:istr, "foo"],
+            %("foo")
+          ],
+          "opt": [
+            [:opt, :A],
+            "A?"
+          ],
+          "plus": [
+            [:plus, :A],
+            "A+"
+          ],
+          "range": [
+            [:range, "a-zA-Z"],
+            "[a-zA-Z]"
+          ],
+          "rept 0 1": [
+            [:rept, 0, 1, :A],
+            "A?"
+          ],
+          "rept 0 *": [
+            [:rept, 0, '*', :A],
+            "A*"
+          ],
+          "rept 1 1": [
+            [:rept, 1, 1, :A],
+            "A"
+          ],
+          "rept 1 *": [
+            [:rept, 1, '*', :A],
+            "A+"
+          ],
+          "rept 1 2": [
+            [:rept, 1, 2, :A],
+            "A A?"
+          ],
+          "rept 1 3": [
+            [:rept, 1, 3, :A],
+            "A (A A?)?"
+          ],
+          "rept 1 3 (A B)": [
+            [:rept, 1, 3, [:seq, :A, :B]],
+            "(A B) ((A B) (A B)?)?"
+          ],
+          "rept 1 3 (A | B)": [
+            [:rept, 1, 3, [:alt, :A, :B]],
+            "(A | B) ((A | B) (A | B)?)?"
+          ],
+          "star": [
+            [:star, :A],
+            "A*"
+          ],
+          "string '\\r'": [
+            [:seq, "\r"],
+            %{#x0D}
+          ],
+          "string ' '": [
+            [:seq, " "],
+            %{#x20}
+          ],
+          "string 'a'": [
+            [:seq, "a"],
+            %{"a"}
+          ],
+          "string '\"'": [
+            [:seq, '"'],
+            %{'"'}
+          ],
+          "string \"'\"": [
+            [:seq, '\''],
+            %{"'"}
+          ],
+          "n3 path": [
+            [:seq, :pathItem, [:alt, [:seq, "!", :path], [:seq, "^", :path]]],
+            %{pathItem (("!" path) | ("^" path))}
+          ],
+        }.each do |title, (expr, result)|
+          it title do
+            expect(subject.send(:format_ebnf, expr)).to eql result
+          end
+        end
+      end
+
+      context "illegal expressions" do
+        {
+          "string 'a\nb": [:seq, "a\nb"],
+        }.each do |title, expr|
+          it title do
+            expect {subject.send(:format_ebnf, expr)}.to raise_error RangeError
+          end
         end
       end
     end
@@ -200,6 +232,7 @@ describe EBNF::Writer do
         "EBNF Grammar" => File.expand_path("../../etc/ebnf.ebnf", __FILE__),
         "ISO EBNF Grammar" => File.expand_path("../../etc/iso-ebnf.ebnf", __FILE__),
         "Turtle Grammar" => File.expand_path("../../etc/turtle.ebnf", __FILE__),
+        "SPARQL Grammar" => File.expand_path("../../etc/sparql.ebnf", __FILE__),
       }.each do |name, file|
         context name do
           it "outputs grammar as text" do
