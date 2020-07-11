@@ -78,16 +78,16 @@ class ISOEBNFPegParser
   terminal(:empty, //)
 
   # `[26] definition_separator_symbol ::= '|' | '/' | '!'`
-  terminal(:definition_separator_symbol, /[\|\/!]/)
+  terminal(:definition_separator_symbol, /[\|!]|(?:\/(?<=\)))/)
 
   # `[27] terminator_symbol           ::= ';' | '.'`
   terminal(:terminator_symbol, /[;\.]/)
 
-  # `[28] start_option_symbol         ::= '[' | '(/'`
-  terminal(:start_option_symbol, /\[|\(\//)
+  # `[28] start_option_symbol         ::= '['
+  terminal(:start_option_symbol, /\[|(?:\(\/)/)
 
-  # `[29] end_option_symbol           ::= ']' | '/)'`
-  terminal(:end_option_symbol, /[\]\/]/)
+  # `[29] end_option_symbol           ::= ']'`
+  terminal(:end_option_symbol, /\]/)
 
   # `[30] start_repeat_symbol         ::= '{' | '(:'`
   terminal(:start_repeat_symbol, /{|\(:/)

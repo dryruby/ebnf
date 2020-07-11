@@ -62,7 +62,11 @@ comment           = '(*', {comment_symbol}, '*)'
                        <terminal string>, <meta identifier>,
                        <integer> or <special sequence> *);
 
-comment_symbol    = comment | terminal_string | special_sequence | character;
+comment_symbol    = comment | commentless_symbol | other_character ;
+
+commentless_symbol = terminal_character | meta_identifier | integer
+                   | terminal_string | special_sequence
+                   ;
 
 letter = "A" | "B" | "C" | "D" | "E" | "F" | "G"
        | "H" | "I" | "J" | "K" | "L" | "M" | "N"
@@ -113,11 +117,22 @@ other_character            = ' ' | ':' | '+' | '_' | '%' | '@' | '&'
 
 empty                      = ;
 
+concatenate_symbol         = ',' ;
+repetition_symbol          = '*' ;
+except_symbol              = '-' ;
+first_quote_symbol         = "'" ;
+second_quote_symbol        = '"' ;
+start_comment_symbol       = '(*' ;
+end_comment_symbol         = '*)' ;
+start_group_symbol         = '(' ;
+end_group_symbol           = ')' ;
+special_sequence_symbol    = '?' ;
+
 (* Simple terminals that are often extended *)
 defining_symbol             = '=' | ':' ;
 definition_separator_symbol = '|' | '/' | '!' ;
 terminator_symbol           = ';' | '.' ;
-start_option_symbol         = '[' | '(/' ;
-end_option_symbol           = ']' | '/)' ;
+start_option_symbol         = '[' ;
+end_option_symbol           = ']' ;
 start_repeat_symbol         = '{' | '(:' ;
 end_repeat_symbol           = '}' | ':)' ;
