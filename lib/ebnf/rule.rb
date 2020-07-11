@@ -587,17 +587,13 @@ module EBNF
       when :range
         str = expr.last.dup
         str = str[1..-1] if str.start_with?('^')
-        if str.include?('-')
-          # If range is RANGE or O_RANGE, must be of form R_CHAR-R_CHAR or HEX-HEX
-          raise SyntaxError, "Range must be of form HEX-HEX or R_CHAR-R_CHAR: was #{str.inspect}" unless
-            str.match?(/^\^?(?:(?:#{Terminals::HEX}-#{Terminals::HEX})|(?:#{Terminals::R_CHAR}-#{Terminals::R_CHAR}))$/)
-        else
-          if str.match?(/^#{Terminals::HEX}+$/)
-            # Okay
-          elsif str.match?(Terminals::HEX) || !str.match?(/^#{Terminals::R_CHAR}+$/)
-            # Can't include both CHAR and HEX
-            raise SyntaxError, "Range must be of form  HEX+ or R_CHAR+: was #{str.inspect}"
-          end
+        str = str[0..-2] if str.end_with?('-')  # Allowed at end of range
+        scanner = StringScanner.new(str)
+        while !scanner.eos?
+          scanner.scan(/#{Terminals::HEX}-#{Terminals::HEX}/) ||
+          scanner.scan(/#{Terminals::R_CHAR}-#{Terminals::R_CHAR}/) ||
+          scanner.scan(/#{Terminals::HEX}|#{Terminals::R_CHAR}/) ||
+          raise(SyntaxError, "Range contains illegal components at offset #{scanner.pos}: was #{expr.last}")
         end
       else
         ([:alt, :diff].include?(expr.first) ? expr[1..-1] : expr[1,1]).each do |sym|

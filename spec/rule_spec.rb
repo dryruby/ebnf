@@ -972,6 +972,21 @@ describe EBNF::Rule do
     subject {gram.ast.first}
 
     {
+      "mixed enum char and hex": [
+        "a ::= [b#x20]",
+        %(In rule a: Range must be of form  HEX+ or R_CHAR+: was "b#x20")
+      ],
+      "mixed enum char and hex (2)": [
+        "a ::= [#x20z]",
+        %(In rule a: Range must be of form  HEX+ or R_CHAR+: was "#x20z")
+      ],
+    }.each do |name, (rule, message)|
+      it name do
+        expect(EBNF.parse(rule)).to be_valid
+      end
+    end
+
+    {
       "missing rule": [
         "a ::= b",
         /In rule a: No rule found for b/
@@ -983,14 +998,6 @@ describe EBNF::Rule do
       "empty range": [
         "a ::= []",
         /syntax error/
-      ],
-      "mixed enum char and hex": [
-        "a ::= [b#x20]",
-        %(In rule a: Range must be of form  HEX+ or R_CHAR+: was "b#x20")
-      ],
-      "mixed enum char and hex (2)": [
-        "a ::= [#x20z]",
-        %(In rule a: Range must be of form  HEX+ or R_CHAR+: was "#x20z")
       ],
       "mixed range char and hex": [
         "a ::= [b-#x20]",

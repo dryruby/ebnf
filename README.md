@@ -119,13 +119,13 @@ Within the expression on the right-hand side of a rule, the following expression
   <tr><td><code>#xN</code></td>
     <td>where <code>N</code> is a hexadecimal integer, the expression matches the character whose number (code point) in ISO/IEC 10646 is <code>N</code>. The number of leading zeros in the <code>#xN</code> form is insignificant.</td></tr>
   <tr><td><code>[a-zA-Z], [#xN-#xN]</code>
-    <td>matches any Char with a value in the range(s) indicated (inclusive).</td></tr>
+    <td>matches any Char or HEX with a value in the range(s) indicated (inclusive).</td></tr>
   <tr><td><code>[abc], [#xN#xN#xN]</code></td>
-    <td>matches any Char with a value among the characters enumerated. Enumerations and ranges can be mixed in one set of brackets.</td></tr>
+    <td>matches any UTF-8 Char or HEX with a value among the characters enumerated. The last component may be '-'. Enumerations and ranges may be mixed in one set of brackets.</td></tr>
   <tr><td><code>[^a-z], [^#xN-#xN]</code></td>
-    <td>matches any UTF-8 Char with a value outside the range indicated.</td></tr>
+    <td>matches any UTF-8 Char or HEX a value outside the range indicated.</td></tr>
   <tr><td><code>[^abc], [^#xN#xN#xN]</code></td>
-    <td>matches any UTF-8 Char with a value not among the characters given. Enumerations and ranges of forbidden values can be mixed in one set of brackets.</td></tr>
+    <td>matches any UTF-8 Char or HEX with a value not among the characters given. The last component may be '-'. Enumerations and ranges of forbidden values may be mixed in one set of brackets.</td></tr>
   <tr><td><code>"string"</code></td>
     <td>matches a literal string matching that given inside the double quotes.</td></tr>
   <tr><td><code>'string'</code></td>
