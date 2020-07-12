@@ -16,7 +16,7 @@ module EBNFPegMeta
     EBNF::Rule.new(:_diff_2, "7.2", [:seq, "-", :postfix]).extend(EBNF::PEG::Rule),
     EBNF::Rule.new(:postfix, "8", [:seq, :primary, :_postfix_1]).extend(EBNF::PEG::Rule),
     EBNF::Rule.new(:_postfix_1, "8.1", [:opt, :POSTFIX]).extend(EBNF::PEG::Rule),
-    EBNF::Rule.new(:primary, "9", [:alt, :HEX, :SYMBOL, :RANGE, :O_RANGE, :STRING1, :STRING2, :_primary_1]).extend(EBNF::PEG::Rule),
+    EBNF::Rule.new(:primary, "9", [:alt, :HEX, :SYMBOL, :O_RANGE, :RANGE, :STRING1, :STRING2, :_primary_1]).extend(EBNF::PEG::Rule),
     EBNF::Rule.new(:_primary_1, "9.1", [:seq, "(", :expression, ")"]).extend(EBNF::PEG::Rule),
     EBNF::Rule.new(:pass, "10", [:seq, "@pass", :expression]).extend(EBNF::PEG::Rule),
     EBNF::Rule.new(:_terminals, nil, [:seq], kind: :terminals).extend(EBNF::PEG::Rule),

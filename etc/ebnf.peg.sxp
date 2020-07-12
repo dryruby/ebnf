@@ -13,7 +13,7 @@
      (rule _diff_2 "7.2" (seq "-" postfix))
      (rule postfix "8" (seq primary _postfix_1))
      (rule _postfix_1 "8.1" (opt POSTFIX))
-     (rule primary "9" (alt HEX SYMBOL RANGE O_RANGE STRING1 STRING2 _primary_1))
+     (rule primary "9" (alt HEX SYMBOL O_RANGE RANGE STRING1 STRING2 _primary_1))
      (rule _primary_1 "9.1" (seq "(" expression ")"))
      (rule pass "10" (seq "@pass" expression))
      (terminals _terminals (seq))

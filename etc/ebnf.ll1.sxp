@@ -88,7 +88,7 @@
       (first "(" HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
       (follow "(" ")" "-" "@pass" "@terminals" HEX LHS O_RANGE POSTFIX RANGE
        STRING1 STRING2 SYMBOL _eof "|" )
-      (alt HEX SYMBOL RANGE O_RANGE STRING1 STRING2 _primary_1))
+      (alt HEX SYMBOL O_RANGE RANGE STRING1 STRING2 _primary_1))
      (rule _primary_1 "9.1"
       (first "(")
       (follow "(" ")" "-" "@pass" "@terminals" HEX LHS O_RANGE POSTFIX RANGE

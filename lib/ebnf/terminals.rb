@@ -8,7 +8,7 @@ module EBNF::Terminals
   R_CHAR  = %r([\u0009\u000A\u000D\u0020-\u002C\u002E-\u005C\u005E-\uD7FF\u{10000}-\u{10FFFF}])u.freeze
   RANGE   = %r(\[(?:(?:#{R_CHAR}\-#{R_CHAR})|(?:#{HEX}\-#{HEX})|#{R_CHAR}|#{HEX})+-?\](?!\s+#{SYMBOL_BASE}\s*::=))u.freeze
   LHS     = %r((?:\[#{SYMBOL_BASE}\])?\s*#{SYMBOL_BASE}\s*::=)u.freeze
-  O_RANGE = %r(\[^(?:(?:#{R_CHAR}\-#{R_CHAR})|(?:#{HEX}\-#{HEX}|#{R_CHAR}|#{HEX}))+-?\])u.freeze
+  O_RANGE = %r(\[\^(?:(?:#{R_CHAR}\-#{R_CHAR})|(?:#{HEX}\-#{HEX}|#{R_CHAR}|#{HEX}))+-?\])u.freeze
   STRING1 = %r("[\u0009\u000A\u000D\u0020\u0021\u0023-\uD7FF\u{10000}-\u{10FFFF}]*")u.freeze
   STRING2 = %r('[\u0009\u000A\u000D\u0020-\u0026\u0028-\uD7FF\u{10000}-\u{10FFFF}]*')u.freeze
   POSTFIX = %r([?*+])u.freeze
