@@ -461,12 +461,12 @@
     </tr>
   </thead>
   <tbody>
-    <tr id='section-EBNF_Parser_for_EBNF.'>
+    <tr id='section-EBNF_Parser_for_EISO_BNF.'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-EBNF_Parser_for_EBNF.">&#182;</a>
+          <a class="pilcrow" href="#section-EBNF_Parser_for_EISO_BNF.">&#182;</a>
         </div>
-        <h1>EBNF Parser for EBNF.</h1>
+        <h1>EBNF Parser for EISO BNF.</h1>
 
 <p>Produces an Abstract Synatx Tree in S-Expression form for the input grammar file</p>
       </td>
@@ -640,7 +640,7 @@ but it is correct.</p>
         <p><code>[25] empty                      ::= &#39;&#39;</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:start_option_symbol</span><span class="p">,</span><span class="sr"> /\[|\(\//</span><span class="p">)</span></pre></div>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:start_option_symbol</span><span class="p">,</span><span class="sr"> /\[|(?:\(\/)/</span><span class="p">)</span></pre></div>
       </td>
     </tr>
     <tr id='section-12'>
@@ -651,7 +651,7 @@ but it is correct.</p>
         <p><code>[26] definition_separator_symbol ::= &#39;|&#39; | &#39;/&#39; | &#39;!&#39;</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:end_option_symbol</span><span class="p">,</span><span class="sr"> /[\]\/]/</span><span class="p">)</span></pre></div>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:end_option_symbol</span><span class="p">,</span><span class="sr"> /\]/</span><span class="p">)</span></pre></div>
       </td>
     </tr>
     <tr id='section-13'>
@@ -670,7 +670,7 @@ but it is correct.</p>
         <div class="pilwrap">
           <a class="pilcrow" href="#section-14">&#182;</a>
         </div>
-        <p><code>[28] start_option_symbol         ::= &#39;[&#39; | &#39;(/&#39;</code></p>
+        <p>`[28] start<em>option</em>symbol         ::= &#39;[&#39;</p>
       </td>
       <td class=code>
         <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:end_repeat_symbol</span><span class="p">,</span><span class="sr"> /}|:\)/</span><span class="p">)</span></pre></div>
@@ -681,7 +681,7 @@ but it is correct.</p>
         <div class="pilwrap">
           <a class="pilcrow" href="#section-15">&#182;</a>
         </div>
-        <p><code>[29] end_option_symbol           ::= &#39;]&#39; | &#39;/)&#39;</code></p>
+        <p><code>[29] end_option_symbol           ::= &#39;]&#39;</code></p>
       </td>
       <td class=code>
         <div class='highlight'><pre></pre></div>
@@ -774,8 +774,8 @@ Invoke callback</p>
       <td class=code>
         <div class='highlight'><pre>  <span class="n">start_production</span><span class="p">(</span><span class="ss">:term</span><span class="p">,</span> <span class="n">as_hash</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span>
   <span class="n">production</span><span class="p">(</span><span class="ss">:term</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="k">if</span> <span class="n">value</span><span class="o">[</span><span class="ss">:_diff_1</span><span class="o">]</span>
-      <span class="o">[</span><span class="ss">:diff</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="ss">:postfix</span><span class="o">]</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="ss">:_term_1</span><span class="o">]]</span>
+    <span class="k">if</span> <span class="n">value</span><span class="o">[</span><span class="ss">:_term_1</span><span class="o">]</span>
+      <span class="o">[</span><span class="ss">:diff</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="ss">:factor</span><span class="o">]</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="ss">:_term_1</span><span class="o">]]</span>
     <span class="k">else</span>
       <span class="n">value</span><span class="o">[</span><span class="ss">:factor</span><span class="o">]</span>
     <span class="k">end</span>
@@ -899,9 +899,11 @@ Invoke callback</p>
 
     <span class="n">parsing_terminals</span> <span class="o">=</span> <span class="kp">false</span>
     <span class="vi">@ast</span> <span class="o">=</span> <span class="o">[]</span>
-    <span class="n">parse</span><span class="p">(</span><span class="vi">@input</span><span class="p">,</span> <span class="ss">:syntax</span><span class="p">,</span> <span class="no">ISOEBNFMeta</span><span class="o">::</span><span class="no">RULES</span><span class="p">,</span>
-                           <span class="n">whitespace</span><span class="p">:</span> <span class="sr">%r{([\x09-\x0d\x20]|(?:\(\*(?:(?:\*[^\)])|[^*])*\*\)))+}</span><span class="p">,</span>
-                           <span class="o">**</span><span class="n">options</span>
+    <span class="n">parse</span><span class="p">(</span><span class="vi">@input</span><span class="p">,</span>
+           <span class="ss">:syntax</span><span class="p">,</span>
+           <span class="no">ISOEBNFMeta</span><span class="o">::</span><span class="no">RULES</span><span class="p">,</span>
+           <span class="n">whitespace</span><span class="p">:</span> <span class="sr">%r{([\x09-\x0d\x20]|(?:\(\*(?:(?:\*[^\)])|[^*])*\*\)))+}</span><span class="p">,</span>
+           <span class="o">**</span><span class="n">options</span>
     <span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">context</span><span class="p">,</span> <span class="o">*</span><span class="n">data</span><span class="o">|</span>
       <span class="n">rule</span> <span class="o">=</span> <span class="k">case</span> <span class="n">context</span>
       <span class="k">when</span> <span class="ss">:rule</span></pre></div>

@@ -1,8 +1,8 @@
 require_relative 'isoebnf/meta'
 require 'logger'
 
-# ABNF parser
-# Parses ABNF into an array of {EBNF::Rule}.
+# ISO EBNF parser
+# Parses ISO EBNF into an array of {EBNF::Rule}.
 module EBNF
   class ISOEBNF
     include EBNF::PEG::Parser
@@ -142,8 +142,8 @@ module EBNF
     # `[5]  term              ::= factor ('-' exception)?`
     start_production(:term, as_hash: true)
     production(:term) do |value|
-      if value[:_diff_1]
-        [:diff, value[:postfix], value[:_term_1]]
+      if value[:_term_1]
+        [:diff, value[:factor], value[:_term_1]]
       else
         value[:factor]
       end

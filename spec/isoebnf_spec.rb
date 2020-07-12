@@ -120,7 +120,7 @@ describe EBNF::ISOEBNF do
              (star (seq assignment ";" white_space)) "END." ))
            (rule identifier (seq alphabetic_character (star (alt alphabetic_character digit))))
            (rule number (seq (opt "-") digit (star digit)))
-           (rule string (seq "\"" (star all_characters) "\""))
+           (rule string (seq "\"" (star (diff all_characters "\"")) "\""))
            (rule assignment (seq identifier ":=" (seq (alt number identifier string))))
            (rule alphabetic_character
             (alt "A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P" "Q" "R"
@@ -164,7 +164,11 @@ describe EBNF::ISOEBNF do
       "something": [
         %{something = foo, ( bar );},
         %{((rule something (seq foo (seq bar))))}
-      ]
+      ],
+      "diff": [
+        %{first_terminal_character    = terminal_character - "'" ;},
+        %{((rule first_terminal_character (diff terminal_character "'")))},
+      ],
     }.each do |title, (input, expect)|
       it title do
         input << "\n" unless input.end_with?("\n")

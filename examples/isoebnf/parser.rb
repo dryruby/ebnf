@@ -1,4 +1,4 @@
-# # EBNF Parser for EBNF.
+# # EBNF Parser for EISO BNF.
 #
 # Produces an Abstract Synatx Tree in S-Expression form for the input grammar file
 require 'ebnf'
@@ -78,7 +78,7 @@ class ISOEBNFPegParser
   terminal(:empty, //)
 
   # `[26] definition_separator_symbol ::= '|' | '/' | '!'`
-  terminal(:definition_separator_symbol, /[\|!]|(?:\/(?<=\)))/)
+  terminal(:definition_separator_symbol, /[\|\/!]/)
 
   # `[27] terminator_symbol           ::= ';' | '.'`
   terminal(:terminator_symbol, /[;\.]/)
@@ -146,8 +146,8 @@ class ISOEBNFPegParser
   # `[5]  term              ::= factor ('-' exception)?`
   start_production(:term, as_hash: true)
   production(:term) do |value|
-    if value[:_diff_1]
-      [:diff, value[:postfix], value[:_term_1]]
+    if value[:_term_1]
+      [:diff, value[:factor], value[:_term_1]]
     else
       value[:factor]
     end
@@ -211,9 +211,11 @@ class ISOEBNFPegParser
 
     parsing_terminals = false
     @ast = []
-    parse(@input, :syntax, ISOEBNFMeta::RULES,
-                           whitespace: %r{([\x09-\x0d\x20]|(?:\(\*(?:(?:\*[^\)])|[^*])*\*\)))+},
-                           **options
+    parse(@input,
+           :syntax,
+           ISOEBNFMeta::RULES,
+           whitespace: %r{([\x09-\x0d\x20]|(?:\(\*(?:(?:\*[^\)])|[^*])*\*\)))+},
+           **options
     ) do |context, *data|
       rule = case context
       when :rule

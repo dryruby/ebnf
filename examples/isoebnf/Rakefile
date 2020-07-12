@@ -3,7 +3,7 @@ task default: ['iso-ebnf.sxp', 'iso-ebnf.peg.sxp', :meta, :doc]
 desc 'Build rules table'
 task meta: "meta.rb"
 
-file "meta.rb" => "iso-ebnf.ebnf" do |t|
+file "meta.rb" => "../../etc/iso-ebnf.ebnf" do |t|
   sh %{
     ebnf --peg --format rb \
       --mod-name ISOEBNFMeta \
@@ -12,13 +12,13 @@ file "meta.rb" => "iso-ebnf.ebnf" do |t|
   }
 end
 
-file 'iso-ebnf.sxp' => "iso-ebnf.ebnf" do |t|
+file 'iso-ebnf.sxp' => "../../etc/iso-ebnf.ebnf" do |t|
   sh %{
     ebnf --output iso-ebnf.sxp #{t.prerequisites.first}
   }
 end
 
-file 'iso-ebnf.peg.sxp' => "iso-ebnf.ebnf" do |t|
+file 'iso-ebnf.peg.sxp' => "../../etc/iso-ebnf.ebnf" do |t|
   sh %{
     ebnf --peg --output iso-ebnf.peg.sxp #{t.prerequisites.first}
   }
