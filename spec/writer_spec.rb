@@ -238,6 +238,9 @@ describe EBNF::Writer do
           it "outputs grammar as text" do
             expect {EBNF.parse(File.read(file)).to_s}.to_not raise_error
           end
+          it "parses to equivalent rules" do
+            expect(EBNF.parse(File.read(file)).to_sxp).to produce(File.read(file.sub('.ebnf', '.sxp')))
+          end
           it "outputs grammar as html" do
             expect {EBNF.parse(File.read(file)).to_html}.to_not raise_error
           end

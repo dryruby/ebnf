@@ -64,7 +64,7 @@ file "lib/ebnf/abnf/meta.rb" => "etc/abnf.ebnf" do
 end
 
 file "lib/ebnf/abnf/core.rb" => "etc/abnf-core.ebnf" do
-  %x(bin/ebnf --peg -f rb --mod-name ABNFCore -o lib/ebnf/abnf/core.rb etc/abnf-core.ebnf)
+  %x(bin/ebnf -f rb --mod-name ABNFCore -o lib/ebnf/abnf/core.rb etc/abnf-core.ebnf)
 end
 
 file "lib/ebnf/ebnf/meta.rb" => "etc/ebnf.peg.rb" do
@@ -80,7 +80,7 @@ end
 rule ".sxp" => %w{.ebnf} do |t|
   puts "build #{t.name}"
   File.open(t.name, "w") do |f|
-    IO.popen(%(bin/ebnf --input-format native #{t.source})).each_line do |line|
+    IO.popen(%(bin/ebnf #{t.source})).each_line do |line|
       f.puts '    ' + line
     end
   end
@@ -89,7 +89,7 @@ end
 rule ".peg.sxp" => %w{.ebnf} do |t|
   puts "build #{t.name}"
   File.open(t.name, "w") do |f|
-    IO.popen(%(bin/ebnf --input-format native --peg #{t.source})).each_line do |line|
+    IO.popen(%(bin/ebnf --peg #{t.source})).each_line do |line|
       f.puts '    ' + line
     end
   end
@@ -97,13 +97,13 @@ end
 
 rule ".html" => %w{.ebnf} do |t|
   puts "build #{t.name}"
-  %x(bin/ebnf --input-format native --format html -o #{t.name} #{t.source})
+  %x(bin/ebnf --format html -o #{t.name} #{t.source})
 end
 
 file "etc/ebnf.ll1.sxp" => "etc/ebnf.ebnf" do |t|
   puts "build #{t.name}"
   File.open(t.name, "w") do |f|
-    IO.popen(%(bin/ebnf --input-format native --ll1 ebnf #{t.source})).each_line do |line|
+    IO.popen(%(bin/ebnf --ll1 ebnf #{t.source})).each_line do |line|
       f.puts '    ' + line
     end
   end
@@ -111,10 +111,10 @@ end
 
 file "etc/ebnf.peg.rb" => "etc/ebnf.ebnf" do |t|
   puts "build #{t.name}"
-  %x(bin/ebnf --input-format native --peg --mod-name EBNFMeta --input-format native -f rb -o etc/ebnf.peg.rb etc/ebnf.ebnf)
+  %x(bin/ebnf --peg --mod-name EBNFMeta -f rb -o etc/ebnf.peg.rb etc/ebnf.ebnf)
 end
 
 file "etc/ebnf.ll1.rb" => "etc/ebnf.ebnf" do |t|
   puts "build #{t.name}"
-  %x(bin/ebnf --input-format native --ll1 ebnf -f rb -o etc/ebnf.ll1.rb etc/ebnf.ebnf)
+  %x(bin/ebnf --ll1 ebnf -f rb -o etc/ebnf.ll1.rb etc/ebnf.ebnf)
 end

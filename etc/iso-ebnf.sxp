@@ -44,7 +44,7 @@
      (terminal other_character (alt (range ":+_%@&$<>^` ̃#x20#x23") "\\"))
      (terminal gap_separator (range "#x9#xa#xb#xc#xd#x20"))
      (pass _pass (alt (plus gap_separator) comment))
-     (terminal empty (seq ()))
+     (terminal empty (seq ""))
      (terminal concatenate_symbol (seq ","))
      (terminal repetition_symbol (seq "*"))
      (terminal except_symbol (seq "-"))

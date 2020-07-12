@@ -283,7 +283,8 @@
      (rule PrefixedName "137" (alt PNAME_LN PNAME_NS))
      (rule BlankNode "138" (alt BLANK_NODE_LABEL ANON))
      (terminals _terminals (seq))
-     (terminal IRIREF "139" (seq "<" (star (range "^<>\"{}|^`]-[#x00-#x20")) ">"))
+     (terminal IRIREF "139"
+      (seq "<" (star (diff (range "^<>\"{}|^`\\") (range "#x00-#x20"))) ">"))
      (terminal PNAME_NS "140" (seq (opt PN_PREFIX) ":"))
      (terminal PNAME_LN "141" (seq PNAME_NS PN_LOCAL))
      (terminal BLANK_NODE_LABEL "142"
@@ -311,10 +312,10 @@
      (terminal STRING_LITERAL2 "157"
       (seq "\"" (star (alt (range "^#x22#x5C#xA#xD") ECHAR)) "\""))
      (terminal STRING_LITERAL_LONG1 "158"
-      (seq "'''" (seq (opt (alt "'" "''")) (range "^'] | ECHAR ))* \"'''\""))))
+      (seq "'''" (star (seq (opt (alt "'" "''")) (alt (range "^'\\") ECHAR))) "'''"))
      (terminal STRING_LITERAL_LONG2 "159"
-      (seq "\"\"\"" (seq (opt (alt "\"" "\"\"")) (range "^\"] | ECHAR ))* '\"\"\"'"))))
-     (terminal ECHAR "160" (seq "\\" (range "tbnrf\"'")))
+      (seq "\"\"\"" (star (seq (opt (alt "\"" "\"\"")) (alt (range "^\"\\") ECHAR))) "\"\"\""))
+     (terminal ECHAR "160" (seq "\\" (range "tbnrf\\\"'")))
      (terminal NIL "161" (seq "(" (star WS) ")"))
      (terminal WS "162" (alt (hex "#x20") (hex "#x9") (hex "#xD") (hex "#xA")))
      (terminal ANON "163" (seq "[" (star WS) "]"))
