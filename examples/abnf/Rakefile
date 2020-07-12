@@ -1,6 +1,6 @@
 task default: ['abnf.sxp', 'abnf.peg.sxp', "meta.rb", "core.rb", :doc]
 
-file "meta.rb" => "abnf.ebnf" do |t|
+file "meta.rb" => "../../etc/abnf.ebnf" do |t|
   sh %{
     ebnf --peg --format rb \
       --mod-name ABNFMeta \
@@ -9,7 +9,7 @@ file "meta.rb" => "abnf.ebnf" do |t|
   }
 end
 
-file "core.rb" => "abnf-core.ebnf" do |t|
+file "core.rb" => "../../etc/abnf-core.ebnf" do |t|
   sh %{
     ebnf --format rb \
       --mod-name ABNFCore \
@@ -18,13 +18,13 @@ file "core.rb" => "abnf-core.ebnf" do |t|
   }
 end
 
-file 'abnf.sxp' => "abnf.ebnf" do |t|
+file 'abnf.sxp' => "../../etc/abnf.ebnf" do |t|
   sh %{
     ebnf --output abnf.sxp #{t.prerequisites.first}
   }
 end
 
-file 'abnf.peg.sxp' => "abnf.ebnf" do |t|
+file 'abnf.peg.sxp' => "../../etc/abnf.ebnf" do |t|
   sh %{
     ebnf --peg --output abnf.peg.sxp #{t.prerequisites.first}
   }

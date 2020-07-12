@@ -1,5 +1,5 @@
 (
- (terminal WSP (alt SP HTAB))
+ (rule rulelist (plus (alt rule (seq (star c_wsp) c_nl))))
  (rule rule (seq rulename defined_as elements c_nl))
  (rule elements (seq alternation (star c_wsp)))
  (rule alternation
@@ -14,6 +14,7 @@
  (rule case_insensitive_string (seq (opt "%i") quoted_string))
  (rule case_sensitive_string (seq "%s" quoted_string))
  (rule num_val (seq "%" (alt bin_val dec_val hex_val)))
+ (terminals _terminals (seq))
  (terminal rulename (seq ALPHA (star (alt ALPHA DIGIT "-"))))
  (terminal defined_as (seq (star c_wsp) (alt "=" "=/") (star c_wsp)))
  (terminal c_wsp (alt WSP (seq c_nl WSP)))
@@ -34,11 +35,11 @@
  (terminal CTL (alt (range "#x00-#x1F") (hex "#x7F")))
  (terminal DIGIT (range "#x30-#x39"))
  (terminal DQUOTE (hex "#x22"))
- (terminal HEXDIG (alt DIGIT (range "A-F")))
+ (terminal HEXDIG (alt DIGIT "A" "B" "C" "D" "E" "F"))
  (terminal HTAB (hex "#x09"))
  (terminal LF (hex "#x0A"))
  (terminal LWSP (star (alt WSP (seq CRLF WSP))))
  (terminal OCTET (range "#x00-#xFF"))
  (terminal SP (hex "#x20"))
  (terminal VCHAR (range "#x21-#x7E"))
- (rule rulelist (plus (alt rule (seq (star c_wsp) c_nl)))))
+ (terminal WSP (alt SP HTAB)))

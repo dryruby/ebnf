@@ -32,6 +32,10 @@ describe EBNF::ABNF do
         "bin = %b1100010.1.1101110",
         %{((rule bin (seq "b" (hex "#x1") "n")))}
       ],
+      "binary range": [
+        "bin = %b1100010-1101110",
+        %{((terminal bin (range "#x62-#x6e")))}
+      ],
       "decimal char": [
         "dec = %d22",
         %{((terminal dec (hex "#x16")))}
@@ -75,6 +79,10 @@ describe EBNF::ABNF do
       "aliteration": [
         %(baz = foo / bar),
         %{((rule baz (alt foo bar)))}
+      ],
+      "aliteration 2": [
+        %(buzz = foo / bar / baz),
+        %{((rule buzz (alt foo bar baz)))}
       ],
       "incremental alternatives": [
         %(ruleset     =  alt1 / alt2\nruleset     =/ alt3\nruleset     =/ alt4 / alt5),

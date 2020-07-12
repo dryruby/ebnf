@@ -21,7 +21,7 @@ DIGIT        ::=  [#x30-#x39]
 DQUOTE       ::=  #x22
                        # " (Double Quote)
 
-HEXDIG       ::=  DIGIT | [A-F]
+HEXDIG       ::=  DIGIT | [A-F] # [0-9A-F]
 
 HTAB         ::=  #x09
                        # horizontal tab
