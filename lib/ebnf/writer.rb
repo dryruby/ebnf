@@ -218,13 +218,9 @@ module EBNF
     def format_ebnf(expr, sep: nil, embedded: false)
       return (@options[:html] ? %(<a href="#grammar-production-#{expr}">#{expr}</a>) : expr.to_s) if expr.is_a?(Symbol)
       if expr.is_a?(String)
-        if expr.length == 1
-          return format_ebnf_char(expr)
-        elsif expr =~ /\A#x\h+/
-          return escape_ebnf_hex(expr[2..-1].hex.chr)
-        else
-          return format_ebnf_string(expr, expr.include?('"') ? "'" : '"')
-        end
+        return expr.length == 1 ?
+          format_ebnf_char(expr) :
+          format_ebnf_string(expr, expr.include?('"') ? "'" : '"')
       end
       parts = {
         alt:    (@options[:html] ? "<code>|</code> " : "| "),
@@ -306,7 +302,6 @@ module EBNF
     def format_ebnf_range(string)
       lbrac  =  (@options[:html] ? "<code>[</code> " : "[")
       rbrac  =  (@options[:html] ? "<code>]</code> " : "]")
-      dash   = (@options[:html] ? "<code>-</code> " : "-")
 
       buffer = lbrac
       s = StringScanner.new(string)
@@ -316,8 +311,6 @@ module EBNF
           buffer << (@options[:html] ? %(<code class="grammar-literal">#{s.matched}</code>) : s.matched)
         when s.scan(/\A#x\h+/)
           buffer << escape_ebnf_hex(s.matched[2..-1].hex.chr(Encoding::UTF_8))
-        when s.scan(/\A-/)
-          buffer << dash
         else
           buffer << escape_ebnf_hex(s.getch)
         end
@@ -349,7 +342,7 @@ module EBNF
       if @options[:html]
         if u.ord <= 0x20
           char = %(<abbr title="#{ASCII_ESCAPE_NAMES[u.ord]}">#{char}</abbr>)
-        elsif u.ord <= 0x7F
+        elsif u.ord < 0x7F
           char = %(<abbr title="ascii '#{u}'">#{char}</abbr>)
         elsif u.ord == 0x7F
           char = %(<abbr title="delete">#{char}</abbr>)
@@ -374,6 +367,9 @@ module EBNF
       if expr.is_a?(String)
         if expr.length == 1
           return format_abnf_char(expr)
+        elsif expr.start_with?('%')
+          # Already encoded
+          return expr
         elsif expr =~ /"/
           # Split into segments
           segments = expr.split('"')
@@ -383,9 +379,6 @@ module EBNF
           seq = segments.inject([]) {|memo, s| memo.concat([[:hex, "#x22"], s])}[1..-1]
           seq.unshift(:seq)
           return format_abnf(seq, sep: nil, embedded: false)
-        elsif expr.match?(/[\x00-\x1F\u{7F}-\u{10FFFF}]/)
-          # Express using %d notation
-          return format_abnf_range(expr)
         else
           return (@options[:html] ? %("<code class="grammar-literal">#{'%s' if sensitive}#{expr}</code>") : %(#{'%s' if sensitive}"#{expr}"))
         end
@@ -410,7 +403,7 @@ module EBNF
         res = expr[1..-1].map {|e| format_abnf(e, embedded: true)}.join(this_sep)
         embedded ? (lparen + res + rparen) : res
       when :diff
-        raise "ABNF does not support the diff operator"
+        raise RangeError, "ABNF does not support the diff operator"
       when :opt
         char = parts[expr.first.to_sym]
         r = format_abnf(expr[1], embedded: true)
@@ -422,7 +415,12 @@ module EBNF
       when :hex
         escape_abnf_hex(expr.last[2..-1].hex.chr)
       when :range
-        format_abnf_range(expr.last)
+        # Returns an [:alt] or [:not [:alt]] if composed of multiple sequences
+        # Note: ABNF does not support the `not` operator
+        res = format_abnf_range(expr.last)
+        res.is_a?(Array) ?
+          format_abnf(res, embedded: true) :
+          res
       when :seq
         this_sep = (sep ? sep : " ")
         res = expr[1..-1].map do |e|
@@ -457,38 +455,75 @@ module EBNF
     end
 
     # Format a range
-    # FIXME: O_RANGE
+    #
+    # Presumes range has already been validated
     def format_abnf_range(string)
-      if string.include?('-') && !string.end_with?('-')
-        # Might include multiple ranges
-        # #x01-#x03#x05-#x06
-        # a-bc-d
-        dash = (@options[:html] ? "<code>-</code> " : "-")
-        # Split into separate range segments
-        if string.start_with?('#x')
-          ranges = []
-          scanner = StringScanner.new(string)
-          while !scanner.eos?
-            ranges << scanner.scan(/#x\h+-#x\h+/)
+      alt, o_range, o_dash = [:alt], false, false
+
+      raise RangeError, "cannot format #{string.inspect} an ABNF range" if string.start_with?('^')
+
+      if string.end_with?('-')
+        o_dash = true
+        string = string[0..-2]
+      end
+
+      scanner = StringScanner.new(string)
+      hexes, deces = [], []
+      in_range = false
+      # Build op (alt) from different ranges/enums
+      while !scanner.eos?
+        if hex = scanner.scan(Terminals::HEX)
+          # Append any decimal values
+          alt << "%d" + deces.join(".") unless deces.empty?
+          deces = []
+
+          if in_range
+            # Add "." sequences for any previous hexes
+            alt << "%x" + hexes[0..-2].join(".") if hexes.length > 1
+            alt << "%x#{hexes.last}-#{hex[2..-1]}"
+            in_range, hexes = false, []
+          else
+            hexes << hex[2..-1]
           end
-          ranges.map {|range|"%x" + range.gsub('#x', '').sub('-', dash)}.join(" / ")
-        else
-          '%d' + string.gsub(/[^-]/) {|c| c.ord}
+        elsif dec = scanner.scan(Terminals::R_CHAR)
+          # Append any hexadecimal values
+          alt << "%x" + hexes.join(".") unless hexes.empty?
+          hexes = []
+
+          if in_range
+            # Add "." sequences for any previous hexes
+            alt << "%d" + deces[0..-2].join(".") if deces.length > 1
+            alt << "%d#{deces.last}-#{dec.codepoints.first}"
+            in_range, deces = false, []
+          else
+            deces << dec.codepoints.first.to_s
+          end
         end
+
+        in_range = true if scanner.scan(/\-/)
+      end
+
+      deces << '45' if o_dash
+
+      # Append hexes and deces as "." sequences (should be only one)
+      alt << "%d" + deces.join(".") unless deces.empty?
+      alt << "%x" + hexes.join(".") unless hexes.empty?
+
+      # FIXME: HTML abbreviations?
+      if alt.length == 2 && !o_range
+        # Just return the range or enum
+        alt.last
       else
-        if string.start_with?('#x')
-          "%x" + string.split('#x').join('.')
-        else
-          "%d" + string.chars.map(&:ord).join(".")
-        end
+        # Return the alt, which will be further formatted
+        o_range ? [:not, alt] : alt
       end
     end
 
     def escape_abnf_hex(u)
       fmt = case u.ord
-      when 0x0000..0x00ff then "#x%02X"
-      when 0x0100..0xffff then "#x%04X"
-      else                     "#x%08X"
+      when 0x0000..0x00ff then "%02X"
+      when 0x0100..0xffff then "%04X"
+      else                     "%08X"
       end
       char =  "%x" + (fmt % u.ord)
       if @options[:html]

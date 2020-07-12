@@ -39,23 +39,6 @@ describe EBNF::Writer do
     end
   end
 
-  describe "#initialize" do
-    {
-      prolog: [
-        %{[2]     Prolog    ::=           BaseDecl? PrefixDecl*},
-        %{[2] Prolog ::= BaseDecl? PrefixDecl*\n}
-      ],
-    }.each do |title, (grammar, plain)|
-      context title do
-        subject {EBNF::Base.new(grammar).ast}
-
-        it "generates plain" do
-          expect {EBNF::Writer.new(subject)}.to write(plain).to(:output)
-        end
-      end
-    end
-  end
-
   describe ".string" do
     {
       prolog: [
@@ -115,6 +98,23 @@ describe EBNF::Writer do
   end
 
   context "EBNF" do
+    describe "#initialize" do
+      {
+        prolog: [
+          %{[2]     Prolog    ::=           BaseDecl? PrefixDecl*},
+          %{[2] Prolog ::= BaseDecl? PrefixDecl*\n}
+        ],
+      }.each do |title, (grammar, plain)|
+        context title do
+          subject {EBNF::Base.new(grammar).ast}
+
+          it "generates plain" do
+            expect {EBNF::Writer.new(subject)}.to write(plain).to(:output)
+          end
+        end
+      end
+    end
+
     describe "#format_ebnf" do
       subject {EBNF::Writer.new([])}
 
@@ -172,6 +172,10 @@ describe EBNF::Writer do
             [:rept, 1, 3, :A],
             "A (A A?)?"
           ],
+          "rept 2 *": [
+            [:rept, 2, "*", :A],
+            "A A A*"
+          ],
           "rept 1 3 (A B)": [
             [:rept, 1, 3, [:seq, :A, :B]],
             "(A B) ((A B) (A B)?)?"
@@ -203,6 +207,10 @@ describe EBNF::Writer do
           "string \"'\"": [
             [:seq, '\''],
             %{"'"}
+          ],
+          "string \"\€\"": [
+            [:seq, '€'],
+            %{"€"}
           ],
           "n3 path": [
             [:seq, :pathItem, [:alt, [:seq, "!", :path], [:seq, "^", :path]]],
@@ -243,6 +251,165 @@ describe EBNF::Writer do
           end
           it "outputs grammar as html" do
             expect {EBNF.parse(File.read(file)).to_html}.to_not raise_error
+          end
+        end
+      end
+    end
+  end
+
+  context "ABNF" do
+    describe "#initialize" do
+      {
+        prolog: [
+          %{rulelist       =  1*( rule / (*c-wsp c-nl) )\n},
+          %{rulelist = 1*(rule / (*c-wsp c-nl))\n}
+        ],
+      }.each do |title, (grammar, plain)|
+        context title do
+          subject {EBNF::Base.new(grammar, format: :abnf).ast}
+
+          it "generates plain" do
+            expect {EBNF::Writer.new(subject, format: :abnf)}.to write(plain).to(:output)
+          end
+        end
+      end
+    end
+
+    describe "#format_abnf" do
+      subject {EBNF::Writer.new([])}
+
+      context "legal expressions" do
+        {
+          "alt": [
+            [:alt, :A, :B],
+            "A / B"
+          ],
+           "enum": [
+            [:range, "abc-"],
+            "%d97.98.99.45"
+          ],
+          "hex": [
+            [:hex, "#x20"],
+            "%x20"
+          ],
+          "istr": [
+            [:istr, "foo"],
+            %("foo")
+          ],
+          "opt": [
+            [:opt, :A],
+            "[A]"
+          ],
+          "plus": [
+            [:plus, :A],
+            "1*A"
+          ],
+          "range": [
+            [:range, "a-z"],
+            "%d97-122"
+          ],
+          "range 2": [
+            [:range, "a-zA-Z"],
+            %{(%d97-122 / %d65-90)}
+          ],
+          "rept 0 1": [
+            [:rept, 0, 1, :A],
+            "0*1A"
+          ],
+          "rept 0 *": [
+            [:rept, 0, '*', :A],
+            "*A"
+          ],
+          "rept 1 1": [
+            [:rept, 1, 1, :A],
+            "1A"
+          ],
+          "rept 1 *": [
+            [:rept, 1, '*', :A],
+            "1*A"
+          ],
+          "rept 1 2": [
+            [:rept, 1, 2, :A],
+            "1*2A"
+          ],
+          "rept 1 3": [
+            [:rept, 1, 3, :A],
+            "1*3A"
+          ],
+          "rept 2 *": [
+            [:rept, 2, "*", :A],
+            "2*A"
+          ],
+          "rept 1 3 (A B)": [
+            [:rept, 1, 3, [:seq, :A, :B]],
+            "1*3(A B)"
+          ],
+          "rept 1 3 (A | B)": [
+            [:rept, 1, 3, [:alt, :A, :B]],
+            "1*3(A / B)"
+          ],
+          "star": [
+            [:star, :A],
+            "*A"
+          ],
+          "string '\\r'": [
+            [:seq, "\r"],
+            %{%x0D}
+          ],
+          "string ' '": [
+            [:seq, " "],
+            %{" "}
+          ],
+          "string 'a'": [
+            [:seq, "a"],
+            %{"a"}
+          ],
+          "string '\"'": [
+            [:seq, '"'],
+            %{%x22}
+          ],
+          "string \"'\"": [
+            [:seq, '\''],
+            %{"'"}
+          ],
+          "string \"\€\"": [
+            [:seq, '€'],
+            %{%x20AC}
+          ],
+          "n3 path": [
+            [:seq, :pathItem, [:alt, [:seq, "!", :path], [:seq, "^", :path]]],
+            %{pathItem (("!" path) / ("^" path))}
+          ],
+        }.each do |title, (expr, result)|
+          it title do
+            expect(subject.send(:format_abnf, expr)).to eql result
+          end
+        end
+      end
+
+      context "illegal expressions" do
+        {
+          "[^abc]": [:range, "^abc"],
+          "A - B":  [:diff, :A, :B],
+        }.each do |title, expr|
+          it title do
+            expect {subject.send(:format_abnf, expr)}.to raise_error RangeError
+          end
+        end
+      end
+    end
+
+    context "Existing grammars" do
+      {
+        "ABNF Grammar" => File.expand_path("../../etc/abnf.abnf", __FILE__),
+        "HTTP Grammar" => File.expand_path("../../examples/abnf/examples/http.abnf", __FILE__)
+      }.each do |name, file|
+        context name do
+          it "outputs grammar as text" do
+            expect {EBNF.parse(File.read(file), format: :abnf).to_s(format: :abnf)}.to_not raise_error
+          end
+          it "outputs grammar as html" do
+            expect {EBNF.parse(File.read(file), format: :abnf).to_html(format: :abnf)}.to_not raise_error
           end
         end
       end
