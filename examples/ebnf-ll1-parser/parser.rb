@@ -53,7 +53,7 @@ class EBNFLL1Parser
   #
   #     [11] LHS        ::= ('[' SYMBOL+ ']' ' '+)? SYMBOL ' '* '::='
   terminal(:LHS, LHS) do |prod, token, input|
-    input[:id], input[:symbol] = token.value.to_s.scan(/\[([^\]]+)\]\s*(\w+)\s*::=/).first
+    input[:id], input[:symbol] = token.value.to_s.scan(/(?:\[([^\]]+)\])?\s*(\w+)\s*::=/).first
   end
 
   # Match `SYMBOL` terminal
@@ -67,33 +67,19 @@ class EBNFLL1Parser
   #
   #     [13] HEX        ::= '#x' ([a-f] | [A-F] | [0-9])+
   terminal(:HEX, HEX) do |prod, token, input|
-    input[:terminal] = token.value
-  end
-
-  # Terminal for `ENUM` is matched as part of a `primary` rule. Unescape the values to remove EBNF escapes in the input.
-  #
-  #     [14] ENUM       ::= ('[' R_CHAR+ | HEX+ ']') - LHS
-  terminal(:ENUM, ENUM, unescape: true) do |prod, token, input|
-    input[:terminal] = [:range, token.value[1..-2]]
-  end
-
-  # Terminal for `O_ENUM` is matched as part of a `primary` rule. Unescape the values to remove EBNF escapes in the input.
-  #
-  #     [15] O_ENUM     ::= '[^' R_CHAR+ | HEX+ ']'
-  terminal(:O_ENUM, O_ENUM, unescape: true) do |prod, token, input|
-    input[:terminal] = [:range, token.value[1..-2]]
+    input[:terminal] = [:hex, token.value]
   end
 
   # Terminal for `RANGE` is matched as part of a `primary` rule. Unescape the values to remove EBNF escapes in the input.
   #
-  #     [16] `RANGE`      ::= '[' (R_CHAR '-' R_CHAR) | (HEX - HEX) ']'
+  #     [14] `RANGE`      ::= '[' (R_CHAR '-' R_CHAR) | (HEX '-' HEX) ']'
   terminal(:RANGE, RANGE, unescape: true) do |prod, token, input|
     input[:terminal] = [:range, token.value[1..-2]]
   end
 
   # Terminal for `O_RANGE` is matched as part of a `primary` rule. Unescape the values to remove EBNF escapes in the input.
   #
-  #     [17] O_RANGE    ::= '[^' (R_CHAR '-' R_CHAR) | (HEX - HEX) ']'
+  #     [15] O_RANGE    ::= '[^' (R_CHAR '-' R_CHAR) | (HEX '-' HEX) ']'
   terminal(:O_RANGE, O_RANGE, unescape: true) do |prod, token, input|
     input[:terminal] = [:range, token.value[1..-2]]
   end
@@ -102,14 +88,14 @@ class EBNFLL1Parser
 
   # Match double quote string
   #
-  #     [18] STRING1    ::= '"' (CHAR - '"')* '"'
+  #     [16] STRING1    ::= '"' (CHAR - '"')* '"'
   terminal(:STRING1, STRING1, unescape: true) do |prod, token, input|
     input[:terminal] = token.value[1..-2]
   end
 
   # Match single quote string
   #
-  #     [19] STRING2    ::= "'" (CHAR - "'")* "'"
+  #     [17] STRING2    ::= "'" (CHAR - "'")* "'"
   terminal(:STRING2, STRING2, unescape: true) do |prod, token, input|
     input[:terminal] = token.value[1..-2]
   end
@@ -118,7 +104,7 @@ class EBNFLL1Parser
 
   # Match `POSTFIX` terminal
   #
-  #     [22] POSTFIX    ::= [?*+]
+  #     [20] POSTFIX    ::= [?*+]
   terminal(:POSTFIX, POSTFIX) do |prod, token, input|
     input[:postfix] = token.value
   end
@@ -150,7 +136,7 @@ class EBNFLL1Parser
     # data contains a declaration.
     # Invoke callback
     if data[:terminal]
-      callback.call(:terminal, data[:terminal])
+      callback.call(:terminals, data[:terminal])
     elsif data[:pass]
       callback.call(:pass, data[:pass])
     end
@@ -272,7 +258,9 @@ class EBNFLL1Parser
   #
   #     [10] pass       ::= '@pass' expression
   production(:pass) do |input, data, callback|
-    input[:pass] = data[:expression]
+    expression = data[:expression]
+    expression = expression.to_ary if expression.respond_to?(:to_ary)
+    input[:pass] = expression
   end
 
   # ## Parser invocation.
@@ -305,11 +293,11 @@ class EBNFLL1Parser
                                 **options
     ) do |context, *data|
       rule = case context
-      when :terminal
+      when :terminals
         # After parsing `@terminals`
         # This changes the state of the parser to treat subsequent rules as terminals.
         parsing_terminals = true
-        rule = EBNF::Rule.new(nil, nil, data.first, kind: :terminal)
+        rule = EBNF::Rule.new(nil, nil, data.first, kind: :terminals)
       when :pass
         # After parsing `@pass`
         # This defines a specific rule for whitespace.

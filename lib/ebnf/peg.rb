@@ -31,7 +31,7 @@ module EBNF
     def to_ruby_peg(output, **options)
       output.puts "  RULES = ["
       ast.each do |rule|
-        output.puts "    " + rule.to_ruby + '.extend(EBNF::PEG::Rule),'
+        output.puts "    " + rule.to_ruby + (rule.is_a?(EBNF::PEG::Rule) ? '.extend(EBNF::PEG::Rule)' : '') + ','
       end
       output.puts "  ]"
     end

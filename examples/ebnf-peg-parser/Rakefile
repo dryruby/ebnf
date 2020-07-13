@@ -1,6 +1,6 @@
 task default: [:meta, :doc]
 
-desc 'Build first, follow and branch tables'
+desc 'Build rules table'
 task meta: "meta.rb"
 
 file "meta.rb" => "../../etc/ebnf.ebnf" do |t|

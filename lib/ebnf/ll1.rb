@@ -9,9 +9,7 @@ module EBNF
   #      BRANCH = {
   #        :alt => {
   #          "(" => [:seq, :_alt_1],
-  #          :ENUM => [:seq, :_alt_1],
   #          :HEX => [:seq, :_alt_1],
-  #          :O_ENUM => [:seq, :_alt_1],
   #          :O_RANGE => [:seq, :_alt_1],
   #          :RANGE => [:seq, :_alt_1],
   #          :STRING1 => [:seq, :_alt_1],
@@ -38,8 +36,6 @@ module EBNF
   #        :alt => [
   #          :HEX,
   #          :SYMBOL,
-  #          :ENUM,
-  #          :O_ENUM,
   #          :RANGE,
   #          :O_RANGE,
   #          :STRING1,
@@ -54,7 +50,7 @@ module EBNF
   #
   #      TERMINALS = ["(", ")", "-",
   #        "@pass", "@terminals",
-  #        :ENUM, :HEX, :LHS, :O_ENUM, :O_RANGE,:POSTFIX,
+  #         :HEX, :LHS, :O_RANGE,:POSTFIX,
   #        :RANGE, :STRING1, :STRING2, :SYMBOL,"|"
   #      ].freeze
   #
@@ -214,8 +210,9 @@ module EBNF
           firsts, follows = 0, 0
           # add Fi(wi) to Fi(Ai) for every rule Ai → wi
           #
-          # For sequences, this is the first rule in the sequence.
-          # For alts, this is every rule in the sequence
+          # * For sequences, this is the first rule in the sequence.
+          # * For alts, this is every rule in the sequence
+          # * Other rules don't matter, as they don't appear in strict BNF
           each(:rule) do |ai|
             # Fi(a w' ) = { a } for every terminal a
             ai.terminals(ast).each do |t|

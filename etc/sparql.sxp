@@ -282,7 +282,9 @@
      (rule iri "136" (alt IRIREF PrefixedName))
      (rule PrefixedName "137" (alt PNAME_LN PNAME_NS))
      (rule BlankNode "138" (alt BLANK_NODE_LABEL ANON))
-     (terminal IRIREF "139" (seq "<" (range "^#x00-#x20<>\"{}|^`] | UCHAR)* '>'")))
+     (terminals _terminals (seq))
+     (terminal IRIREF "139"
+      (seq "<" (star (diff (range "^<>\"{}|^`\\") (range "#x00-#x20"))) ">"))
      (terminal PNAME_NS "140" (seq (opt PN_PREFIX) ":"))
      (terminal PNAME_LN "141" (seq PNAME_NS PN_LOCAL))
      (terminal BLANK_NODE_LABEL "142"
@@ -310,17 +312,16 @@
      (terminal STRING_LITERAL2 "157"
       (seq "\"" (star (alt (range "^#x22#x5C#xA#xD") ECHAR)) "\""))
      (terminal STRING_LITERAL_LONG1 "158"
-      (seq "'''" (seq (opt (alt "'" "''")) (range "^'] | ECHAR ))* \"'''\""))))
+      (seq "'''" (star (seq (opt (alt "'" "''")) (alt (range "^'\\") ECHAR))) "'''"))
      (terminal STRING_LITERAL_LONG2 "159"
-      (seq "\"\"\"" (seq (opt (alt "\"" "\"\"")) (range "^\"] | ECHAR ))* '\"\"\"'"))))
-     (terminal ECHAR "160" (seq "\\" (range "tbnrf\"'")))
+      (seq "\"\"\"" (star (seq (opt (alt "\"" "\"\"")) (alt (range "^\"\\") ECHAR))) "\"\"\""))
+     (terminal ECHAR "160" (seq "\\" (range "tbnrf\\\"'")))
      (terminal NIL "161" (seq "(" (star WS) ")"))
      (terminal WS "162" (alt (hex "#x20") (hex "#x9") (hex "#xD") (hex "#xA")))
      (terminal ANON "163" (seq "[" (star WS) "]"))
      (terminal PN_CHARS_BASE "164"
       (alt
-       (range "A-Z")
-       (range "a-z")
+       (range "A-Za-z")
        (range "#x00C0-#x00D6")
        (range "#x00D8-#x00F6")
        (range "#x00F8-#x02FF")
@@ -355,7 +356,7 @@
       (seq (alt PN_CHARS_U (range "0-9")) (opt (seq (star (alt PN_CHARS ".")) PN_CHARS))))
      (terminal PLX "170" (alt PERCENT PN_LOCAL_ESC))
      (terminal PERCENT "171" (seq "%" HEX HEX))
-     (terminal HEX "172" (alt (range "0-9") (range "A-F") (range "a-f")))
+     (terminal HEX "172" (range "0-9A-Fa-f"))
      (terminal PN_LOCAL_ESC "173"
       (seq "\\"
        (alt "_" "~" "." "-" "!" "$" "&" "'" "(" ")" "*" "+" "," ";" "=" "/" "?" "#"

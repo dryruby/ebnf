@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>parser.rb</title>
+  <style>
+    /*--------------------- Layout and Typography ----------------------------*/
+    html { height: 100%; }
+    body {
+      font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;
+      font-size: 14px;
+      line-height: 16px;
+      color: #252519;
+      margin: 10px; padding: 0;
+      height:100%;
+    }
+    #container { min-height: 100%; }
+
+    a {
+      color: #261a3b;
+    }
+
+    a:visited {
+      color: #261a3b;
+    }
+
+    p, ul, ol {
+      margin: 0 0 15px;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      margin: 30px 0 15px 0;
+    }
+
+    h1 {
+      margin-top: 40px;
+    }
+
+    hr {
+      border: 0 none;
+      border-top: 1px solid #e5e5ee;
+      height: 1px;
+      margin: 20px 0;
+    }
+
+    pre, tt, code {
+      font-size: 12px; line-height: 16px;
+      color: green;
+      font-family: Menlo, Monaco, Consolas, "Lucida Console", monospace;
+      margin: 0; padding: 0;
+    }
+
+    ul.sections {
+      list-style: none;
+      padding:0 0 5px 0;;
+      margin:0;
+    }
+
+    /*
+      Force border-box so that % widths fit the parent
+      container without overlap because of margin/padding.
+
+      More Info : http://www.quirksmode.org/css/box.html
+    */
+    ul.sections > li > div {
+      -moz-box-sizing: border-box;    /* firefox */
+      -ms-box-sizing: border-box;     /* ie */
+      -webkit-box-sizing: border-box; /* webkit */
+      -khtml-box-sizing: border-box;  /* konqueror */
+      box-sizing: border-box;         /* css3 */
+    }
+
+    td {
+      padding-top: 10px;;
+      border-top: solid gray 1px;
+      vertical-align: top;
+    }
+    td.code {
+      padding-left: 5px;
+    }
+
+    /*---------------------- Jump Page -----------------------------*/
+    #jump_to, #jump_page {
+      margin: 0;
+      background: white;
+      -webkit-box-shadow: 0 0 25px #777; -moz-box-shadow: 0 0 25px #777;
+      -webkit-border-bottom-left-radius: 5px; -moz-border-radius-bottomleft: 5px;
+      font: 16px Arial;
+      cursor: pointer;
+      text-align: right;
+      list-style: none;
+    }
+
+    #jump_to a {
+      text-decoration: none;
+    }
+
+    #jump_to a.large {
+      display: none;
+    }
+    #jump_to a.small {
+      font-size: 22px;
+      font-weight: bold;
+      color: #676767;
+    }
+
+    #jump_to, #jump_wrapper {
+      position: fixed;
+      right: 0; top: 0;
+      padding: 10px 15px;
+      margin:0;
+    }
+
+    #jump_wrapper {
+      display: none;
+      padding:0;
+    }
+
+    #jump_to:hover #jump_wrapper {
+      display: block;
+    }
+
+    #jump_page {
+      padding: 5px 0 3px;
+      margin: 0 0 25px 25px;
+    }
+
+    #jump_page .source {
+      display: block;
+      padding: 15px;
+      text-decoration: none;
+      border-top: 1px solid #eee;
+    }
+
+    #jump_page .source:hover {
+      background: #f5f5ff;
+    }
+
+    #jump_page .source:first-child {
+    }
+
+    /*---------------------- Low resolutions (> 320px) ---------------------*/
+    @media only screen and (min-width: 320px) {
+      .pilwrap { display: none; }
+
+      ul.sections > li > div {
+        display: block;
+        padding:5px 10px 0 10px;
+      }
+
+      ul.sections > li > div.annotation {
+        background: #fff;
+      }
+
+      ul.sections > li > div.annotation ul, ul.sections > li > div.annotation ol {
+        padding-left: 30px;
+      }
+
+      ul.sections > li > div.content {
+        background: #f5f5ff;
+        overflow-x:auto;
+        -webkit-box-shadow: inset 0 0 5px #e5e5ee;
+        box-shadow: inset 0 0 5px #e5e5ee;
+        border: 1px solid #dedede;
+        margin:5px 10px 5px 10px;
+        padding-bottom: 5px;
+      }
+
+      ul.sections > li > div.annotation pre {
+        margin: 7px 0 7px;
+        padding-left: 15px;
+      }
+
+      ul.sections > li > div.annotation p tt, .annotation code {
+        background: #f8f8ff;
+        border: 1px solid #dedede;
+        font-size: 12px;
+        padding: 0 0.2em;
+      }
+    }
+
+    /*----------------------  (> 481px) ---------------------*/
+    @media only screen and (min-width: 481px) {
+      #container {
+        position: relative;
+      }
+      body {
+        background-color: #F5F5FF;
+        font-size: 15px;
+        line-height: 22px;
+      }
+      pre, tt, code {
+        line-height: 18px;
+      }
+
+      #jump_to {
+        padding: 5px 10px;
+      }
+      #jump_wrapper {
+        padding: 0;
+      }
+      #jump_to, #jump_page {
+        font: 10px Arial;
+        text-transform: uppercase;
+      }
+      #jump_page .source {
+        padding: 5px 10px;
+      }
+      #jump_to a.large {
+        display: inline-block;
+      }
+      #jump_to a.small {
+        display: none;
+      }
+
+
+
+      #background {
+        position: absolute;
+        top: 0; bottom: 0;
+        width: 350px;
+        background: #ffffff;
+        border-right: 1px solid #e5e5ee;
+        z-index: -1;
+      }
+
+      ul.sections > li > div.annotation ul, ul.sections > li > div.annotation ol {
+        padding-left: 40px;
+      }
+
+      ul.sections > li {
+        white-space: nowrap;
+      }
+
+      ul.sections > li > div {
+        display: inline-block;
+      }
+
+      ul.sections > li > div.annotation {
+        max-width: 350px;
+        min-width: 350px;
+        min-height: 5px;
+        padding: 13px;
+        overflow-x: hidden;
+        white-space: normal;
+        vertical-align: top;
+        text-align: left;
+      }
+      ul.sections > li > div.annotation pre {
+        margin: 15px 0 15px;
+        padding-left: 15px;
+      }
+
+      ul.sections > li > div.content {
+        padding: 13px;
+        vertical-align: top;
+        background: #f5f5ff;
+        border: none;
+        -webkit-box-shadow: none;
+        box-shadow: none;
+      }
+
+      .pilwrap {
+        position: relative;
+        display: inline;
+      }
+
+      .pilcrow {
+        font: 12px Arial;
+        text-decoration: none;
+        color: #454545;
+        position: absolute;
+        top: 3px; left: -20px;
+        padding: 1px 2px;
+        opacity: 0;
+        -webkit-transition: opacity 0.2s linear;
+      }
+        .for-h1 .pilcrow {
+          top: 47px;
+        }
+        .for-h2 .pilcrow, .for-h3 .pilcrow, .for-h4 .pilcrow {
+          top: 35px;
+        }
+
+      ul.sections > li > div.annotation:hover .pilcrow {
+        opacity: 1;
+      }
+    }
+
+    /*---------------------- (> 1025px) ---------------------*/
+    @media only screen and (min-width: 1025px) {
+
+      #background {
+        width: 525px;
+      }
+      ul.sections > li > div.annotation {
+        max-width: 525px;
+        min-width: 525px;
+        padding: 10px 25px 1px 50px;
+      }
+      ul.sections > li > div.content {
+        padding: 9px 15px 16px 25px;
+      }
+    }
+
+    /*---------------------- Syntax Highlighting -----------------------------*/
+
+    td.linenos { background-color: #f0f0f0; padding-right: 10px; }
+    span.lineno { background-color: #f0f0f0; padding: 0 5px 0 5px; }
+    /*
+
+    github.com style (c) Vasily Polovnyov <vast@whiteants.net>
+
+    */
+
+    pre code {
+      display: block; padding: 0.5em;
+      color: green;
+      background: #f8f8ff
+    }
+
+    pre .comment,
+    pre .template_comment,
+    pre .diff .header,
+    pre .javadoc {
+      color: #408080;
+      font-style: italic
+    }
+
+    pre .nb, pre .k, pre .kp,
+    pre .keyword,
+    pre .assignment,
+    pre .literal,
+    pre .css .rule .keyword,
+    pre .winutils,
+    pre .javascript .title,
+    pre .lisp .title,
+    pre .subst {
+      color: #954121;
+      font-weight: bold
+    }
+
+    pre .number,
+    pre .hexcolor {
+      color: #40a070
+    }
+
+    pre .s1,
+    pre .s2,
+    pre .string,
+    pre .tag .value,
+    pre .phpdoc,
+    pre .tex .formula {
+      color: #219161;
+    }
+
+    pre .title,
+    pre .id {
+      color: #19469D;
+    }
+    pre .params {
+      color: #00F;
+    }
+
+    pre .javascript .title,
+    pre .lisp .title,
+    pre .subst {
+      font-weight: normal
+    }
+
+    pre .class .title,
+    pre .haskell .label,
+    pre .tex .command {
+      color: #458;
+      font-weight: bold
+    }
+
+    pre .ss,
+    pre .tag,
+    pre .tag .title,
+    pre .rules .property,
+    pre .django .tag .keyword {
+      color: #000080;
+      font-weight: normal
+    }
+
+    pre .attribute,
+    pre .variable,
+    pre .instancevar,
+    pre .lisp .body {
+      color: #008080
+    }
+
+    pre .sr,
+    pre .regexp {
+      color: #B68
+    }
+
+    pre .nc, pre .no,
+    pre .class {
+      color: #458;
+      font-weight: bold
+    }
+
+    pre .o,
+    pre .symbol,
+    pre .ruby .symbol .string,
+    pre .ruby .symbol .keyword,
+    pre .ruby .symbol .keymethods,
+    pre .lisp .keyword,
+    pre .tex .special,
+    pre .input_number {
+      color: #990073
+    }
+
+    pre .builtin,
+    pre .constructor,
+    pre .built_in,
+    pre .lisp .title {
+      color: #0086b3
+    }
+
+    pre .preprocessor,
+    pre .pi,
+    pre .doctype,
+    pre .shebang,
+    pre .cdata {
+      color: #999;
+      font-weight: bold
+    }
+
+    pre .deletion {
+      background: #fdd
+    }
+
+    pre .addition {
+      background: #dfd
+    }
+
+    pre .diff .change {
+      background: #0086b3
+    }
+
+    pre .chunk {
+      color: #aaa
+    }
+
+    pre .tex .formula {
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <table cellspacing=0 cellpadding=0>
+  <thead>
+    <tr>
+      <th class=docs><h1>parser.rb</h1></th>
+      <th class=code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr id='section-EBNF_Parser_for_EISO_BNF.'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-EBNF_Parser_for_EISO_BNF.">&#182;</a>
+        </div>
+        <h1>EBNF Parser for EISO BNF.</h1>
+
+<p>Produces an Abstract Synatx Tree in S-Expression form for the input grammar file</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="nb">require</span> <span class="s1">&#39;ebnf&#39;</span>
+<span class="nb">require</span> <span class="s1">&#39;ebnf/terminals&#39;</span>
+<span class="nb">require</span> <span class="s1">&#39;ebnf/peg/parser&#39;</span>
+<span class="nb">require</span> <span class="s1">&#39;meta&#39;</span>
+<span class="nb">require</span> <span class="s1">&#39;sxp&#39;</span>
+<span class="nb">require</span> <span class="s1">&#39;logger&#39;</span>
+
+<span class="k">class</span> <span class="nc">ISOEBNFPegParser</span>
+  <span class="kp">include</span> <span class="no">EBNF</span><span class="o">::</span><span class="no">PEG</span><span class="o">::</span><span class="no">Parser</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-2'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-2">&#182;</a>
+        </div>
+        <p>The base for terminal-character, which omits &quot;&#39;&quot;, &#39;&quot;&#39;, and &#39;?&#39;.
+Could be more optimized, and one might quible
+with the overly-strictly defined character set,
+but it is correct.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="no">TERMINAL_CHARACTER_BASE</span> <span class="o">=</span> <span class="sr">%r{</span>
+<span class="sr">    [a-zA-Z0-9] | # letter | decimal digit</span>
+<span class="sr">    ,           | # concatenate symbol</span>
+<span class="sr">    =           | # defining symbol</span>
+<span class="sr">    [\|\/!]     | # definition separator symbol</span>
+<span class="sr">    \*\)        | # end comment symbol</span>
+<span class="sr">    \)          | # end group symbol</span>
+<span class="sr">    \]          | # end option symbol</span>
+<span class="sr">    \}          | # end repeat symbol</span>
+<span class="sr">    \-          | # except symbol</span>
+
+<span class="sr"># DIVIDER</span>
+
+<span class="sr">    \*          | # repetition symbol</span>
+
+<span class="sr"># DIVIDER</span>
+
+<span class="sr">    \(\*        | # start comment symbol</span>
+<span class="sr">    \(          | # start group symbol</span>
+<span class="sr">    \[          | # start option symbol</span>
+<span class="sr">    \{          | # start repeat symbol</span>
+<span class="sr">    [;\.]       | # terminator symbol</span>
+<span class="sr">    [:+_%@&amp;$&lt;&gt;^\x20\x23\\`~]  # other character</span>
+<span class="sr">  }x</span>
+
+  <span class="no">TERMINAL_CHARACTER</span>         <span class="o">=</span> <span class="sr">%r{</span><span class="si">#{</span><span class="no">TERMINAL_CHARACTER_BASE</span><span class="si">}</span><span class="sr">|[&#39;&quot;\?]}</span>
+  <span class="no">FIRST_TERMINAL_CHARACTER</span>   <span class="o">=</span> <span class="sr">%r{</span><span class="si">#{</span><span class="no">TERMINAL_CHARACTER_BASE</span><span class="si">}</span><span class="sr">|[&quot;\?]}</span>
+  <span class="no">SECOND_TERMINAL_CHARACTER</span>  <span class="o">=</span> <span class="sr">%r{</span><span class="si">#{</span><span class="no">TERMINAL_CHARACTER_BASE</span><span class="si">}</span><span class="sr">|[&#39;\?]}</span>
+  <span class="no">SPECIAL_SEQUENCE_CHARACTER</span> <span class="o">=</span> <span class="sr">%r{</span><span class="si">#{</span><span class="no">TERMINAL_CHARACTER_BASE</span><span class="si">}</span><span class="sr">|[&#39;&quot;]}</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-3'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-3">&#182;</a>
+        </div>
+        <p>\&#39;          | # first quote symbol</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="kp">attr_reader</span> <span class="ss">:ast</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-4'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-4">&#182;</a>
+        </div>
+        <p>\&quot;          | # second quote symbol
+\?          | # special sequence symbol</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:integer</span><span class="p">,</span><span class="sr"> /\d+/</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="p">,</span> <span class="n">prod</span><span class="o">|</span>
+    <span class="n">value</span><span class="o">.</span><span class="n">to_i</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-5'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-5">&#182;</a>
+        </div>
+        <p>Abstract syntax tree from parse</p>
+
+<p>@return [Array<a href="EBNF::Rule">EBNF::Rule</a>]</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:meta_identifier</span><span class="p">,</span><span class="sr"> /[a-zA-Z][a-zA-Z0-9_]*/</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
+    <span class="n">value</span><span class="o">.</span><span class="n">to_sym</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-6'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-6">&#182;</a>
+        </div>
+        <p><code>[14] integer           ::= decimal_digit+</code></p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:terminal_string</span><span class="p">,</span><span class="sr"> /(?:&#39;</span><span class="si">#{</span><span class="no">FIRST_TERMINAL_CHARACTER</span><span class="si">}</span><span class="sr">+&#39;)|(?:&quot;</span><span class="si">#{</span><span class="no">SECOND_TERMINAL_CHARACTER</span><span class="si">}</span><span class="sr">+&quot;)/x</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
+    <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">2</span><span class="o">]</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-7'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-7">&#182;</a>
+        </div>
+        <p><code>[15] meta_identifier             ::= letter meta_identifier_character*</code></p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:special_sequence</span><span class="p">,</span><span class="sr"> /\?</span><span class="si">#{</span><span class="no">SPECIAL_SEQUENCE_CHARACTER</span><span class="si">}</span><span class="sr">+\?/</span><span class="p">)</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-8'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-8">&#182;</a>
+        </div>
+        <p><code>[17] terminal_string             ::= (&quot;&#39;&quot; first_terminal_character+ &quot;&#39;&quot;)</code>
+<code>| (&#39;&quot;&#39; second_terminal_character+ &#39;&quot;&#39;)</code></p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:terminal_character</span><span class="p">,</span> <span class="no">TERMINAL_CHARACTER</span><span class="p">)</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-9'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-9">&#182;</a>
+        </div>
+        <p><code>[20] special_sequence            ::= &#39;?&#39; special_sequence_character* &#39;?&#39;</code></p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:empty</span><span class="p">,</span><span class="sr"> //)</span>
+
+
+<span class="sr"># DIVIDER</span>
+
+<span class="sr">  terminal(:definition_separator_symbol, /</span><span class="o">[</span><span class="p">\</span><span class="o">|</span><span class="p">\</span><span class="o">/!]/</span><span class="p">)</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-10'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-10">&#182;</a>
+        </div>
+        <p><code>[22] terminal_character          ::= [a-zA-Z0-9]</code>
+<code>| [,=;*}#x2d?([{;]</code>
+<code>| &#39;*)&#39;</code>
+<code>| &#39;(*&#39;</code>
+<code>| &#39;]&#39;</code>
+<code>| other_character</code></p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:terminator_symbol</span><span class="p">,</span><span class="sr"> /[;\.]/</span><span class="p">)</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-11'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-11">&#182;</a>
+        </div>
+        <p><code>[25] empty                      ::= &#39;&#39;</code></p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:start_option_symbol</span><span class="p">,</span><span class="sr"> /\[|(?:\(\/)/</span><span class="p">)</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-12'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-12">&#182;</a>
+        </div>
+        <p><code>[26] definition_separator_symbol ::= &#39;|&#39; | &#39;/&#39; | &#39;!&#39;</code></p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:end_option_symbol</span><span class="p">,</span><span class="sr"> /\]/</span><span class="p">)</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-13'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-13">&#182;</a>
+        </div>
+        <p><code>[27] terminator_symbol           ::= &#39;;&#39; | &#39;.&#39;</code></p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:start_repeat_symbol</span><span class="p">,</span><span class="sr"> /{|\(:/</span><span class="p">)</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-14'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-14">&#182;</a>
+        </div>
+        <p>`[28] start<em>option</em>symbol         ::= &#39;[&#39;</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:end_repeat_symbol</span><span class="p">,</span><span class="sr"> /}|:\)/</span><span class="p">)</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-15'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-15">&#182;</a>
+        </div>
+        <p><code>[29] end_option_symbol           ::= &#39;]&#39;</code></p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-16'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-16">&#182;</a>
+        </div>
+        <p><code>[30] start_repeat_symbol         ::= &#39;{&#39; | &#39;(:&#39;</code></p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:syntax_rule</span><span class="p">,</span> <span class="n">clear_packrat</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">callback</span><span class="o">|</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-17'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-17">&#182;</a>
+        </div>
+        <p><code>[31] end_repeat_symbol           ::= &#39;}&#39; | &#39;:)&#39;</code></p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="n">sym</span> <span class="o">=</span> <span class="n">value</span><span class="o">[</span><span class="mi">0</span><span class="o">][</span><span class="ss">:meta_identifier</span><span class="o">]</span>
+    <span class="n">definitions_list</span> <span class="o">=</span> <span class="n">value</span><span class="o">[</span><span class="mi">2</span><span class="o">][</span><span class="ss">:definitions_list</span><span class="o">]</span>
+    <span class="n">callback</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="ss">:rule</span><span class="p">,</span> <span class="no">EBNF</span><span class="o">::</span><span class="no">Rule</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">sym</span><span class="o">.</span><span class="n">to_sym</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="n">definitions_list</span><span class="p">))</span>
+    <span class="kp">nil</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-Non-terminal_productions'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-Non-terminal_productions">&#182;</a>
+        </div>
+        <h2>Non-terminal productions</h2>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">start_production</span><span class="p">(</span><span class="ss">:definitions_list</span><span class="p">,</span> <span class="n">as_hash</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span>
+  <span class="n">production</span><span class="p">(</span><span class="ss">:definitions_list</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
+    <span class="k">if</span> <span class="n">value</span><span class="o">[</span><span class="ss">:_definitions_list_1</span><span class="o">].</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span>
+      <span class="o">[</span><span class="ss">:alt</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="ss">:single_definition</span><span class="o">]]</span> <span class="o">+</span> <span class="n">value</span><span class="o">[</span><span class="ss">:_definitions_list_1</span><span class="o">]</span>
+    <span class="k">else</span>
+      <span class="n">value</span><span class="o">[</span><span class="ss">:single_definition</span><span class="o">]</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+  <span class="n">production</span><span class="p">(</span><span class="ss">:_definitions_list_1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
+    <span class="nb">Array</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">first</span><span class="p">)</span>
+  <span class="k">end</span>
+  <span class="n">start_production</span><span class="p">(</span><span class="ss">:_definitions_list_2</span><span class="p">,</span> <span class="n">as_hash</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span>
+  <span class="n">production</span><span class="p">(</span><span class="ss">:_definitions_list_2</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
+    <span class="k">if</span> <span class="nb">Array</span><span class="p">(</span><span class="n">value</span><span class="o">[</span><span class="ss">:definitions_list</span><span class="o">]</span><span class="p">)</span><span class="o">.</span><span class="n">first</span> <span class="o">==</span> <span class="ss">:alt</span>
+      <span class="n">value</span><span class="o">[</span><span class="ss">:definitions_list</span><span class="o">][</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="o">]</span>
+    <span class="k">else</span>
+      <span class="o">[</span><span class="n">value</span><span class="o">[</span><span class="ss">:definitions_list</span><span class="o">]]</span>
+    <span class="k">end</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-19'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-19">&#182;</a>
+        </div>
+        <p><code>[2]  syntax_rule       ::= meta_identifier &#39;=&#39; definitions_list terminator_symbol</code></p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">start_production</span><span class="p">(</span><span class="ss">:single_definition</span><span class="p">,</span> <span class="n">as_hash</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span>
+  <span class="n">production</span><span class="p">(</span><span class="ss">:single_definition</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
+    <span class="k">if</span> <span class="n">value</span><span class="o">[</span><span class="ss">:_single_definition_1</span><span class="o">].</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span>
+      <span class="o">[</span><span class="ss">:seq</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="ss">:term</span><span class="o">]]</span> <span class="o">+</span> <span class="n">value</span><span class="o">[</span><span class="ss">:_single_definition_1</span><span class="o">]</span>
+    <span class="k">else</span>
+      <span class="n">value</span><span class="o">[</span><span class="ss">:term</span><span class="o">]</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+  <span class="n">production</span><span class="p">(</span><span class="ss">:_single_definition_1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
+    <span class="n">value</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span><span class="o">|</span><span class="n">a1</span><span class="o">|</span> <span class="n">a1</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:term</span><span class="o">]</span><span class="p">}</span><span class="o">.</span><span class="n">compact</span> <span class="c1"># Get rid of &#39;|&#39;</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-20'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-20">&#182;</a>
+        </div>
+        <p>value contains an expression.
+Invoke callback</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">start_production</span><span class="p">(</span><span class="ss">:term</span><span class="p">,</span> <span class="n">as_hash</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span>
+  <span class="n">production</span><span class="p">(</span><span class="ss">:term</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
+    <span class="k">if</span> <span class="n">value</span><span class="o">[</span><span class="ss">:_term_1</span><span class="o">]</span>
+      <span class="o">[</span><span class="ss">:diff</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="ss">:factor</span><span class="o">]</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="ss">:_term_1</span><span class="o">]]</span>
+    <span class="k">else</span>
+      <span class="n">value</span><span class="o">[</span><span class="ss">:factor</span><span class="o">]</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+  <span class="n">production</span><span class="p">(</span><span class="ss">:_term_1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
+    <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:exception</span><span class="o">]</span> <span class="k">if</span> <span class="n">value</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-21'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-21">&#182;</a>
+        </div>
+        <p>Setting <code>as_hash: true</code> in the start production makes the value of the form of a hash, rather than an array of hashes.</p>
+
+<p><code>[3]  definitions_list  ::= single_definition (definition_separator_symbol definitions_list)*</code></p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">start_production</span><span class="p">(</span><span class="ss">:exception</span><span class="p">,</span> <span class="n">as_hash</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span>
+  <span class="n">production</span><span class="p">(</span><span class="ss">:exception</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
+    <span class="n">value</span><span class="o">[</span><span class="ss">:factor</span><span class="o">]</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-22'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-22">&#182;</a>
+        </div>
+        <p><code>[4]  single_definition ::= term (&#39;,&#39; term)*</code></p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">start_production</span><span class="p">(</span><span class="ss">:factor</span><span class="p">,</span> <span class="n">as_hash</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span>
+  <span class="n">production</span><span class="p">(</span><span class="ss">:factor</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
+    <span class="k">if</span> <span class="n">value</span><span class="o">[</span><span class="ss">:_factor_1</span><span class="o">]</span>
+      <span class="o">[</span><span class="ss">:rept</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="ss">:_factor_1</span><span class="o">]</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="ss">:_factor_1</span><span class="o">]</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="ss">:primary</span><span class="o">]]</span>
+    <span class="k">else</span>
+      <span class="n">value</span><span class="o">[</span><span class="ss">:primary</span><span class="o">]</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+  <span class="n">production</span><span class="p">(</span><span class="ss">:_factor_2</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
+    <span class="n">value</span><span class="o">.</span><span class="n">first</span><span class="o">[</span><span class="ss">:integer</span><span class="o">]</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-23'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-23">&#182;</a>
+        </div>
+        <p><code>[5]  term              ::= factor (&#39;-&#39; exception)?</code></p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:optional_sequence</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
+    <span class="o">[</span><span class="ss">:opt</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">][</span><span class="ss">:definitions_list</span><span class="o">]]</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-24'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-24">&#182;</a>
+        </div>
+        <p><code>[6]  exception         ::= factor</code></p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:repeated_sequence</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
+    <span class="o">[</span><span class="ss">:star</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">][</span><span class="ss">:definitions_list</span><span class="o">]]</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-25'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-25">&#182;</a>
+        </div>
+        <p><code>[7]  factor            ::= (integer &#39;*&#39;)? primary</code></p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:grouped_sequence</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
+    <span class="o">[</span><span class="ss">:seq</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">][</span><span class="ss">:definitions_list</span><span class="o">]]</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-26'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-26">&#182;</a>
+        </div>
+        <p><code>[9]  optional_sequence ::= start_option_symbol definitions_list end_option_symbol</code></p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">input</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-27'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-27">&#182;</a>
+        </div>
+        <p><code>[10] repeated_sequence ::= start_repeat_symbol definitions_list end_repeat_symbol</code></p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">has_key?</span><span class="p">(</span><span class="ss">:level</span><span class="p">)</span>
+      <span class="n">options</span><span class="o">[</span><span class="ss">:logger</span><span class="o">]</span> <span class="o">=</span> <span class="no">Logger</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="no">STDERR</span><span class="p">)</span>
+      <span class="n">options</span><span class="o">[</span><span class="ss">:logger</span><span class="o">].</span><span class="n">level</span> <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="ss">:level</span><span class="o">]</span>
+      <span class="n">options</span><span class="o">[</span><span class="ss">:logger</span><span class="o">].</span><span class="n">formatter</span> <span class="o">=</span> <span class="nb">lambda</span> <span class="p">{</span><span class="o">|</span><span class="n">severity</span><span class="p">,</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">progname</span><span class="p">,</span> <span class="n">msg</span><span class="o">|</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">severity</span><span class="si">}</span><span class="s2"> </span><span class="si">#{</span><span class="n">msg</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">}</span>
+    <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-28'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-28">&#182;</a>
+        </div>
+        <p><code>[11] grouped_sequence  ::= &#39;(&#39; definitions_list &#39;)&#39;</code></p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="vi">@input</span> <span class="o">=</span> <span class="n">input</span><span class="o">.</span><span class="n">respond_to?</span><span class="p">(</span><span class="ss">:read</span><span class="p">)</span> <span class="p">?</span> <span class="n">input</span><span class="o">.</span><span class="n">read</span> <span class="p">:</span> <span class="n">input</span><span class="o">.</span><span class="n">to_s</span>
+
+    <span class="n">parsing_terminals</span> <span class="o">=</span> <span class="kp">false</span>
+    <span class="vi">@ast</span> <span class="o">=</span> <span class="o">[]</span>
+    <span class="n">parse</span><span class="p">(</span><span class="vi">@input</span><span class="p">,</span>
+           <span class="ss">:syntax</span><span class="p">,</span>
+           <span class="no">ISOEBNFMeta</span><span class="o">::</span><span class="no">RULES</span><span class="p">,</span>
+           <span class="n">whitespace</span><span class="p">:</span> <span class="sr">%r{([\x09-\x0d\x20]|(?:\(\*(?:(?:\*[^\)])|[^*])*\*\)))+}</span><span class="p">,</span>
+           <span class="o">**</span><span class="n">options</span>
+    <span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">context</span><span class="p">,</span> <span class="o">*</span><span class="n">data</span><span class="o">|</span>
+      <span class="n">rule</span> <span class="o">=</span> <span class="k">case</span> <span class="n">context</span>
+      <span class="k">when</span> <span class="ss">:rule</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-Parser_invocation.'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-Parser_invocation.">&#182;</a>
+        </div>
+        <h2>Parser invocation.</h2>
+
+<p>On start, yield ourselves if a block is given, otherwise, return this parser instance</p>
+
+<p>@param  [#read, #to_s]          input
+@param  [Hash{Symbol =&gt; Object}] options
+@option options [Boolean] :level
+  Trace level. 0(debug), 1(info), 2(warn), 3(error).
+@return [EBNFParser]</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>        <span class="n">rule</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">first</span>
+        <span class="n">rule</span><span class="o">.</span><span class="n">kind</span> <span class="o">=</span> <span class="ss">:terminal</span> <span class="k">if</span> <span class="n">parsing_terminals</span>
+        <span class="n">rule</span>
+      <span class="k">end</span>
+      <span class="vi">@ast</span> <span class="o">&lt;&lt;</span> <span class="n">rule</span> <span class="k">if</span> <span class="n">rule</span>
+    <span class="k">end</span>
+    <span class="vi">@ast</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-30'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-30">&#182;</a>
+        </div>
+        <p>If the <code>level</code> option is set, instantiate a logger for collecting trace information.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">to_sxp</span>
+    <span class="nb">require</span> <span class="s1">&#39;sxp&#39;</span> <span class="k">unless</span> <span class="n">defined?</span><span class="p">(</span><span class="no">SXP</span><span class="p">)</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-31'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-31">&#182;</a>
+        </div>
+        <p>Read input, if necessary, which will be used in a Scanner.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="no">SXP</span><span class="o">::</span><span class="no">Generator</span><span class="o">.</span><span class="n">string</span><span class="p">(</span><span class="vi">@ast</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:for_sxp</span><span class="p">))</span>
+  <span class="k">end</span>
+<span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-32'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-32">&#182;</a>
+        </div>
+        <p>A rule which has already been turned into a <code>Rule</code> object.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-33'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-33">&#182;</a>
+        </div>
+        <p>Output formatted S-Expression of grammar</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-34'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-34">&#182;</a>
+        </div>
+        <p>Output rules as a formatted S-Expression</p>
+
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+  </table>
+</div>
+</body>

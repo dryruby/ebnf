@@ -66,22 +66,6 @@ require 'strscan'
 # [Cwm Release 1.1.0rc1]: https://lists.w3.org/Archives/Public/public-cwm-announce/2005JulSep/0000.html
 # [bnf-rules.n3]: https://www.w3.org/2000/10/swap/grammar/bnf-rules.n3
 # 
-# Open Issues and Future Work
-# ---------------------------
-# 
-# The yacker output also has the terminals compiled to elaborate regular
-# expressions. The best strategy for dealing with lexical tokens is not
-# yet clear. Many tokens in SPARQL are case insensitive; this is not yet
-# captured formally.
-# 
-# The schema for the EBNF vocabulary used here (``g:seq``, ``g:alt``, ...)
-# is not yet published; it should be aligned with [swap/grammar/bnf][]
-# and the [bnf2html.n3][] rules (and/or the style of linked XHTML grammar
-# in the SPARQL and XML specificiations).
-# 
-# It would be interesting to corroborate the claim in the SPARQL spec
-# that the grammar is LL(1) with a mechanical proof based on N3 rules.
-# 
 # [swap/grammar/bnf]: https://www.w3.org/2000/10/swap/grammar/bnf
 # [bnf2html.n3]: https://www.w3.org/2000/10/swap/grammar/bnf2html.n3  
 # 
@@ -100,7 +84,7 @@ module EBNF
   class Base
     include BNF
     include LL1
-    include Parser
+    include Native
     include PEG
 
     # Abstract syntax tree from parse
@@ -118,23 +102,32 @@ module EBNF
     #
     # @param [#read, #to_s] input
     # @param [Symbol] format (:ebnf)
-    #   Format of input, one of :ebnf, or :sxp
+    #   Format of input, one of `:abnf`, `:ebnf`, `:isoebnf`, `:isoebnf`, `:native`, or `:sxp`.
+    #   Use `:native` for the native EBNF parser, rather than the PEG parser.
     # @param [Hash{Symbol => Object}] options
     # @option options [Boolean, Array] :debug
     #   Output debug information to an array or $stdout.
+    # @option options [Boolean, Array] :validate
+    #   Validate resulting grammar.
     def initialize(input, format: :ebnf, **options)
       @options = options.dup
       @lineno, @depth, @errors = 1, 0, []
-      terminal = false
       @ast = []
 
       input = input.respond_to?(:read) ? input.read : input.to_s
 
       case format
-      when :sxp
-        require 'sxp' unless defined?(SXP)
-        @ast = SXP::Reader::Basic.read(input).map {|e| Rule.from_sxp(e)}
+      when :abnf
+        abnf = ABNF.new(input, **options)
+        @ast = abnf.ast
       when :ebnf
+        ebnf = Parser.new(input, **options)
+        @ast = ebnf.ast
+      when :isoebnf
+        iso = ISOEBNF.new(input, **options)
+        @ast = iso.ast
+      when :native
+        terminals = false
         scanner = StringScanner.new(input)
 
         eachRule(scanner) do |r|
@@ -142,7 +135,9 @@ module EBNF
           case r
           when /^@terminals/
             # Switch mode to parsing terminals
-            terminal = true
+            terminals = true
+            rule = Rule.new(nil, nil, nil, kind: :terminals, ebnf: self)
+            @ast << rule
           when /^@pass\s*(.*)$/m
             expr = expression($1).first
             rule = Rule.new(nil, nil, expr, kind: :pass, ebnf: self)
@@ -151,14 +146,49 @@ module EBNF
           else
             rule = depth {ruleParts(r)}
 
-            rule.kind = :terminal if terminal # Override after we've parsed @terminals
+            rule.kind = :terminal if terminals # Override after we've parsed @terminals
             rule.orig = r
             @ast << rule
           end
         end
+      when :sxp
+        require 'sxp' unless defined?(SXP)
+        @ast = SXP::Reader::Basic.read(input).map {|e| Rule.from_sxp(e)}
       else
         raise "unknown input format #{format.inspect}"
       end
+
+      validate! if @options[:validate]
+    end
+
+    ##
+    # Validate the grammar.
+    #
+    # Makes sure that rules reference either strings or other defined rules.
+    #
+    # @raise [RangeError]
+    def validate!
+      ast.each do |rule|
+        begin
+          rule.validate!(@ast)
+        rescue SyntaxError => e
+          error("In rule #{rule.sym}: #{e.message}")
+        end
+      end
+      raise SyntaxError, errors.join("\n") unless errors.empty?
+    end
+
+    ##
+    # Is the grammar valid?
+    #
+    # Uses `#validate!` and catches `RangeError`
+    #
+    # @return [Boolean]
+    def valid?
+      validate!
+      true
+    rescue SyntaxError
+      false
     end
 
     # Iterate over each rule or terminal, except empty
@@ -174,21 +204,25 @@ module EBNF
     # @return [String]
     def to_sxp
       require 'sxp' unless defined?(SXP)
-      SXP::Generator.string(ast.sort_by{|r| r.id.to_f}.map(&:for_sxp))
+      SXP::Generator.string(ast.map(&:for_sxp))
     end
 
     ##
     # Output formatted EBNF
+    #
+    # @param [:abnf, :ebnf, :isoebnf] format (:ebnf)
     # @return [String]
-    def to_s
-      Writer.string(*ast)
+    def to_s(format: :ebnf)
+      Writer.string(*ast, format: format)
     end
 
     ##
     # Output formatted EBNF as HTML
+    #
+    # @param [:abnf, :ebnf, :isoebnf] format (:ebnf)
     # @return [String]
-    def to_html
-      Writer.html(*ast)
+    def to_html(format: :ebnf)
+      Writer.html(*ast, format: format)
     end
 
     ##
@@ -210,14 +244,46 @@ module EBNF
       end
 
       # Either output LL(1) BRANCH tables or rules for PEG parsing
-      if ast.first.is_a?(EBNF::PEG::Rule)
-        to_ruby_peg(output)
-      else
+      if ast.first.first
         to_ruby_ll1(output)
+      else
+        to_ruby_peg(output)
       end
       unless output == $stdout
         output.puts "end"
       end
+    end
+
+    ##
+    # Renumber, rule identifiers
+    def renumber!
+      ast.each_with_index do |rule, index|
+        rule.id = (index + 1).to_s
+      end
+    end
+
+    ##
+    # Write out syntax tree as Turtle
+    # @param [String] prefix for language
+    # @param [String] ns URI for language
+    # @return [String]
+    def to_ttl(prefix = nil, ns = "http://example.org/")
+      unless ast.empty?
+        [
+          "@prefix dc: <http://purl.org/dc/terms/>.",
+          "@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.",
+          "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.",
+          ("@prefix #{prefix}: <#{ns}>." if prefix),
+          "@prefix : <#{ns}>.",
+          "@prefix re: <http://www.w3.org/2000/10/swap/grammar/regex#>.",
+          "@prefix g: <http://www.w3.org/2000/10/swap/grammar/ebnf#>.",
+          "",
+          ":language rdfs:isDefinedBy <>; g:start :#{ast.first.id}.",
+          "",
+        ].compact
+      end.join("\n") +
+
+      ast.map(&:to_ttl).join("\n")
     end
 
     def dup
@@ -232,29 +298,6 @@ module EBNF
     # @return [Rule]
     def find_rule(sym)
       (@find ||= {})[sym] ||= ast.detect {|r| r.sym == sym}
-    end
-
-    ##
-    # Write out syntax tree as Turtle
-    # @param [String] prefix for language
-    # @param [String] ns URI for language
-    # @return [String]
-    def to_ttl(prefix = nil, ns = "http://example.org/")
-      unless ast.empty?
-        [
-          "@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.",
-          "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.",
-          ("@prefix #{prefix}: <#{ns}>." if prefix),
-          "@prefix : <#{ns}>.",
-          "@prefix re: <http://www.w3.org/2000/10/swap/grammar/regex#>.",
-          "@prefix g: <http://www.w3.org/2000/10/swap/grammar/ebnf#>.",
-          "",
-          ":language rdfs:isDefinedBy <>; g:start :#{ast.first.id}.",
-          "",
-        ].compact
-      end.join("\n") +
-
-      ast.sort.map(&:to_ttl).join("\n")
     end
 
     def depth

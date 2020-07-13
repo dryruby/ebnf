@@ -24,8 +24,18 @@ end
 ::RSpec.configure do |c|
   c.filter_run focus: true
   c.run_all_when_everything_filtered = true
-  c.exclusion_filter = {
-    ruby: lambda { |version| !(RUBY_VERSION.to_s =~ /^#{version.to_s}/) },
-    not_jruby: lambda { RUBY_PLATFORM.to_s != 'jruby'}
-  }
+  c.filter_run_excluding ruby: ->(version) do
+    case version.to_s
+    when "!jruby"
+      RUBY_ENGINE == "jruby"
+    when /^> (.*)/
+      !(RUBY_VERSION.to_s > $1)
+    else
+      !(RUBY_VERSION.to_s =~ /^#{version.to_s}/)
+    end
+  end
 end
+
+require 'ebnf'
+
+PARSED_EBNF_GRAMMAR = EBNF.parse(File.open(File.expand_path("../../etc/ebnf.ebnf", __FILE__))).freeze

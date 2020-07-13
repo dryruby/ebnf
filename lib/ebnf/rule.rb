@@ -1,16 +1,32 @@
 require 'scanf'
+require 'strscan'
 
 module EBNF
   # Represent individual parsed rules
   class Rule
     # Operations which are flattened to seprate rules in to_bnf.
     BNF_OPS = %w{
-      alt opt plus seq star
+      alt diff not opt plus rept seq star
     }.map(&:to_sym).freeze
 
     TERM_OPS = %w{
-      diff hex range
+      hex istr range
     }.map(&:to_sym).freeze
+
+    # The number of arguments expected per operator. `nil` for unspecified
+    OP_ARGN =       {
+      alt: nil,
+      diff: 2,
+      hex: 1,
+      istr: 1,
+      not: 1,
+      opt: 1,
+      plus: 1,
+      range: 1,
+      rept: 3,
+      seq: nil,
+      star: 1
+    }
 
     # Symbol of rule
     #
@@ -28,7 +44,7 @@ module EBNF
 
     # Kind of rule
     #
-    # @return [:rule, :terminal, or :pass]
+    # @return [:rule, :terminal, :terminals, or :pass]
     attr_accessor :kind
 
     # Rule expression
@@ -59,19 +75,38 @@ module EBNF
     # Determines preparation and cleanup rules for reconstituting EBNF ? * + from BNF
     attr_accessor :cleanup
 
-    # @param [Symbol] sym
-    # @param [Integer] id
+    # @param [Symbol, nil] sym
+    #   `nil` is allowed only for @pass or @terminals
+    # @param [Integer, nil] id
     # @param [Array] expr
-    # @param [Symbol] kind (nil)
+    #   The expression is an internal-representation of an S-Expression with one of the following oparators:
+    #
+    #   * `alt` – A list of alternative rules, which are attempted in order. It terminates with the first matching rule, or is terminated as unmatched, if no such rule is found.
+    #   * `diff` – matches any string that matches `A` but does not match `B`.
+    #   * `hex` – A single character represented using the hexadecimal notation `#xnn`.
+    #   * `istr` – A string which matches in a case-insensitive manner, so that `(istr "fOo")` will match either of the strings `"foo"`, `"FOO"` or any other combination.
+    #   * `opt` – An optional rule or terminal. It either results in the matching rule or returns `nil`.
+    #   * `plus` – A sequence of one or more of the matching rule. If there is no such rule, it is terminated as unmatched; otherwise, the result is an array containing all matched input.
+    #   * `range` – A range of characters, possibly repeated, of the form `(range "a-z")`. May also use hexadecimal notation.
+    #   * `rept m n` – A sequence of at lest `m` and at most `n` of the matching rule. It will always return an array.
+    #   * `seq` – A sequence of rules or terminals. If any (other than `opt` or `star`) to not parse, the rule is terminated as unmatched.
+    #   * `star` – A sequence of zero or more of the matching rule. It will always return an array.
+    # @param [:rule, :terminal, :terminals, :pass] kind (nil)
     # @param [String] ebnf (nil)
+    #   When parsing, records the EBNF string used to create the rule.
     # @param [Array] first (nil)
+    #   Recorded set of terminals that can proceed this rule (LL(1))
     # @param [Array] follow (nil)
+    #   Recorded set of terminals that can follow this rule (LL(1))
     # @param [Boolean] start (nil)
+    #   Is this the starting rule for the grammar?
     # @param [Rule] top_rule (nil)
+    #   The top-most rule. All expressed rules are top-rules, derived rules have the original rule as their top-rule.
     # @param [Boolean] cleanup (nil)
+    #   Records information useful for cleaning up converted :plus, and :star expansions (LL(1)).
     def initialize(sym, id, expr, kind: nil, ebnf: nil, first: nil, follow: nil, start: nil, top_rule: nil, cleanup: nil)
       @sym, @id = sym, id
-      @expr = expr.is_a?(Array) ? expr : [:seq, expr]
+      @expr = expr.is_a?(Array) ? expr : [:seq, expr].compact
       @ebnf, @kind, @first, @follow, @start, @cleanup, @top_rule = ebnf, kind, first, follow, start, cleanup, top_rule
       @top_rule ||= self
       @kind ||= case
@@ -79,21 +114,53 @@ module EBNF
       when !BNF_OPS.include?(@expr.first) then :terminal
       else :rule
       end
+
+      # Allow @pass and @terminals to not be named
+      @sym ||= :_pass if @kind == :pass
+      @sym ||= :_terminals if @kind == :terminals
+
+      raise ArgumentError, "Rule sym must be a symbol, was #{@sym.inspect}" unless @sym.is_a?(Symbol)
+      raise ArgumentError, "Rule id must be a string or nil, was #{@id.inspect}" unless (@id || "").is_a?(String)
+      raise ArgumentError, "Rule kind must be one of :rule, :terminal, :terminals, or :pass, was #{@kind.inspect}" unless
+        @kind.is_a?(Symbol) && %w(rule terminal terminals pass).map(&:to_sym).include?(@kind)
+
+      case @expr.first
+      when :alt
+        raise ArgumentError, "#{@expr.first} operation must have at least one operand, had #{@expr.length - 1}" unless @expr.length > 1
+      when :diff
+        raise ArgumentError, "#{@expr.first} operation must have exactly two operands, had #{@expr.length - 1}" unless @expr.length == 3
+      when :hex, :istr, :not, :opt, :plus, :range, :star
+        raise ArgumentError, "#{@expr.first} operation must have exactly one operand, had #{@expr.length - 1}" unless @expr.length == 2
+      when :rept
+        raise ArgumentError, "#{@expr.first} operation must have exactly three, had #{@expr.length - 1}" unless @expr.length == 4
+        raise ArgumentError, "#{@expr.first} operation must an non-negative integer minimum, was #{@expr[1]}" unless
+          @expr[1].is_a?(Integer) && @expr[1] >= 0
+        raise ArgumentError, "#{@expr.first} operation must an non-negative integer maximum or '*', was #{@expr[2]}" unless
+          @expr[2] == '*' || @expr[2].is_a?(Integer) && @expr[2] >= 0
+      when :seq
+        # It's legal to have a zero-length sequence
+      else
+        raise ArgumentError, "Rule expression must be an array using a known operator, was #{@expr.first}"
+      end
     end
 
     ##
     # Return a rule from its SXP representation:
     #
     # @example inputs
-    #    (pass (plus (range "#x20\\t\\r\\n")))
+    #    (pass _pass (plus (range "#x20\\t\\r\\n")))
     #    (rule ebnf "1" (star (alt declaration rule)))
-    #    (terminal O_ENUM "17" (seq "[^" (plus CHAR) "]"))
+    #    (terminal R_CHAR "19" (diff CHAR (alt "]" "-")))
     #
     # Also may have `(first ...)`, `(follow ...)`, or `(start #t)`.
     #
-    # @param [Array] sxp
+    # @param [String, Array] sxp
     # @return [Rule]
     def self.from_sxp(sxp)
+      if sxp.is_a?(String)
+        require 'sxp' unless defined?(SXP)
+        sxp = SXP.parse(sxp)
+      end
       expr = sxp.detect {|e| e.is_a?(Array) && ![:first, :follow, :start].include?(e.first.to_sym)}
       first = sxp.detect {|e| e.is_a?(Array) && e.first.to_sym == :first}
       first = first[1..-1] if first
@@ -115,11 +182,11 @@ module EBNF
     # @param [Hash{Symbol => Symbol}] cleanup (nil)
     # @param [Hash{Symbol => Object}] options
     def build(expr, kind: nil, cleanup: nil, **options)
-      new_sym, new_id = (@top_rule ||self).send(:make_sym_id)
+      new_sym, new_id = @top_rule.send(:make_sym_id)
       self.class.new(new_sym, new_id, expr,
                      kind: kind,
                      ebnf: @ebnf,
-                     top_rule: (@top_rule || self),
+                     top_rule: @top_rule,
                      cleanup: cleanup,
                      **options)
     end
@@ -152,15 +219,16 @@ module EBNF
     # @return [String]
     def to_ttl
       @ebnf.debug("to_ttl") {inspect} if @ebnf
-      comment = orig.to_s.strip.
-        gsub(/"""/, '\"\"\"').
-        gsub("\\", "\\\\").
-        sub(/^\"/, '\"').
-        sub(/\"$/m, '\"')
-      statements = [
-        %{:#{id} rdfs:label "#{id}"; rdf:value "#{sym}";},
-        %{  rdfs:comment #{comment.inspect};},
-      ]
+      statements = [%{:#{sym} rdfs:label "#{sym}";}]
+      if orig
+        comment = orig.to_s.strip.
+          gsub(/"""/, '\"\"\"').
+          gsub("\\", "\\\\").
+          sub(/^\"/, '\"').
+          sub(/\"$/m, '\"')
+        statements << %{  rdfs:comment #{comment.inspect};}
+      end
+      statements << %{  dc:identifier "#{id}";} if id
       
       statements += ttl_expr(expr, terminal? ? "re" : "g", 1, false)
       "\n" + statements.join("\n")
@@ -175,12 +243,13 @@ module EBNF
     ##
     # Transform EBNF rule to BNF rules:
     #
-    #   * Transform (rule a "n" (op1 (op2))) into two rules:
-    #     (rule a "n" (op1 _a_1))
-    #     (rule _a_1 "n.1" (op2))
-    #   * Transform (rule a (opt b)) into (rule a (alt _empty b))
-    #   * Transform (rule a (star b)) into (rule a (alt _empty (seq b a)))
-    #   * Transform (rule a (plus b)) into (rule a (seq b (star b)
+    #   * Transform `(rule a "n" (op1 (op2)))` into two rules:
+    #
+    #         (rule a "n" (op1 _a_1))
+    #         (rule _a_1 "n.1" (op2))
+    #   * Transform `(rule a (opt b))` into `(rule a (alt _empty b))`
+    #   * Transform `(rule a (star b))` into `(rule a (alt _empty (seq b a)))`
+    #   * Transform `(rule a (plus b))` into `(rule a (seq b (star b)`
     #
     # Transformation includes information used to re-construct non-transformed.
     #
@@ -231,7 +300,7 @@ module EBNF
         # Otherwise, no further transformation necessary
         new_rules << self
       elsif [:diff, :hex, :range].include?(expr.first)
-        # This rules are fine, the just need to be terminals
+        # This rules are fine, they just need to be terminals
         raise "Encountered #{expr.first.inspect}, which is a #{self.kind}, not :terminal" unless self.terminal?
         new_rules << self
       else
@@ -245,9 +314,14 @@ module EBNF
     ##
     # Transform EBNF rule for PEG:
     #
-    #   * Transform (rule a "n" (op1 ... (op2 y) ...z)) into two rules:
-    #     (rule a "n" (op1 ... _a_1 ... z))
-    #     (rule _a_1 "n.1" (op2 y))
+    #   * Transform `(rule a "n" (op1 ... (op2 y) ...z))` into two rules:
+    #
+    #         (rule a "n" (op1 ... _a_1 ... z))
+    #         (rule _a_1 "n.1" (op2 y))
+    #   * Transform `(rule a "n" (diff op1 op2))` into two rules:
+    #
+    #         (rule a "n" (seq _a_1 op1))
+    #         (rule _a_1 "n.1" (not op1))
     #
     # @return [Array<Rule>]
     def to_peg
@@ -268,8 +342,14 @@ module EBNF
 
         # Return new rules after recursively applying #to_bnf
         new_rules = new_rules.map {|r| r.to_peg}.flatten
-      elsif [:diff, :hex, :range].include?(expr.first)
-        # This rules are fine, the just need to be terminals
+      elsif expr.first == :diff && !terminal?
+        this = dup
+        new_rule = build([:not, expr[2]])
+        this.expr = [:seq, new_rule.sym, expr[1]]
+        new_rules << this
+        new_rules << new_rule
+      elsif [:hex, :istr, :range].include?(expr.first)
+        # This rules are fine, they just need to be terminals
         raise "Encountered #{expr.first.inspect}, which is a #{self.kind}, not :terminal" unless self.terminal?
         new_rules << self
       else
@@ -287,6 +367,8 @@ module EBNF
       case expr.first
       when :hex
         Regexp.new(translate_codepoints(expr[1]))
+      when :istr
+        /#{expr.last}/ui
       when :range
         Regexp.new("[#{translate_codepoints(expr[1])}]")
       else
@@ -294,45 +376,170 @@ module EBNF
       end
     end
 
-    # Return the non-terminals for this rule. For seq, this is the first
-    # non-terminal in the sequence. For alt, this is every non-terminal in the alt.
+    # Is this a terminal?
+    # 
+    # @return [Boolean]
+    def terminal?
+      kind == :terminal
+    end
+
+    # Is this a pass?
+    # @return [Boolean]
+    def pass?
+      kind == :pass
+    end
+
+    # Is this a rule?
+    # @return [Boolean]
+    def rule?
+      kind == :rule
+    end
+
+    # Is this rule of the form (alt ...)?
+    def alt?
+      expr.is_a?(Array) && expr.first == :alt
+    end
+
+    # Is this rule of the form (seq ...)?
+    def seq?
+      expr.is_a?(Array) && expr.first == :seq
+    end
+
+    def inspect
+      "#<EBNF::Rule:#{object_id} " +
+      {sym: sym, id: id, kind: kind, expr: expr}.inspect +
+      ">"
+    end
+
+    # Two rules are equal if they have the same {#sym}, {#kind} and {#expr}.
+    #
+    # @param [Rule] other
+    # @return [Boolean]
+    def ==(other)
+      sym   == other.sym &&
+      kind  == other.kind &&
+      expr  == other.expr
+    end
+
+    # Two rules are equivalent if they have the same {#expr}.
+    #
+    # @param [Rule] other
+    # @return [Boolean]
+    def eql?(other)
+      expr == other.expr
+    end
+
+    # Rules compare using their ids
+    def <=>(other)
+      if id && other.id
+        if id == other.id
+          id.to_s <=> other.id.to_s
+        else
+          id.to_f <=> other.id.to_f
+        end
+      else
+        sym.to_s <=> other.sym.to_s
+      end
+    end
+
+    ##
+    # Utility function to translate code points of the form '#xN' into ruby unicode characters
+    def translate_codepoints(str)
+      str.gsub(/#x\h+/) {|c| c[2..-1].scanf("%x").first.chr(Encoding::UTF_8)}
+    end
+
+    # Return the non-terminals for this rule.
+    #
+    # * `alt` => this is every non-terminal.
+    # * `diff` => this is every non-terminal.
+    # * `hex` => nil
+    # * `istr` => nil
+    # * `not` => this is the last expression, if any.
+    # * `opt` => this is the last expression, if any.
+    # * `plus` => this is the last expression, if any.
+    # * `range` => nil
+    # * `rept` => this is the last expression, if any.
+    # * `seq` => this is the first expression in the sequence, if any.
+    # * `star` => this is the last expression, if any.
     #
     # @param [Array<Rule>] ast
     #   The set of rules, used to turn symbols into rules
+    # @param [Array<Symbol,String,Array>] expr (@expr)
+    #   The expression to check, defaults to the rule expression.
+    #   Typically, if the expression is recursive, the embedded expression is called recursively.
     # @return [Array<Rule>]
-    def non_terminals(ast)
-      @non_terms ||= (alt? ? expr[1..-1] : expr[1,1]).map do |sym|
+    # @note this is used for LL(1) tansformation, so rule types are limited
+    def non_terminals(ast, expr = @expr)
+      ([:alt, :diff].include?(expr.first) ? expr[1..-1] : expr[1,1]).map do |sym|
         case sym
         when Symbol
           r = ast.detect {|r| r.sym == sym}
           r if r && r.rule?
+        when Array
+          non_terminals(ast, sym)
         else
           nil
         end
-      end.compact
+      end.flatten.compact.uniq
     end
 
-    # Return the terminals for this rule. For seq, this is the first
-    # terminals or strings in the seq. For alt, this is every non-terminal ni the alt.
+    # Return the terminals for this rule.
+    #
+    # * `alt` => this is every terminal.
+    # * `diff` => this is every terminal.
+    # * `hex` => nil
+    # * `istr` => nil
+    # * `not` => this is the last expression, if any.
+    # * `opt` => this is the last expression, if any.
+    # * `plus` => this is the last expression, if any.
+    # * `range` => nil
+    # * `rept` => this is the last expression, if any.
+    # * `seq` => this is the first expression in the sequence, if any.
+    # * `star` => this is the last expression, if any.
     #
     # @param [Array<Rule>] ast
     #   The set of rules, used to turn symbols into rules
+    # @param [Array<Symbol,String,Array>] expr (@expr)
+    #   The expression to check, defaults to the rule expression.
+    #   Typically, if the expression is recursive, the embedded expression is called recursively.
     # @return [Array<Rule>]
-    def terminals(ast)
-      @terms ||= (alt? ? expr[1..-1] : expr[1,1]).map do |sym|
+    # @note this is used for LL(1) tansformation, so rule types are limited
+    def terminals(ast, expr = @expr)
+      ([:alt, :diff].include?(expr.first) ? expr[1..-1] : expr[1,1]).map do |sym|
         case sym
         when Symbol
           r = ast.detect {|r| r.sym == sym}
           r if r && r.terminal?
         when String
           sym
-        else
-          nil
+        when Array
+          terminals(ast, sym)
         end
-      end.compact
+      end.flatten.compact.uniq
     end
 
-    # Does this rule start with a sym? It does if expr is that sym,
+    # Return the symbols used in the rule.
+    #
+    # @param [Array<Symbol,String,Array>] expr (@expr)
+    #   The expression to check, defaults to the rule expression.
+    #   Typically, if the expression is recursive, the embedded expression is called recursively.
+    # @return [Array<Rule>]
+    def symbols(expr = @expr)
+      expr[1..-1].map do |sym|
+        case sym
+        when Symbol
+          sym
+        when Array
+          symbols(sym)
+        end
+      end.flatten.compact.uniq
+    end
+
+    ##
+    # The following are used for LL(1) transformation.
+    ##
+
+    # Does this rule start with `sym`? It does if expr is that sym,
     # expr starts with alt and contains that sym,
     # or expr starts with seq and the next element is that sym.
     #
@@ -347,6 +554,92 @@ module EBNF
       else
         nil
       end
+    end
+
+    ##
+    # Validate the rule, with respect to an AST.
+    #
+    # @param [Array<Rule>] ast
+    #   The set of rules, used to turn symbols into rules
+    # @param [Array<Symbol,String,Array>] expr (@expr)
+    #   The expression to check, defaults to the rule expression.
+    #   Typically, if the expression is recursive, the embedded expression is called recursively.
+    # @raise [RangeError]
+    def validate!(ast, expr = @expr)
+      op = expr.first
+      raise SyntaxError, "Unknown operator: #{op}" unless OP_ARGN.key?(op)
+      raise SyntaxError, "Argument count missmatch on operator #{op}, had #{expr.length - 1} expected #{OP_ARGN[op]}" if
+        OP_ARGN[op] && OP_ARGN[op] != expr.length - 1
+
+      # rept operator needs min and max
+      if op == :alt
+        raise SyntaxError, "alt operation must have at least one operand, had #{expr.length - 1}" unless expr.length > 1
+      elsif op == :rept
+        raise SyntaxError, "rept operation must an non-negative integer minimum, was #{expr[1]}" unless
+          expr[1].is_a?(Integer) && expr[1] >= 0
+        raise SyntaxError, "rept operation must an non-negative integer maximum or '*', was #{expr[2]}" unless
+          expr[2] == '*' || expr[2].is_a?(Integer) && expr[2] >= 0
+      end
+
+      case op
+      when :hex
+        raise SyntaxError, "Hex operand must be of form '#xN+': #{sym}" unless expr.last.match?(/^#x\h+$/)
+      when :range
+        str = expr.last.dup
+        str = str[1..-1] if str.start_with?('^')
+        str = str[0..-2] if str.end_with?('-')  # Allowed at end of range
+        scanner = StringScanner.new(str)
+        hex = rchar = in_range = false
+        while !scanner.eos?
+          begin
+            if scanner.scan(Terminals::HEX)
+              raise SyntaxError if in_range && rchar
+              rchar = in_range = false
+              hex = true
+            elsif scanner.scan(Terminals::R_CHAR)
+              raise SyntaxError if in_range && hex
+              hex = in_range = false
+              rchar = true
+            else
+              raise(SyntaxError, "Range contains illegal components at offset #{scanner.pos}: was #{expr.last}")
+            end
+
+            if scanner.scan(/\-/)
+              raise SyntaxError if in_range
+              in_range = true
+            end
+          rescue SyntaxError
+            raise(SyntaxError, "Range contains illegal components at offset #{scanner.pos}: was #{expr.last}")
+          end
+        end
+      else
+        ([:alt, :diff].include?(expr.first) ? expr[1..-1] : expr[1,1]).each do |sym|
+          case sym
+          when Symbol
+            r = ast.detect {|r| r.sym == sym}
+            raise SyntaxError, "No rule found for #{sym}" unless r
+          when Array
+            validate!(ast, sym)
+          when String
+            raise SyntaxError, "String must be of the form CHAR*" unless sym.match?(/^#{Terminals::CHAR}*$/)
+          end
+        end
+      end
+    end
+
+    ##
+    # Validate the rule, with respect to an AST.
+    #
+    # Uses `#validate!` and catches `RangeError`
+    #
+    # @param [Array<Rule>] ast
+    #   The set of rules, used to turn symbols into rules
+    # @return [Boolean]
+    def valid?(ast)
+      validate!(ast)
+      true
+    rescue SyntaxError
+      false
     end
 
     # Do the firsts of this rule include the empty string?
@@ -381,79 +674,6 @@ module EBNF
       terminals.length
     end
 
-    # Is this a terminal?
-    # 
-    # @return [Boolean]
-    def terminal?
-      kind == :terminal
-    end
-
-    # Is this a pass?
-    # @return [Boolean]
-    def pass?
-      kind == :pass
-    end
-
-    # Is this a rule?
-    # @return [Boolean]
-    def rule?
-      kind == :rule
-    end
-
-    # Is this rule of the form (alt ...)?
-    def alt?
-      expr.is_a?(Array) && expr.first == :alt
-    end
-
-    # Is this rule of the form (seq ...)?
-    def seq?
-      expr.is_a?(Array) && expr.first == :seq
-    end
-
-    # Is this rule of the form (alt ...)?
-    def alt?
-      expr.is_a?(Array) && expr.first == :alt
-    end
-
-    def inspect
-      "#<EBNF::Rule:#{object_id} " +
-      {sym: sym, id: id, kind: kind, expr: expr}.inspect +
-      ">"
-    end
-
-    # Two rules are equal if they have the same {#sym}, {#kind} and {#expr}.
-    #
-    # @param [Rule] other
-    # @return [Boolean]
-    def ==(other)
-      sym   == other.sym &&
-      kind  == other.kind &&
-      expr  == other.expr
-    end
-
-    # Two rules are equivalent if they have the same {#expr}.
-    #
-    # @param [Rule] other
-    # @return [Boolean]
-    def equivalent?(other)
-      expr == other.expr
-    end
-
-    # Rules compare using their ids
-    def <=>(other)
-      if id.to_i == other.id.to_i
-        id.to_s <=> other.id.to_s
-      else
-        id.to_i <=> other.id.to_i
-      end
-    end
-
-    ##
-    # Utility function to translate code points of the form '#xN' into ruby unicode characters
-    def translate_codepoints(str)
-      str.gsub(/#x\h+/) {|c| c[2..-1].scanf("%x").first.chr(Encoding::UTF_8)}
-    end
-
     private
     def ttl_expr(expr, pfx, depth, is_obj = true)
       indent = '  ' * depth
@@ -469,17 +689,28 @@ module EBNF
 
       case op
       when :seq, :alt, :diff
+        # Multiple operands
         statements << %{#{indent}#{bra}#{pfx}:#{op} (}
         expr.each {|a| statements += ttl_expr(a, pfx, depth + 1)}
         statements << %{#{indent} )#{ket}}
-      when :opt, :plus, :star
+      when :opt, :plus, :star, :not
+        # Single operand
         statements << %{#{indent}#{bra}#{pfx}:#{op} }
         statements += ttl_expr(expr.first, pfx, depth + 1)
+        statements << %{#{indent} #{ket}} unless ket.empty?
+      when :rept
+        # Three operands (min, max and expr)
+        statements << %{  #{indent}#{pfx}:min #{expr[0].inspect};}
+        statements << %{  #{indent}#{pfx}:max #{expr[1].inspect};}
+        statements << %{#{indent}#{bra}#{pfx}:#{op} }
+        statements += ttl_expr(expr.last, pfx, depth + 1)
         statements << %{#{indent} #{ket}} unless ket.empty?
       when :_empty, :_eps
         statements << %{#{indent}"g:#{op.to_s[1..-1]}"}
       when :"'"
         statements << %{#{indent}"#{esc(expr)}"}
+      when :istr
+        statements << %{#{indent}#{bra} re:matches #{expr.first.inspect} #{ket}}
       when :range
         statements << %{#{indent}#{bra} re:matches #{cclass(expr.first).inspect} #{ket}}
       when :hex
@@ -535,7 +766,7 @@ module EBNF
     def make_sym_id(variation = nil)
       @id_seq ||= 0
       @id_seq += 1
-      ["_#{@sym}_#{@id_seq}#{variation}".to_sym, "#{@id}.#{@id_seq}#{variation}"]
+      ["_#{@sym}_#{@id_seq}#{variation}".to_sym, ("#{@id}.#{@id_seq}#{variation}" if @id)]
     end
   end
 end

@@ -26,11 +26,11 @@
 
 @terminals
 
-[18] IRIREF                           ::=  '<' ([^#x00-#x20<>"{}|^`\] | UCHAR)* '>'
+[18] IRIREF                           ::= '<' ([^<>"{}|^`\]-[#x00-#x20] | UCHAR)* '>'
 [139s] PNAME_NS                       ::= PN_PREFIX? ":" 
 [140s] PNAME_LN                       ::= PNAME_NS PN_LOCAL 
 [141s] BLANK_NODE_LABEL               ::= '_:' ( PN_CHARS_U | [0-9] ) ((PN_CHARS|'.')* PN_CHARS)?
-[144s] LANGTAG                        ::= "@" [a-zA-Z]+ ( "-" [a-zA-Z0-9]+ )* 
+[144s] LANGTAG                        ::= "@" ([a-zA-Z])+ ( "-" ([a-zA-Z0-9])+ )* 
 [19] INTEGER                          ::= [+-]? [0-9]+
 [20] DECIMAL                          ::= [+-]?  ( ([0-9])* '.' ([0-9])+  )
 [21] DOUBLE                           ::= [+-]? ( [0-9]+ '.' [0-9]* EXPONENT | '.' ([0-9])+ EXPONENT | ([0-9])+ EXPONENT )
@@ -65,6 +65,6 @@
 [168s] PN_LOCAL                       ::= ( PN_CHARS_U | ':' | [0-9] | PLX ) ( ( PN_CHARS | '.' | ':' | PLX )*  ( PN_CHARS | ':' | PLX ) ) ?
 [169s] PLX                            ::= PERCENT | PN_LOCAL_ESC
 [170s] PERCENT                        ::= '%' HEX HEX
-[171s] HEX                            ::= [0-9] | [A-F] | [a-f]
+[171s] HEX                            ::= [0-9A-Fa-f]
 [172s] PN_LOCAL_ESC                   ::= '\' ( '_' | '~' | '.' | '-' | '!' | '$' | '&' | "'" | '(' | ')' | '*' | '+' | ',' | ';' | '='
                                         | '/' | '?' | '#' | '@' | '%' )

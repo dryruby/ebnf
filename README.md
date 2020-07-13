@@ -9,10 +9,17 @@
 ## Description
 This is a [Ruby][] implementation of an [EBNF][] and [BNF][] parser and parser generator.
 
-### LL(1) Parser
-In one mode, it parses [EBNF][] grammars to [BNF][], generates [First/Follow][] and Branch tables for [LL(1)][] grammars, which can be used with the stream [Tokenizer][] and [LL(1) Parser][].
+### [PEG][]/[Packrat][] Parser
+In the primary mode, it supports a Parsing Expression Grammar ([PEG][]) parser generator. This performs more minmal transformations on the parsed grammar to extract sub-productions, which allows each component of a rule to generate its own parsing event.
 
-As LL(1) grammars operate using `alt` and `seq` primitives, allowing for a match on alternative productions or a sequence of productions, generating a parser requires turning the EBNF rules into BNF:
+The resulting {EBNF::PEG::Rule} objects then parse each associated rule according to the operator semantics and use a [Packrat][] memoizer to reduce extra work when backtracking.
+
+These rules are driven using the {EBNF::PEG::Parser} module which calls invokes the starting rule and ensures that all input is consumed.
+
+### LL(1) Parser
+In another mode, it parses [EBNF][] grammars to [BNF][], generates [First/Follow][] and Branch tables for [LL(1)][] grammars, which can be used with the stream [Tokenizer][] and [LL(1) Parser][].
+
+As LL(1) grammars operate using `alt` and `seq` primitives, allowing for a match on alternative productions or a sequence of productions, generating a parser requires turning the [EBNF][] rules into [BNF][]:
 
 * Transform `a ::= b?` into `a ::= _empty | b`
 * Transform `a ::= b+` into `a ::= b b*`
@@ -25,57 +32,76 @@ As LL(1) grammars operate using `alt` and `seq` primitives, allowing for a match
 
 Of note in this implementation is that the tokenizer and parser are streaming, so that they can process inputs of arbitrary size.
 
-See {EBNF::LL1} and {EBNF::LL1::Parser} for further information.
+The _exception operator_ (`A - B`) is only supported on terminals.
 
-### [PEG][]/[Packrat][] Parser
-An additional Parsing Expression Grammar ([PEG][]) parser generator is also supported. This performs more minmal transformations on the parsed grammar to extract sub-productions, which allows each component of a rule to generate its own parsing event.
+See {EBNF::LL1} and {EBNF::LL1::Parser} for further information.
 
 ## Usage
 ### Parsing an EBNF Grammar
 
     require 'ebnf'
 
-    ebnf = EBNF.parse(File.open('./etc/ebnf.ebnf'))
+    grammar = EBNF.parse(File.open('./etc/ebnf.ebnf'))
 
-Output rules and terminals as S-Expressions, Turtle, HTML or BNF
+Output rules and terminals as [S-Expressions][S-Expression], [Turtle][], HTML or [BNF][]
 
-    puts ebnf.to_sxp
-    puts ebnf.to_ttl
-    puts ebnf.to_html
-    puts ebnf.to_s
+    puts grammar.to_sxp
+    puts grammar.to_ttl
+    puts grammar.to_html
+    puts grammar.to_s
 
-Transform EBNF to PEG (generates sub-rules for embedded expressions) and the RULES table as Ruby for parsing grammars:
+Transform [EBNF][] to [PEG][] (generates sub-rules for embedded expressions) and the RULES table as Ruby for parsing grammars:
 
-    ebnf.make_peg
-    ebnf.to_ruby
+    grammar.make_peg
+    grammar.to_ruby
 
-Transform EBNF to BNF (generates sub-rules using `alt` or `seq` from `plus`, `star` or `opt`)
+Transform [EBNF][] to [BNF][] (generates sub-rules using `alt` or `seq` from `plus`, `star` or `opt`)
 
-    ebnf.make_bnf
+    grammar.make_bnf
 
 Generate [First/Follow][] rules for BNF grammars (using "ebnf" as the starting production):
 
-    ebnf.first_follow(:ebnf)
+    grammar.first_follow(:ebnf)
 
 Generate Terminal, [First/Follow][], Cleanup and Branch tables as Ruby for parsing grammars:
 
-    ebnf.build_tables
-    ebnf.to_ruby
+    grammar.build_tables
+    grammar.to_ruby
 
 Generate formatted grammar using HTML (requires [Haml][Haml] gem):
 
-    ebnf.to_html
+    grammar.to_html
 
-### Parser debugging
+### Parsing an ISO/IEC 14977 Grammar
+
+The EBNF gem can also parse [ISO/EIC 14977] Grammars (ISOEBNF) to [S-Expressions][S-Expression].
+
+    grammar = EBNF.parse(File.open('./etc/iso-ebnf.isoebnf', format: :isoebnf))
+
+### Parsing an ABNF Grammar
+
+The EBNF gem can also parse [ABNF] Grammars to [S-Expressions][S-Expression].
+
+    grammar = EBNF.parse(File.open('./etc/abnf.abnf', format: :abnf))
+
+### Parser Debugging
 
 Inevitably while implementing a parser for some specific grammar, a developer will need greater insight into the operation of the parser. While this can involve sorting through a tremendous amount of data, the parser can be provided a [Logger][] instance which will output messages at varying levels of detail to document the state of the parser at any given point. Most useful is likely the `INFO` level of debugging, but even more detail is revealed using the `DEBUG` level. `WARN` and `ERROR` statements will typically also be provided as part of an exception if parsing fails, but can be shown in the context of other parsing state with appropriate indentation as part of the logger.
 
-### Parser errors
+### Writing Grammars
+
+The {EBNF::Writer} class can be used to write parsed grammars out, either as formatted text, or HTML. Because grammars are written from the Abstract Syntax Tree, represented as [S-Expressions][S-Expression], this provides a means of transforming between grammar formats (e.g., W3C [EBNF][] to [ABNF][]), although with some potential loss in semantic fidelity (case-insensitive string matching vs. case-sensitive matching).
+
+The formatted HTML results are designed to be appropriate for including in specifications.
+
+### Parser Errors
 On a parsing failure, and exception is raised with information that may be useful in determining the source of the error.
 
 ## EBNF Grammar
 The [EBNF][] variant used here is based on [W3C](https://w3.org/) [EBNF][] (see {file:etc/ebnf.ebnf EBNF grammar}) as defined in the
 [XML 1.0 recommendation](https://www.w3.org/TR/REC-xml/), with minor extensions:
+
+The character set for EBNF is UTF-8.
 
 The general form of a rule is:
 
@@ -85,7 +111,9 @@ which can also be proceeded by an optional number enclosed in square brackets to
 
     [1] symbol ::= expression
 
-Symbols are written with an initial capital letter if they are the start symbol of a regular language (terminals), otherwise with an initial lowercase letter (non-terminals). Literal strings are quoted.
+(Note, this can introduce an ambiguity if the previous rule ends in a range or enum and the current rule has no identifier. In this case, enclosing `expression` within parentheses, or adding intervening comments can resolve the ambiguity.)
+
+Symbols are written in CAPITAL CASE if they are the start symbol of a regular language (terminals), otherwise with they are treated as non-terminal rules. Literal strings are quoted.
 
 Within the expression on the right-hand side of a rule, the following expressions are used to match strings of one or more characters:
 
@@ -93,13 +121,13 @@ Within the expression on the right-hand side of a rule, the following expression
   <tr><td><code>#xN</code></td>
     <td>where <code>N</code> is a hexadecimal integer, the expression matches the character whose number (code point) in ISO/IEC 10646 is <code>N</code>. The number of leading zeros in the <code>#xN</code> form is insignificant.</td></tr>
   <tr><td><code>[a-zA-Z], [#xN-#xN]</code>
-    <td>matches any Char with a value in the range(s) indicated (inclusive).</td></tr>
+    <td>matches any Char or HEX with a value in the range(s) indicated (inclusive).</td></tr>
   <tr><td><code>[abc], [#xN#xN#xN]</code></td>
-    <td>matches any Char with a value among the characters enumerated. Enumerations and ranges can be mixed in one set of brackets.</td></tr>
+    <td>matches any UTF-8 R\_CHAR or HEX with a value among the characters enumerated. The last component may be '-'. Enumerations and ranges may be mixed in one set of brackets.</td></tr>
   <tr><td><code>[^a-z], [^#xN-#xN]</code></td>
-    <td>matches any Char with a value outside the range indicated.</td></tr>
+    <td>matches any UTF-8 Char or HEX a value outside the range indicated.</td></tr>
   <tr><td><code>[^abc], [^#xN#xN#xN]</code></td>
-    <td>matches any Char with a value not among the characters given. Enumerations and ranges of forbidden values can be mixed in one set of brackets.</td></tr>
+    <td>matches any UTF-8 R\_CHAR or HEX with a value not among the characters given. The last component may be '-'. Enumerations and ranges of excluded values may be mixed in one set of brackets.</td></tr>
   <tr><td><code>"string"</code></td>
     <td>matches a literal string matching that given inside the double quotes.</td></tr>
   <tr><td><code>'string'</code></td>
@@ -113,7 +141,7 @@ Within the expression on the right-hand side of a rule, the following expression
   <tr><td><code>A | B</code></td>
     <td>matches <code>A</code> or <code>B</code>.</td></tr>
   <tr><td><code>A - B</code></td>
-    <td>matches any string that matches <code>A</code> but does not match <code>B</code>.</td></tr>
+    <td>matches any string that matches <code>A</code> but does not match <code>B</code>. (Only supported on Terminals in LL(1) BNF).</td></tr>
   <tr><td><code>A+</code></td>
     <td>matches one or more occurrences of <code>A</code>. Concatenation has higher precedence than alternation; thus <code>A+ | B+</code> is identical to <code>(A+) | (B+)</code>.</td></tr>
   <tr><td><code>A*</code></td>
@@ -130,10 +158,10 @@ Within the expression on the right-hand side of a rule, the following expression
 * `@pass` defines the expression used to detect whitespace, which is removed in processing.
 * No support for `wfc` (well-formedness constraint) or `vc` (validity constraint).
 
-Parsing this grammar yields an S-Expression version: {file:etc/ebnf.sxp} (or [LL(1)][] version {file:etc/ebnf.ll1.sxp} or [PEG][] version {file:etc/ebnf.peg.sxp}).
+Parsing this grammar yields an [S-Expression][] version: {file:etc/ebnf.sxp} (or [LL(1)][] version {file:etc/ebnf.ll1.sxp} or [PEG][] version {file:etc/ebnf.peg.sxp}).
 
 ### Parser S-Expressions
-Intermediate representations of the grammar may be serialized to Lisp-like S-Expressions. For example, the rule
+Intermediate representations of the grammar may be serialized to Lisp-like [S-Expressions][S-Expression]. For example, the rule
 
     [1] ebnf        ::= (declaration | rule)*
 
@@ -155,11 +183,21 @@ Different components of an EBNF rule expression are transformed into their own o
   <tr><td><code>A?</code></td><td><code>(opt A)</code></td></tr>
   <tr><td><code>A B</code></td><td><code>(seq A B)</code></td></tr>
   <tr><td><code>A | B</code></td><td><code>(alt A B)</code></td></tr>
-  <tr><td><code>A - B</code></td><td><code>(diff A B)</code></td></tr>
+  <tr><td><code>A - B</code></td>
+    <td><code>(diff A B) for terminals.<br/>
+      <code>(seq (not B) A) for non-terminals (PEG parsing only)</code></code></td></tr>
   <tr><td><code>A+</code></td><td><code>(plus A)</code></td></tr>
   <tr><td><code>A*</code></td><td><code>(star A)</code></td></tr>
-  <tr><td><code>@pass " "*</code></td><td><code>(pass (star " "))</code></td></tr>
+  <tr><td><code>@pass " "*</code></td><td><code>(pass _pass (star " "))</code></td></tr>
   <tr><td><code>@terminals</code></td><td></td></tr>
+</table>
+
+Other rule operators are not directly supported in [EBNF][], but are included to support other notations (e.g., [ABNF][] and [ISO/IEC 14977][]):
+
+<table>
+  <tr><td><code>%i"StRiNg"</code></td><td><code>(istr "StRiNg")</code></td><td>Case-insensitive string matching</td></tr>
+  <tr><td><code>'' - A</code></td><td><code>(not A)</code></td><td>Negative look-ahead, used for non-terminal uses of `B - A`.</td></tr>
+  <tr><td><code>n*mA</code></td><td><code>(rept n m A)</code></td><td>Explicit repetition.</td></tr>
 </table>
 
 Additionally, rules defined with an UPPERCASE symbol are treated as terminals.
@@ -185,6 +223,10 @@ For an example parser built using this gem that parses the [EBNF][] grammar, see
 
 There is also an
 [EBNF LL(1) Parser example](https://dryruby.github.io/ebnf/examples/ebnf-peg-parser/doc/parser.html).
+
+The [ISO EBNF Parser](https://dryruby.github.io/ebnf/examples/isoebnf/doc/parser.html) example parses [ISO/IEC 14977][] into [S-Expressions][S-Expression], which can be used to parse compatible grammars using this parser (either [PEG][] or [LL(1)][]).
+
+The [ABNF Parser](https://dryruby.github.io/ebnf/examples/abnf/doc/parser.html) example parses [ABNF][] into [S-Expressions][S-Expression], which can be used to parse compatible grammars using this [PEG][] parser.
 
 ##  Acknowledgements
 Much of this work, particularly the generic parser, is inspired by work originally done by
@@ -229,16 +271,19 @@ A copy of the [Turtle EBNF][] and derived parser files are included in the repos
 [YARD]:         https://yardoc.org/
 [YARD-GS]:      https://rubydoc.info/docs/yard/file/docs/GettingStarted.md
 [PDD]:          https://lists.w3.org/Archives/Public/public-rdf-ruby/2010May/0013.html
+[ABNF]:         https://www.rfc-editor.org/rfc/rfc5234
 [BNF]:          https://en.wikipedia.org/wiki/Backus–Naur_form
 [EBNF]:         https://www.w3.org/TR/REC-xml/#sec-notation
 [EBNF doc]:     https://rubydoc.info/github/dryruby/ebnf
 [First/Follow]: https://en.wikipedia.org/wiki/LL_parser#Constructing_an_LL.281.29_parsing_table
+[ISO/IEC 14977]:https://www.iso.org/standard/26153.html
 [LL(1)]:        https://www.csd.uwo.ca/~moreno//CS447/Lectures/Syntax.html/node14.html
 [LL(1) Parser]: https://en.wikipedia.org/wiki/LL_parser
 [Logger]:       https://ruby-doc.org/stdlib-2.4.0/libdoc/logger/rdoc/Logger.html
+[S-expression]: https://en.wikipedia.org/wiki/S-expression
 [Tokenizer]:    https://en.wikipedia.org/wiki/Lexical_analysis#Tokenizer
+[Turtle]:       https://www.w3.org/TR/2012/WD-turtle-20120710/
 [Turtle EBNF]:  https://dvcs.w3.org/hg/rdf/file/default/rdf-turtle/turtle.bnf
 [Packrat]:      https://pdos.csail.mit.edu/~baford/packrat/thesis/
 [PEG]:          https://en.wikipedia.org/wiki/Parsing_expression_grammar
-[Treetop]:      https://rubygems.org/gems/treetop
 [Haml]:         https://rubygems.org/gems/haml

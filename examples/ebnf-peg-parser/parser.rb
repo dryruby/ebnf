@@ -12,23 +12,6 @@ class EBNFPegParser
   include EBNF::PEG::Parser
   include EBNF::Terminals
 
-  class ProdResult
-    attr_accessor :prod
-    attr_accessor :values
-
-    def initialize(prod, *values)
-      @prod, @values = prod, values
-    end
-
-    def to_ary
-      values.map {|v| v.respond_to?(:to_ary) ? v.to_ary : v}.unshift(@prod)
-    end
-
-    def inspect
-      "(#{prod} #{values.map(&:inspect).join(' ')})"
-    end
-  end
-
   # Abstract syntax tree from parse
   #
   # @return [Array<EBNF::Rule>]
@@ -51,7 +34,7 @@ class EBNFPegParser
   #
   #     [11] LHS        ::= ('[' SYMBOL+ ']' ' '+)? SYMBOL ' '* '::='
   terminal(:LHS, LHS) do |value, prod|
-    value.to_s.scan(/\[([^\]]+)\]\s*(\w+)\s*::=/).first
+    value.to_s.scan(/(?:\[([^\]]+)\])?\s*(\w+)\s*::=/).first
   end
 
   # Match `SYMBOL` terminal
@@ -64,46 +47,34 @@ class EBNFPegParser
   # Match `HEX` terminal
   #
   #     [13] HEX        ::= #x' ([a-f] | [A-F] | [0-9])+
-  terminal(:HEX, HEX)
-
-  # Terminal for `ENUM` is matched as part of a `primary` rule.
-  #
-  #     [14] ENUM       ::= ('[' R_CHAR+ | HEX+ ']') - LHS
-  terminal(:ENUM, ENUM) do |value|
-    [:range, value[1..-2]]
-  end
-
-  # Terminal for `O_ENUM` is matched as part of a `primary` rule.
-  #
-  #     [15] O_ENUM     ::= '[^' R_CHAR+ | HEX+ ']'
-  terminal(:O_ENUM, O_ENUM) do |value|
-    [:range, value[1..-2]]
+  terminal(:HEX, HEX) do |value|
+    [:hex, value]
   end
 
   # Terminal for `RANGE` is matched as part of a `primary` rule.
   #
-  #     [16] `RANGE`      ::= '[' (R_CHAR '-' R_CHAR) | (HEX - HEX) ']'
+  #     [14] `RANGE`      ::= '[' (R_CHAR '-' R_CHAR) | (HEX '-' HEX) ']'
   terminal(:RANGE, RANGE) do |value|
     [:range, value[1..-2]]
   end
 
   # Terminal for `O_RANGE` is matched as part of a `primary` rule.
   #
-  #     [17] O_RANGE    ::= '[^' (R_CHAR '-' R_CHAR) | (HEX - HEX) ']'
+  #     [15] O_RANGE    ::= '[^' (R_CHAR '-' R_CHAR) | (HEX '-' HEX) ']'
   terminal(:O_RANGE, O_RANGE) do |value|
     [:range, value[1..-2]]
   end
 
   # Match double quote string
   #
-  #     [18] STRING1    ::= '"' (CHAR - '"')* '"'
+  #     [16] STRING1    ::= '"' (CHAR - '"')* '"'
   terminal(:STRING1, STRING1) do |value|
     value[1..-2]
   end
 
   # Match single quote string
   #
-  #     [19] STRING2    ::= "'" (CHAR - "'")* "'"
+  #     [17] STRING2    ::= "'" (CHAR - "'")* "'"
   terminal(:STRING2, STRING2) do |value|
     value[1..-2]
   end
@@ -112,7 +83,7 @@ class EBNFPegParser
 
   # Match `POSTFIX` terminal
   #
-  #     [22] POSTFIX    ::= [?*+]
+  #     [20] POSTFIX    ::= [?*+]
   terminal(:POSTFIX, POSTFIX)
 
   # The `PASS` productions is not used explicitly
@@ -142,24 +113,25 @@ class EBNFPegParser
   production(:declaration, clear_packrat: true) do |value, data, callback|
     # value contains a declaration.
     # Invoke callback
-    callback.call(:terminal) if value == '@terminals'
+    callback.call(:terminals) if value == '@terminals'
     nil
   end
 
   # Production for end of `rule` non-terminal.
   #
-  # The `value` parameter, is of the form `[{LHS: "v"}, {expression: "v"}]`.
+  # By setting `as_hash: true` in the `start_production`, the `value` parameter will be in the form `{LHS: "v", expression: "v"}`. Otherwise, it would be expressed using an array of hashes of the form `[{LHS: "v"}, {expression: "v"}]`.
   #
   # Clears the packrat parser when called.
   #
   # Create rule from expression value and pass to callback
   #
   #     [3] rule        ::= LHS expression
+  start_production(:rule, as_hash: true)
   production(:rule, clear_packrat: true) do |value, data, callback|
     # value contains an expression.
     # Invoke callback
-    id, sym = value.first[:LHS]
-    expression = value.last[:expression]
+    id, sym = value[:LHS]
+    expression = value[:expression]
     callback.call(:rule, EBNF::Rule.new(sym.to_sym, id, expression))
     nil
   end
@@ -180,7 +152,7 @@ class EBNFPegParser
   # Production for end of `alt` non-terminal.
   # Passes through the optimized value of the seq production as follows:
   #
-  # The `value` parameter, is of the form `[{seq: "v"}, {_alt_1: "v"}]`.
+  # The `value` parameter, is of the form `{seq: "v", _alt_1: "v"}`.
   #
   #     [:seq foo] => foo
   #     [:seq foo bar] => [:seq foo bar]
@@ -188,11 +160,12 @@ class EBNFPegParser
   # Note that this also may just pass through from `_alt_1`
   #
   #     [5] alt         ::= seq ('|' seq)*
+  start_production(:alt, as_hash: true)
   production(:alt) do |value|
-    if value.last[:_alt_1].length > 0
-      [:alt, value.first[:seq]] + value.last[:_alt_1]
+    if value[:_alt_1].length > 0
+      [:alt, value[:seq]] + value[:_alt_1]
     else
-      value.first[:seq]
+      value[:seq]
     end
   end
 
@@ -223,14 +196,15 @@ class EBNFPegParser
 
   # `Diff` production returns concatenated postfix values
   #
-  # The `value` parameter, is of the form `[{postfix: "v"}, {_diff_1: "v"}]`.
+  # The `value` parameter, is of the form `{postfix: "v", _diff_1: "v"}`.
   #
   #     [7] diff        ::= postfix ('-' postfix)?
+  start_production(:diff, as_hash: true)
   production(:diff) do |value|
-    if value.last[:_diff_1]
-      [:diff, value.first[:postfix], value.last[:_diff_1]]
+    if value[:_diff_1]
+      [:diff, value[:postfix], value[:_diff_1]]
     else
-      value.first[:postfix]
+      value[:postfix]
     end
   end
 
@@ -241,7 +215,7 @@ class EBNFPegParser
   # Production for end of `postfix` non-terminal.
   # Either returns the `primary` production value, or as modified by the `postfix`.
   #
-  # The `value` parameter, is of the form `[{primary: "v"}, {_postfix_1: "v"}]`.
+  # The `value` parameter, is of the form `{primary: "v", _postfix_1: "v"}`.
   #
   #     [:primary] => [:primary]
   #     [:primary, '*'] => [:star, :primary]
@@ -249,13 +223,14 @@ class EBNFPegParser
   #     [:primary, '?'] => [:opt, :primary]
   #
   #     [8] postfix     ::= primary POSTFIX?
+  start_production(:postfix, as_hash: true)
   production(:postfix) do |value|
     # Push result onto input stack, as the `diff` production can have some number of `postfix` values that are applied recursively
-    case value.last[:_postfix_1]
-    when "*" then [:star, value.first[:primary]]
-    when "+" then [:plus, value.first[:primary]]
-    when "?" then [:opt, value.first[:primary]]
-    else value.first[:primary]
+    case value[:_postfix_1]
+    when "*" then [:star, value[:primary]]
+    when "+" then [:plus, value[:primary]]
+    when "?" then [:opt, value[:primary]]
+    else value[:primary]
     end
   end
 
@@ -314,11 +289,11 @@ class EBNFPegParser
                          **options
     ) do |context, *data|
       rule = case context
-      when :terminal
+      when :terminals
         # After parsing `@terminals`
         # This changes the state of the parser to treat subsequent rules as terminals.
         parsing_terminals = true
-        rule = EBNF::Rule.new(nil, nil, data.first, kind: :terminal)
+        rule = EBNF::Rule.new(nil, nil, data.first, kind: :terminals)
       when :pass
         # After parsing `@pass`
         # This defines a specific rule for whitespace.

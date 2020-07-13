@@ -1,21 +1,21 @@
 # EBNF Parser example
 
-This example implements an [EBNF][] parser equivalent to the built-in parser. The proximate result is an Abstract S-Expression which can be used to generate parser tables input grammars. Effectively, this is a re-implementation of {EBNF::Parser} itself.
+This example implements an [EBNF][] parser equivalent to the built-in parser. The proximate result is an Abstract [S-Expression][] which can be used to generate parser tables input grammars. Effectively, this is a re-implementation of {EBNF::Parser} itself.
 
-## Parsing an LL(1) Grammar
+## Parsing the Grammar
 
     require 'parser'
 
-    ebnf = EBNFLL1Parser.new(File.open(../../etc/ebnf.ebnf))
+    ebnf = EBNFLL1Parser.new(File.open("../../etc/ebnf.ebnf"))
 
-Output rules and terminals as S-Expressions, Turtle or EBNF
+Output rules and terminals as [S-Expressions][S-Expression], [Turtle][] or [EBNF][]
 
     puts ebnf.to_sxp
 
-This generates a S-Expression form of the grammar suitable for use by {EBNF} for generating a BNF representation (avoiding `star`, `plus`, and `opt` expressions), LL(1) first/follow comprehensions and branch tables used for parsing input files based on the grammar.
+This generates a [S-Expression][] form of the grammar suitable for use by {EBNF} for generating a [BNF][] representation (avoiding `star`, `plus`, and `opt` expressions), [LL(1)][] [First/Follow][] comprehensions and branch tables used for parsing input files based on the grammar.
 
     (
-     (pass (seq PASS))
+     (pass _pass (seq PASS))
      (rule ebnf "1" (star (alt declaration rule)))
      (rule declaration "2" (alt "@terminals" pass))
      (rule rule "3" (seq LHS expression))
@@ -27,13 +27,14 @@ This generates a S-Expression form of the grammar suitable for use by {EBNF} for
      (rule primary "9"
       (alt HEX SYMBOL ENUM O_ENUM RANGE O_RANGE STRING1 STRING2 (seq "(" expression ")")))
      (rule pass "10" (seq "@pass" expression))
-     (terminal LHS "11" (seq (opt (seq "[" (plus SYMBOL) "]" (plus " "))) SYMBOL (star " ") "::="))
+     (terminal LHS "11" (seq (opt (seq "[" SYMBOL "]" (plus " "))) SYMBOL (star " ") "::="))
      (terminal SYMBOL "12" (plus (alt (range "a-z") (range "A-Z") (range "0-9") "_" ".")))
      (terminal HEX "13" (seq "#x" (plus (alt (range "a-f") (range "A-F") (range "0-9")))))
      (terminal ENUM "14" (diff (alt (seq "[" (plus R_CHAR)) (seq (plus HEX) "]")) LHS))
      (terminal O_ENUM "15" (alt (seq "[^" (plus R_CHAR)) (seq (plus HEX) "]")))
-     (terminal RANGE "16" (alt (seq "[" (seq R_CHAR "-" R_CHAR)) (seq (diff HEX HEX) "]")))
-     (terminal O_RANGE "17" (alt (seq "[^" (seq R_CHAR "-" R_CHAR)) (seq (diff HEX HEX) "]")))
+     (terminal RANGE "16" (seq "[" (plus (alt (seq R_CHAR "-" R_CHAR) (seq HEX "-" HEX))) "]"))
+     (terminal O_RANGE "17"
+      (seq "[^" (plus (alt (seq R_CHAR "-" R_CHAR) (seq HEX "-" HEX))) "]"))
      (terminal STRING1 "18" (seq "\"" (star (diff CHAR "\"")) "\""))
      (terminal STRING2 "19" (seq "'" (star (diff CHAR "'")) "'"))
      (terminal CHAR "20"
@@ -52,12 +53,12 @@ This generates a S-Expression form of the grammar suitable for use by {EBNF} for
         (seq "/*" (star (alt (opt (seq "*" (range "^/"))) (range "^*"))) "*/")
         (seq "(*" (star (alt (opt (seq "*" (range "^)"))) (range "^*"))) "*)")) )) )
 
-This can then be used as input to {EBNF.parse} to transform EBNF to BNF, create LL(1) first/follow rules and/or generate parser tables for parsing examples of the grammar using {EBNF::LL1::Parser}.
+This can then be used as input to {EBNF.parse} to transform [EBNF][] to [BNF][], create [LL(1)][] [First/Follow][] rules and/or generate parser tables for parsing examples of the grammar using {EBNF::LL1::Parser}.
 
     ebnf --input-format sxp --bnf ebnf.sxp
     ebnf --input-format sxp --ll1 ebnf --format rb ebnf.sxp
 
-An example S-Expression for rule `ebnf`, which uses both `start` and `alt` operators is transformed to use just BNF `alt` and `seq` operators, and include `first` and `follow` sets is shown here:
+An example [S-Expression][] for rule `ebnf`, which uses both `start` and `alt` operators is transformed to use just BNF `alt` and `seq` operators, and include `first` and `follow` sets is shown here:
 
     (rule ebnf "1"
      (start #t)
@@ -75,9 +76,9 @@ Note that sub-productions `_ebnf_1` through `_ebnf_3` are created, could be usef
 
 ## Example Walkthrough
 
-This example uses the EBNF grammar from {file:/etc/ebnf.ebnf} to generate {file:meta}, which include the resulting `BRANCH`, `FIRST`, `FOLLOW`, `TERMINALS` and `PASS` tables, used by {file:parser} to implement a parser for the grammar.
+This example uses the [EBNF][] grammar from {file:/etc/ebnf.ebnf} to generate {file:meta}, which include the resulting `BRANCH`, `FIRST`, `FOLLOW`, `TERMINALS` and `PASS` tables, used by {file:parser} to implement a parser for the grammar.
 
-The first step is defining regular expressions for terminals used within the grammar. The table generation process in {EBNF::LL1#build_tables} is not yet capable of automatically generating regular expressions for terminal productions, so they must be defined by hand. For the EBNF grammar, this is done in {EBNF::Terminals}.
+The first step is defining regular expressions for terminals used within the grammar. The table generation process in {EBNF::LL1#build_tables} is not yet capable of automatically generating regular expressions for terminal productions, so they must be defined by hand. For the [EBNF][] grammar, this is done in {EBNF::Terminals}.
 
 The {file:parser} is implemented using the {EBNFLL1Parser} class, which includes {EBNF::LL1::Parser} and {EBNFParserMeta}.
 
@@ -118,11 +119,11 @@ This is associated with the '|' part of the `alt` production.
 
     [5] alt         ::= seq ('|' seq)*
 
-When this is invoked, we have already processed one `seq`, which is placed on the `prod_data` stack, as `input[:seq]`. The result is to remove the `seq` data and append it to the `alt` data in `input[:alt]`. The final result of `alt`, will then be the hash containing :alt and an array of data matching the `seq` sub-productions. Looking at the EBNF grammar itself, we can see that the first declaration is
+When this is invoked, we have already processed one `seq`, which is placed on the `prod_data` stack, as `input[:seq]`. The result is to remove the `seq` data and append it to the `alt` data in `input[:alt]`. The final result of `alt`, will then be the hash containing :alt and an array of data matching the `seq` sub-productions. Looking at the [EBNF][] grammar itself, we can see that the first declaration is
 
     [1] ebnf        ::= (declaration | rule)*
 
-This is reduced to the LL(1) S-Expression noted above:
+This is reduced to the LL(1) [S-Expression][] noted above:
 
     (rule ebnf "1"
      (start #t)
@@ -136,16 +137,12 @@ This is reduced to the LL(1) S-Expression noted above:
     (rule _ebnf_2 "1.2" (first "@pass" "@terminals" LHS) (follow _eof) (seq _ebnf_1 ebnf))
     (rule _ebnf_3 "1.3" (first "@pass" "@terminals" LHS _eps) (follow _eof) (seq ebnf))
 
-The `ebnf` production uses the `alt` operator. When matching the production itself we can see that it is either a `declaration` or a `rule`. In this case of this parser, the result of parsing EBNF is an Abstract Syntax Tree, but in other cases it may create something else. In the case of the [Turtle gem][], the parser generates _RDF Triples_. Because the parser uses a streaming lexer, a file of any length can be passed to the parser, which emits triples as sufficient processing completes.
+The `ebnf` production uses the `alt` operator. When matching the production itself we can see that it is either a `declaration` or a `rule`. In this case of this parser, the result of parsing [EBNF][] is an Abstract Syntax Tree, but in other cases it may create something else. In the case of the [Turtle gem][], the parser generates _RDF Triples_. Because the parser uses a streaming lexer, a file of any length can be passed to the parser, which emits triples as sufficient processing completes.
 
-[Ruby]:         https://ruby-lang.org/
-[YARD]:         https://yardoc.org/
-[YARD-GS]:      https://rubydoc.info/docs/yard/file/docs/GettingStarted.md
-[PDD]:          https://lists.w3.org/Archives/Public/public-rdf-ruby/2010May/0013.html
+[BNF]:          https://en.wikipedia.org/wiki/Backus–Naur_form
 [EBNF]:         https://www.w3.org/TR/REC-xml/#sec-notation
-[EBNF doc]:     https://rubydoc.info/github/dryruby/ebnf/
 [First/Follow]: https://en.wikipedia.org/wiki/LL_parser#Constructing_an_LL.281.29_parsing_table
 [LL(1)]:        https://www.csd.uwo.ca/~moreno//CS447/Lectures/Syntax.html/node14.html
-[LL(1) Parser]: https://en.wikipedia.org/wiki/LL_parser
-[Tokenizer]:    https://en.wikipedia.org/wiki/Lexical_analysis#Tokenizer
+[S-expression]: https://en.wikipedia.org/wiki/S-expression
+[Turtle]:       https://www.w3.org/TR/2012/WD-turtle-20120710/
 [Turtle gem]:   https://rubygems.org/gems/rdf-turtle
