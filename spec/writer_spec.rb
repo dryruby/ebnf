@@ -124,9 +124,9 @@ describe EBNF::Writer do
             [:alt, :A, :B],
             "A | B"
           ],
-           "enum": [
-            [:range, "abc-"],
-            "[abc-]"
+          "diff": [
+            [:diff, :A, :B],
+            "A - B"
           ],
           "hex": [
             [:hex, "#x20"],
@@ -402,7 +402,10 @@ describe EBNF::Writer do
     context "Existing grammars" do
       {
         "ABNF Grammar" => File.expand_path("../../etc/abnf.abnf", __FILE__),
-        "HTTP Grammar" => File.expand_path("../../examples/abnf/examples/http.abnf", __FILE__)
+        "HTTP Grammar" => File.expand_path("../../examples/abnf/examples/http.abnf", __FILE__),
+        "JSON Grammar" => File.expand_path("../../examples/abnf/examples/json.abnf", __FILE__),
+        "Postal Address" => File.expand_path("../../examples/abnf/examples/postal-address.abnf", __FILE__),
+        "URI Grammar" => File.expand_path("../../examples/abnf/examples/uri.abnf", __FILE__),
       }.each do |name, file|
         context name do
           it "outputs grammar as text" do
@@ -410,6 +413,164 @@ describe EBNF::Writer do
           end
           it "outputs grammar as html" do
             expect {EBNF.parse(File.read(file), format: :abnf).to_html(format: :abnf)}.to_not raise_error
+          end
+        end
+      end
+    end
+  end
+
+  context "ISOEBNF" do
+    describe "#initialize" do
+      {
+        prolog: [
+          %{syntax            = syntax_rule, {syntax_rule} ;},
+          %{syntax = syntax_rule, {syntax_rule} ;\n}
+        ],
+      }.each do |title, (grammar, plain)|
+        context title do
+          subject {EBNF::Base.new(grammar, format: :isoebnf).ast}
+
+          it "generates plain" do
+            expect {EBNF::Writer.new(subject, format: :isoebnf)}.to write(plain).to(:output)
+          end
+        end
+      end
+    end
+
+    describe "#format_isoebnf" do
+      subject {EBNF::Writer.new([])}
+
+      context "legal expressions" do
+        {
+          "alt": [
+            [:alt, :A, :B],
+            "A | B"
+          ],
+          "diff": [
+            [:diff, :A, :B],
+            "A - B"
+          ],
+           "enum": [
+            [:range, "abc-"],
+            %{("a" | "b" | "c" | "-")}
+          ],
+          "hex": [
+            [:hex, "#x20"],
+            %(" ")
+          ],
+          "istr": [
+            [:istr, "foo"],
+            %("foo")
+          ],
+          "opt": [
+            [:opt, :A],
+            "[A]"
+          ],
+          "plus": [
+            [:plus, :A],
+            "A, {A}"
+          ],
+          "range": [
+            [:range, "a-z"],
+            %{("a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z")}
+          ],
+          "range 2": [
+            [:range, "a-zA-Z"],
+            %{("a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z" | "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z")}],
+          "rept 0 1": [
+            [:rept, 0, 1, :A],
+            "[A]"
+          ],
+          "rept 0 *": [
+            [:rept, 0, '*', :A],
+            "{A}"
+          ],
+          "rept 1 1": [
+            [:rept, 1, 1, :A],
+            "A"
+          ],
+          "rept 1 *": [
+            [:rept, 1, '*', :A],
+            "A, {A}"
+          ],
+          "rept 1 2": [
+            [:rept, 1, 2, :A],
+            "A, [A]"
+          ],
+          "rept 1 3": [
+            [:rept, 1, 3, :A],
+            "A, [(A, [A])]"
+          ],
+          "rept 2 *": [
+            [:rept, 2, "*", :A],
+            "A, A, {A}"
+          ],
+          "rept 1 3 (A B)": [
+            [:rept, 1, 3, [:seq, :A, :B]],
+            "(A, B), [((A, B), [(A, B)])]"
+          ],
+          "rept 1 3 (A | B)": [
+            [:rept, 1, 3, [:alt, :A, :B]],
+            "(A | B), [((A | B), [(A | B)])]"
+          ],
+          "star": [
+            [:star, :A],
+            "{A}"
+          ],
+          "string ' '": [
+            [:seq, " "],
+            %{" "}
+          ],
+          "string 'a'": [
+            [:seq, "a"],
+            %{"a"}
+          ],
+          "string '\"'": [
+            [:seq, '"'],
+            %{'"'}
+          ],
+          "string \"'\"": [
+            [:seq, '\''],
+            %{"'"}
+          ],
+          "n3 path": [
+            [:seq, :pathItem, [:alt, [:seq, "!", :path], [:seq, "^", :path]]],
+            %{pathItem, (("!", path) | ("^", path))}
+          ],
+        }.each do |title, (expr, result)|
+          it title do
+            expect(subject.send(:format_isoebnf, expr)).to eql result
+          end
+        end
+      end
+
+      context "illegal expressions" do
+        {
+          "[^abc]": [:range, "^abc"],
+          "string '\\r'": [:seq, "\r"],
+          "string \"\€\"": [:seq, '€'],
+        }.each do |title, expr|
+          it title do
+            expect {subject.send(:format_isoebnf, expr)}.to raise_error RangeError
+          end
+        end
+      end
+    end
+
+    context "Existing grammars" do
+      {
+        "ISO EBNF Grammar" => File.expand_path("../../etc/iso-ebnf.isoebnf", __FILE__),
+        "Simiple EBNF Grammar" => File.expand_path("../../examples/isoebnf/examples/ebnf.isoebnf", __FILE__),
+        "HTML Grammar" => File.expand_path("../../examples/isoebnf/examples/html.isoebnf", __FILE__),
+        "Pascal Grammar" => File.expand_path("../../examples/isoebnf/examples/pascal.isoebnf", __FILE__),
+        "Postal Address" => File.expand_path("../../examples/isoebnf/examples/postal-address.isoebnf", __FILE__),
+      }.each do |name, file|
+        context name do
+          it "outputs grammar as text" do
+            expect {EBNF.parse(File.read(file), format: :isoebnf).to_s(format: :isoebnf)}.to_not raise_error
+          end
+          it "outputs grammar as html" do
+            expect {EBNF.parse(File.read(file), format: :isoebnf).to_html(format: :isoebnf)}.to_not raise_error
           end
         end
       end

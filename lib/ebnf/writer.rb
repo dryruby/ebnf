@@ -458,7 +458,7 @@ module EBNF
     #
     # Presumes range has already been validated
     def format_abnf_range(string)
-      alt, o_range, o_dash = [:alt], false, false
+      alt, o_dash = [:alt], false
 
       raise RangeError, "cannot format #{string.inspect} an ABNF range" if string.start_with?('^')
 
@@ -510,12 +510,12 @@ module EBNF
       alt << "%x" + hexes.join(".") unless hexes.empty?
 
       # FIXME: HTML abbreviations?
-      if alt.length == 2 && !o_range
+      if alt.length == 2
         # Just return the range or enum
         alt.last
       else
         # Return the alt, which will be further formatted
-        o_range ? [:not, alt] : alt
+        alt
       end
     end
 
@@ -590,7 +590,10 @@ module EBNF
       when :hex
         format_isoebnf(expr[1], embedded: true)
       when :range
-        format_isoebnf_range(expr.last)
+        res = format_isoebnf_range(expr.last)
+        res.is_a?(Array) ?
+          format_isoebnf(res, embedded: true) :
+          res
       when :seq
         this_sep = "," + (sep ? sep : " ")
         res = expr[1..-1].map do |e|
@@ -606,8 +609,6 @@ module EBNF
           format_isoebnf([:star, value], sep: sep, embedded: embedded)
         elsif min == 1 && max == '*'
           format_isoebnf([:plus, value], sep: sep, embedded: embedded)
-        elsif min > 0 && min == max
-          "#{min}*" + format_isoebnf(value, sep: sep, embedded: embedded)
         else
           val2 = [:seq]
           while min > 0
@@ -634,58 +635,44 @@ module EBNF
 
     # Format a range
     # Range is formatted as a aliteration of characters
-    # FIXME: O_RANGE
     def format_isoebnf_range(string)
       chars = []
-      scanner = StringScanner.new(string)
-      if string.include?('-') && !string.end_with?('-')
-        ranges = []
-        # Might include multiple ranges
-        # #x01-#x03#x05-#x06
-        # a-bc-d
-        # Split into separate range segments
-        if string.start_with?('#x')
-          while !scanner.eos?
-            ranges << scanner.scan(/#x\h+-#x\h+/)
-          end
-          ranges.each do |range|
-            first, last = range.split('-').map {|h| h[2..-1].hex.ord}
-            while first <= last
-              c = first.chr(Encoding::UTF_8)
-              raise RangeError, "cannot format #{string.inspect} as an ISO EBNF String: #{c.inspect} is out of range" unless
-                ISOEBNF::TERMINAL_CHARACTER.match?(c)
-              chars << c
-              first += 1
-            end
-          end
-        else
-          while !scanner.eos?
-            r = scanner.scan(/.-./)
-            ranges << r
-          end
-          ranges.each do |range|
-            first, last = range.split('-').map {|c| c.ord}
-            while first <= last
-              c = first.chr(Encoding::UTF_8)
-              raise RangeError, "cannot format #{string.inspect} as an ISO EBNF String: #{c.inspect} is out of range" unless
-                ISOEBNF::TERMINAL_CHARACTER.match?(c)
-              chars << c
-              first += 1
-            end
-          end
-        end
-      else
-        while !scanner.eos?
-          c = if hex = scanner.scan(/#x\h+/)
-            hex[2..-1].hex.ord.chr(Encoding::UTF_8)
-          else
-            scanner.scan(/./)
-          end
-        end
-        raise RangeError, "cannot format #{string.inspect} as an ISO EBNF String: #{c.inspect} is out of range" unless
-          ISOEBNF::TERMINAL_CHARACTER.match?(c)
-        chars << c
+      o_dash = false
+
+      raise RangeError, "cannot format #{string.inspect} an ABNF range" if string.start_with?('^')
+
+      if string.end_with?('-')
+        o_dash = true
+        string = string[0..-2]
       end
+
+      scanner = StringScanner.new(string)
+      in_range = false
+      # Build chars from different ranges/enums
+      while !scanner.eos?
+        char = if hex = scanner.scan(Terminals::HEX)
+          hex[2..-1].hex.ord.char(Encoding::UTF_8)
+        else scanner.scan(Terminals::R_CHAR)
+        end
+        raise RangeError, "cannot format #{string.inspect} as an ISO EBNF Aliteration: #{char.inspect} is out of range" unless
+          char && ISOEBNF::TERMINAL_CHARACTER.match?(char)
+
+        if in_range
+          # calculate characters from chars.last to this char
+          raise RangeError, "cannot format #{string.inspect} as an ISO EBNF Aliteration" unless chars.last < char
+          chars.concat (chars.last..char).to_a[1..-1]
+          in_range = false
+        else
+          chars << char
+        end
+
+        in_range = true if scanner.scan(/\-/)
+      end
+
+      chars << '-' if o_dash
+
+      # Possibly only a single character (no character?)
+      chars.length == 1 ? chars.last.inspect : chars.unshift(:alt)
     end
 
     ERB_DESC = %q(
