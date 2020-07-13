@@ -68,6 +68,20 @@ describe EBNF::Base do
     end
   end
 
+  describe "#renumber!" do
+    it "creates identifiers for grammars without identifiers" do
+      gram = EBNF.parse("a ::= b d ::= e")
+      gram.renumber!
+      expect(gram.ast.map(&:id)).to eq %w{1 2}
+    end
+
+    it "renumbers grammars with identifiers" do
+      gram = EBNF.parse("[10] a ::= b [20] d ::= e")
+      gram.renumber!
+      expect(gram.ast.map(&:id)).to eq %w{1 2}
+    end
+  end
+
   describe "#validate!" do
     let(:simple) {EBNF.parse("a ::= b")}
     it "notes invalid grammar" do

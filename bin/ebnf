@@ -24,15 +24,16 @@ OPT_ARGS = [
   ["--debug",           GetoptLong::NO_ARGUMENT,      "Turn on debugging output"],
   ["--bnf",             GetoptLong::NO_ARGUMENT,      "Transform EBNF to BNF"],
   ["--evaluate","-e",   GetoptLong::REQUIRED_ARGUMENT,"Evaluate argument as an EBNF document"],
-  ["--ll1",             GetoptLong::REQUIRED_ARGUMENT,"Generate First/Follow rules, argument is start symbol"],
   ["--format", "-f",    GetoptLong::REQUIRED_ARGUMENT,"Specify output format one of abnf, abnfh, ebnf, html, isoebnf, isoebnfh, ttl, sxp, or rb"],
   ["--input-format",    GetoptLong::REQUIRED_ARGUMENT,"Specify input format one of abnf, ebnf isoebnf, native, or sxp"],
+  ["--ll1",             GetoptLong::REQUIRED_ARGUMENT,"Generate First/Follow rules, argument is start symbol"],
   ["--mod-name",        GetoptLong::REQUIRED_ARGUMENT,"Module name used when creating ruby tables"],
+  ["--namespace", "-n", GetoptLong::REQUIRED_ARGUMENT,"Namespace to use when generating Turtle"],
   ["--output", "-o",    GetoptLong::REQUIRED_ARGUMENT,"Output to the specified file path"],
   ["--peg",             GetoptLong::NO_ARGUMENT,      "Transform EBNF to PEG"],
   ["--prefix", "-p",    GetoptLong::REQUIRED_ARGUMENT,"Prefix to use when generating Turtle"],
   ["--progress", "-v",  GetoptLong::NO_ARGUMENT,      "Detail on execution"],
-  ["--namespace", "-n", GetoptLong::REQUIRED_ARGUMENT,"Namespace to use when generating Turtle"],
+  ["--renumber",        GetoptLong::NO_ARGUMENT,      "Renumber parsed reules"],
   ["--validate",        GetoptLong::NO_ARGUMENT,      "Validate grammar"],
   ["--help", "-?",      GetoptLong::NO_ARGUMENT,      "This message"]
 ]
@@ -76,6 +77,7 @@ opts.each do |opt, arg|
   when '--output'       then out = File.open(arg, "w")
   when '--peg'          then options[:peg] = true
   when '--prefix'       then options[:prefix] = arg
+  when '--renumber'     then options[:renumber] = true
   when '--namespace'    then options[:namespace] = arg
   when '--progress'     then options[:level] = 1 unless options[:level] == 0
   when '--validate'     then options[:validate] = true
@@ -92,6 +94,8 @@ if options[:ll1]
   ebnf.first_follow(*options[:ll1])
   ebnf.build_tables
 end
+
+ebnf.renumber! if options[:renumber]
 
 res = case options[:output_format]
 when :abnf      then ebnf.to_s(format: :abnf)

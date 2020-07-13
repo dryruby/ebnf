@@ -255,6 +255,14 @@ module EBNF
     end
 
     ##
+    # Renumber, rule identifiers
+    def renumber!
+      ast.each_with_index do |rule, index|
+        rule.id = (index + 1).to_s
+      end
+    end
+
+    ##
     # Write out syntax tree as Turtle
     # @param [String] prefix for language
     # @param [String] ns URI for language
@@ -275,7 +283,7 @@ module EBNF
         ].compact
       end.join("\n") +
 
-      ast.sort.map(&:to_ttl).join("\n")
+      ast.map(&:to_ttl).join("\n")
     end
 
     def dup
