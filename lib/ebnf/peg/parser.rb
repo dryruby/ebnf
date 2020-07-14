@@ -75,8 +75,6 @@ module EBNF::PEG
       # @option options [Hash{String => String}] :map ({})
       #   A mapping from terminals, in lower-case form, to
       #   their canonical value
-      # @option options [Boolean] :unescape
-      #   Cause strings and codepoints to be unescaped.
       # @yield [value, prod]
       # @yieldparam [String] value
       #   The scanned terminal value.
@@ -269,7 +267,8 @@ module EBNF::PEG
     # @param [String] message Error string
     # @param [Hash{Symbol => Object}] options
     # @option options [URI, #to_s] :production
-    # @option options [Token] :token
+    # @option options [Boolean] :raise abort furhter processing
+    # @option options [Array] :backtrace state where error occured
     # @see #debug
     def error(node, message, **options)
       lineno = options[:lineno] || (scanner.lineno if scanner)
@@ -282,7 +281,11 @@ module EBNF::PEG
       @recovering = true
       debug(node, m, level: 3, **options)
       if options[:raise] || @options[:validate]
-        raise Error.new(m, lineno: lineno, rest: options[:rest], production: options[:production])
+        raise Error.new(m,
+                lineno: lineno,
+                rest: options[:rest],
+                production: options[:production],
+                backtrace: options[:backtrace])
       end
     end
 
@@ -376,7 +379,7 @@ module EBNF::PEG
             handler.call(data, @parse_callback)
           }
         rescue ArgumentError, Error => e
-          error("start", "#{e.class}: #{e.message}", production: prod)
+          error("start", "#{e.class}: #{e.message}", production: prod, backtrace: e.backtrace)
           @recovering = false
         end
         @prod_data << data
@@ -404,7 +407,7 @@ module EBNF::PEG
             handler.call(result, data, @parse_callback)
           }
         rescue ArgumentError, Error => e
-          error("finish", "#{e.class}: #{e.message}", production: prod)
+          error("finish", "#{e.class}: #{e.message}", production: prod, backtrace: e.backtrace)
           @recovering = false
         end
       end
@@ -433,7 +436,7 @@ module EBNF::PEG
             handler.call(value, parentProd, @parse_callback)
           }
         rescue ArgumentError, Error => e
-          error("terminal", "#{e.class}: #{e.message}", value: value, production: prod)
+          error("terminal", "#{e.class}: #{e.message}", value: value, production: prod, backtrace: e.backtrace)
           @recovering = false
         end
       end
