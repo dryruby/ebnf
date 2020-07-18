@@ -13,10 +13,17 @@
   doap:homepage      <https://github.com/dryruby/ebnf> ;
   doap:license       <https://unlicense.org/1.0/> ;
   doap:shortdesc     "EBNF parser and parser generator"@en ;
-  doap:description   "EBNF is a Ruby parser for W3C EBNF and a parser generator for compliant LL(1) grammars."@en ;
+  doap:description   "EBNF is a Ruby parser for W3C EBNF and a parser generator for PEG and LL(1). Also includes parsing modes for ISO EBNF and ABNF."@en ;
   doap:created       "2011-08-29"^^xsd:date ;
   doap:programming-language "Ruby" ;
-  doap:implements    <http://dbpedia.org/resource/Compiler-compiler> ;
+  doap:implements    <http://dbpedia.org/resource/Compiler-compiler>,
+                     <https://en.wikipedia.org/wiki/LL_parser>,
+                     <https://en.wikipedia.org/wiki/Parsing_expression_grammar>,
+                     <https://pdos.csail.mit.edu/~baford/packrat/thesis/>,
+                     <https://www.w3.org/TR/REC-xml/#sec-notation>,
+                     <https://en.wikipedia.org/wiki/Backus–Naur_form>,
+                     <https://www.iso.org/standard/26153.html>,
+                     <https://www.rfc-editor.org/rfc/rfc5234>;
   doap:category      <http://dbpedia.org/resource/Resource_Description_Framework>,
                      <http://dbpedia.org/resource/Ruby_(programming_language)> ;
   doap:download-page <> ;
@@ -28,6 +35,6 @@
   doap:documenter    <https://greggkellogg.net/foaf#me> ;
   foaf:maker         <https://greggkellogg.net/foaf#me> ;
   dc:title           "ebnf" ;
-  dc:description     "EBNF is a Ruby parser for W3C EBNF and a parser generator for compliant LL(1) grammars."@en ;
+  dc:description     "EBNF is a Ruby parser for W3C EBNF and a parser generator for PEG and LL(1). Also includes parsing modes for ISO EBNF and ABNF."@en ;
   dc:date            "2011-08-29"^^xsd:date ;
   dc:creator         <https://greggkellogg.net/foaf#me> .
