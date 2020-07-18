@@ -21,7 +21,7 @@ describe EBNF::LL1::Scanner do
       f = double("input")
       expect(f).to receive(:read).and_return("ascii".force_encoding(Encoding::ASCII_8BIT))
       expect(f).to receive(:gets).and_return("utf8".force_encoding(Encoding::UTF_8))
-      expect(f).to receive(:eof?).and_return(false, false, true, true)
+      expect(f).to receive(:eof?).and_return(false, false, true)
       scanner = EBNF::LL1::Scanner.new(f)
       s = scanner.rest
       expect(s).to eq "asciiutf8"
