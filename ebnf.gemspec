@@ -27,10 +27,11 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency     'sxp',             '~> 1.1'
   gem.add_runtime_dependency     'scanf',           '~> 1.0'
   gem.add_runtime_dependency     'rdf',             '~> 3.1' # Required by sxp
+  gem.add_runtime_dependency     'htmlentities',    '~> 4.3'
   gem.add_development_dependency 'rdf-spec',        '~> 3.1'
   gem.add_development_dependency 'rdf-turtle',      '~> 3.1'
-  gem.add_development_dependency 'erubis',          '~> 2.7'
   gem.add_development_dependency 'nokogiri',        '~> 1.10'
+  gem.add_development_dependency 'erubis',          '~> 2.7'
   gem.add_development_dependency 'rspec',           '~> 3.9'
   gem.add_development_dependency 'rspec-its',       '~> 1.3'
   gem.add_development_dependency 'yard',            '~> 0.9'

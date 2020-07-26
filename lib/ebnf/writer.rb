@@ -8,6 +8,7 @@ require "ostruct"
 module EBNF
   class Writer
     LINE_LENGTH = 80
+    LINE_LENGTH_HTML = 200
 
     # ASCII escape names
     ASCII_ESCAPE_NAMES = [
@@ -118,19 +119,21 @@ module EBNF
         lhs_fmt = "%<id>-#{max_id+2}s " + lhs_fmt
         lhs_length += max_id + 3
       end
-      rhs_length = LINE_LENGTH - lhs_length
+      rhs_length = (html ? LINE_LENGTH_HTML : LINE_LENGTH) - lhs_length
 
       if html
         # Output as formatted HTML
         begin
           require 'erubis'
+          require 'htmlentities'
+          @coder = HTMLEntities.new
           eruby = Erubis::Eruby.new(ERB_DESC)
           formatted_rules = rules.map do |rule|
             if rule.kind == :terminals || rule.kind == :pass
               OpenStruct.new(id: ("@#{rule.kind}"),
                              sym: nil,
                              assign: nil,
-                             formatted: ("<strong>Productions for terminals</strong>" if rule.kind == :terminals))
+                             formatted: ("<strong># Productions for terminals</strong>" if rule.kind == :terminals))
             else
               formatted_expr = self.send(format_meth, rule.expr)
               # Measure text without markup
@@ -151,7 +154,7 @@ module EBNF
                     formatted.sub!(%r{\s*<code>\|</code>\s*}, '')
                     (ndx > 0 ? (rule.alt? ? '|' : '') : '=')
                   end
-                  lines << OpenStruct.new(id: ("[#{rule.id}]" if rule.id),
+                  lines << OpenStruct.new(id: ((ndx == 0 ? "[#{rule.id}]" : "") if rule.id),
                                           sym: (rule.sym if ndx == 0 || format == :abnf),
                                           assign: assign,
                                           formatted: formatted)
@@ -171,7 +174,7 @@ module EBNF
           out.write eruby.evaluate(format: format, rules: formatted_rules)
           return
         rescue LoadError
-          $stderr.puts "Generating HTML requires erubis gem to be loaded"
+          $stderr.puts "Generating HTML requires erubis and htmlentities gems to be loaded"
         end
       end
 
@@ -216,7 +219,7 @@ module EBNF
 
     # Format the expression part of a rule
     def format_ebnf(expr, sep: nil, embedded: false)
-      return (@options[:html] ? %(<a href="#grammar-production-#{expr}">#{expr}</a>) : expr.to_s) if expr.is_a?(Symbol)
+      return (@options[:html] ? %(<a href="#grammar-production-#{@coder.encode expr}">#{@coder.encode expr}</a>) : expr.to_s) if expr.is_a?(Symbol)
       if expr.is_a?(String)
         return expr.length == 1 ?
           format_ebnf_char(expr) :
@@ -290,10 +293,10 @@ module EBNF
     # Format a single-character string, prefering hex for non-main ASCII
     def format_ebnf_char(c)
       case c.ord
-      when (0x21)         then (@options[:html] ? %("<code class="grammar-literal">#{c}</code>") : %{"#{c}"})
-      when 0x22           then (@options[:html] ? %('<code class="grammar-literal">"</code>') : %{'"'})
-      when (0x23..0x7e)   then (@options[:html] ? %("<code class="grammar-literal">#{c}</code>") : %{"#{c}"})
-      when (0x80..0xFFFD) then (@options[:html] ? %("<code class="grammar-literal">#{c}</code>") : %{"#{c}"})
+      when (0x21)         then (@options[:html] ? %("<code class="grammar-literal">#{@coder.encode c}</code>") : %{"#{c}"})
+      when 0x22           then (@options[:html] ? %('<code class="grammar-literal">&quot;</code>') : %{'"'})
+      when (0x23..0x7e)   then (@options[:html] ? %("<code class="grammar-literal">#{@coder.encode c}</code>") : %{"#{c}"})
+      when (0x80..0xFFFD) then (@options[:html] ? %("<code class="grammar-literal">#{@coder.encode c}</code>") : %{"#{c}"})
       else                     escape_ebnf_hex(c)
       end
     end
@@ -308,7 +311,7 @@ module EBNF
       while !s.eos?
         case
         when s.scan(/\A[!"\u0024-\u007e]+/)
-          buffer << (@options[:html] ? %(<code class="grammar-literal">#{s.matched}</code>) : s.matched)
+          buffer << (@options[:html] ? %(<code class="grammar-literal">#{@coder.encode s.matched}</code>) : s.matched)
         when s.scan(/\A#x\h+/)
           buffer << escape_ebnf_hex(s.matched[2..-1].hex.chr(Encoding::UTF_8))
         else
@@ -328,7 +331,8 @@ module EBNF
         end
       end
 
-      "#{quote}#{string}#{quote}"
+      res = "#{quote}#{string}#{quote}"
+      @options[:html] ? @coder.encode(res) : res
     end
 
     def escape_ebnf_hex(u)
@@ -341,11 +345,11 @@ module EBNF
       char = fmt % u.ord
       if @options[:html]
         if u.ord <= 0x20
-          char = %(<abbr title="#{ASCII_ESCAPE_NAMES[u.ord]}">#{char}</abbr>)
+          char = %(<abbr title="#{ASCII_ESCAPE_NAMES[u.ord]}">#{@coder.encode char}</abbr>)
         elsif u.ord < 0x7F
-          char = %(<abbr title="ascii '#{u}'">#{char}</abbr>)
+          char = %(<abbr title="ascii '#{@coder.encode u}'">#{@coder.encode char}</abbr>)
         elsif u.ord == 0x7F
-          char = %(<abbr title="delete">#{char}</abbr>)
+          char = %(<abbr title="delete">#{@coder.encode char}</abbr>)
         elsif u.ord <= 0xFF
           char = %(<abbr title="extended ascii '#{u}'">#{char}</abbr>)
         else
@@ -363,7 +367,7 @@ module EBNF
 
     # Format the expression part of a rule
     def format_abnf(expr, sep: nil, embedded: false, sensitive: true)
-      return (@options[:html] ? %(<a href="#grammar-production-#{expr}">#{expr}</a>) : expr.to_s) if expr.is_a?(Symbol)
+      return (@options[:html] ? %(<a href="#grammar-production-#{@coder.encode expr}">#{@coder.encode expr}</a>) : expr.to_s) if expr.is_a?(Symbol)
       if expr.is_a?(String)
         if expr.length == 1
           return format_abnf_char(expr)
@@ -380,7 +384,7 @@ module EBNF
           seq.unshift(:seq)
           return format_abnf(seq, sep: nil, embedded: false)
         else
-          return (@options[:html] ? %("<code class="grammar-literal">#{'%s' if sensitive}#{expr}</code>") : %(#{'%s' if sensitive}"#{expr}"))
+          return (@options[:html] ? %("<code class="grammar-literal">#{'%s' if sensitive}#{@coder.encode expr}</code>") : %(#{'%s' if sensitive}"#{expr}"))
         end
       end
       parts = {
@@ -528,11 +532,11 @@ module EBNF
       char =  "%x" + (fmt % u.ord)
       if @options[:html]
         if u.ord <= 0x20
-          char = %(<abbr title="#{ASCII_ESCAPE_NAMES[u.ord]}">#{char}</abbr>)
+          char = %(<abbr title="#{ASCII_ESCAPE_NAMES[u.ord]}">#{@coder.encode char}</abbr>)
         elsif u.ord <= 0x7F
-          char = %(<abbr title="ascii '#{u}'">#{char}</abbr>)
+          char = %(<abbr title="ascii '#{u}'">#{@coder.encode char}</abbr>)
         elsif u.ord == 0x7F
-          char = %(<abbr title="delete">#{char}</abbr>)
+          char = %(<abbr title="delete">#{@coder.encode char}</abbr>)
         elsif u.ord <= 0xFF
           char = %(<abbr title="extended ascii '#{u}'">#{char}</abbr>)
         else
@@ -550,7 +554,7 @@ module EBNF
 
     # Format the expression part of a rule
     def format_isoebnf(expr, sep: nil, embedded: false)
-      return (@options[:html] ? %(<a href="#grammar-production-#{expr}">#{expr}</a>) : expr.to_s) if expr.is_a?(Symbol)
+      return (@options[:html] ? %(<a href="#grammar-production-#{@coder.encode expr}">#{@coder.encode expr}</a>) : expr.to_s) if expr.is_a?(Symbol)
       if expr.is_a?(String)
         expr = expr[2..-1].hex.chr if expr =~ /\A#x\h+/
         expr.chars.each do |c|
@@ -558,9 +562,9 @@ module EBNF
             ISOEBNF::TERMINAL_CHARACTER.match?(c)
         end
         if expr =~ /"/
-          return (@options[:html] ? %('<code class="grammar-literal">#{expr}</code>') : %('#{expr}'))
+          return (@options[:html] ? %('<code class="grammar-literal">#{@coder.encode expr}</code>') : %('#{expr}'))
         else
-          return (@options[:html] ? %("<code class="grammar-literal">#{expr}</code>") : %("#{expr}"))
+          return (@options[:html] ? %("<code class="grammar-literal">#{@coder.encode expr}</code>") : %("#{expr}"))
         end
       end
       parts = {
