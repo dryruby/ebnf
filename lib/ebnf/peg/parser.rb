@@ -75,8 +75,6 @@ module EBNF::PEG
       # @option options [Hash{String => String}] :map ({})
       #   A mapping from terminals, in lower-case form, to
       #   their canonical value
-      # @option options [Boolean] :unescape
-      #   Cause strings and codepoints to be unescaped.
       # @yield [value, prod]
       # @yieldparam [String] value
       #   The scanned terminal value.
@@ -269,7 +267,8 @@ module EBNF::PEG
     # @param [String] message Error string
     # @param [Hash{Symbol => Object}] options
     # @option options [URI, #to_s] :production
-    # @option options [Token] :token
+    # @option options [Boolean] :raise abort furhter processing
+    # @option options [Array] :backtrace state where error occured
     # @see #debug
     def error(node, message, **options)
       lineno = options[:lineno] || (scanner.lineno if scanner)
@@ -282,7 +281,11 @@ module EBNF::PEG
       @recovering = true
       debug(node, m, level: 3, **options)
       if options[:raise] || @options[:validate]
-        raise Error.new(m, lineno: lineno, rest: options[:rest], production: options[:production])
+        raise Error.new(m,
+                lineno: lineno,
+                rest: options[:rest],
+                production: options[:production],
+                backtrace: options[:backtrace])
       end
     end
 
@@ -365,25 +368,27 @@ module EBNF::PEG
       @productions << prod
       debug("#{prod}(:start)", "",
         lineno: (scanner.lineno if scanner),
-        pos: (scanner.pos if scanner),
-        depth: (depth + 1)) {"#{prod}, pos: #{scanner ? scanner.pos : '?'}, rest: #{scanner ? scanner.rest[0..20].inspect : '?'}"}
+        pos: (scanner.pos if scanner)
+      ) do
+          "#{prod}, pos: #{scanner ? scanner.pos : '?'}, rest: #{scanner ? scanner.rest[0..20].inspect : '?'}"
+      end
       if handler
         # Create a new production data element, potentially allowing handler
         # to customize before pushing on the @prod_data stack
-        data = {}
+        data = {_production: prod}
         begin
           self.class.eval_with_binding(self) {
             handler.call(data, @parse_callback)
           }
         rescue ArgumentError, Error => e
-          error("start", "#{e.class}: #{e.message}", production: prod)
+          error("start", "#{e.class}: #{e.message}", production: prod, backtrace: e.backtrace)
           @recovering = false
         end
         @prod_data << data
       elsif self.class.production_handlers[prod]
         # Make sure we push as many was we pop, even if there is no
         # explicit start handler
-        @prod_data << {}
+        @prod_data << {_production: prod}
       end
       return self.class.start_options.fetch(prod, {}) # any options on this production
     end
@@ -397,6 +402,9 @@ module EBNF::PEG
       prod = @productions.last
       handler, clear_packrat = self.class.production_handlers[prod]
       data = @prod_data.pop if handler || self.class.start_handlers[prod]
+      error("finish",
+        "prod_data production mismatch: expected #{prod.inspect}, got #{data[:_production].inspect}",
+        production: prod, prod_data: @prod_data) if data && prod != data[:_production]
       if handler && !@recovering && result != :unmatched
         # Pop production data element from stack, potentially allowing handler to use it
         result = begin
@@ -404,14 +412,13 @@ module EBNF::PEG
             handler.call(result, data, @parse_callback)
           }
         rescue ArgumentError, Error => e
-          error("finish", "#{e.class}: #{e.message}", production: prod)
+          error("finish", "#{e.class}: #{e.message}", production: prod, backtrace: e.backtrace)
           @recovering = false
         end
       end
-      progress("#{prod}(:finish)", "",
-               depth: (depth + 1),
-               lineno: (scanner.lineno if scanner),
-               level: result == :unmatched ? 0 : 1) do
+      debug("#{prod}(:finish)", "",
+             lineno: (scanner.lineno if scanner),
+             level: result == :unmatched ? 0 : 1) do
         "#{result.inspect}@(#{scanner ? scanner.pos : '?'}), rest: #{scanner ? scanner.rest[0..20].inspect : '?'}"
       end
       self.clear_packrat if clear_packrat
@@ -433,12 +440,12 @@ module EBNF::PEG
             handler.call(value, parentProd, @parse_callback)
           }
         rescue ArgumentError, Error => e
-          error("terminal", "#{e.class}: #{e.message}", value: value, production: prod)
+          error("terminal", "#{e.class}: #{e.message}", value: value, production: prod, backtrace: e.backtrace)
           @recovering = false
         end
       end
       progress("#{prod}(:terminal)", "",
-               depth: (depth + 2),
+               depth: (depth + 1),
                lineno: (scanner.lineno if scanner),
                level: value == :unmatched ? 0 : 1) do
         "#{value.inspect}@(#{scanner ? scanner.pos : '?'})"

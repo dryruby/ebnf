@@ -69,7 +69,6 @@ module EBNF::LL1
     # @return [String]
     def rest
       feed_me
-      @lineno += 1 if eos?
       encode_utf8 super
     end
 
