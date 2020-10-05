@@ -133,7 +133,10 @@ module EBNF
               OpenStruct.new(id: ("@#{rule.kind}"),
                              sym: nil,
                              assign: nil,
-                             formatted: ("<strong># Productions for terminals</strong>" if rule.kind == :terminals))
+                             formatted: (
+                               rule.kind == :terminals ?
+                                 "<strong># Productions for terminals</strong>" :
+                                 self.send(format_meth, rule.expr)))
             else
               formatted_expr = self.send(format_meth, rule.expr)
               # Measure text without markup
@@ -685,9 +688,11 @@ module EBNF
           <% for rule in @rules %>
           <tr<%= %{ id="grammar-production-#{rule.sym}"} unless %w(=/ |).include?(rule.assign)%>>
             <% if rule.id %>
-            <td><%= rule.id %></td>
+            <td<%= " colspan=2" unless rule.sym %>><%= rule.id %></td>
             <% end %>
+            <% if rule.sym %>
             <td><code><%== rule.sym %></code></td>
+            <% end %>
             <td><%= rule.assign %></td>
             <td><%= rule.formatted %></td>
           </tr>
