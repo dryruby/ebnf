@@ -24,6 +24,7 @@ module EBNF::PEG
     # * `opt`: returns the value matched, or `nil` if unmatched.
     # * `plus`: returns an array of the values matched for the specified production, or `:unmatched`, if none are matched. For Terminals, these are concatenated into a single string.
     # * `range`: returns a string composed of the values matched, or `:unmatched`, if less than `min` are matched.
+    # * `rept`: returns an array of the values matched for the speficied production, or `:unmatched`, if none are matched. For Terminals, these are concatenated into a single string.
     # * `seq`: returns an array composed of single-entry hashes for each matched production indexed by the production name, or `:unmatched` if any production fails to match. For Terminals, returns a string created by concatenating these values. Via option in a `production` or definition, the result can be a single hash with values for each matched production; note that this is not always possible due to the possibility of repeated productions within the sequence.
     # * `star`: returns an array of the values matched for the specified production. For Terminals, these are concatenated into a single string.
     #
@@ -142,6 +143,14 @@ module EBNF::PEG
           parser.update_furthest_failure(input.pos, input.lineno, expr[1])
           :unmatched
         end
+      when :rept
+        # Result is an array of all expressions while they match,
+        # an empty array of none match
+        rept = rept(input, expr[1], expr[2], expr[3])
+
+        # # Update furthest failure for strings and terminals
+        parser.update_furthest_failure(input.pos, input.lineno, expr[3]) if terminal?
+        rept.is_a?(Array) && terminal? ? rept.join("") : rept
       when :seq
         # Evaluate each expression into an array of hashes where each hash contains a key from the associated production and the value is the parsed value of that production. Returns :unmatched if the input does not match the production. Value ordering is ensured by native Hash ordering.
         seq = expr[1..-1].each_with_object([]) do |prod, accumulator|
