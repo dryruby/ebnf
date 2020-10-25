@@ -261,7 +261,8 @@ This repository uses [Git Flow](https://github.com/nvie/gitflow) to mange develo
   list in the the `README`. Alphabetical order applies.
 * Do note that in order for us to merge any non-trivial changes (as a rule
   of thumb, additions larger than about 15 lines of code), we need an
-  explicit [public domain dedication][PDD] on record from you.
+  explicit [public domain dedication][PDD] on record from you,
+  which you will be asked to agree to on the first commit to a repo within the organization.
 
 ## License
 This is free and unencumbered public domain software. For more information,
