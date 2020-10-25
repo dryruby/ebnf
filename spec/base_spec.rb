@@ -83,7 +83,7 @@ describe EBNF::Base do
   end
 
   describe "#validate!" do
-    let(:simple) {EBNF.parse("a ::= b")}
+    let(:simple) {EBNF.parse("a ::= b", format: :native)}
     it "notes invalid grammar" do
       expect do
         expect {simple.validate!}.to raise_error SyntaxError, "In rule a: No rule found for b"
@@ -96,7 +96,7 @@ describe EBNF::Base do
   end
 
   describe "#valid?" do
-    let(:simple) {EBNF.parse("a ::= b")}
+    let(:simple) {EBNF.parse("a ::= b", format: :native)}
     it "notes invalid grammar" do
       expect do
         expect(simple.valid?).to be_falsey
@@ -152,7 +152,7 @@ describe EBNF::Base do
 
   def parse(value, **options)
     @debug = []
-    options = {debug: @debug}.merge(options)
+    options = {debug: @debug, format: :native}.merge(options)
     EBNF::Base.new(value, **options)
   end
 end

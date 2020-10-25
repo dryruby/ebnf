@@ -6,7 +6,7 @@ require 'sxp'
 
 describe EBNF::Rule do
   let(:debug) {[]}
-  let(:ebnf) {EBNF.parse(File.open(File.expand_path("../../etc/ebnf.ebnf", __FILE__)))}
+  let(:ebnf) {EBNF.parse(File.open(File.expand_path("../../etc/ebnf.ebnf", __FILE__)), format: :native)}
   subject {EBNF::Rule.new(:rule, "0", [:seq, :foo])}
 
   describe ".from_sxp" do
