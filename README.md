@@ -101,6 +101,8 @@ On a parsing failure, and exception is raised with information that may be usefu
 The [EBNF][] variant used here is based on [W3C](https://w3.org/) [EBNF][] (see {file:etc/ebnf.ebnf EBNF grammar}) as defined in the
 [XML 1.0 recommendation](https://www.w3.org/TR/REC-xml/), with minor extensions:
 
+Note that the grammar includes an optional `[identifer]` in front of rule names, which can be in conflict with the `RANGE` terminal. It is typically not a problem, but if it comes up, try parsing with the `native` parser,  add comments or sequences to disambiguate. EBNF does not have beginning of line checks as all whitespace is treated the same, so the common practice of identifying each rule inherently leads to such ambiguity.
+
 The character set for EBNF is UTF-8.
 
 The general form of a rule is:
