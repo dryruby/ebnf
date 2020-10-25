@@ -46,7 +46,7 @@ module EBNF
           yield r unless r.empty?
           @lineno = cur_lineno
           r = s
-        when s = scanner.scan(EBNF::Terminals::LHS)
+        when s = scanner.scan(EBNF::Terminals::IDLHS)
           # Found rule start, if we've already collected a rule, yield it
           yield r unless r.empty?
           #debug("eachRule(rule)") { "[#{cur_lineno}] #{s.inspect}" }

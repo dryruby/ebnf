@@ -38,4 +38,4 @@ end
 
 require 'ebnf'
 
-PARSED_EBNF_GRAMMAR = EBNF.parse(File.open(File.expand_path("../../etc/ebnf.ebnf", __FILE__))).freeze
+PARSED_EBNF_GRAMMAR = EBNF.parse(File.open(File.expand_path("../../etc/ebnf.ebnf", __FILE__)), format: :native).freeze

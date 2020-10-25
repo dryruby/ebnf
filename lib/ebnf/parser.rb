@@ -26,49 +26,56 @@ module EBNF
 
     # Match the Left hand side of a rule or terminal
     #
-    #     [11] LHS        ::= ('[' SYMBOL+ ']' ' '+)? SYMBOL ' '* '::='
+    #     [11] ID        ::= '[' SYMBOL+ ']'
+    terminal(:ID, ID) do |value, prod|
+      value[1..-2]
+    end
+
+    # Match the Left hand side of a rule or terminal
+    #
+    #     [12] LHS        ::= SYMBOL ' '* '::='
     terminal(:LHS, LHS) do |value, prod|
-      value.to_s.scan(/(?:\[([^\]]+)\])?\s*(\w+)\s*::=/).first
+      value.to_s.match(/(\w+)\s*::=/)[1]
     end
 
     # Match `SYMBOL` terminal
     #
-    #     [12] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | '_' | '.')+
+    #     [13] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | '_' | '.')+
     terminal(:SYMBOL, SYMBOL) do |value|
       value.to_sym
     end
 
     # Match `HEX` terminal
     #
-    #     [13] HEX        ::= #x' ([a-f] | [A-F] | [0-9])+
+    #     [14] HEX        ::= #x' ([a-f] | [A-F] | [0-9])+
     terminal(:HEX, HEX) do |value|
       [:hex, value]
     end
 
     # Terminal for `RANGE` is matched as part of a `primary` rule.
     #
-    #     [14] RANGE      ::= '[' ((R_CHAR '-' R_CHAR) | (HEX '-' HEX) | R_CHAR | HEX)+ '-'? ']' - LHS
+    #     [15] RANGE      ::= '[' ((R_CHAR '-' R_CHAR) | (HEX '-' HEX) | R_CHAR | HEX)+ '-'? ']'
     terminal(:RANGE, RANGE) do |value|
       [:range, value[1..-2]]
     end
 
     # Terminal for `O_RANGE` is matched as part of a `primary` rule.
     #
-    #     [15] O_RANGE    ::= '[^' ((R_CHAR '-' R_CHAR) | (HEX '-' HEX) | R_CHAR | HEX)+ '-'? ']'
+    #     [16] O_RANGE    ::= '[^' ((R_CHAR '-' R_CHAR) | (HEX '-' HEX) | R_CHAR | HEX)+ '-'? ']'
     terminal(:O_RANGE, O_RANGE) do |value|
       [:range, value[1..-2]]
     end
 
     # Match double quote string
     #
-    #     [16] STRING1    ::= '"' (CHAR - '"')* '"'
+    #     [17] STRING1    ::= '"' (CHAR - '"')* '"'
     terminal(:STRING1, STRING1) do |value|
       value[1..-2]
     end
 
     # Match single quote string
     #
-    #     [17] STRING2    ::= "'" (CHAR - "'")* "'"
+    #     [18] STRING2    ::= "'" (CHAR - "'")* "'"
     terminal(:STRING2, STRING2) do |value|
       value[1..-2]
     end
@@ -77,7 +84,7 @@ module EBNF
 
     # Match `POSTFIX` terminal
     #
-    #     [20] POSTFIX    ::= [?*+]
+    #     [21] POSTFIX    ::= [?*+]
     terminal(:POSTFIX, POSTFIX)
 
     # The `PASS` productions is not used explicitly
@@ -124,7 +131,20 @@ module EBNF
     production(:rule, clear_packrat: true) do |value, data, callback|
       # value contains an expression.
       # Invoke callback
-      id, sym = value[:LHS]
+      sym = value[:LHS]
+      expression = value[:expression]
+      callback.call(:rule, EBNF::Rule.new(sym.to_sym, nil, expression))
+      nil
+    end
+
+    # Version of `rule` with identifier
+    #
+    #     [3i] id_rule        ::= ID LHS expression
+    start_production(:id_rule, as_hash: true)
+    production(:id_rule, clear_packrat: true) do |value, data, callback|
+      # value contains an expression.
+      # Invoke callback
+      id, sym = value[:ID], value[:LHS]
       expression = value[:expression]
       callback.call(:rule, EBNF::Rule.new(sym.to_sym, id, expression))
       nil

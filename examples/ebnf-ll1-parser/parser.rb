@@ -51,21 +51,21 @@ class EBNFLL1Parser
 
   # Match the Left hand side of a rule or terminal
   #
-  #     [11] LHS        ::= ('[' SYMBOL+ ']' ' '+)? SYMBOL ' '* '::='
+  #     [12] LHS        ::= ('[' SYMBOL+ ']' ' '+)? SYMBOL ' '* '::='
   terminal(:LHS, LHS) do |prod, token, input|
     input[:id], input[:symbol] = token.value.to_s.scan(/(?:\[([^\]]+)\])?\s*(\w+)\s*::=/).first
   end
 
   # Match `SYMBOL` terminal
   #
-  #     [12] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | '_' | '.')+
+  #     [13] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | '_' | '.')+
   terminal(:SYMBOL, SYMBOL) do |prod, token, input|
     input[:terminal] = token.value.to_sym
   end
 
   # Match `HEX` terminal
   #
-  #     [13] HEX        ::= '#x' ([a-f] | [A-F] | [0-9])+
+  #     [14] HEX        ::= '#x' ([a-f] | [A-F] | [0-9])+
   terminal(:HEX, HEX) do |prod, token, input|
     input[:terminal] = [:hex, token.value]
   end
@@ -79,7 +79,7 @@ class EBNFLL1Parser
 
   # Terminal for `O_RANGE` is matched as part of a `primary` rule. Unescape the values to remove EBNF escapes in the input.
   #
-  #     [15] O_RANGE    ::= '[^' (R_CHAR '-' R_CHAR) | (HEX '-' HEX) ']'
+  #     [16] O_RANGE    ::= '[^' (R_CHAR '-' R_CHAR) | (HEX '-' HEX) ']'
   terminal(:O_RANGE, O_RANGE, unescape: true) do |prod, token, input|
     input[:terminal] = [:range, token.value[1..-2]]
   end
@@ -88,14 +88,14 @@ class EBNFLL1Parser
 
   # Match double quote string
   #
-  #     [16] STRING1    ::= '"' (CHAR - '"')* '"'
+  #     [17] STRING1    ::= '"' (CHAR - '"')* '"'
   terminal(:STRING1, STRING1, unescape: true) do |prod, token, input|
     input[:terminal] = token.value[1..-2]
   end
 
   # Match single quote string
   #
-  #     [17] STRING2    ::= "'" (CHAR - "'")* "'"
+  #     [18] STRING2    ::= "'" (CHAR - "'")* "'"
   terminal(:STRING2, STRING2, unescape: true) do |prod, token, input|
     input[:terminal] = token.value[1..-2]
   end
@@ -104,7 +104,7 @@ class EBNFLL1Parser
 
   # Match `POSTFIX` terminal
   #
-  #     [20] POSTFIX    ::= [?*+]
+  #     [21] POSTFIX    ::= [?*+]
   terminal(:POSTFIX, POSTFIX) do |prod, token, input|
     input[:postfix] = token.value
   end

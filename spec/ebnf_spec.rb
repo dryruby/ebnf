@@ -10,9 +10,11 @@ describe EBNF do
       %{[2]     Prolog    ::=           BaseDecl? PrefixDecl*} =>
         %{((rule Prolog "2" (seq (opt BaseDecl) (star PrefixDecl))))},
       %{
+        [1] rule ::= terminal
         @terminals
         [3] terminal ::= [A-Z]+
-      } => %{((terminals _terminals (seq))
+      } => %{((rule rule "1" (seq terminal)) 
+              (terminals _terminals (seq))
               (terminal terminal "3" (plus (range "A-Z"))))},
       %{
         [9] primary     ::= HEX

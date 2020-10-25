@@ -1,14 +1,15 @@
     /* An EBNF grammar for EBNF */
-    [1] ebnf        ::= (declaration | rule)*
+    [1] ebnf        ::= ( (rule (rule | declaration)*)
+                        | (id_rule (id_rule | declaration)*))?
 
     [2] declaration ::= '@terminals' | pass
 
-    # Use the LHS terminal to match the identifier, rule name and assignment due to
-    # confusion between the identifier and RANGE.
-    # Note, for grammars not using identifiers, it is still possible to confuse
-    # a rule ending with a range the next rule, as it may be interpreted as an identifier.
-    # In such case, best to enclose the rule in '()'.
+    # Split the rule into those beginning with an identifier, and those not,
+    # creating two different branches for parsing.
+    # This prevends an issue where ID can be mistaken for RANGE
     [3] rule        ::= LHS expression
+
+    [3i] id_rule    ::= ID LHS expression
 
     [4] expression  ::= alt
 
@@ -32,29 +33,31 @@
 
     @terminals
 
-    [11] LHS        ::= ('[' SYMBOL ']' ' '+)? SYMBOL ' '* '::='
+    [11] ID        ::= '[' SYMBOL ']'
 
-    [12] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | '_' | '.')+
+    [12] LHS        ::= SYMBOL ' '* '::='
 
-    [13] HEX        ::= '#x' ([a-f] | [A-F] | [0-9])+
+    [13] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | '_' | '.')+
 
-    [14] RANGE      ::= '[' ((R_CHAR '-' R_CHAR) | (HEX '-' HEX) | R_CHAR | HEX)+ '-'? ']' - LHS
+    [14] HEX        ::= '#x' ([a-f] | [A-F] | [0-9])+
 
-    [15] O_RANGE    ::= '[^' ((R_CHAR '-' R_CHAR) | (HEX '-' HEX) | R_CHAR | HEX)+ '-'? ']'
+    [15] RANGE      ::= '[' ((R_CHAR '-' R_CHAR) | (HEX '-' HEX) | R_CHAR | HEX)+ '-'? ']'
+
+    [16] O_RANGE    ::= '[^' ((R_CHAR '-' R_CHAR) | (HEX '-' HEX) | R_CHAR | HEX)+ '-'? ']'
 
     # Strings are unescaped Unicode, excepting control characters and hash (#)
-    [16] STRING1    ::= '"' (CHAR - '"')* '"'
+    [17] STRING1    ::= '"' (CHAR - '"')* '"'
 
-    [17] STRING2    ::= "'" (CHAR - "'")* "'"
+    [18] STRING2    ::= "'" (CHAR - "'")* "'"
 
-    [18] CHAR       ::= [#x9#xA#xD] | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+    [19] CHAR       ::= [#x9#xA#xD] | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
 
-    [19] R_CHAR     ::= CHAR - (']' | '-' | HEX)
+    [20] R_CHAR     ::= CHAR - (']' | '-' | HEX)
 
-    [20] POSTFIX    ::= [?*+]
+    [21] POSTFIX    ::= [?*+]
 
     # Ignore all whitespace and comments between non-terminals
-    [21] PASS       ::= [#x9#xA#xD#x20]
+    [22] PASS       ::= [#x9#xA#xD#x20]
                       | ( ('#' - '#x') | '//' ) [^#xA#xD]*
                       | '/*' (( '*' [^/] )? | [^*] )* '*/'
                       | '(*' (( '*' [^)] )? | [^*] )* '*)'

@@ -32,21 +32,21 @@ class EBNFPegParser
 
   # Match the Left hand side of a rule or terminal
   #
-  #     [11] LHS        ::= ('[' SYMBOL+ ']' ' '+)? SYMBOL ' '* '::='
+  #     [12] LHS        ::= ('[' SYMBOL+ ']' ' '+)? SYMBOL ' '* '::='
   terminal(:LHS, LHS) do |value, prod|
     value.to_s.scan(/(?:\[([^\]]+)\])?\s*(\w+)\s*::=/).first
   end
 
   # Match `SYMBOL` terminal
   #
-  #     [12] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | '_' | '.')+
+  #     [13] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | '_' | '.')+
   terminal(:SYMBOL, SYMBOL) do |value|
     value.to_sym
   end
 
   # Match `HEX` terminal
   #
-  #     [13] HEX        ::= #x' ([a-f] | [A-F] | [0-9])+
+  #     [14] HEX        ::= #x' ([a-f] | [A-F] | [0-9])+
   terminal(:HEX, HEX) do |value|
     [:hex, value]
   end
@@ -60,21 +60,21 @@ class EBNFPegParser
 
   # Terminal for `O_RANGE` is matched as part of a `primary` rule.
   #
-  #     [15] O_RANGE    ::= '[^' (R_CHAR '-' R_CHAR) | (HEX '-' HEX) ']'
+  #     [16] O_RANGE    ::= '[^' (R_CHAR '-' R_CHAR) | (HEX '-' HEX) ']'
   terminal(:O_RANGE, O_RANGE) do |value|
     [:range, value[1..-2]]
   end
 
   # Match double quote string
   #
-  #     [16] STRING1    ::= '"' (CHAR - '"')* '"'
+  #     [17] STRING1    ::= '"' (CHAR - '"')* '"'
   terminal(:STRING1, STRING1) do |value|
     value[1..-2]
   end
 
   # Match single quote string
   #
-  #     [17] STRING2    ::= "'" (CHAR - "'")* "'"
+  #     [18] STRING2    ::= "'" (CHAR - "'")* "'"
   terminal(:STRING2, STRING2) do |value|
     value[1..-2]
   end
@@ -83,7 +83,7 @@ class EBNFPegParser
 
   # Match `POSTFIX` terminal
   #
-  #     [20] POSTFIX    ::= [?*+]
+  #     [21] POSTFIX    ::= [?*+]
   terminal(:POSTFIX, POSTFIX)
 
   # The `PASS` productions is not used explicitly

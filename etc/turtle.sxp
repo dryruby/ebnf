@@ -30,8 +30,7 @@
      (rule PrefixedName "136s" (alt PNAME_LN PNAME_NS))
      (rule BlankNode "137s" (alt BLANK_NODE_LABEL ANON))
      (terminals _terminals (seq))
-     (terminal IRIREF "18"
-      (seq "<" (star (alt (diff (range "^<>\"{}|^`\\") (range "#x00-#x20")) UCHAR)) ">"))
+     (terminal IRIREF "18" (seq "<" (star (alt (range "^<>\"{}|^`]-[#x00-#x20") UCHAR)) ">"))
      (terminal PNAME_NS "139s" (seq (opt PN_PREFIX) ":"))
      (terminal PNAME_LN "140s" (seq PNAME_NS PN_LOCAL))
      (terminal BLANK_NODE_LABEL "141s"
@@ -54,12 +53,12 @@
      (terminal STRING_LITERAL_SINGLE_QUOTE "23"
       (seq "'" (star (alt (range "^#x27#x5C#xA#xD") ECHAR UCHAR)) "'"))
      (terminal STRING_LITERAL_LONG_SINGLE_QUOTE "24"
-      (seq "'''" (star (seq (opt (alt "'" "''")) (alt (range "^'\\") ECHAR UCHAR))) "'''"))
+      (seq "'''" (seq (opt (alt "'" "''")) (range "^'] | ECHAR | UCHAR ))* \"'''\""))))
      (terminal STRING_LITERAL_LONG_QUOTE "25"
-      (seq "\"\"\"" (star (seq (opt (alt "\"" "\"\"")) (alt (range "^\"\\") ECHAR UCHAR))) "\"\"\""))
+      (seq "\"\"\"" (seq (opt (alt "\"" "\"\"")) (range "^\"] | ECHAR | UCHAR ))* '\"\"\"'"))))
      (terminal UCHAR "26"
-      (alt (seq "\\u" HEX HEX HEX HEX) (seq "\\U" HEX HEX HEX HEX HEX HEX HEX HEX)))
-     (terminal ECHAR "159s" (seq "\\" (range "tbnrf\\\"'")))
+      (alt (seq "u" HEX HEX HEX HEX) (seq "U" HEX HEX HEX HEX HEX HEX HEX HEX)))
+     (terminal ECHAR "159s" (seq "\\" (range "tbnrf\"'")))
      (terminal SPARQL_PREFIX "28t"
       (seq (range "Pp") (range "Rr") (range "Ee") (range "Ff") (range "Ii") (range "Xx")))
      (terminal SPARQL_BASE "29t" (seq (range "Bb") (range "Aa") (range "Ss") (range "Ee")))

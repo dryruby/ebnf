@@ -422,7 +422,7 @@ describe EBNF::Base do
 
   def parse(value, **options)
     @debug = []
-    options = {debug: @debug}.merge(options)
+    options = {debug: @debug, format: :native}.merge(options)
     ebnf = EBNF::Base.new(value, **options)
     ebnf.make_bnf
     @debug.clear
