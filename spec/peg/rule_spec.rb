@@ -79,6 +79,21 @@ describe EBNF::PEG::Rule do
           input: " A A A ",
           expect: %w(A A A)
         },
+        "(rept 1 2 A) with ' A A A '" => {
+          rule: [:rept, 1, 2, "A"],
+          input: " A A A ",
+          expect: %w(A A)
+        },
+        "(rept 1 4 A) with ' A A A '" => {
+          rule: [:rept, 1, 4, "A"],
+          input: " A A A ",
+          expect: %w(A A A)
+        },
+        "(rept 4 10 A) with ' A A A '" => {
+          rule: [:rept, 4, 10, "A"],
+          input: " A A A ",
+          expect: :unmatched
+        },
         "(seq 'A' 'B')" => {
           rule: [:seq, "A", "B"],
           input: "A B",
@@ -212,6 +227,21 @@ describe EBNF::PEG::Rule do
             rule: [:plus, "A"],
             input: " A A A ",
             expect: %w(A A A)
+          },
+          "(rept 1 2 A) with ' A A A '" => {
+            rule: [:rept, 1, 2, "A"],
+            input: " A A A ",
+            expect: %w(A A)
+          },
+          "(rept 1 4 A) with ' A A A '" => {
+            rule: [:rept, 1, 4, "A"],
+            input: " A A A ",
+            expect: %w(A A A)
+          },
+          "(rept 4 10 A) with ' A A A '" => {
+            rule: [:rept, 4, 10, "A"],
+            input: " A A A ",
+            expect: :unmatched
           },
           "(seq 'A' 'B')" => {
             rule: [:seq, "A", "B"],

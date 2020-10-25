@@ -47,7 +47,7 @@ describe EBNF::Writer do
       ],
     }.each do |title, (grammar, plain)|
       context title do
-        subject {EBNF::Base.new(grammar).ast}
+        subject {EBNF::Base.new(grammar, format: :native).ast}
 
         it "generates plain" do
           expect(EBNF::Writer.string(*subject)).to eq plain
@@ -64,7 +64,7 @@ describe EBNF::Writer do
       ],
     }.each do |title, (grammar, plain)|
       context title do
-        subject {EBNF::Base.new(grammar).ast}
+        subject {EBNF::Base.new(grammar, format: :native).ast}
 
         it "generates plain" do
           expect {EBNF::Writer.print(*subject)}.to write(plain).to(:output)
@@ -89,7 +89,7 @@ describe EBNF::Writer do
       ],
     }.each do |title, (grammar, xpaths)|
       context title do
-        subject {EBNF::Writer.html(*EBNF::Base.new(grammar).ast)}
+        subject {EBNF::Writer.html(*EBNF::Base.new(grammar, format: :native).ast)}
         xpaths.each do |path, value|
           specify {is_expected.to have_xpath(path, value)}
         end
@@ -106,7 +106,7 @@ describe EBNF::Writer do
         ],
       }.each do |title, (grammar, plain)|
         context title do
-          subject {EBNF::Base.new(grammar).ast}
+          subject {EBNF::Base.new(grammar, format: :native).ast}
 
           it "generates plain" do
             expect {EBNF::Writer.new(subject)}.to write(plain).to(:output)
