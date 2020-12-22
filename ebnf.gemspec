@@ -32,7 +32,7 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'rdf-turtle',      '~> 3.1'
   gem.add_development_dependency 'nokogiri',        '~> 1.10'
   gem.add_development_dependency 'erubis',          '~> 2.7'
-  gem.add_development_dependency 'rspec',           '~> 3.9'
+  gem.add_development_dependency 'rspec',           '~> 3.10'
   gem.add_development_dependency 'rspec-its',       '~> 1.3'
   gem.add_development_dependency 'yard',            '~> 0.9'
   gem.add_development_dependency 'rake',            '~> 13.0'
