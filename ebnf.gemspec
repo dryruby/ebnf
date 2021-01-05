@@ -8,7 +8,7 @@ Gem::Specification.new do |gem|
   gem.name                  = "ebnf"
   gem.homepage              = "https://github.com/dryruby/ebnf"
   gem.license               = 'Unlicense'
-  gem.summary               = "EBNF parser and parser generator."
+  gem.summary               = "EBNF parser and parser generator in Ruby."
   gem.description           = %q{EBNF is a Ruby parser for W3C EBNF and a parser generator for PEG and LL(1). Also includes parsing modes for ISO EBNF and ABNF.}
 
   gem.authors               = ['Gregg Kellogg']

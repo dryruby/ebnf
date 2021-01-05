@@ -4,7 +4,7 @@
 
 [![Gem Version](https://badge.fury.io/rb/ebnf.png)](https://badge.fury.io/rb/ebnf)
 [![Build Status](https://github.com/dryruby/ebnf/workflows/CI/badge.svg?branch=develop)](https://github.com/dryruby/ebnf/actions?query=workflow%3ACI)
-[![Coverage Status](https://coveralls.io/repos/dryruby/ebnf/badge.svg)](https://coveralls.io/r/dryruby/ebnf)
+[![Coverage Status](https://coveralls.io/repos/dryruby/ebnf/badge.svg?branch=develop)](https://coveralls.io/r/dryruby/ebnf?branch=develop)
 [![Gitter chat](https://badges.gitter.im/ruby-rdf/rdf.png)](https://gitter.im/ruby-rdf/rdf)
 
 ## Description
