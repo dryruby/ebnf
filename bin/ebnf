@@ -67,7 +67,7 @@ opts.each do |opt, arg|
     end
     options[:format] = arg.to_sym
   when '--format'
-    unless %w(abnf abnfh ebnf html isoebnf isoebnfh rb sxp).include?(arg)
+    unless %w(abnf abnfh ebnf html isoebnf isoebnfh rb sxp ttl).include?(arg)
       STDERR.puts("unrecognized output format #{arg}")
       usage
     end
