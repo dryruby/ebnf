@@ -90,6 +90,9 @@ describe EBNF::Writer do
     }.each do |title, (grammar, xpaths)|
       context title do
         subject {EBNF::Writer.html(*EBNF::Base.new(grammar, format: :native).ast)}
+
+        specify {is_expected.to be_valid_html}
+
         xpaths.each do |path, value|
           specify {is_expected.to have_xpath(path, value)}
         end
@@ -250,7 +253,9 @@ describe EBNF::Writer do
             expect(EBNF.parse(File.read(file)).to_sxp).to produce(File.read(file.sub('.ebnf', '.sxp')))
           end
           it "outputs grammar as html" do
-            expect {EBNF.parse(File.read(file)).to_html}.to_not raise_error
+            html = nil
+            expect {html = EBNF.parse(File.read(file)).to_html}.to_not raise_error
+            expect(html).to be_valid_html
           end
         end
       end
@@ -412,7 +417,9 @@ describe EBNF::Writer do
             expect {EBNF.parse(File.read(file), format: :abnf).to_s(format: :abnf)}.to_not raise_error
           end
           it "outputs grammar as html" do
-            expect {EBNF.parse(File.read(file), format: :abnf).to_html(format: :abnf)}.to_not raise_error
+            html = nil
+            expect {html = EBNF.parse(File.read(file), format: :abnf).to_html(format: :abnf)}.to_not raise_error
+            expect(html).to be_valid_html
           end
         end
       end
@@ -570,7 +577,9 @@ describe EBNF::Writer do
             expect {EBNF.parse(File.read(file), format: :isoebnf).to_s(format: :isoebnf)}.to_not raise_error
           end
           it "outputs grammar as html" do
-            expect {EBNF.parse(File.read(file), format: :isoebnf).to_html(format: :isoebnf)}.to_not raise_error
+            html = nil
+            expect {html = EBNF.parse(File.read(file), format: :isoebnf).to_html(format: :isoebnf)}.to_not raise_error
+            expect(html).to be_valid_html
           end
         end
       end

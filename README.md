@@ -3,8 +3,9 @@
 [EBNF][] parser and generic parser generator.
 
 [![Gem Version](https://badge.fury.io/rb/ebnf.png)](https://badge.fury.io/rb/ebnf)
-[![Build Status](https://secure.travis-ci.org/dryruby/ebnf.png?branch=master)](https://travis-ci.org/dryruby/ebnf)
-[![Coverage Status](https://coveralls.io/repos/dryruby/ebnf/badge.svg)](https://coveralls.io/r/dryruby/ebnf)
+[![Build Status](https://github.com/dryruby/ebnf/workflows/CI/badge.svg?branch=develop)](https://github.com/dryruby/ebnf/actions?query=workflow%3ACI)
+[![Coverage Status](https://coveralls.io/repos/dryruby/ebnf/badge.svg?branch=develop)](https://coveralls.io/r/dryruby/ebnf?branch=develop)
+[![Gitter chat](https://badges.gitter.im/ruby-rdf/rdf.png)](https://gitter.im/ruby-rdf/rdf)
 
 ## Description
 This is a [Ruby][] implementation of an [EBNF][] and [BNF][] parser and parser generator.
@@ -92,7 +93,7 @@ Inevitably while implementing a parser for some specific grammar, a developer wi
 
 The {EBNF::Writer} class can be used to write parsed grammars out, either as formatted text, or HTML. Because grammars are written from the Abstract Syntax Tree, represented as [S-Expressions][S-Expression], this provides a means of transforming between grammar formats (e.g., W3C [EBNF][] to [ABNF][]), although with some potential loss in semantic fidelity (case-insensitive string matching vs. case-sensitive matching).
 
-The formatted HTML results are designed to be appropriate for including in specifications.
+The formatted HTML results are designed to be appropriate for including in specifications. If the [Nokogumbo](https://rubygems.org/gems/nokogumbo) gem list available, the resulting HTML encoded grammar will also be validated.
 
 ### Parser Errors
 On a parsing failure, and exception is raised with information that may be useful in determining the source of the error.
