@@ -47,9 +47,8 @@ end
 
 RSpec::Matchers.define :be_valid_html do
   match do |actual|
-    root = have_nokogumbo ?
-      Nokogiri::HTML5("<!DOCTYPE html>" + actual, max_parse_errors: 1000) :
-      Nokogiri::HTML("<!DOCTYPE html>" + actual, max_parse_errors: 1000)
+    return true unless have_nokogumbo
+    root = Nokogiri::HTML5("<!DOCTYPE html>" + actual, max_parse_errors: 1000)
     @errors = Array(root && root.errors.map(&:to_s))
     @errors.empty?
   end
