@@ -2,6 +2,7 @@
 require 'rdf'
 require 'strscan'    unless defined?(StringScanner)
 require "ostruct"
+require 'unicode/types'
 
 ##
 # Serialize ruleset back to EBNF
@@ -87,10 +88,10 @@ module EBNF
     # @param  [Array<Rule>] rules
     # @param [:abnf, :ebnf, :isoebnf] format (:ebnf)
     # @return [Object]
-    def self.html(*rules, format: :ebnf)
+    def self.html(*rules, format: :ebnf, validate: false)
       require 'stringio' unless defined?(StringIO)
       buf = StringIO.new
-      Writer.new(rules, out: buf, html: true, format: format)
+      Writer.new(rules, out: buf, html: true, format: format, validate: validate)
       buf.string
     end
 
@@ -174,7 +175,20 @@ module EBNF
               end
             end
           end.flatten
-          out.write eruby.evaluate(format: format, rules: formatted_rules)
+
+          html_result = eruby.evaluate(format: format, rules: formatted_rules)
+
+          begin
+            require 'nokogumbo'
+            # Validate the output HTML
+            doc = Nokogiri::HTML5("<!DOCTYPE html>" + html_result, max_errors: 10)
+            raise EncodingError, "Errors found in generated HTML:\n  " +
+              doc.errors.map(&:to_s).join("\n  ") unless doc.errors.empty?
+          rescue LoadError
+            # Skip
+          end
+
+          out.write html_result
           return
         rescue LoadError
           $stderr.puts "Generating HTML requires erubis and htmlentities gems to be loaded"
@@ -347,16 +361,18 @@ module EBNF
       end
       char = fmt % u.ord
       if @options[:html]
-        if u.ord <= 0x20
-          char = %(<abbr title="#{ASCII_ESCAPE_NAMES[u.ord]}">#{@coder.encode char}</abbr>)
+        char = if u.ord <= 0x20
+          %(<abbr title="#{ASCII_ESCAPE_NAMES[u.ord]}">#{@coder.encode char}</abbr>)
         elsif u.ord < 0x7F
-          char = %(<abbr title="ascii '#{@coder.encode u}'">#{@coder.encode char}</abbr>)
+          %(<abbr title="ascii '#{@coder.encode u}'">#{@coder.encode char}</abbr>)
         elsif u.ord == 0x7F
-          char = %(<abbr title="delete">#{@coder.encode char}</abbr>)
+          %(<abbr title="delete">#{@coder.encode char}</abbr>)
         elsif u.ord <= 0xFF
-          char = %(<abbr title="extended ascii '#{u}'">#{char}</abbr>)
+          %(<abbr title="extended ascii '#{@coder.encode char}'">#{char}</abbr>)
+        elsif (%w(Control Private-use Surrogate Noncharacter Reserved) - ::Unicode::Types.of(u)).empty?
+          %(<abbr title="unicode '#{u}'">#{char}</abbr>)
         else
-          char = %(<abbr title="unicode '#{u}'">#{char}</abbr>)
+          %(<abbr title="unicode '#{::Unicode::Types.of(u).first}'">#{char}</abbr>)
         end
         %(<code class="grammar-char-escape">#{char}</code>)
       else
@@ -543,7 +559,7 @@ module EBNF
         elsif u.ord <= 0xFF
           char = %(<abbr title="extended ascii '#{u}'">#{char}</abbr>)
         else
-          char = %(<abbr title="unicode '#{u}'">#{char}</abbr>)
+          char = %(<abbr title="unicode '#{u.unicode_normaliz}'">#{char}</abbr>)
         end
         %(<code class="grammar-char-escape">#{char}</code>)
       else
@@ -686,7 +702,7 @@ module EBNF
       <table class="grammar">
         <tbody id="grammar-productions" class="<%= @format %>">
           <% for rule in @rules %>
-          <tr<%= %{ id="grammar-production-#{rule.sym}"} unless %w(=/ |).include?(rule.assign)%>>
+          <tr<%= %{ id="grammar-production-#{rule.sym}"} unless %w(=/ |).include?(rule.assign) || rule.sym.nil?%>>
             <% if rule.id %>
             <td<%= " colspan=2" unless rule.sym %>><%= rule.id %></td>
             <% end %>

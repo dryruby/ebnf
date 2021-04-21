@@ -28,6 +28,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency     'scanf',           '~> 1.0'
   gem.add_runtime_dependency     'rdf',             '~> 3.1' # Required by sxp
   gem.add_runtime_dependency     'htmlentities',    '~> 4.3'
+  gem.add_runtime_dependency     'unicode-types',   '~> 1.6'
   gem.add_development_dependency 'rdf-spec',        '~> 3.1'
   gem.add_development_dependency 'rdf-turtle',      '~> 3.1'
   gem.add_development_dependency 'nokogiri',        '~> 1.10'

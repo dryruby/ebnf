@@ -89,7 +89,7 @@ describe EBNF::Writer do
       ],
     }.each do |title, (grammar, xpaths)|
       context title do
-        subject {EBNF::Writer.html(*EBNF::Base.new(grammar, format: :native).ast)}
+        subject {EBNF::Writer.html(*EBNF::Base.new(grammar, format: :native).ast, validate: true)}
         xpaths.each do |path, value|
           specify {is_expected.to have_xpath(path, value)}
         end

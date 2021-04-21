@@ -6,6 +6,7 @@ gem 'rdf',            github: "ruby-rdf/rdf",       branch: "develop"
 
 group :development do
   gem 'rdf-spec',   github: "ruby-rdf/rdf-spec",    branch: "develop"
+  gem "nokogumbo",  platforms: :mri
   gem "byebug",     platforms: :mri
   gem 'psych',      platforms: [:mri, :rbx]
   gem "redcarpet",  platforms: :mri
