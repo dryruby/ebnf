@@ -34,7 +34,7 @@ OPT_ARGS = [
   ["--prefix", "-p",    GetoptLong::REQUIRED_ARGUMENT,"Prefix to use when generating Turtle"],
   ["--progress", "-v",  GetoptLong::NO_ARGUMENT,      "Detail on execution"],
   ["--renumber",        GetoptLong::NO_ARGUMENT,      "Renumber parsed reules"],
-  ["--validate",        GetoptLong::NO_ARGUMENT,      "Validate grammar"],
+  ["--validate",        GetoptLong::NO_ARGUMENT,      "Validate grammar and any generated HTML"],
   ["--help", "-?",      GetoptLong::NO_ARGUMENT,      "This message"]
 ]
 def usage
@@ -99,11 +99,11 @@ ebnf.renumber! if options[:renumber]
 
 res = case options[:output_format]
 when :abnf      then ebnf.to_s(format: :abnf)
-when :abnfh     then ebnf.to_html(format: :abnf)
+when :abnfh     then ebnf.to_html(format: :abnf, validate: options[:validate])
 when :ebnf      then ebnf.to_s
-when :html      then ebnf.to_html
+when :html      then ebnf.to_html(validate: options[:validate])
 when :isoebnf   then ebnf.to_s(format: :isoebnf)
-when :isoebnfh  then ebnf.to_html(format: :isoebnf)
+when :isoebnfh  then ebnf.to_html(format: :isoebnf, validate: options[:validate])
 when :sxp       then ebnf.to_sxp
 when :ttl       then ebnf.to_ttl(options[:prefix], options[:namespace])
 when :rb        then ebnf.to_ruby(out, grammarFile: ARGV[0], **options)

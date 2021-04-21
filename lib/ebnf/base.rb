@@ -220,9 +220,10 @@ module EBNF
     # Output formatted EBNF as HTML
     #
     # @param [:abnf, :ebnf, :isoebnf] format (:ebnf)
+    # @param [Boolean] validate (false) validate generated HTML.
     # @return [String]
-    def to_html(format: :ebnf)
-      Writer.html(*ast, format: format)
+    def to_html(format: :ebnf, validate: false)
+      Writer.html(*ast, format: format, validate: validate)
     end
 
     ##

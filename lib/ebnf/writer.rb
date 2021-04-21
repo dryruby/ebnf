@@ -87,6 +87,7 @@ module EBNF
     #
     # @param  [Array<Rule>] rules
     # @param [:abnf, :ebnf, :isoebnf] format (:ebnf)
+    # @param [Boolean] validate (false) validate generated HTML.
     # @return [Object]
     def self.html(*rules, format: :ebnf, validate: false)
       require 'stringio' unless defined?(StringIO)
@@ -97,12 +98,12 @@ module EBNF
 
     ##
     # @param [Array<Rule>] rules
+    # @param [:abnf, :ebnf, :isoebnf] format (:ebnf)
+    # @param [Boolean] html (false) generate HTML output
+    # @param [Boolean] validate (false) validate generated HTML.
     # @param [Hash{Symbol => Object}] options
     # @param [#write] out ($stdout)
-    # @param [:abnf, :ebnf, :isoebnf] format (:ebnf)
-    # @option options [Symbol] format
-    # @option options [Boolean] html (false)
-    def initialize(rules, out: $stdout, html: false, format: :ebnf, **options)
+    def initialize(rules, out: $stdout, html: false, format: :ebnf, validate: false, **options)
       @options = options.merge(html: html)
       return if rules.empty?
 
@@ -178,14 +179,16 @@ module EBNF
 
           html_result = eruby.evaluate(format: format, rules: formatted_rules)
 
-          begin
-            require 'nokogumbo'
-            # Validate the output HTML
-            doc = Nokogiri::HTML5("<!DOCTYPE html>" + html_result, max_errors: 10)
-            raise EncodingError, "Errors found in generated HTML:\n  " +
-              doc.errors.map(&:to_s).join("\n  ") unless doc.errors.empty?
-          rescue LoadError
-            # Skip
+          if validate
+            begin
+              require 'nokogumbo'
+              # Validate the output HTML
+              doc = Nokogiri::HTML5("<!DOCTYPE html>" + html_result, max_errors: 10)
+              raise EncodingError, "Errors found in generated HTML:\n  " +
+                doc.errors.map(&:to_s).join("\n  ") unless doc.errors.empty?
+            rescue LoadError
+              # Skip
+            end
           end
 
           out.write html_result
@@ -363,6 +366,8 @@ module EBNF
       if @options[:html]
         char = if u.ord <= 0x20
           %(<abbr title="#{ASCII_ESCAPE_NAMES[u.ord]}">#{@coder.encode char}</abbr>)
+        elsif u.ord == 0x22
+          %(<abbr title="quot">>&quot;</abbr>)
         elsif u.ord < 0x7F
           %(<abbr title="ascii '#{@coder.encode u}'">#{@coder.encode char}</abbr>)
         elsif u.ord == 0x7F
@@ -471,7 +476,7 @@ module EBNF
     # Format a single-character string, prefering hex for non-main ASCII
     def format_abnf_char(c)
       if /[\x20-\x21\x23-\x7E]/.match?(c)
-        c.inspect
+        @options[:html] ? %("<code class="grammar-literal">#{@coder.encode c}</code>") : c.inspect
       else
         escape_abnf_hex(c)
       end
@@ -552,7 +557,9 @@ module EBNF
       if @options[:html]
         if u.ord <= 0x20
           char = %(<abbr title="#{ASCII_ESCAPE_NAMES[u.ord]}">#{@coder.encode char}</abbr>)
-        elsif u.ord <= 0x7F
+        elsif u.ord == 0x22
+          %(<abbr title="quot">>&quot;</abbr>)
+        elsif u.ord < 0x7F
           char = %(<abbr title="ascii '#{u}'">#{@coder.encode char}</abbr>)
         elsif u.ord == 0x7F
           char = %(<abbr title="delete">#{@coder.encode char}</abbr>)
