@@ -9,12 +9,6 @@ require 'rspec'
 require 'rspec/matchers'
 require 'rspec/its'
 require 'matchers'
-begin
-  have_nokogumbo = true
-  require 'nokogumbo'
-rescue LoadError
-  have_nokogumbo = false
-end
 
 begin
   require 'simplecov'
@@ -47,7 +41,7 @@ end
 
 RSpec::Matchers.define :be_valid_html do
   match do |actual|
-    return true unless have_nokogumbo
+    return true unless Nokogiri.const_defined?(:HTML5)
     root = Nokogiri::HTML5("<!DOCTYPE html>" + actual, max_parse_errors: 1000)
     @errors = Array(root && root.errors.map(&:to_s))
     @errors.empty?

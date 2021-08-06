@@ -181,12 +181,11 @@ module EBNF
 
           if validate
             begin
-              require 'nokogumbo'
               # Validate the output HTML
               doc = Nokogiri::HTML5("<!DOCTYPE html>" + html_result, max_errors: 10)
               raise EncodingError, "Errors found in generated HTML:\n  " +
                 doc.errors.map(&:to_s).join("\n  ") unless doc.errors.empty?
-            rescue LoadError
+            rescue LoadError, NoMethodError
               # Skip
             end
           end
