@@ -12,10 +12,17 @@ require 'matchers'
 
 begin
   require 'simplecov'
-  require 'coveralls'
+  require 'simplecov-lcov'
+
+  SimpleCov::Formatter::LcovFormatter.config do |config|
+    #Coveralls is coverage by default/lcov. Send info results
+    config.report_with_single_file = true
+    config.single_report_path = 'coverage/lcov.info'
+  end
+
   SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new([
     SimpleCov::Formatter::HTMLFormatter,
-    Coveralls::SimpleCov::Formatter
+    SimpleCov::Formatter::LcovFormatter
   ])
   SimpleCov.start do
     add_filter "/spec/"
@@ -23,6 +30,8 @@ begin
 rescue LoadError => e
   STDERR.puts "Coverage Skipped: #{e.message}"
 end
+
+require 'ebnf'
 
 ::RSpec.configure do |c|
   c.filter_run focus: true
@@ -51,7 +60,5 @@ RSpec::Matchers.define :be_valid_html do
     "expected no errors, was #{@errors.join("\n")}\n" + actual
   end
 end
-
-require 'ebnf'
 
 PARSED_EBNF_GRAMMAR = EBNF.parse(File.open(File.expand_path("../../etc/ebnf.ebnf", __FILE__)), format: :native).freeze
