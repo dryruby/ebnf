@@ -73,9 +73,6 @@ module EBNF::PEG
       #   defaults to the expression defined in the associated rule.
       #   If unset, the terminal rule is used for matching.
       # @param [Hash] options
-      # @option options [Hash{String => String}] :map ({})
-      #   A mapping from terminals, in lower-case form, to
-      #   their canonical value
       # @option options [Boolean] :unescape
       #   Cause strings and codepoints to be unescaped.
       # @yield [value, prod]
@@ -86,7 +83,6 @@ module EBNF::PEG
       # @yieldparam [Proc] block
       #   Block passed to initialization for yielding to calling parser.
       #   Should conform to the yield specs for #initialize
-      # @todo FIXME implement map and unescape
       def terminal(term, regexp = nil, **options, &block)
         terminal_regexps[term] = regexp if regexp
         terminal_handlers[term] = block if block_given?
@@ -105,6 +101,8 @@ module EBNF::PEG
       #   Options which are returned from {Parser#onStart}.
       # @option options [Boolean] :as_hash (false)
       #   If the production is a `seq`, causes the value to be represented as a single hash, rather than an array of individual hashes for each sub-production. Note that this is not always advisable due to the possibility of repeated productions within the sequence.
+      # @option options[:upper, :lower] :insensitive_strings
+      #   Perform case-insensitive match of strings not defined as terminals, and map to either upper or lower case.
       # @yield [data, block]
       # @yieldparam [Hash] data
       #   A Hash defined for the current production, during :start
@@ -185,8 +183,6 @@ module EBNF::PEG
     #   Identify the symbol of the starting rule with `start`.
     # @param  [Hash{Symbol => Object}] options
     # @option options[Integer] :high_water passed to lexer
-    # @option options[:upper, :lower] :insensitive_strings
-    #   Perform case-insensitive match of strings not defined as terminals, and map to either upper or lower case.
     # @option options [Logger] :logger for errors/progress/debug.
     # @option options[Integer] :low_water passed to lexer
     # @option options[Boolean] :seq_hash (false)
@@ -204,7 +200,7 @@ module EBNF::PEG
     # @raise [Exception] Raises exceptions for parsing errors
     #   or errors raised during processing callbacks. Internal
     #   errors are raised using {Error}.
-    # @todo FIXME implement insensitive_strings and seq_hash
+    # @todo FIXME implement seq_hash
     def parse(input = nil, start = nil, rules = nil, **options, &block)
       start ||= options[:start]
       rules ||= options[:rules] || []
