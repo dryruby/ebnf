@@ -9,6 +9,7 @@ module EBNF
   autoload :PEG,      "ebnf/peg"
   autoload :Rule,     "ebnf/rule"
   autoload :Terminals,"ebnf/terminals"
+  autoload :Unescape, "ebnf/unescape"
   autoload :Writer,   "ebnf/writer"
   autoload :VERSION,  "ebnf/version"
 
