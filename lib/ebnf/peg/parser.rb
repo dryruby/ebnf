@@ -55,6 +55,7 @@ module EBNF::PEG
       def production_handlers; (@production_handlers ||= {}); end
       def terminal_handlers; (@terminal_handlers ||= {}); end
       def terminal_regexps; (@terminal_regexps ||= {}); end
+      def terminal_options; (@terminal_options ||= {}); end
 
       ##
       # Defines the pattern for a terminal node and a block to be invoked
@@ -75,6 +76,8 @@ module EBNF::PEG
       # @option options [Hash{String => String}] :map ({})
       #   A mapping from terminals, in lower-case form, to
       #   their canonical value
+      # @option options [Boolean] :unescape
+      #   Cause strings and codepoints to be unescaped.
       # @yield [value, prod]
       # @yieldparam [String] value
       #   The scanned terminal value.
@@ -83,9 +86,11 @@ module EBNF::PEG
       # @yieldparam [Proc] block
       #   Block passed to initialization for yielding to calling parser.
       #   Should conform to the yield specs for #initialize
+      # @todo FIXME implement map and unescape
       def terminal(term, regexp = nil, **options, &block)
         terminal_regexps[term] = regexp if regexp
         terminal_handlers[term] = block if block_given?
+        terminal_options[term] = options
       end
 
       ##
@@ -180,8 +185,12 @@ module EBNF::PEG
     #   Identify the symbol of the starting rule with `start`.
     # @param  [Hash{Symbol => Object}] options
     # @option options[Integer] :high_water passed to lexer
+    # @option options[:upper, :lower] :insensitive_strings
+    #   Perform case-insensitive match of strings not defined as terminals, and map to either upper or lower case.
     # @option options [Logger] :logger for errors/progress/debug.
     # @option options[Integer] :low_water passed to lexer
+    # @option options[Boolean] :seq_hash (false)
+    #   If `true`, sets the default for the value sent to a production handler that is for a `seq` to a hash composed of the flattened consitutent hashes that are otherwise provided.
     # @option options [Symbol, Regexp] :whitespace 
     #   Symbol of whitespace rule (defaults to `@pass`), or a regular expression
     #   for eating whitespace between non-terminal rules (strongly encouraged).
@@ -195,6 +204,7 @@ module EBNF::PEG
     # @raise [Exception] Raises exceptions for parsing errors
     #   or errors raised during processing callbacks. Internal
     #   errors are raised using {Error}.
+    # @todo FIXME implement insensitive_strings and seq_hash
     def parse(input = nil, start = nil, rules = nil, **options, &block)
       start ||= options[:start]
       rules ||= options[:rules] || []
@@ -467,8 +477,17 @@ module EBNF::PEG
     #
     # @param [Symbol] sym
     # @return [Regexp]
-    def find_terminal_regexp(sym)
+    def terminal_regexp(sym)
       self.class.terminal_regexps[sym]
+    end
+
+    ##
+    # Find a regular expression defined for a terminal
+    #
+    # @param [Symbol] sym
+    # @return [Regexp]
+    def terminal_options(sym)
+      self.class.terminal_options[sym]
     end
 
     ##

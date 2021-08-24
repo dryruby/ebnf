@@ -449,7 +449,7 @@ describe EBNF::PEG::Rule do
           expect(parser).to receive(:onStart).with(Symbol).and_return({})
           expect(parser).to receive(:onFinish).with(params[:expect]).and_return(params[:expect])
           expect(parser).not_to receive(:onTerminal)
-          expect(parser).to receive(:find_terminal_regexp).with(:rule)
+          expect(parser).to receive(:terminal_regexp).with(:rule)
 
           expect(rule.parse(EBNF::LL1::Scanner.new(params[:input]))).to eql(params[:expect])
         end

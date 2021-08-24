@@ -1,6 +1,8 @@
 module EBNF::PEG
   # Behaviior for parsing a PEG rule
   module Rule
+    include ::EBNF::Unescape
+
     ##
     # Initialized by parser when loading rules.
     # Used for finding rules and invoking elements of the parse process.
@@ -45,9 +47,18 @@ module EBNF::PEG
         # If the terminal is defined with a regular expression,
         # use that to match the input,
         # otherwise,
-        if regexp = parser.find_terminal_regexp(sym)
-          matched = input.scan(regexp)
+        if regexp = parser.terminal_regexp(sym)
+          term_opts = parser.terminal_options(sym)
+          if matched = input.scan(regexp)
+            # Optionally map matched
+            matched = term_opts.fetch(:map, {}).fetch(matched.downcase, matched)
+
+            # Optionally unescape matched
+            matched = unescape(matched) if term_opts[:unescape]
+          end
+
           result = parser.onTerminal(sym, (matched ? matched : :unmatched))
+
           # Update furthest failure for strings and terminals
           parser.update_furthest_failure(input.pos, input.lineno, sym) if result == :unmatched
           parser.packrat[sym][pos] = {
