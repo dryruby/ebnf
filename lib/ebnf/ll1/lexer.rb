@@ -39,6 +39,30 @@ module EBNF::LL1
     attr_reader :whitespace
 
     ##
+    # Returns a copy of the given `input` string with all `\uXXXX` and
+    # `\UXXXXXXXX` Unicode codepoint escape sequences replaced with their
+    # unescaped UTF-8 character counterparts.
+    #
+    # @param  [String] string
+    # @return [String]
+    # @see    https://www.w3.org/TR/rdf-sparql-query/#codepointEscape
+    def self.unescape_codepoints(string)
+      ::EBNF::Unescape.unescape_codepoints(string)
+    end
+
+    ##
+    # Returns a copy of the given `input` string with all string escape
+    # sequences (e.g. `\n` and `\t`) replaced with their unescaped UTF-8
+    # character counterparts.
+    #
+    # @param  [String] input
+    # @return [String]
+    # @see    https://www.w3.org/TR/rdf-sparql-query/#grammarEscapes
+    def self.unescape_string(input)
+      ::EBNF::Unescape.unescape_string(input)
+    end
+
+    ##
     # Tokenizes the given `input` string or stream.
     #
     # @param  [String, #to_s]                 input
