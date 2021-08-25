@@ -86,7 +86,7 @@ module EBNF::PEG
       def terminal(term, regexp = nil, **options, &block)
         terminal_regexps[term] = regexp if regexp
         terminal_handlers[term] = block if block_given?
-        terminal_options[term] = options
+        terminal_options[term] = options.freeze
       end
 
       ##

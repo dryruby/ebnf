@@ -86,7 +86,12 @@ module EBNF::PEG
             raise "No rule found for #{prod}" unless rule
             rule.parse(input)
           when String
-            input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts)) || :unmatched
+            s = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))
+            case start_options[:insensitive_strings]
+            when :lower then s && s.downcase
+            when :upper then s && s.upcase
+            else s
+            end || :unmatched
           end
           if alt == :unmatched
             # Update furthest failure for strings and terminals
@@ -135,7 +140,7 @@ module EBNF::PEG
         end
       when :opt
         # Result is the matched value or nil
-        opt = rept(input, 0, 1, expr[1], string_regexp_opts)
+        opt = rept(input, 0, 1, expr[1], string_regexp_opts, **start_options)
 
         # Update furthest failure for strings and terminals
         parser.update_furthest_failure(input.pos, input.lineno, expr[1]) if terminal?
@@ -173,7 +178,12 @@ module EBNF::PEG
             raise "No rule found for #{prod}" unless rule
             rule.parse(input)
           when String
-            input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts)) || :unmatched
+            s = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))
+            case start_options[:insensitive_strings]
+            when :lower then s && s.downcase
+            when :upper then s && s.upcase
+            else s
+            end || :unmatched
           end
           if res == :unmatched
             # Update furthest failure for strings and terminals
@@ -228,7 +238,7 @@ module EBNF::PEG
     # @param [Symbol, String] prod
     # @param [Integer] string_regexp_opts
     # @return [:unmatched, Array]
-    def rept(input, min, max, prod, string_regexp_opts)
+    def rept(input, min, max, prod, string_regexp_opts, **options)
       result = []
 
       case prod
@@ -242,7 +252,11 @@ module EBNF::PEG
       when String
         while (res = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))) && (max == '*' || result.length < max)
           eat_whitespace(input) unless terminal?
-          result << res
+          result << case options[:insensitive_strings]
+          when :lower then res.downcase
+          when :upper then res.upcase
+          else res
+          end
         end
       end
 
