@@ -11,6 +11,8 @@ describe EBNF::PEG::Parser do
   before(:all) {
     PegParserTest.start_production(:term) {"foo"}
     PegParserTest.production(:term) {"foo"}
+    PegParserTest.start_production(:toLower, insensitive_strings: :lower) {|value| value}
+    PegParserTest.start_production(:toUpper, insensitive_strings: :upper) {|value| value}
     PegParserTest.terminal(:escape, /escape/) {"foo"}
     PegParserTest.terminal(:unescape, /unescape/, unescape: true) {"foo"}
   }
@@ -22,7 +24,7 @@ describe EBNF::PEG::Parser do
   describe "ClassMethods" do
     describe "production" do
       it "adds as a start_handler" do
-        expect(PegParserTest.start_handlers.keys).to eq [:term]
+        expect(PegParserTest.start_handlers.keys).to eq [:term, :toLower, :toUpper]
         expect(PegParserTest.start_handlers[:term]).to be_a(Proc)
       end
       it "adds as a production_handler" do
@@ -90,6 +92,28 @@ describe EBNF::PEG::Parser do
           expect {
             PegParserTest.new.parse(input, start, rules, debug: 3, logger: logger)
           }.to raise_error(EBNF::PEG::Parser::Error, expected)
+        end
+      end
+    end
+
+    context "case insensitive string matching" do
+      let(:start) {:expression}
+      let(:grammar) {%{(
+        (rule expression "1" (alt toUpper toLower))
+        (rule toUpper "2" (seq "uPpEr"))
+        (rule toLower "3" (seq "LoWeR"))
+      )}}
+      let(:rules) {EBNF.parse(grammar, format: :sxp).make_peg.ast}
+
+      {
+        "UPPER" => [{uPpEr: "UPPER"}],
+        "upper" => [{uPpEr: "UPPER"}],
+        "LOWER" => [{LoWeR: "lower"}],
+        "lower" => [{LoWeR: "lower"}],
+      }.each do |input, expected|
+        it "parses #{input.inspect} to #{expected.inspect}" do
+          output = PegParserTest.new.parse(input, start, rules, debug: 3, logger: logger)
+          expect(output).to produce(expected, logger)
         end
       end
     end

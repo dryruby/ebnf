@@ -287,10 +287,10 @@ module EBNF
       case m = s[0,1]
       when '"', "'" # STRING1 or STRING2
         l, s = s[1..-1].split(m.rstrip, 2)
-        [LL1::Lexer.unescape_string(l), s]
+        [Unescape.unescape_string(l), s]
       when '[' # RANGE, O_RANGE
         l, s = s[1..-1].split(/(?<=[^\\])\]/, 2)
-        [[:range, LL1::Lexer.unescape_string(l)], s]
+        [[:range, Unescape.unescape_string(l)], s]
       when '#' # HEX
         s.match(/(#x\h+)(.*)$/)
         l, s = $1, $2

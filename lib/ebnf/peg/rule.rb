@@ -1,6 +1,8 @@
 module EBNF::PEG
   # Behaviior for parsing a PEG rule
   module Rule
+    include ::EBNF::Unescape
+
     ##
     # Initialized by parser when loading rules.
     # Used for finding rules and invoking elements of the parse process.
@@ -45,9 +47,18 @@ module EBNF::PEG
         # If the terminal is defined with a regular expression,
         # use that to match the input,
         # otherwise,
-        if regexp = parser.find_terminal_regexp(sym)
-          matched = input.scan(regexp)
+        if regexp = parser.terminal_regexp(sym)
+          term_opts = parser.terminal_options(sym)
+          if matched = input.scan(regexp)
+            # Optionally map matched
+            matched = term_opts.fetch(:map, {}).fetch(matched.downcase, matched)
+
+            # Optionally unescape matched
+            matched = unescape(matched) if term_opts[:unescape]
+          end
+
           result = parser.onTerminal(sym, (matched ? matched : :unmatched))
+
           # Update furthest failure for strings and terminals
           parser.update_furthest_failure(input.pos, input.lineno, sym) if result == :unmatched
           parser.packrat[sym][pos] = {
@@ -61,6 +72,7 @@ module EBNF::PEG
         eat_whitespace(input)
       end
       start_options = parser.onStart(sym)
+      string_regexp_opts = start_options[:insensitive_strings] ? Regexp::IGNORECASE : 0
 
       result = case expr.first
       when :alt
@@ -74,7 +86,12 @@ module EBNF::PEG
             raise "No rule found for #{prod}" unless rule
             rule.parse(input)
           when String
-            input.scan(Regexp.new(Regexp.quote(prod))) || :unmatched
+            s = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))
+            case start_options[:insensitive_strings]
+            when :lower then s && s.downcase
+            when :upper then s && s.upcase
+            else s
+            end || :unmatched
           end
           if alt == :unmatched
             # Update furthest failure for strings and terminals
@@ -112,7 +129,7 @@ module EBNF::PEG
           raise "No rule found for #{prod}" unless rule
           rule.parse(input)
         when String
-          input.scan(Regexp.new(Regexp.quote(prod))) || :unmatched
+          input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts)) || :unmatched
         end
         if res != :unmatched
           # Update furthest failure for terminals
@@ -123,7 +140,7 @@ module EBNF::PEG
         end
       when :opt
         # Result is the matched value or nil
-        opt = rept(input, 0, 1, expr[1])
+        opt = rept(input, 0, 1, expr[1], string_regexp_opts, **start_options)
 
         # Update furthest failure for strings and terminals
         parser.update_furthest_failure(input.pos, input.lineno, expr[1]) if terminal?
@@ -131,7 +148,7 @@ module EBNF::PEG
       when :plus
         # Result is an array of all expressions while they match,
         # at least one must match
-        plus = rept(input, 1, '*', expr[1])
+        plus = rept(input, 1, '*', expr[1], string_regexp_opts)
 
         # Update furthest failure for strings and terminals
         parser.update_furthest_failure(input.pos, input.lineno, expr[1]) if terminal?
@@ -146,7 +163,7 @@ module EBNF::PEG
       when :rept
         # Result is an array of all expressions while they match,
         # an empty array of none match
-        rept = rept(input, expr[1], expr[2], expr[3])
+        rept = rept(input, expr[1], expr[2], expr[3], string_regexp_opts)
 
         # # Update furthest failure for strings and terminals
         parser.update_furthest_failure(input.pos, input.lineno, expr[3]) if terminal?
@@ -161,7 +178,12 @@ module EBNF::PEG
             raise "No rule found for #{prod}" unless rule
             rule.parse(input)
           when String
-            input.scan(Regexp.new(Regexp.quote(prod))) || :unmatched
+            s = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))
+            case start_options[:insensitive_strings]
+            when :lower then s && s.downcase
+            when :upper then s && s.upcase
+            else s
+            end || :unmatched
           end
           if res == :unmatched
             # Update furthest failure for strings and terminals
@@ -182,7 +204,7 @@ module EBNF::PEG
       when :star
         # Result is an array of all expressions while they match,
         # an empty array of none match
-        star = rept(input, 0, '*', expr[1])
+        star = rept(input, 0, '*', expr[1], string_regexp_opts)
 
         # Update furthest failure for strings and terminals
         parser.update_furthest_failure(input.pos, input.lineno, expr[1]) if terminal?
@@ -214,8 +236,9 @@ module EBNF::PEG
     # @param [Integer] max
     #   If it is an integer, it stops matching after max entries.
     # @param [Symbol, String] prod
+    # @param [Integer] string_regexp_opts
     # @return [:unmatched, Array]
-    def rept(input, min, max, prod)
+    def rept(input, min, max, prod, string_regexp_opts, **options)
       result = []
 
       case prod
@@ -227,9 +250,13 @@ module EBNF::PEG
           result << res
         end
       when String
-        while (res = input.scan(Regexp.new(Regexp.quote(prod)))) && (max == '*' || result.length < max)
+        while (res = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))) && (max == '*' || result.length < max)
           eat_whitespace(input) unless terminal?
-          result << res
+          result << case options[:insensitive_strings]
+          when :lower then res.downcase
+          when :upper then res.upcase
+          else res
+          end
         end
       end
 
