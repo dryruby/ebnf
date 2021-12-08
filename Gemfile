@@ -5,12 +5,13 @@ gem 'sxp',            github: "dryruby/sxp.rb",     branch: "develop"
 gem 'rdf',            github: "ruby-rdf/rdf",       branch: "develop"
 
 group :development do
-  gem 'rdf-spec',   github: "ruby-rdf/rdf-spec",    branch: "develop"
-  gem "byebug",     platforms: :mri
-  gem 'psych',      platforms: [:mri, :rbx]
-  gem "redcarpet",  platforms: :mri
-  gem "rocco",      platforms: :mri
-  gem "pygmentize", platforms: :mri
+  gem 'rdf-isomorphic', github: "ruby-rdf/rdf-isomorphic",  branch: "develop"
+  gem 'rdf-spec',       github: "ruby-rdf/rdf-spec",        branch: "develop"
+  gem "byebug",         platforms: :mri
+  gem 'psych',          platforms: [:mri, :rbx]
+  gem "redcarpet",      platforms: :mri
+  gem "rocco",          platforms: :mri
+  gem "pygmentize",     platforms: :mri
 end
 
 group :development, :test do
