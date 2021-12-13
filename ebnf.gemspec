@@ -31,7 +31,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency     'unicode-types',   '~> 1.7'
   gem.add_runtime_dependency     'amazing_print',   '~> 1.4'
   gem.add_development_dependency 'rdf-spec',        '~> 3.2'
-  gem.add_development_dependency 'rdf-turtle',      '~> 3.1'
+  gem.add_development_dependency 'rdf-turtle',      '~> 3.2'
   gem.add_development_dependency 'nokogiri',        '~> 1.12'
   gem.add_development_dependency 'erubis',          '~> 2.7'
   gem.add_development_dependency 'rspec',           '~> 3.10'
