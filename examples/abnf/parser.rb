@@ -272,7 +272,11 @@ class ABNFParser
   end
 
   # Output formatted S-Expression of grammar
-  def to_sxp
+  #
+  # @param [Hash{Symbol => RDF::URI}] prefixes(nil)
+  # @param [RDF::URI] base_uri(nil)
+  # @return [String]
+  def to_sxp(prefixes: nil, base_uri: nil)
     require 'sxp' unless defined?(SXP)
     # Output rules as a formatted S-Expression
     SXP::Generator.string(ast.map(&:for_sxp))

@@ -201,8 +201,11 @@ module EBNF
 
     ##
     # Write out parsed syntax string as an S-Expression
+    #
+    # @param [Hash{Symbol => RDF::URI}] prefixes(nil)
+    # @param [RDF::URI] base_uri(nil)
     # @return [String]
-    def to_sxp
+    def to_sxp(prefixes: nil, base_uri: nil)
       require 'sxp' unless defined?(SXP)
       SXP::Generator.string(ast.map(&:for_sxp))
     end
