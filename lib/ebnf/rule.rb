@@ -206,12 +206,11 @@ module EBNF
     end
 
     # Return SXP representation of this rule
-    # @param [Hash{Symbol => RDF::URI}] prefixes(nil)
-    # @param [RDF::URI] base_uri(nil)
+    #
     # @return [String]
-    def to_sxp(prefixes: nil, base_uri: nil)
+    def to_sxp(**options)
       require 'sxp' unless defined?(SXP)
-      for_sxp.to_sxp(prefixes: prefixes, base_uri: base_uri)
+      for_sxp.to_sxp(**options)
     end
 
     alias_method :to_s, :to_sxp

@@ -315,10 +315,8 @@ class EBNFLL1Parser
 
   # Output formatted S-Expression of grammar
   #
-  # @param [Hash{Symbol => RDF::URI}] prefixes(nil)
-  # @param [RDF::URI] base_uri(nil)
   # @return [String]
-  def to_sxp(prefixes: nil, base_uri: nil)
+  def to_sxp(**options)
     require 'sxp' unless defined?(SXP)
     # Output rules as a formatted S-Expression
     SXP::Generator.string(@ast.map(&:for_sxp))
