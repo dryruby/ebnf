@@ -6,7 +6,6 @@
 # * And with First/Follow rules
 
 $:.unshift(File.expand_path(File.join(File.dirname(__FILE__), "..", 'lib')))
-require "bundler/setup"
 require 'rubygems'
 require 'getoptlong'
 require 'ebnf'

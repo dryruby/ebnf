@@ -272,7 +272,9 @@ class ABNFParser
   end
 
   # Output formatted S-Expression of grammar
-  def to_sxp
+  #
+  # @return [String]
+  def to_sxp(**options)
     require 'sxp' unless defined?(SXP)
     # Output rules as a formatted S-Expression
     SXP::Generator.string(ast.map(&:for_sxp))

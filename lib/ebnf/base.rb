@@ -201,8 +201,9 @@ module EBNF
 
     ##
     # Write out parsed syntax string as an S-Expression
+    #
     # @return [String]
-    def to_sxp
+    def to_sxp(**options)
       require 'sxp' unless defined?(SXP)
       SXP::Generator.string(ast.map(&:for_sxp))
     end

@@ -59,6 +59,7 @@ describe EBNF::Base do
       it "parses generated SXP for #{input.inspect}" do
         ast = parse(expected, format: :sxp).ast
         ast.each {|r| expect(r).to be_a(EBNF::Rule)}
+        ast.to_sxp
         expect(ast.to_sxp).to produce(expected, @debug)
       end
     end

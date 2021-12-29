@@ -206,10 +206,11 @@ module EBNF
     end
 
     # Return SXP representation of this rule
+    #
     # @return [String]
-    def to_sxp
+    def to_sxp(**options)
       require 'sxp' unless defined?(SXP)
-      for_sxp.to_sxp
+      for_sxp.to_sxp(**options)
     end
 
     alias_method :to_s, :to_sxp
@@ -416,6 +417,7 @@ module EBNF
     # @param [Rule] other
     # @return [Boolean]
     def ==(other)
+      other.is_a?(Rule) &&
       sym   == other.sym &&
       kind  == other.kind &&
       expr  == other.expr
