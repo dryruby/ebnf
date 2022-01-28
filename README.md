@@ -278,7 +278,7 @@ A copy of the [Turtle EBNF][] and derived parser files are included in the repos
 [ABNF]:         https://www.rfc-editor.org/rfc/rfc5234
 [BNF]:          https://en.wikipedia.org/wiki/Backus–Naur_form
 [EBNF]:         https://www.w3.org/TR/REC-xml/#sec-notation
-[EBNF doc]:     https://rubydoc.info/github/dryruby/ebnf
+[EBNF doc]:     https://dryruby.github.io/ebnf
 [First/Follow]: https://en.wikipedia.org/wiki/LL_parser#Constructing_an_LL.281.29_parsing_table
 [ISO/IEC 14977]:https://www.iso.org/standard/26153.html
 [LL(1)]:        https://www.csd.uwo.ca/~moreno//CS447/Lectures/Syntax.html/node14.html

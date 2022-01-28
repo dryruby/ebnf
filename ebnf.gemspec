@@ -10,6 +10,12 @@ Gem::Specification.new do |gem|
   gem.license               = 'Unlicense'
   gem.summary               = "EBNF parser and parser generator in Ruby."
   gem.description           = %q{EBNF is a Ruby parser for W3C EBNF and a parser generator for PEG and LL(1). Also includes parsing modes for ISO EBNF and ABNF.}
+  gem.metadata           = {
+    "documentation_uri" => "https://dryruby.github.io/ebnf",
+    "bug_tracker_uri"   => "https://github.com/dryruby/ebnf/issues",
+    "homepage_uri"      => "https://github.com/dryruby/ebnf",
+    "source_code_uri"   => "https://github.com/dryruby/ebnf",
+  }
 
   gem.authors               = ['Gregg Kellogg']
   gem.email                 = 'public-rdf-ruby@w3.org'

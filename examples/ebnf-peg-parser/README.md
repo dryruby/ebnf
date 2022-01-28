@@ -158,7 +158,7 @@ The `ebnf` production uses the `alt` operator. When matching the production itse
 [YARD-GS]:      https://rubydoc.info/docs/yard/file/docs/GettingStarted.md
 [PDD]:          https://lists.w3.org/Archives/Public/public-rdf-ruby/2010May/0013.html
 [EBNF]:         https://www.w3.org/TR/REC-xml/#sec-notation
-[EBNF doc]:     https://rubydoc.info/github/dryruby/ebnf/
+[EBNF doc]:     https://dryruby.github.io/ebnf
 [Packrat]:      https://pdos.csail.mit.edu/~baford/packrat/thesis/
 [PEG]:          https://en.wikipedia.org/wiki/Parsing_expression_grammar
 [S-expression]: https://en.wikipedia.org/wiki/S-expression
