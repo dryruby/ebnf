@@ -1,0 +1,2032 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Module: EBNF::LL1::Parser
+  
+    &mdash; EBNF parser and parser generator
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "EBNF::LL1::Parser";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (P)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../EBNF.html" title="EBNF (module)">EBNF</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../LL1.html" title="EBNF::LL1 (module)">LL1</a></span></span>
+     &raquo; 
+    <span class="title">Parser</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Module: EBNF::LL1::Parser
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+
+  
+  
+  
+  
+  
+
+  
+  <dl>
+    <dt>Included in:</dt>
+    <dd><span class='object_link'><a href="../../EBNFLL1Parser.html" title="EBNFLL1Parser (class)">EBNFLL1Parser</a></span></dd>
+  </dl>
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/ebnf/ll1/parser.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    
+<p>A Generic LL1 parser using a lexer and branch tables defined using the SWAP tool chain (modified).</p>
+
+<p># Creating terminal definitions and parser rules to parse generated grammars</p>
+
+<p>The parser is initialized to callbacks invoked on entry and exit  to each <code>terminal</code> and <code>production</code>. A trivial parser loop can be described as follows:</p>
+
+<pre class="code ruby"><code class="ruby"> require &#39;ebnf/ll1/parser&#39;
+ require &#39;meta&#39;
+
+ class Parser
+   include Meta
+   include EBNF::LL1::Parser
+
+   terminal(:SYMBOL, /([a-z]|[A-Z]|[0-9]|_)+/) do |prod, token, input|
+     # Add data based on scanned token to input
+     input[:symbol] = token.value
+   end
+
+   start_production(:rule) do |input, current, callback|
+     # Process on start of production
+     # Set state for entry into recursed rules through current
+
+     # Callback to parser loop with callback
+   end
+
+   production(:rule) do |input, current, callback|
+     # Process on end of production
+     # return results in input, retrieve results from recursed rules in current
+
+     # Callback to parser loop with callback
+   end
+
+   def initialize(input)
+     parse(input, start_symbol,
+       branch: BRANCH,
+       first: FIRST,
+       follow: FOLLOW,
+       cleanup: CLEANUP
+     ) do |context, *data|
+       # Process calls from callback from productions
+
+     rescue ArgumentError, RDF::LL1::Parser::Error =&gt; e
+       progress(&quot;Parsing completed with errors:\n\t#{e.message}&quot;)
+       raise RDF::ReaderError, e.message if validate?
+     end
+</code></pre>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+      <strong class="modules">Modules:</strong> <span class='object_link'><a href="Parser/ClassMethods.html" title="EBNF::LL1::Parser::ClassMethods (module)">ClassMethods</a></span>
+    
+  
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="Parser/Error.html" title="EBNF::LL1::Parser::Error (class)">Error</a></span>
+    
+  
+</p>
+
+
+
+
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#lineno-instance_method" title="#lineno (instance method)">#<strong>lineno</strong>  &#x21d2; Integer </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Line number of current token.</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#add_prod_data-instance_method" title="#add_prod_data (instance method)">#<strong>add_prod_data</strong>(sym, *values)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Add values to production data, values aranged as an array.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#add_prod_datum-instance_method" title="#add_prod_datum (instance method)">#<strong>add_prod_datum</strong>(sym, values)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Add a single value to prod_data, allows for values to be an array.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="protected ">
+  <span class="summary_signature">
+    
+      <a href="#debug-instance_method" title="#debug (instance method)">#<strong>debug</strong>(node, message, **options)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title protected">protected</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Debug logging.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#depth-instance_method" title="#depth (instance method)">#<strong>depth</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="protected ">
+  <span class="summary_signature">
+    
+      <a href="#error-instance_method" title="#error (instance method)">#<strong>error</strong>(node, message, **options)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title protected">protected</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Error information, used as level <code>3</code> logger messages.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#parse-instance_method" title="#parse (instance method)">#<strong>parse</strong>(input = nil, start = nil, **options) {|context, *data| ... } &#x21d2; EBNF::LL1::Parser </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Initializes a new parser instance.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#prod_data-instance_method" title="#prod_data (instance method)">#<strong>prod_data</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Current ProdData element.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="protected ">
+  <span class="summary_signature">
+    
+      <a href="#progress-instance_method" title="#progress (instance method)">#<strong>progress</strong>(node, message, **options, &amp;block)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title protected">protected</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Progress logged when parsing.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="protected ">
+  <span class="summary_signature">
+    
+      <a href="#warn-instance_method" title="#warn (instance method)">#<strong>warn</strong>(node, message, **options)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title protected">protected</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Warning information, used as level <code>2</code> logger messages.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id=""></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="lineno-instance_method">
+  
+    #<strong>lineno</strong>  &#x21d2; <tt>Integer</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns line number of current token.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>line number of current token</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+54
+55
+56</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/ll1/parser.rb', line 54</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_lineno'>lineno</span>
+  <span class='ivar'>@lineno</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="add_prod_data-instance_method">
+  
+    #<strong>add_prod_data</strong>(sym, *values)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Add values to production data, values aranged as an array</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+491
+492
+493
+494
+495
+496
+497</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/ll1/parser.rb', line 491</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_add_prod_data'>add_prod_data</span><span class='lparen'>(</span><span class='id identifier rubyid_sym'>sym</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_values'>values</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='kw'>if</span> <span class='id identifier rubyid_values'>values</span><span class='period'>.</span><span class='id identifier rubyid_compact'>compact</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+
+  <span class='id identifier rubyid_prod_data'>prod_data</span><span class='lbracket'>[</span><span class='id identifier rubyid_sym'>sym</span><span class='rbracket'>]</span> <span class='op'>||=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_prod_data'>prod_data</span><span class='lbracket'>[</span><span class='id identifier rubyid_sym'>sym</span><span class='rbracket'>]</span> <span class='op'>+=</span> <span class='id identifier rubyid_values'>values</span>
+  <span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>add_prod_data(</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_sym'>sym</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_prod_data'>prod_data</span><span class='lbracket'>[</span><span class='id identifier rubyid_sym'>sym</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'> += </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_values'>values</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="add_prod_datum-instance_method">
+  
+    #<strong>add_prod_datum</strong>(sym, values)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Add a single value to prod_data, allows for values to be an array</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+475
+476
+477
+478
+479
+480
+481
+482
+483
+484
+485
+486
+487
+488</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/ll1/parser.rb', line 475</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_add_prod_datum'>add_prod_datum</span><span class='lparen'>(</span><span class='id identifier rubyid_sym'>sym</span><span class='comma'>,</span> <span class='id identifier rubyid_values'>values</span><span class='rparen'>)</span>
+  <span class='kw'>case</span> <span class='id identifier rubyid_values'>values</span>
+  <span class='kw'>when</span> <span class='const'>Array</span>
+    <span class='id identifier rubyid_prod_data'>prod_data</span><span class='lbracket'>[</span><span class='id identifier rubyid_sym'>sym</span><span class='rbracket'>]</span> <span class='op'>||=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>add_prod_datum(</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_sym'>sym</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_prod_data'>prod_data</span><span class='lbracket'>[</span><span class='id identifier rubyid_sym'>sym</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'> += </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_values'>values</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rbrace'>}</span>
+    <span class='id identifier rubyid_prod_data'>prod_data</span><span class='lbracket'>[</span><span class='id identifier rubyid_sym'>sym</span><span class='rbracket'>]</span> <span class='op'>+=</span> <span class='id identifier rubyid_values'>values</span>
+  <span class='kw'>when</span> <span class='kw'>nil</span>
+    <span class='kw'>return</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_prod_data'>prod_data</span><span class='lbracket'>[</span><span class='id identifier rubyid_sym'>sym</span><span class='rbracket'>]</span> <span class='op'>||=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>add_prod_datum(</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_sym'>sym</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_prod_data'>prod_data</span><span class='lbracket'>[</span><span class='id identifier rubyid_sym'>sym</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'> &lt;&lt; </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_values'>values</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rbrace'>}</span>
+    <span class='id identifier rubyid_prod_data'>prod_data</span><span class='lbracket'>[</span><span class='id identifier rubyid_sym'>sym</span><span class='rbracket'>]</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_values'>values</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="debug-instance_method">
+  
+    #<strong>debug</strong>(node, message, **options)  &#x21d2; <tt>Object</tt>  <span class="extras">(protected)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Debug logging.</p>
+
+<p>The call is ignored, unless <code>@options[:logger]</code> is set.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;String&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Relevant location associated with message</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>options</span>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+  
+    
+    
+    
+    
+    
+    
+    <p class="tag_title">Options Hash (<tt>**options</tt>):</p>
+    <ul class="option">
+      
+        <li>
+          <span class="name">:depth</span>
+          <span class="type">(<tt>Integer</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'>
+<p>Recursion depth for indenting output</p>
+</div>
+          
+        </li>
+      
+    </ul>
+  
+
+<p class="tag_title">Yield Returns:</p>
+<ul class="yieldreturn">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>additional string appended to <code>message</code>.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+579
+580
+581
+582
+583
+584
+585
+586
+587
+588
+589
+590
+591
+592
+593
+594
+595
+596</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/ll1/parser.rb', line 579</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='kw'>unless</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:logger</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_options'>options</span> <span class='op'>=</span> <span class='id identifier rubyid_args'>args</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Hash</span><span class='rparen'>)</span> <span class='op'>?</span> <span class='id identifier rubyid_args'>args</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span> <span class='op'>:</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_lineno'>lineno</span> <span class='op'>=</span> <span class='ivar'>@lineno</span> <span class='op'>||</span> <span class='lparen'>(</span><span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:token</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_lineno'>lineno</span> <span class='kw'>if</span> <span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:token</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:lineno</span><span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_level'>level</span> <span class='op'>=</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='symbol'>:level</span><span class='comma'>,</span> <span class='int'>0</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_depth'>depth</span> <span class='op'>=</span> <span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:depth</span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_depth'>depth</span>
+
+  <span class='kw'>if</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:log_debug</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_level'>level</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='symbol'>:debug</span><span class='comma'>,</span> <span class='symbol'>:info</span><span class='comma'>,</span> <span class='symbol'>:warn</span><span class='comma'>,</span> <span class='symbol'>:error</span><span class='comma'>,</span> <span class='symbol'>:fatal</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='id identifier rubyid_level'>level</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_log_debug'>log_debug</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_merge'>merge</span><span class='lparen'>(</span><span class='label'>level:</span> <span class='id identifier rubyid_level'>level</span><span class='comma'>,</span> <span class='label'>lineno:</span> <span class='id identifier rubyid_lineno'>lineno</span><span class='comma'>,</span> <span class='label'>depth:</span> <span class='id identifier rubyid_depth'>depth</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='kw'>elsif</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:logger</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:add</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_args'>args</span> <span class='op'>&lt;&lt;</span> <span class='kw'>yield</span> <span class='kw'>if</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
+    <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:logger</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_add'>add</span><span class='lparen'>(</span><span class='id identifier rubyid_level'>level</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>[</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_lineno'>lineno</span><span class='embexpr_end'>}</span><span class='tstring_content'>]</span><span class='tstring_end'>&quot;</span></span> <span class='op'>+</span> <span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'> </span><span class='tstring_end'>&quot;</span></span> <span class='op'>*</span> <span class='id identifier rubyid_depth'>depth</span><span class='rparen'>)</span> <span class='op'>+</span> <span class='id identifier rubyid_args'>args</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'> </span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='kw'>elsif</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:logger</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:&lt;&lt;</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_args'>args</span> <span class='op'>&lt;&lt;</span> <span class='kw'>yield</span> <span class='kw'>if</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
+    <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:logger</span><span class='rbracket'>]</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>[</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_lineno'>lineno</span><span class='embexpr_end'>}</span><span class='tstring_content'>]</span><span class='tstring_end'>&quot;</span></span> <span class='op'>+</span> <span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'> </span><span class='tstring_end'>&quot;</span></span> <span class='op'>*</span> <span class='id identifier rubyid_depth'>depth</span><span class='rparen'>)</span> <span class='op'>+</span> <span class='id identifier rubyid_args'>args</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'> </span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="depth-instance_method">
+  
+    #<strong>depth</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+469</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/ll1/parser.rb', line 469</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_depth'>depth</span><span class='semicolon'>;</span> <span class='lparen'>(</span><span class='ivar'>@productions</span> <span class='op'>||</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="error-instance_method">
+  
+    #<strong>error</strong>(node, message, **options)  &#x21d2; <tt>Object</tt>  <span class="extras">(protected)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Error information, used as level <code>3</code> logger messages. Messages may be logged and are saved for reporting at end of parsing.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>node</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Relevant location associated with message</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>message</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Error string</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>options</span>
+      
+      
+        <span class='type'>(<tt>Hash{Symbol =&gt; Object}</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+  
+    
+    
+    
+    
+    
+    
+    <p class="tag_title">Options Hash (<tt>**options</tt>):</p>
+    <ul class="option">
+      
+        <li>
+          <span class="name">:production</span>
+          <span class="type">(<tt>URI</tt>, <tt>#to_s</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+        </li>
+      
+        <li>
+          <span class="name">:token</span>
+          <span class="type">(<tt>Token</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+        </li>
+      
+    </ul>
+  
+
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="#debug-instance_method" title="EBNF::LL1::Parser#debug (method)">#debug</a></span></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+511
+512
+513
+514
+515
+516
+517
+518
+519
+520
+521
+522
+523
+524</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/ll1/parser.rb', line 511</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='comma'>,</span> <span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_lineno'>lineno</span> <span class='op'>=</span> <span class='ivar'>@lineno</span> <span class='op'>||</span> <span class='lparen'>(</span><span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:token</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_lineno'>lineno</span> <span class='kw'>if</span> <span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:token</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:lineno</span><span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_m'>m</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>ERROR </span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_m'>m</span> <span class='op'>+=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>[line: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_lineno'>lineno</span><span class='embexpr_end'>}</span><span class='tstring_content'>] </span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_lineno'>lineno</span>
+  <span class='id identifier rubyid_m'>m</span> <span class='op'>+=</span> <span class='id identifier rubyid_message'>message</span>
+  <span class='id identifier rubyid_m'>m</span> <span class='op'>+=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'> (found </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:token</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:token</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_m'>m</span> <span class='op'>+=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>, production = </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:production</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:production</span><span class='rbracket'>]</span>
+  <span class='ivar'>@error_log</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_m'>m</span> <span class='kw'>unless</span> <span class='ivar'>@recovering</span>
+  <span class='ivar'>@recovering</span> <span class='op'>=</span> <span class='kw'>true</span>
+  <span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='comma'>,</span> <span class='id identifier rubyid_m'>m</span><span class='comma'>,</span> <span class='label'>level:</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='symbol'>:level</span><span class='comma'>,</span> <span class='int'>3</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:raise</span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:validate</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="Parser/Error.html" title="EBNF::LL1::Parser::Error (class)">Error</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Parser/Error.html#initialize-instance_method" title="EBNF::LL1::Parser::Error#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_m'>m</span><span class='comma'>,</span> <span class='label'>lineno:</span> <span class='id identifier rubyid_lineno'>lineno</span><span class='comma'>,</span> <span class='label'>token:</span> <span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:token</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='label'>production:</span> <span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:production</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="parse-instance_method">
+  
+    #<strong>parse</strong>(input = nil, start = nil, **options) {|context, *data| ... } &#x21d2; <tt><span class='object_link'><a href="" title="EBNF::LL1::Parser (module)">EBNF::LL1::Parser</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Initializes a new parser instance.</p>
+
+<p>Attempts to recover from errors.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+      <pre class="example code"><code><span class='id identifier rubyid_require'>require</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>rdf/ll1/parser</span><span class='tstring_end'>&#39;</span></span>
+
+<span class='kw'>class</span> <span class='const'>MyParser</span>
+  <span class='id identifier rubyid_include'>include</span> <span class='const'><span class='object_link'><a href="../../EBNF.html" title="EBNF (module)">EBNF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../LL1.html" title="EBNF::LL1 (module)">LL1</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="" title="EBNF::LL1::Parser (module)">Parser</a></span></span>
+
+  <span class='id identifier rubyid_branch'>branch</span>      <span class='const'>MyParser</span><span class='op'>::</span><span class='const'>BRANCH</span>
+
+  <span class='comment'>##
+</span>  <span class='comment'># Defines a production called during before parsing a non-terminal
+</span>  <span class='comment'># with data from previous production along with data defined for the
+</span>  <span class='comment'># current production
+</span>  <span class='comment'>#
+</span>  <span class='id identifier rubyid_start_production'>start_production</span> <span class='symbol'>:object</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_input'>input</span><span class='comma'>,</span> <span class='id identifier rubyid_current'>current</span><span class='comma'>,</span> <span class='id identifier rubyid_callback'>callback</span><span class='op'>|</span>
+    <span class='comment'># Note production as triples for blankNodePropertyList
+</span>    <span class='comment'># to set :subject instead of :resource
+</span>    <span class='id identifier rubyid_current'>current</span><span class='lbracket'>[</span><span class='symbol'>:triples</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='kw'>true</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'>##
+</span>  <span class='comment'># Defines a production called during after parsing a non-terminal
+</span>  <span class='comment'># with data from previous production along with data defined for the
+</span>  <span class='comment'># current production
+</span>  <span class='comment'>#
+</span>  <span class='comment'># callback to processor block
+</span>  <span class='id identifier rubyid_production'>production</span> <span class='symbol'>:object</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_input'>input</span><span class='comma'>,</span> <span class='id identifier rubyid_current'>current</span><span class='comma'>,</span> <span class='id identifier rubyid_callback'>callback</span><span class='op'>|</span>
+    <span class='id identifier rubyid_object'>object</span> <span class='op'>=</span> <span class='id identifier rubyid_current'>current</span><span class='lbracket'>[</span><span class='symbol'>:resource</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_callback'>callback</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span> <span class='symbol'>:statement</span><span class='comma'>,</span> <span class='const'>RDF</span><span class='op'>::</span><span class='const'>Statement</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_input'>input</span><span class='lbracket'>[</span><span class='symbol'>:subject</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='id identifier rubyid_input'>input</span><span class='lbracket'>[</span><span class='symbol'>:predicate</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='id identifier rubyid_object'>object</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'>##
+</span>  <span class='comment'># Defines the pattern for a terminal node
+</span>  <span class='id identifier rubyid_terminal'>terminal</span> <span class='symbol'>:BLANK_NODE_LABEL</span><span class='comma'>,</span> <span class='tstring'><span class='regexp_beg'>%r(</span><span class='tstring_content'>_:(</span><span class='embexpr_beg'>#{</span><span class='const'>PN_LOCAL</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='regexp_end'>)</span></span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_production'>production</span><span class='comma'>,</span> <span class='id identifier rubyid_token'>token</span><span class='comma'>,</span> <span class='id identifier rubyid_input'>input</span><span class='op'>|</span>
+    <span class='id identifier rubyid_input'>input</span><span class='lbracket'>[</span><span class='symbol'>:BLANK_NODE_LABEL</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='const'>RDF</span><span class='op'>::</span><span class='const'>Node</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_token'>token</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'>##
+</span>  <span class='comment'># Iterates the given block for each RDF statement in the input.
+</span>  <span class='comment'>#
+</span>  <span class='comment'># @yield  [statement]
+</span>  <span class='comment'># @yieldparam [RDF::Statement] statement
+</span>  <span class='comment'># @return [void]
+</span>  <span class='kw'>def</span> <span class='id identifier rubyid_each_statement'>each_statement</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+    <span class='ivar'>@callback</span> <span class='op'>=</span> <span class='id identifier rubyid_block'>block</span>
+
+    <span class='id identifier rubyid_parse'>parse</span><span class='lparen'>(</span><span class='id identifier rubyid_input'>input</span><span class='comma'>,</span> <span class='const'>START</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_context'>context</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_data'>data</span><span class='op'>|</span>
+      <span class='kw'>case</span> <span class='id identifier rubyid_context'>context</span>
+      <span class='kw'>when</span> <span class='symbol'>:statement</span>
+        <span class='kw'>yield</span> <span class='op'>*</span><span class='id identifier rubyid_data'>data</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+<span class='kw'>end</span></code></pre>
+    
+  </div>
+<p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>input</span>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt>#to_s</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>start</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>, <tt>#to_s</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>The starting production for the parser. It may be a URI from the grammar, or a symbol representing the local_name portion of the grammar URI.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>options</span>
+      
+      
+        <span class='type'>(<tt>Hash{Symbol =&gt; Object}</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>options[Integer]</span>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>a customizable set of options</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+  
+    
+    
+    
+    
+    
+    
+    <p class="tag_title">Options Hash (<tt>**options</tt>):</p>
+    <ul class="option">
+      
+        <li>
+          <span class="name">:branch</span>
+          <span class="type">(<tt>Hash{Symbol,String =&gt; Hash{Symbol,String =&gt; Array&lt;Symbol,String&gt;}}</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'>
+<p>LL1 branch table.</p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">:first</span>
+          <span class="type">(<tt>HHash{Symbol,String =&gt; Array&lt;Symbol,String&gt;}</tt>)</span>
+          <span class="default">
+            
+              &mdash; default:
+              <tt>{}</tt>
+            
+          </span>
+          
+            &mdash; <div class='inline'>
+<p>Lists valid terminals that can precede each production (for error recovery).</p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">:follow</span>
+          <span class="type">(<tt>Hash{Symbol,String =&gt; Array&lt;Symbol,String&gt;}</tt>)</span>
+          <span class="default">
+            
+              &mdash; default:
+              <tt>{}</tt>
+            
+          </span>
+          
+            &mdash; <div class='inline'>
+<p>Lists valid terminals that can follow each production (for error recovery).</p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">:logger</span>
+          <span class="type">(<tt>Logger</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'>
+<p>for errors/progress/debug.</p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">:reset_on_start</span>
+          <span class="type">(<tt>Boolean</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'>
+<p>Reset the parser state if the start token set with <code>prod</code> is found in a production. This reduces the production stack depth growth, which is appropriate for some grammars.</p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">:validate</span>
+          <span class="type">(<tt>Boolean</tt>)</span>
+          <span class="default">
+            
+              &mdash; default:
+              <tt>false</tt>
+            
+          </span>
+          
+            &mdash; <div class='inline'>
+<p>whether to validate the parsed statements and values. If not validating, the parser will attempt to recover from errors.</p>
+</div>
+          
+        </li>
+      
+    </ul>
+  
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>context</tt>, <tt>*data</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Yields for to return data to parser</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Parameters:</p>
+<ul class="yieldparam">
+  
+    <li>
+      
+        <span class='name'>context</span>
+      
+      
+        <span class='type'>(<tt>:statement</tt>, <tt>:trace</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Context for block</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>*data</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Data specific to the call</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="EBNF::LL1::Parser (module)">EBNF::LL1::Parser</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Exception</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Raises exceptions for parsing errors or errors raised during processing callbacks. Internal errors are raised using <span class='object_link'><a href="Parser/Error.html" title="EBNF::LL1::Parser::Error (class)">Error</a></span>.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><a href="https://cs.adelaide.edu.au/~charles/lt/Lectures/07-ErrorRecovery.pdf" target="_parent" title="https://cs.adelaide.edu.au/~charles/lt/Lectures/07-ErrorRecovery.pdf">https://cs.adelaide.edu.au/~charles/lt/Lectures/07-ErrorRecovery.pdf</a></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375
+376
+377
+378
+379
+380
+381
+382
+383
+384
+385
+386
+387
+388
+389
+390
+391
+392
+393
+394
+395
+396
+397
+398
+399
+400
+401
+402
+403
+404
+405
+406
+407
+408
+409
+410
+411
+412
+413
+414
+415
+416
+417
+418
+419
+420
+421
+422
+423
+424
+425
+426
+427
+428
+429
+430
+431
+432
+433
+434
+435
+436
+437
+438
+439
+440
+441
+442
+443
+444
+445
+446
+447
+448
+449
+450
+451
+452
+453
+454
+455
+456
+457
+458
+459
+460
+461
+462
+463
+464
+465
+466
+467</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/ll1/parser.rb', line 266</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_parse'>parse</span><span class='lparen'>(</span><span class='id identifier rubyid_input'>input</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_start'>start</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='ivar'>@options</span> <span class='op'>=</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_dup'>dup</span>
+  <span class='ivar'>@branch</span>  <span class='op'>=</span> <span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:branch</span><span class='rbracket'>]</span>
+  <span class='ivar'>@first</span>   <span class='op'>=</span> <span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:first</span><span class='rbracket'>]</span> <span class='op'>||=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='ivar'>@follow</span>  <span class='op'>=</span> <span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:follow</span><span class='rbracket'>]</span> <span class='op'>||=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='ivar'>@cleanup</span> <span class='op'>=</span> <span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:cleanup</span><span class='rbracket'>]</span> <span class='op'>||=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='ivar'>@lexer</span>   <span class='op'>=</span> <span class='id identifier rubyid_input'>input</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="Lexer.html" title="EBNF::LL1::Lexer (class)">Lexer</a></span></span><span class='rparen'>)</span> <span class='op'>?</span> <span class='id identifier rubyid_input'>input</span> <span class='op'>:</span> <span class='const'><span class='object_link'><a href="Lexer.html" title="EBNF::LL1::Lexer (class)">Lexer</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Lexer.html#initialize-instance_method" title="EBNF::LL1::Lexer#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_input'>input</span><span class='comma'>,</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_patterns'>patterns</span><span class='comma'>,</span> <span class='op'>**</span><span class='ivar'>@options</span><span class='rparen'>)</span>
+  <span class='ivar'>@productions</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='ivar'>@parse_callback</span> <span class='op'>=</span> <span class='id identifier rubyid_block'>block</span>
+  <span class='ivar'>@recovering</span> <span class='op'>=</span> <span class='kw'>false</span>
+  <span class='ivar'>@error_log</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_terminals'>terminals</span> <span class='op'>=</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_patterns'>patterns</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:type</span><span class='rparen'>)</span>  <span class='comment'># Get defined terminals to help with branching
+</span>
+  <span class='comment'># Unrecoverable errors
+</span>  <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="Parser/Error.html" title="EBNF::LL1::Parser::Error (class)">Error</a></span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Branch table not defined</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='ivar'>@branch</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@branch</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>&gt;</span> <span class='int'>0</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="Parser/Error.html" title="EBNF::LL1::Parser::Error (class)">Error</a></span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Starting production not defined</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_start'>start</span>
+
+  <span class='ivar'>@prod_data</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_start'>start</span> <span class='op'>=</span> <span class='id identifier rubyid_start'>start</span><span class='period'>.</span><span class='id identifier rubyid_split'>split</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>#</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span> <span class='kw'>unless</span> <span class='id identifier rubyid_start'>start</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Symbol</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_todo_stack'>todo_stack</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='lbrace'>{</span><span class='label'>prod:</span> <span class='id identifier rubyid_start'>start</span><span class='comma'>,</span> <span class='label'>terms:</span> <span class='kw'>nil</span><span class='rbrace'>}</span><span class='rbracket'>]</span>
+
+  <span class='kw'>while</span> <span class='op'>!</span><span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+    <span class='kw'>begin</span>
+      <span class='ivar'>@recovering</span> <span class='op'>=</span> <span class='kw'>false</span>
+      <span class='id identifier rubyid_pushed'>pushed</span> <span class='op'>=</span> <span class='kw'>false</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='lbracket'>[</span><span class='symbol'>:terms</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+        <span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='lbracket'>[</span><span class='symbol'>:terms</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+        <span class='id identifier rubyid_cur_prod'>cur_prod</span> <span class='op'>=</span> <span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='lbracket'>[</span><span class='symbol'>:prod</span><span class='rbracket'>]</span>
+
+        <span class='comment'># If cur_prod is the starting production, we can reset the stack
+</span>        <span class='comment'># to the beginning to avoid excessive growth in the production
+</span>        <span class='comment'># stack
+</span>        <span class='kw'>if</span> <span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:reset_on_start</span><span class='rbracket'>]</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_cur_prod'>cur_prod</span> <span class='op'>==</span> <span class='id identifier rubyid_start'>start</span>
+          <span class='id identifier rubyid_todo_stack'>todo_stack</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='lbrace'>{</span><span class='label'>prod:</span> <span class='id identifier rubyid_start'>start</span><span class='comma'>,</span> <span class='label'>terms:</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='rbrace'>}</span><span class='rbracket'>]</span>
+          <span class='ivar'>@productions</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+          <span class='ivar'>@prod_data</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rbracket'>]</span>
+        <span class='kw'>end</span>
+
+        <span class='comment'># Fetch the current token
+</span>        <span class='id identifier rubyid_token'>token</span> <span class='op'>=</span> <span class='id identifier rubyid_get_token'>get_token</span><span class='lparen'>(</span><span class='symbol'>:recover</span><span class='rparen'>)</span>
+
+        <span class='comment'># At this point, token is either nil, in the first set of the production,
+</span>        <span class='comment'># or in the follow set of this production or any previous production
+</span>        <span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>parse(production)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='kw'>do</span>
+          <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>token </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_token'>token</span> <span class='op'>?</span> <span class='id identifier rubyid_token'>token</span><span class='period'>.</span><span class='id identifier rubyid_representation'>representation</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>nil</span><span class='tstring_end'>&#39;</span></span><span class='embexpr_end'>}</span><span class='tstring_content'>, </span><span class='tstring_end'>&quot;</span></span> <span class='op'>+</span>
+          <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>prod </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_cur_prod'>cur_prod</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>, </span><span class='tstring_end'>&quot;</span></span> <span class='op'>+</span>
+          <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>depth </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_depth'>depth</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+        <span class='kw'>end</span>
+
+        <span class='comment'># Got an opened production
+</span>        <span class='id identifier rubyid_onStart'>onStart</span><span class='lparen'>(</span><span class='id identifier rubyid_cur_prod'>cur_prod</span><span class='rparen'>)</span>
+
+        <span class='kw'>if</span> <span class='id identifier rubyid_token'>token</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+          <span class='kw'>if</span>  <span class='op'>!</span><span class='lparen'>(</span><span class='id identifier rubyid_first_include?'>first_include?</span><span class='lparen'>(</span><span class='id identifier rubyid_cur_prod'>cur_prod</span><span class='comma'>,</span> <span class='symbol'>:_eps</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_follow_include?'>follow_include?</span><span class='lparen'>(</span><span class='id identifier rubyid_cur_prod'>cur_prod</span><span class='comma'>,</span> <span class='symbol'>:_eof</span><span class='rparen'>)</span><span class='rparen'>)</span>
+            <span class='comment'># End of file, and production does not contain eps, or it does, but follow does not contain eof
+</span>            <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>parse(production)</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Unexpected end of input</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>lineno:</span> <span class='id identifier rubyid_lineno'>lineno</span><span class='comma'>,</span> <span class='label'>production:</span> <span class='id identifier rubyid_cur_prod'>cur_prod</span><span class='comma'>,</span> <span class='label'>raise:</span> <span class='kw'>true</span><span class='rparen'>)</span>
+          <span class='kw'>else</span>
+            <span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>parse(production)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>End of input prod </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_cur_prod'>cur_prod</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rbrace'>}</span>
+          <span class='kw'>end</span>
+        <span class='kw'>elsif</span> <span class='id identifier rubyid_prod_branch'>prod_branch</span> <span class='op'>=</span> <span class='ivar'>@branch</span><span class='lbracket'>[</span><span class='id identifier rubyid_cur_prod'>cur_prod</span><span class='rbracket'>]</span>
+          <span class='id identifier rubyid_sequence'>sequence</span> <span class='op'>=</span> <span class='id identifier rubyid_prod_branch'>prod_branch</span><span class='period'>.</span><span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='id identifier rubyid_token'>token</span><span class='period'>.</span><span class='id identifier rubyid_representation'>representation</span><span class='rparen'>)</span> <span class='kw'>do</span>
+            <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>parse(production)</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Expected one of </span><span class='embexpr_beg'>#{</span><span class='ivar'>@first</span><span class='lbracket'>[</span><span class='id identifier rubyid_cur_prod'>cur_prod</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>token:</span> <span class='id identifier rubyid_token'>token</span><span class='comma'>,</span> <span class='label'>production:</span> <span class='id identifier rubyid_cur_prod'>cur_prod</span><span class='comma'>,</span> <span class='label'>raise:</span> <span class='kw'>true</span><span class='rparen'>)</span>
+          <span class='kw'>end</span>
+          <span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>parse(production)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='kw'>do</span>
+            <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>token </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_token'>token</span><span class='period'>.</span><span class='id identifier rubyid_representation'>representation</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'> </span><span class='tstring_end'>&quot;</span></span> <span class='op'>+</span>
+            <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>prod </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_cur_prod'>cur_prod</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>, </span><span class='tstring_end'>&quot;</span></span> <span class='op'>+</span>
+            <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>prod_branch </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_prod_branch'>prod_branch</span><span class='period'>.</span><span class='id identifier rubyid_keys'>keys</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>, </span><span class='tstring_end'>&quot;</span></span> <span class='op'>+</span>
+            <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>sequence </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_sequence'>sequence</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+          <span class='kw'>end</span>
+          <span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='lbracket'>[</span><span class='symbol'>:terms</span><span class='rbracket'>]</span> <span class='op'>+=</span> <span class='id identifier rubyid_sequence'>sequence</span>
+        <span class='kw'>else</span>
+          <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>parse(production)</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Unexpected</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>token:</span> <span class='id identifier rubyid_token'>token</span><span class='comma'>,</span> <span class='label'>production:</span> <span class='id identifier rubyid_cur_prod'>cur_prod</span><span class='comma'>,</span> <span class='label'>raise:</span> <span class='kw'>true</span><span class='rparen'>)</span>
+        <span class='kw'>end</span>
+      <span class='kw'>end</span>
+
+      <span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>parse(terms)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>todo </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>, depth </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_depth'>depth</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rbrace'>}</span>
+      <span class='kw'>while</span> <span class='op'>!</span><span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='lbracket'>[</span><span class='symbol'>:terms</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_to_a'>to_a</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+        <span class='comment'># Get the next term in this sequence
+</span>        <span class='id identifier rubyid_term'>term</span> <span class='op'>=</span> <span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='lbracket'>[</span><span class='symbol'>:terms</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_shift'>shift</span>
+        <span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>parse(token)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>accept </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_term'>term</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rbrace'>}</span>
+
+        <span class='kw'>if</span> <span class='id identifier rubyid_token'>token</span> <span class='op'>=</span> <span class='id identifier rubyid_accept'>accept</span><span class='lparen'>(</span><span class='id identifier rubyid_term'>term</span><span class='rparen'>)</span>
+          <span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>parse(token)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>token </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_token'>token</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>, term </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_term'>term</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rbrace'>}</span>
+          <span class='id identifier rubyid_onTerminal'>onTerminal</span><span class='lparen'>(</span><span class='id identifier rubyid_term'>term</span><span class='comma'>,</span> <span class='id identifier rubyid_token'>token</span><span class='rparen'>)</span>
+        <span class='kw'>elsif</span> <span class='id identifier rubyid_terminals'>terminals</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_term'>term</span><span class='rparen'>)</span> 
+          <span class='comment'># If term is a terminal, then it is an error if token does not
+</span>          <span class='comment'># match it
+</span>          <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>parse(token)</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Expected </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_term'>term</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>token:</span> <span class='id identifier rubyid_get_token'>get_token</span><span class='comma'>,</span> <span class='label'>production:</span> <span class='id identifier rubyid_cur_prod'>cur_prod</span><span class='comma'>,</span> <span class='label'>raise:</span> <span class='kw'>true</span><span class='rparen'>)</span>
+        <span class='kw'>else</span>
+          <span class='id identifier rubyid_token'>token</span> <span class='op'>=</span> <span class='id identifier rubyid_get_token'>get_token</span>
+
+          <span class='comment'># If token is not in firsts of term, but eps is, skip to next
+</span>          <span class='comment'># term
+</span>          <span class='kw'>if</span> <span class='id identifier rubyid_first_include?'>first_include?</span><span class='lparen'>(</span><span class='id identifier rubyid_term'>term</span><span class='comma'>,</span> <span class='symbol'>:_eps</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_first_include?'>first_include?</span><span class='lparen'>(</span><span class='id identifier rubyid_term'>term</span><span class='comma'>,</span> <span class='id identifier rubyid_token'>token</span><span class='rparen'>)</span>
+            <span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>parse(token)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>skip optional term </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_term'>term</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'> on </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_token'>token</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rbrace'>}</span>
+            <span class='kw'>break</span>
+          <span class='kw'>else</span>
+            <span class='comment'># Push term onto stack
+</span>            <span class='id identifier rubyid_todo_stack'>todo_stack</span> <span class='op'>&lt;&lt;</span> <span class='lbrace'>{</span><span class='label'>prod:</span> <span class='id identifier rubyid_term'>term</span><span class='comma'>,</span> <span class='label'>terms:</span> <span class='kw'>nil</span><span class='rbrace'>}</span>
+            <span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>parse(push)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>term </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_term'>term</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>, depth </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_depth'>depth</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rbrace'>}</span>
+            <span class='id identifier rubyid_pushed'>pushed</span> <span class='op'>=</span> <span class='kw'>true</span>
+            <span class='kw'>break</span>
+          <span class='kw'>end</span>
+        <span class='kw'>end</span>
+      <span class='kw'>end</span>
+    <span class='kw'>rescue</span> <span class='const'><span class='object_link'><a href="Lexer.html" title="EBNF::LL1::Lexer (class)">Lexer</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Lexer/Error.html" title="EBNF::LL1::Lexer::Error (class)">Error</a></span></span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="Parser/Error.html" title="EBNF::LL1::Parser::Error (class)">Error</a></span></span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_e'>e</span>
+      <span class='comment'># Lexer encountered an illegal token or the parser encountered
+</span>      <span class='comment'># a terminal which is inappropriate for the current production.
+</span>      <span class='comment'># Perform error recovery to find a reasonable terminal based
+</span>      <span class='comment'># on the follow sets of the relevant productions. This includes
+</span>      <span class='comment'># remaining terms from the current production and the stacked
+</span>      <span class='comment'># productions
+</span>      <span class='ivar'>@lineno</span> <span class='op'>=</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_lineno'>lineno</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="Lexer.html" title="EBNF::LL1::Lexer (class)">Lexer</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Lexer/Error.html" title="EBNF::LL1::Lexer::Error (class)">Error</a></span></span><span class='rparen'>)</span>
+        <span class='comment'># Skip to the next valid terminal
+</span>        <span class='ivar'>@lexer</span><span class='period'>.</span><span class='id identifier rubyid_recover'>recover</span>
+        <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>parse(</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>With input &#39;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_input'>input</span><span class='embexpr_end'>}</span><span class='tstring_content'>&#39;: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+              <span class='label'>production:</span> <span class='ivar'>@productions</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='comma'>,</span> <span class='label'>token:</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_token'>token</span><span class='rparen'>)</span>
+      <span class='kw'>else</span>
+        <span class='comment'># Otherwise, the terminal is fine, just not for this production.
+</span>        <span class='ivar'>@lexer</span><span class='period'>.</span><span class='id identifier rubyid_shift'>shift</span>
+        <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>parse(</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+              <span class='label'>production:</span> <span class='ivar'>@productions</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='comma'>,</span> <span class='label'>token:</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_token'>token</span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+
+      <span class='comment'># Get the list of follows for this sequence, this production and the stacked productions.
+</span>      <span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>recovery</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>stack follows:</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_reverse'>reverse</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_todo'>todo</span><span class='op'>|</span>
+        <span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>recovery</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>  </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_todo'>todo</span><span class='lbracket'>[</span><span class='symbol'>:prod</span><span class='rbracket'>]</span><span class='embexpr_end'>}</span><span class='tstring_content'>: </span><span class='embexpr_beg'>#{</span><span class='ivar'>@follow</span><span class='lbracket'>[</span><span class='id identifier rubyid_todo'>todo</span><span class='lbracket'>[</span><span class='symbol'>:prod</span><span class='rbracket'>]</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rbrace'>}</span>
+      <span class='kw'>end</span>
+
+      <span class='comment'># Find all follows to the top of the stack
+</span>      <span class='id identifier rubyid_follows'>follows</span> <span class='op'>=</span> <span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_inject'>inject</span><span class='lparen'>(</span><span class='lbracket'>[</span><span class='rbracket'>]</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_follow'>follow</span><span class='comma'>,</span> <span class='id identifier rubyid_todo'>todo</span><span class='op'>|</span>
+        <span class='id identifier rubyid_prod'>prod</span> <span class='op'>=</span> <span class='id identifier rubyid_todo'>todo</span><span class='lbracket'>[</span><span class='symbol'>:prod</span><span class='rbracket'>]</span>
+        <span class='id identifier rubyid_follow'>follow</span> <span class='op'>+=</span> <span class='ivar'>@follow</span><span class='lbracket'>[</span><span class='id identifier rubyid_prod'>prod</span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+      <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_uniq'>uniq</span>
+      <span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>recovery</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>follows: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_follows'>follows</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rbrace'>}</span>
+
+      <span class='comment'># Skip tokens until one is found in follows
+</span>      <span class='kw'>while</span> <span class='lparen'>(</span><span class='id identifier rubyid_token'>token</span> <span class='op'>=</span> <span class='id identifier rubyid_get_token'>get_token</span><span class='lparen'>(</span><span class='symbol'>:recover</span><span class='rparen'>)</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_follows'>follows</span><span class='period'>.</span><span class='id identifier rubyid_none?'>none?</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_t'>t</span><span class='op'>|</span> <span class='id identifier rubyid_token'>token</span> <span class='op'>===</span> <span class='id identifier rubyid_t'>t</span><span class='rbrace'>}</span>
+        <span class='id identifier rubyid_skipped'>skipped</span> <span class='op'>=</span> <span class='ivar'>@lexer</span><span class='period'>.</span><span class='id identifier rubyid_shift'>shift</span>
+        <span class='id identifier rubyid_progress'>progress</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>recovery</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>skip </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_skipped'>skipped</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rbrace'>}</span>
+      <span class='kw'>end</span>
+      <span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>recovery</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>found </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_token'>token</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'> in follows</span><span class='tstring_end'>&quot;</span></span><span class='rbrace'>}</span>
+
+      <span class='comment'># Pop stack elements until token is in follows
+</span>      <span class='kw'>while</span> <span class='op'>!</span><span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span> <span class='op'>&amp;&amp;</span>
+            <span class='op'>!</span><span class='id identifier rubyid_follow_include?'>follow_include?</span><span class='lparen'>(</span><span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='lbracket'>[</span><span class='symbol'>:prod</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='id identifier rubyid_token'>token</span> <span class='op'>||</span> <span class='symbol'>:_eof</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>recovery(pop)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>todo </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>, depth </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_depth'>depth</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rbrace'>}</span>
+        <span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span>
+        <span class='id identifier rubyid_onFinish'>onFinish</span>
+      <span class='kw'>end</span>
+
+      <span class='comment'># Token is now in the first of the top production
+</span>      <span class='kw'>unless</span> <span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+        <span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span>
+        <span class='id identifier rubyid_onFinish'>onFinish</span>
+      <span class='kw'>end</span>
+
+      <span class='kw'>if</span> <span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+        <span class='comment'># Recovered to end of last production
+</span>        <span class='id identifier rubyid_warn'>warn</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>recover</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>recovered to end of productions</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+      <span class='kw'>else</span>
+        <span class='id identifier rubyid_warn'>warn</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>recover</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>recovered to </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='lbracket'>[</span><span class='symbol'>:prod</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'> with </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_token'>token</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+
+      <span class='ivar'>@recovering</span> <span class='op'>=</span> <span class='kw'>false</span>
+    <span class='kw'>ensure</span>
+      <span class='comment'># After completing the last production in a sequence, pop down until we find a production
+</span>      <span class='comment'>#
+</span>      <span class='comment'># If in recovery mode, continue popping until we find a term with a follow list
+</span>      <span class='kw'>while</span> <span class='op'>!</span><span class='id identifier rubyid_pushed'>pushed</span> <span class='op'>&amp;&amp;</span>
+            <span class='op'>!</span><span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span> <span class='op'>&amp;&amp;</span>
+            <span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='period'>.</span><span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='symbol'>:terms</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+        <span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>parse(pop)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>todo </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>, depth </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_depth'>depth</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rbrace'>}</span>
+        <span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span>
+        <span class='id identifier rubyid_onFinish'>onFinish</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>parse(eof)</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Finished processing before end of file</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>token:</span> <span class='ivar'>@lexer</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='ivar'>@lexer</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span>
+
+  <span class='comment'># Continue popping contexts off of the stack
+</span>  <span class='kw'>while</span> <span class='op'>!</span><span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+    <span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>parse(eof)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>stack </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>, depth </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_depth'>depth</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rbrace'>}</span>
+    <span class='comment'># There can&#39;t be anything left to do, or if there is, it must be optional
+</span>    <span class='id identifier rubyid_last_terms'>last_terms</span> <span class='op'>=</span> <span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='lbracket'>[</span><span class='symbol'>:terms</span><span class='rbracket'>]</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_last_terms'>last_terms</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>&gt;</span> <span class='int'>0</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_last_terms'>last_terms</span><span class='period'>.</span><span class='id identifier rubyid_none?'>none?</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_t'>t</span><span class='op'>|</span><span class='id identifier rubyid_first_include?'>first_include?</span><span class='lparen'>(</span><span class='id identifier rubyid_t'>t</span><span class='comma'>,</span> <span class='symbol'>:_eps</span><span class='rparen'>)</span><span class='rbrace'>}</span>
+      <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>parse(eof)</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+        <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>End of input before end of production: stack </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>, depth </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_depth'>depth</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+      <span class='rparen'>)</span>
+    <span class='kw'>end</span>
+    <span class='id identifier rubyid_todo_stack'>todo_stack</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span>
+    <span class='id identifier rubyid_onFinish'>onFinish</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># When all is said and done, raise the error log
+</span>  <span class='kw'>unless</span> <span class='ivar'>@error_log</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="Parser/Error.html" title="EBNF::LL1::Parser::Error (class)">Error</a></span></span><span class='comma'>,</span> <span class='ivar'>@error_log</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="prod_data-instance_method">
+  
+    #<strong>prod_data</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Current ProdData element</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+472</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/ll1/parser.rb', line 472</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_prod_data'>prod_data</span><span class='semicolon'>;</span> <span class='ivar'>@prod_data</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="progress-instance_method">
+  
+    #<strong>progress</strong>(node, message, **options, &amp;block)  &#x21d2; <tt>Object</tt>  <span class="extras">(protected)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Progress logged when parsing. Passed as level <code>1</code> logger messages.</p>
+
+<p>The call is ignored, unless <code>@options[:logger]</code> is set.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>node</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Relevant location associated with message</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>message</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>(“”)</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>options</span>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+  
+    
+    
+    
+    
+    
+    
+    <p class="tag_title">Options Hash (<tt>**options</tt>):</p>
+    <ul class="option">
+      
+        <li>
+          <span class="name">:depth</span>
+          <span class="type">(<tt>Integer</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'>
+<p>Recursion depth for indenting output</p>
+</div>
+          
+        </li>
+      
+    </ul>
+  
+    
+    
+
+
+</div>
+
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="#debug-instance_method" title="EBNF::LL1::Parser#debug (method)">#debug</a></span></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+559
+560
+561
+562
+563
+564
+565
+566</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/ll1/parser.rb', line 559</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_progress'>progress</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='kw'>unless</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:logger</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_lineno'>lineno</span> <span class='op'>=</span> <span class='ivar'>@lineno</span> <span class='op'>||</span> <span class='lparen'>(</span><span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:token</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_lineno'>lineno</span> <span class='kw'>if</span> <span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:token</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:lineno</span><span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_args'>args</span> <span class='op'>&lt;&lt;</span> <span class='lbrace'>{</span><span class='rbrace'>}</span> <span class='kw'>unless</span> <span class='id identifier rubyid_args'>args</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Hash</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_args'>args</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='lbracket'>[</span><span class='symbol'>:level</span><span class='rbracket'>]</span> <span class='op'>||=</span> <span class='int'>1</span>
+  <span class='id identifier rubyid_args'>args</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='lbracket'>[</span><span class='symbol'>:lineno</span><span class='rbracket'>]</span> <span class='op'>||=</span> <span class='id identifier rubyid_lineno'>lineno</span>
+  <span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="warn-instance_method">
+  
+    #<strong>warn</strong>(node, message, **options)  &#x21d2; <tt>Object</tt>  <span class="extras">(protected)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Warning information, used as level <code>2</code> logger messages. Messages may be logged and are saved for reporting at end of parsing.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>node</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Relevant location associated with message</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>message</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Error string</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>options</span>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+  
+    
+    
+    
+    
+    
+    
+    <p class="tag_title">Options Hash (<tt>**options</tt>):</p>
+    <ul class="option">
+      
+        <li>
+          <span class="name">:production</span>
+          <span class="type">(<tt>URI</tt>, <tt>#to_s</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+        </li>
+      
+        <li>
+          <span class="name">:token</span>
+          <span class="type">(<tt>Token</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+        </li>
+      
+    </ul>
+  
+
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="#debug-instance_method" title="EBNF::LL1::Parser#debug (method)">#debug</a></span></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+536
+537
+538
+539
+540
+541
+542
+543
+544
+545</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/ll1/parser.rb', line 536</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_warn'>warn</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='comma'>,</span> <span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_lineno'>lineno</span> <span class='op'>=</span> <span class='ivar'>@lineno</span> <span class='op'>||</span> <span class='lparen'>(</span><span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:token</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_lineno'>lineno</span> <span class='kw'>if</span> <span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:token</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:lineno</span><span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_m'>m</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>WARNING </span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_m'>m</span> <span class='op'>+=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>[line: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_lineno'>lineno</span><span class='embexpr_end'>}</span><span class='tstring_content'>] </span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_lineno'>lineno</span>
+  <span class='id identifier rubyid_m'>m</span> <span class='op'>+=</span> <span class='id identifier rubyid_message'>message</span>
+  <span class='id identifier rubyid_m'>m</span> <span class='op'>+=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'> (found </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:token</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:token</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_m'>m</span> <span class='op'>+=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>, production = </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:production</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:production</span><span class='rbracket'>]</span>
+  <span class='ivar'>@error_log</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_m'>m</span> <span class='kw'>unless</span> <span class='ivar'>@recovering</span>
+  <span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='comma'>,</span> <span class='id identifier rubyid_m'>m</span><span class='comma'>,</span> <span class='label'>level:</span> <span class='int'>2</span><span class='comma'>,</span> <span class='label'>lineno:</span> <span class='id identifier rubyid_lineno'>lineno</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Fri Jan 28 00:02:15 2022 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.27 (ruby-3.1.0).
+</div>
+
+    </div>
+  </body>
+</html>

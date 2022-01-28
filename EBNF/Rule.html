@@ -1,0 +1,4470 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: EBNF::Rule
+  
+    &mdash; EBNF parser and parser generator
+  
+</title>
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "EBNF::Rule";
+  relpath = '../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../_index.html">Index (R)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../EBNF.html" title="EBNF (module)">EBNF</a></span></span>
+     &raquo; 
+    <span class="title">Rule</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: EBNF::Rule
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">EBNF::Rule</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/ebnf/rule.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    
+<p>Represent individual parsed rules</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+  
+    <h2>
+      Constant Summary
+      <small><a href="#" class="constants_summary_toggle">collapse</a></small>
+    </h2>
+
+    <dl class="constants">
+      
+        <dt id="BNF_OPS-constant" class="">BNF_OPS =
+          <div class="docstring">
+  <div class="discussion">
+    
+<p>Operations which are flattened to seprate rules in to_bnf.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='qwords_beg'>%w{</span><span class='words_sep'>
+  </span><span class='tstring_content'>alt</span><span class='words_sep'> </span><span class='tstring_content'>diff</span><span class='words_sep'> </span><span class='tstring_content'>not</span><span class='words_sep'> </span><span class='tstring_content'>opt</span><span class='words_sep'> </span><span class='tstring_content'>plus</span><span class='words_sep'> </span><span class='tstring_content'>rept</span><span class='words_sep'> </span><span class='tstring_content'>seq</span><span class='words_sep'> </span><span class='tstring_content'>star</span><span class='words_sep'>
+</span><span class='tstring_end'>}</span></span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:to_sym</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span></pre></dd>
+      
+        <dt id="TERM_OPS-constant" class="">TERM_OPS =
+          
+        </dt>
+        <dd><pre class="code"><span class='qwords_beg'>%w{</span><span class='words_sep'>
+  </span><span class='tstring_content'>hex</span><span class='words_sep'> </span><span class='tstring_content'>istr</span><span class='words_sep'> </span><span class='tstring_content'>range</span><span class='words_sep'>
+</span><span class='tstring_end'>}</span></span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:to_sym</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span></pre></dd>
+      
+        <dt id="OP_ARGN-constant" class="">OP_ARGN =
+          <div class="docstring">
+  <div class="discussion">
+    
+<p>The number of arguments expected per operator. <code>nil</code> for unspecified</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='lbrace'>{</span>
+  <span class='label'>alt:</span> <span class='kw'>nil</span><span class='comma'>,</span>
+  <span class='label'>diff:</span> <span class='int'>2</span><span class='comma'>,</span>
+  <span class='label'>hex:</span> <span class='int'>1</span><span class='comma'>,</span>
+  <span class='label'>istr:</span> <span class='int'>1</span><span class='comma'>,</span>
+  <span class='label'>not:</span> <span class='int'>1</span><span class='comma'>,</span>
+  <span class='label'>opt:</span> <span class='int'>1</span><span class='comma'>,</span>
+  <span class='label'>plus:</span> <span class='int'>1</span><span class='comma'>,</span>
+  <span class='label'>range:</span> <span class='int'>1</span><span class='comma'>,</span>
+  <span class='label'>rept:</span> <span class='int'>3</span><span class='comma'>,</span>
+  <span class='label'>seq:</span> <span class='kw'>nil</span><span class='comma'>,</span>
+  <span class='label'>star:</span> <span class='int'>1</span>
+<span class='rbrace'>}</span></pre></dd>
+      
+    </dl>
+  
+
+
+
+
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#cleanup-instance_method" title="#cleanup (instance method)">#<strong>cleanup</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Determines preparation and cleanup rules for reconstituting EBNF ? * + from BNF.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#comp-instance_method" title="#comp (instance method)">#<strong>comp</strong>  &#x21d2; Rule </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>A comprehension is a sequence which contains all elements but the first of the original rule.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#expr-instance_method" title="#expr (instance method)">#<strong>expr</strong>  &#x21d2; Array </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Rule expression.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#first-instance_method" title="#first (instance method)">#<strong>first</strong>  &#x21d2; Array&lt;Rule&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Terminals that immediately procede this rule.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#follow-instance_method" title="#follow (instance method)">#<strong>follow</strong>  &#x21d2; Array&lt;Rule&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Terminals that immediately follow this rule.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#id-instance_method" title="#id (instance method)">#<strong>id</strong>  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>ID of rule.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#kind-instance_method" title="#kind (instance method)">#<strong>kind</strong>  &#x21d2; :rule, ... </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Kind of rule.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#orig-instance_method" title="#orig (instance method)">#<strong>orig</strong>  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Original EBNF.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#start-instance_method" title="#start (instance method)">#<strong>start</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Indicates that this is a starting rule.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#sym-instance_method" title="#sym (instance method)">#<strong>sym</strong>  &#x21d2; Symbol </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Symbol of rule.</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#from_sxp-class_method" title="from_sxp (class method)">.<strong>from_sxp</strong>(sxp)  &#x21d2; Rule </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Return a rule from its SXP representation:.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#<=>-instance_method" title="#&lt;=&gt; (instance method)">#<strong>&lt;=&gt;</strong>(other)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Rules compare using their ids.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#==-instance_method" title="#== (instance method)">#<strong>==</strong>(other)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Two rules are equal if they have the same <span class='object_link'><a href="#sym-instance_method" title="EBNF::Rule#sym (method)">#sym</a></span>, <span class='object_link'><a href="#kind-instance_method" title="EBNF::Rule#kind (method)">#kind</a></span> and <span class='object_link'><a href="#expr-instance_method" title="EBNF::Rule#expr (method)">#expr</a></span>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#add_first-instance_method" title="#add_first (instance method)">#<strong>add_first</strong>(terminals)  &#x21d2; Integer </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Add terminal as proceding this rule.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#add_follow-instance_method" title="#add_follow (instance method)">#<strong>add_follow</strong>(terminals)  &#x21d2; Integer </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Add terminal as following this rule.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#alt%3F-instance_method" title="#alt? (instance method)">#<strong>alt?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Is this rule of the form (alt …)?.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#build-instance_method" title="#build (instance method)">#<strong>build</strong>(expr, kind: nil, cleanup: nil, **options)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Build a new rule creating a symbol and numbering from the current rule Symbol and number creation is handled by the top-most rule in such a chain.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#eql%3F-instance_method" title="#eql? (instance method)">#<strong>eql?</strong>(other)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Two rules are equivalent if they have the same <span class='object_link'><a href="#expr-instance_method" title="EBNF::Rule#expr (method)">#expr</a></span>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#first_includes_eps%3F-instance_method" title="#first_includes_eps? (instance method)">#<strong>first_includes_eps?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Do the firsts of this rule include the empty string?.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#for_sxp-instance_method" title="#for_sxp (instance method)">#<strong>for_sxp</strong>  &#x21d2; Array </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Return representation for building S-Expressions.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(sym, id, expr, kind: nil, ebnf: nil, first: nil, follow: nil, start: nil, top_rule: nil, cleanup: nil)  &#x21d2; Rule </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>A new instance of Rule.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#inspect-instance_method" title="#inspect (instance method)">#<strong>inspect</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#non_terminals-instance_method" title="#non_terminals (instance method)">#<strong>non_terminals</strong>(ast, expr = @expr)  &#x21d2; Array&lt;Rule&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Return the non-terminals for this rule.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#pass%3F-instance_method" title="#pass? (instance method)">#<strong>pass?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Is this a pass?.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#rule%3F-instance_method" title="#rule? (instance method)">#<strong>rule?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Is this a rule?.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#seq%3F-instance_method" title="#seq? (instance method)">#<strong>seq?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Is this rule of the form (seq …)?.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#starts_with%3F-instance_method" title="#starts_with? (instance method)">#<strong>starts_with?</strong>(sym)  &#x21d2; Array&lt;Symbol, String&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Does this rule start with <code>sym</code>? It does if expr is that sym, expr starts with alt and contains that sym, or expr starts with seq and the next element is that sym.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#symbols-instance_method" title="#symbols (instance method)">#<strong>symbols</strong>(expr = @expr)  &#x21d2; Array&lt;Rule&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Return the symbols used in the rule.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#terminal%3F-instance_method" title="#terminal? (instance method)">#<strong>terminal?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Is this a terminal?.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#terminals-instance_method" title="#terminals (instance method)">#<strong>terminals</strong>(ast, expr = @expr)  &#x21d2; Array&lt;Rule&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Return the terminals for this rule.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#to_bnf-instance_method" title="#to_bnf (instance method)">#<strong>to_bnf</strong>  &#x21d2; Array&lt;Rule&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Transform EBNF rule to BNF rules:.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#to_peg-instance_method" title="#to_peg (instance method)">#<strong>to_peg</strong>  &#x21d2; Array&lt;Rule&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Transform EBNF rule for PEG:.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#to_regexp-instance_method" title="#to_regexp (instance method)">#<strong>to_regexp</strong>  &#x21d2; Regexp </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>For :hex or :range, create a regular expression.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#to_ruby-instance_method" title="#to_ruby (instance method)">#<strong>to_ruby</strong>  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Return a Ruby representation of this rule.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#to_sxp-instance_method" title="#to_sxp (instance method)">#<strong>to_sxp</strong>(**options)  &#x21d2; String </a>
+    
+
+    
+      (also: #to_s)
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Return SXP representation of this rule.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#to_ttl-instance_method" title="#to_ttl (instance method)">#<strong>to_ttl</strong>  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Serializes this rule to an Turtle.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#translate_codepoints-instance_method" title="#translate_codepoints (instance method)">#<strong>translate_codepoints</strong>(str)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Utility function to translate code points of the form ‘#xN’ into ruby unicode characters.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#valid%3F-instance_method" title="#valid? (instance method)">#<strong>valid?</strong>(ast)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Validate the rule, with respect to an AST.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#validate!-instance_method" title="#validate! (instance method)">#<strong>validate!</strong>(ast, expr = @expr)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Validate the rule, with respect to an AST.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(sym, id, expr, kind: nil, ebnf: nil, first: nil, follow: nil, start: nil, top_rule: nil, cleanup: nil)  &#x21d2; <tt><span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns a new instance of Rule.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>sym</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p><code>nil</code> is allowed only for @pass or @terminals</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>expr</span>
+      
+      
+        <span class='type'>(<tt>Array</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>The expression is an internal-representation of an S-Expression with one of the following oparators:</p>
+<ul><li>
+<p><code>alt</code> – A list of alternative rules, which are attempted in order. It terminates with the first matching rule, or is terminated as unmatched, if no such rule is found.</p>
+</li><li>
+<p><code>diff</code> – matches any string that matches <code>A</code> but does not match <code>B</code>.</p>
+</li><li>
+<p><code>hex</code> – A single character represented using the hexadecimal notation <code>#xnn</code>.</p>
+</li><li>
+<p><code>istr</code> – A string which matches in a case-insensitive manner, so that <code>(istr &quot;fOo&quot;)</code> will match either of the strings <code>&quot;foo&quot;</code>, <code>&quot;FOO&quot;</code> or any other combination.</p>
+</li><li>
+<p><code>opt</code> – An optional rule or terminal. It either results in the matching rule or returns <code>nil</code>.</p>
+</li><li>
+<p><code>plus</code> – A sequence of one or more of the matching rule. If there is no such rule, it is terminated as unmatched; otherwise, the result is an array containing all matched input.</p>
+</li><li>
+<p><code>range</code> – A range of characters, possibly repeated, of the form <code>(range &quot;a-z&quot;)</code>. May also use hexadecimal notation.</p>
+</li><li>
+<p><code>rept m n</code> – A sequence of at lest <code>m</code> and at most <code>n</code> of the matching rule. It will always return an array.</p>
+</li><li>
+<p><code>seq</code> – A sequence of rules or terminals. If any (other than <code>opt</code> or <code>star</code>) to not parse, the rule is terminated as unmatched.</p>
+</li><li>
+<p><code>star</code> – A sequence of zero or more of the matching rule. It will always return an array.</p>
+</li></ul>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>kind</span>
+      
+      
+        <span class='type'>(<tt>:rule</tt>, <tt>:terminal</tt>, <tt>:terminals</tt>, <tt>:pass</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>(nil)</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>ebnf</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>(nil) When parsing, records the EBNF string used to create the rule.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>first</span>
+      
+      
+        <span class='type'>(<tt>Array</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>(nil) Recorded set of terminals that can proceed this rule (LL(1))</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>follow</span>
+      
+      
+        <span class='type'>(<tt>Array</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>(nil) Recorded set of terminals that can follow this rule (LL(1))</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>start</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>(nil) Is this the starting rule for the grammar?</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>top_rule</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span></tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>(nil) The top-most rule. All expressed rules are top-rules, derived rules have the original rule as their top-rule.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>cleanup</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>(nil) Records information useful for cleaning up converted :plus, and :star expansions (LL(1)).</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>ArgumentError</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 107</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_sym'>sym</span><span class='comma'>,</span> <span class='id identifier rubyid_id'>id</span><span class='comma'>,</span> <span class='id identifier rubyid_expr'>expr</span><span class='comma'>,</span> <span class='label'>kind:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>ebnf:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>first:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>follow:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>start:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>top_rule:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>cleanup:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='ivar'>@sym</span><span class='comma'>,</span> <span class='ivar'>@id</span> <span class='op'>=</span> <span class='id identifier rubyid_sym'>sym</span><span class='comma'>,</span> <span class='id identifier rubyid_id'>id</span>
+  <span class='ivar'>@expr</span> <span class='op'>=</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Array</span><span class='rparen'>)</span> <span class='op'>?</span> <span class='id identifier rubyid_expr'>expr</span> <span class='op'>:</span> <span class='lbracket'>[</span><span class='symbol'>:seq</span><span class='comma'>,</span> <span class='id identifier rubyid_expr'>expr</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_compact'>compact</span>
+  <span class='ivar'>@ebnf</span><span class='comma'>,</span> <span class='ivar'>@kind</span><span class='comma'>,</span> <span class='ivar'>@first</span><span class='comma'>,</span> <span class='ivar'>@follow</span><span class='comma'>,</span> <span class='ivar'>@start</span><span class='comma'>,</span> <span class='ivar'>@cleanup</span><span class='comma'>,</span> <span class='ivar'>@top_rule</span> <span class='op'>=</span> <span class='id identifier rubyid_ebnf'>ebnf</span><span class='comma'>,</span> <span class='id identifier rubyid_kind'>kind</span><span class='comma'>,</span> <span class='id identifier rubyid_first'>first</span><span class='comma'>,</span> <span class='id identifier rubyid_follow'>follow</span><span class='comma'>,</span> <span class='id identifier rubyid_start'>start</span><span class='comma'>,</span> <span class='id identifier rubyid_cleanup'>cleanup</span><span class='comma'>,</span> <span class='id identifier rubyid_top_rule'>top_rule</span>
+  <span class='ivar'>@top_rule</span> <span class='op'>||=</span> <span class='kw'>self</span>
+  <span class='ivar'>@kind</span> <span class='op'>||=</span> <span class='kw'>case</span>
+  <span class='kw'>when</span> <span class='id identifier rubyid_sym'>sym</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span> <span class='op'>==</span> <span class='id identifier rubyid_sym'>sym</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='period'>.</span><span class='id identifier rubyid_upcase'>upcase</span> <span class='kw'>then</span> <span class='symbol'>:terminal</span>
+  <span class='kw'>when</span> <span class='op'>!</span><span class='const'><span class='object_link'><a href="#BNF_OPS-constant" title="EBNF::Rule::BNF_OPS (constant)">BNF_OPS</a></span></span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='ivar'>@expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='rparen'>)</span> <span class='kw'>then</span> <span class='symbol'>:terminal</span>
+  <span class='kw'>else</span> <span class='symbol'>:rule</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># Allow @pass and @terminals to not be named
+</span>  <span class='ivar'>@sym</span> <span class='op'>||=</span> <span class='symbol'>:_pass</span> <span class='kw'>if</span> <span class='ivar'>@kind</span> <span class='op'>==</span> <span class='symbol'>:pass</span>
+  <span class='ivar'>@sym</span> <span class='op'>||=</span> <span class='symbol'>:_terminals</span> <span class='kw'>if</span> <span class='ivar'>@kind</span> <span class='op'>==</span> <span class='symbol'>:terminals</span>
+
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Rule sym must be a symbol, was </span><span class='embexpr_beg'>#{</span><span class='ivar'>@sym</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='ivar'>@sym</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Symbol</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Rule id must be a string or nil, was </span><span class='embexpr_beg'>#{</span><span class='ivar'>@id</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='lparen'>(</span><span class='ivar'>@id</span> <span class='op'>||</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>String</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Rule kind must be one of :rule, :terminal, :terminals, or :pass, was </span><span class='embexpr_beg'>#{</span><span class='ivar'>@kind</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span>
+    <span class='ivar'>@kind</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Symbol</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='qwords_beg'>%w(</span><span class='tstring_content'>rule</span><span class='words_sep'> </span><span class='tstring_content'>terminal</span><span class='words_sep'> </span><span class='tstring_content'>terminals</span><span class='words_sep'> </span><span class='tstring_content'>pass</span><span class='tstring_end'>)</span></span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:to_sym</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='ivar'>@kind</span><span class='rparen'>)</span>
+
+  <span class='kw'>case</span> <span class='ivar'>@expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span>
+  <span class='kw'>when</span> <span class='symbol'>:alt</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='embexpr_end'>}</span><span class='tstring_content'> operation must have at least one operand, had </span><span class='embexpr_beg'>#{</span><span class='ivar'>@expr</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>-</span> <span class='int'>1</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='ivar'>@expr</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>&gt;</span> <span class='int'>1</span>
+  <span class='kw'>when</span> <span class='symbol'>:diff</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='embexpr_end'>}</span><span class='tstring_content'> operation must have exactly two operands, had </span><span class='embexpr_beg'>#{</span><span class='ivar'>@expr</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>-</span> <span class='int'>1</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='ivar'>@expr</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>==</span> <span class='int'>3</span>
+  <span class='kw'>when</span> <span class='symbol'>:hex</span><span class='comma'>,</span> <span class='symbol'>:istr</span><span class='comma'>,</span> <span class='symbol'>:not</span><span class='comma'>,</span> <span class='symbol'>:opt</span><span class='comma'>,</span> <span class='symbol'>:plus</span><span class='comma'>,</span> <span class='symbol'>:range</span><span class='comma'>,</span> <span class='symbol'>:star</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='embexpr_end'>}</span><span class='tstring_content'> operation must have exactly one operand, had </span><span class='embexpr_beg'>#{</span><span class='ivar'>@expr</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>-</span> <span class='int'>1</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='ivar'>@expr</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>==</span> <span class='int'>2</span>
+  <span class='kw'>when</span> <span class='symbol'>:rept</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='embexpr_end'>}</span><span class='tstring_content'> operation must have exactly three, had </span><span class='embexpr_beg'>#{</span><span class='ivar'>@expr</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>-</span> <span class='int'>1</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='ivar'>@expr</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>==</span> <span class='int'>4</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='embexpr_end'>}</span><span class='tstring_content'> operation must an non-negative integer minimum, was </span><span class='embexpr_beg'>#{</span><span class='ivar'>@expr</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span>
+      <span class='ivar'>@expr</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Integer</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@expr</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span> <span class='op'>&gt;=</span> <span class='int'>0</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='embexpr_end'>}</span><span class='tstring_content'> operation must an non-negative integer maximum or &#39;*&#39;, was </span><span class='embexpr_beg'>#{</span><span class='ivar'>@expr</span><span class='lbracket'>[</span><span class='int'>2</span><span class='rbracket'>]</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span>
+      <span class='ivar'>@expr</span><span class='lbracket'>[</span><span class='int'>2</span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>*</span><span class='tstring_end'>&#39;</span></span> <span class='op'>||</span> <span class='ivar'>@expr</span><span class='lbracket'>[</span><span class='int'>2</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Integer</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@expr</span><span class='lbracket'>[</span><span class='int'>2</span><span class='rbracket'>]</span> <span class='op'>&gt;=</span> <span class='int'>0</span>
+  <span class='kw'>when</span> <span class='symbol'>:seq</span>
+    <span class='comment'># It&#39;s legal to have a zero-length sequence
+</span>  <span class='kw'>else</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Rule expression must be an array using a known operator, was </span><span class='embexpr_beg'>#{</span><span class='ivar'>@expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id="cleanup=-instance_method"></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="cleanup-instance_method">
+  
+    #<strong>cleanup</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Determines preparation and cleanup rules for reconstituting EBNF ? * + from BNF</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+76
+77
+78</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 76</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_cleanup'>cleanup</span>
+  <span class='ivar'>@cleanup</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="comp=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="comp-instance_method">
+  
+    #<strong>comp</strong>  &#x21d2; <tt><span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>A comprehension is a sequence which contains all elements but the first of the original rule.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+43
+44
+45</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 43</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_comp'>comp</span>
+  <span class='ivar'>@comp</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="expr=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="expr-instance_method">
+  
+    #<strong>expr</strong>  &#x21d2; <tt>Array</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Rule expression</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+53
+54
+55</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 53</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_expr'>expr</span>
+  <span class='ivar'>@expr</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="first-instance_method">
+  
+    #<strong>first</strong>  &#x21d2; <tt>Array&lt;<span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span>&gt;</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Terminals that immediately procede this rule</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span>&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+63
+64
+65</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 63</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_first'>first</span>
+  <span class='ivar'>@first</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="follow-instance_method">
+  
+    #<strong>follow</strong>  &#x21d2; <tt>Array&lt;<span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span>&gt;</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Terminals that immediately follow this rule</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span>&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+68
+69
+70</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 68</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_follow'>follow</span>
+  <span class='ivar'>@follow</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="id=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="id-instance_method">
+  
+    #<strong>id</strong>  &#x21d2; <tt>String</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>ID of rule</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+38
+39
+40</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 38</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_id'>id</span>
+  <span class='ivar'>@id</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="kind=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="kind-instance_method">
+  
+    #<strong>kind</strong>  &#x21d2; <tt>:rule</tt>, ... 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Kind of rule</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>:rule</tt>, <tt>:terminal</tt>, <tt>:terminals</tt>, <tt>or :pass</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+48
+49
+50</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 48</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_kind'>kind</span>
+  <span class='ivar'>@kind</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="orig=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="orig-instance_method">
+  
+    #<strong>orig</strong>  &#x21d2; <tt>String</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Original EBNF</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+58
+59
+60</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 58</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_orig'>orig</span>
+  <span class='ivar'>@orig</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="start=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="start-instance_method">
+  
+    #<strong>start</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Indicates that this is a starting rule</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+73
+74
+75</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 73</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_start'>start</span>
+  <span class='ivar'>@start</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="sym=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="sym-instance_method">
+  
+    #<strong>sym</strong>  &#x21d2; <tt>Symbol</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Symbol of rule</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+34
+35
+36</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 34</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_sym'>sym</span>
+  <span class='ivar'>@sym</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="from_sxp-class_method">
+  
+    .<strong>from_sxp</strong>(sxp)  &#x21d2; <tt><span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Return a rule from its SXP representation:</p>
+
+<p>Also may have <code>(first ...)</code>, <code>(follow ...)</code>, or <code>(start #t)</code>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+        <p class="example_title"><div class='inline'>
+<p>inputs</p>
+</div></p>
+      
+      <pre class="example code"><code>(pass _pass (plus (range &quot;#x20\\t\\r\\n&quot;)))
+(rule ebnf &quot;1&quot; (star (alt declaration rule)))
+(terminal R_CHAR &quot;19&quot; (diff CHAR (alt &quot;]&quot; &quot;-&quot;)))</code></pre>
+    
+  </div>
+<p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>sxp</span>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt>Array</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 159</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_from_sxp'>from_sxp</span><span class='lparen'>(</span><span class='id identifier rubyid_sxp'>sxp</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_sxp'>sxp</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>String</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_require'>require</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>sxp</span><span class='tstring_end'>&#39;</span></span> <span class='kw'>unless</span> <span class='kw'>defined?</span><span class='lparen'>(</span><span class='const'>SXP</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_sxp'>sxp</span> <span class='op'>=</span> <span class='const'>SXP</span><span class='period'>.</span><span class='id identifier rubyid_parse'>parse</span><span class='lparen'>(</span><span class='id identifier rubyid_sxp'>sxp</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_expr'>expr</span> <span class='op'>=</span> <span class='id identifier rubyid_sxp'>sxp</span><span class='period'>.</span><span class='id identifier rubyid_detect'>detect</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_e'>e</span><span class='op'>|</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Array</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='lbracket'>[</span><span class='symbol'>:first</span><span class='comma'>,</span> <span class='symbol'>:follow</span><span class='comma'>,</span> <span class='symbol'>:start</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span><span class='rparen'>)</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_first'>first</span> <span class='op'>=</span> <span class='id identifier rubyid_sxp'>sxp</span><span class='period'>.</span><span class='id identifier rubyid_detect'>detect</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_e'>e</span><span class='op'>|</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Array</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span> <span class='op'>==</span> <span class='symbol'>:first</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_first'>first</span> <span class='op'>=</span> <span class='id identifier rubyid_first'>first</span><span class='lbracket'>[</span><span class='int'>1</span><span class='op'>..</span><span class='op'>-</span><span class='int'>1</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id identifier rubyid_first'>first</span>
+  <span class='id identifier rubyid_follow'>follow</span> <span class='op'>=</span> <span class='id identifier rubyid_sxp'>sxp</span><span class='period'>.</span><span class='id identifier rubyid_detect'>detect</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_e'>e</span><span class='op'>|</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Array</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span> <span class='op'>==</span> <span class='symbol'>:follow</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_follow'>follow</span> <span class='op'>=</span> <span class='id identifier rubyid_follow'>follow</span><span class='lbracket'>[</span><span class='int'>1</span><span class='op'>..</span><span class='op'>-</span><span class='int'>1</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id identifier rubyid_follow'>follow</span>
+  <span class='id identifier rubyid_cleanup'>cleanup</span> <span class='op'>=</span> <span class='id identifier rubyid_sxp'>sxp</span><span class='period'>.</span><span class='id identifier rubyid_detect'>detect</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_e'>e</span><span class='op'>|</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Array</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span> <span class='op'>==</span> <span class='symbol'>:cleanup</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_cleanup'>cleanup</span> <span class='op'>=</span> <span class='id identifier rubyid_cleanup'>cleanup</span><span class='lbracket'>[</span><span class='int'>1</span><span class='op'>..</span><span class='op'>-</span><span class='int'>1</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id identifier rubyid_cleanup'>cleanup</span>
+  <span class='id identifier rubyid_start'>start</span> <span class='op'>=</span> <span class='id identifier rubyid_sxp'>sxp</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_e'>e</span><span class='op'>|</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Array</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span> <span class='op'>==</span> <span class='symbol'>:start</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_sym'>sym</span> <span class='op'>=</span> <span class='id identifier rubyid_sxp'>sxp</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id identifier rubyid_sxp'>sxp</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Symbol</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_id'>id</span> <span class='op'>=</span> <span class='id identifier rubyid_sxp'>sxp</span><span class='lbracket'>[</span><span class='int'>2</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id identifier rubyid_sxp'>sxp</span><span class='lbracket'>[</span><span class='int'>2</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>String</span><span class='rparen'>)</span>
+  <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_sym'>sym</span><span class='comma'>,</span> <span class='id identifier rubyid_id'>id</span><span class='comma'>,</span> <span class='id identifier rubyid_expr'>expr</span><span class='comma'>,</span> <span class='label'>kind:</span> <span class='id identifier rubyid_sxp'>sxp</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='comma'>,</span> <span class='label'>first:</span> <span class='id identifier rubyid_first'>first</span><span class='comma'>,</span> <span class='label'>follow:</span> <span class='id identifier rubyid_follow'>follow</span><span class='comma'>,</span> <span class='label'>cleanup:</span> <span class='id identifier rubyid_cleanup'>cleanup</span><span class='comma'>,</span> <span class='label'>start:</span> <span class='id identifier rubyid_start'>start</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="<=>-instance_method">
+  
+    #<strong>&lt;=&gt;</strong>(other)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Rules compare using their ids</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+435
+436
+437
+438
+439
+440
+441
+442
+443
+444
+445</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 435</span>
+
+<span class='kw'>def</span> <span class='op'>&lt;=&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_other'>other</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_id'>id</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_id'>id</span> <span class='op'>==</span> <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span>
+      <span class='id identifier rubyid_id'>id</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span> <span class='op'>&lt;=&gt;</span> <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_id'>id</span><span class='period'>.</span><span class='id identifier rubyid_to_f'>to_f</span> <span class='op'>&lt;=&gt;</span> <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='period'>.</span><span class='id identifier rubyid_to_f'>to_f</span>
+    <span class='kw'>end</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_sym'>sym</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span> <span class='op'>&lt;=&gt;</span> <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_sym'>sym</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="==-instance_method">
+  
+    #<strong>==</strong>(other)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Two rules are equal if they have the same <span class='object_link'><a href="#sym-instance_method" title="EBNF::Rule#sym (method)">#sym</a></span>, <span class='object_link'><a href="#kind-instance_method" title="EBNF::Rule#kind (method)">#kind</a></span> and <span class='object_link'><a href="#expr-instance_method" title="EBNF::Rule#expr (method)">#expr</a></span>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>other</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+419
+420
+421
+422
+423
+424</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 419</span>
+
+<span class='kw'>def</span> <span class='op'>==</span><span class='lparen'>(</span><span class='id identifier rubyid_other'>other</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span></span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span>
+  <span class='id identifier rubyid_sym'>sym</span>   <span class='op'>==</span> <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_sym'>sym</span> <span class='op'>&amp;&amp;</span>
+  <span class='id identifier rubyid_kind'>kind</span>  <span class='op'>==</span> <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span> <span class='op'>&amp;&amp;</span>
+  <span class='id identifier rubyid_expr'>expr</span>  <span class='op'>==</span> <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_expr'>expr</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="add_first-instance_method">
+  
+    #<strong>add_first</strong>(terminals)  &#x21d2; <tt>Integer</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Add terminal as proceding this rule.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>terminals</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span>, Symbol, String&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>if number of terminals added</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+658
+659
+660
+661
+662
+663</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 658</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_add_first'>add_first</span><span class='lparen'>(</span><span class='id identifier rubyid_terminals'>terminals</span><span class='rparen'>)</span>
+  <span class='ivar'>@first</span> <span class='op'>||=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_terminals'>terminals</span> <span class='op'>=</span> <span class='id identifier rubyid_terminals'>terminals</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_t'>t</span><span class='op'>|</span> <span class='id identifier rubyid_t'>t</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span></span><span class='rparen'>)</span> <span class='op'>?</span> <span class='id identifier rubyid_t'>t</span><span class='period'>.</span><span class='id identifier rubyid_sym'>sym</span> <span class='op'>:</span> <span class='id identifier rubyid_t'>t</span><span class='rbrace'>}</span> <span class='op'>-</span> <span class='ivar'>@first</span>
+  <span class='ivar'>@first</span> <span class='op'>+=</span> <span class='id identifier rubyid_terminals'>terminals</span>
+  <span class='id identifier rubyid_terminals'>terminals</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="add_follow-instance_method">
+  
+    #<strong>add_follow</strong>(terminals)  &#x21d2; <tt>Integer</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Add terminal as following this rule. Don’t add _eps as a follow</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>terminals</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span>, Symbol, String&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>if number of terminals added</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+669
+670
+671
+672
+673
+674
+675
+676
+677</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 669</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_add_follow'>add_follow</span><span class='lparen'>(</span><span class='id identifier rubyid_terminals'>terminals</span><span class='rparen'>)</span>
+  <span class='comment'># Remove terminals already in follows, and empty string
+</span>  <span class='id identifier rubyid_terminals'>terminals</span> <span class='op'>=</span> <span class='id identifier rubyid_terminals'>terminals</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_t'>t</span><span class='op'>|</span> <span class='id identifier rubyid_t'>t</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span></span><span class='rparen'>)</span> <span class='op'>?</span> <span class='id identifier rubyid_t'>t</span><span class='period'>.</span><span class='id identifier rubyid_sym'>sym</span> <span class='op'>:</span> <span class='id identifier rubyid_t'>t</span><span class='rbrace'>}</span> <span class='op'>-</span> <span class='lparen'>(</span><span class='ivar'>@follow</span> <span class='op'>||</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='rparen'>)</span> <span class='op'>-</span> <span class='lbracket'>[</span><span class='symbol'>:_eps</span><span class='rbracket'>]</span>
+  <span class='kw'>unless</span> <span class='id identifier rubyid_terminals'>terminals</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+    <span class='ivar'>@follow</span> <span class='op'>||=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+    <span class='ivar'>@follow</span> <span class='op'>+=</span> <span class='id identifier rubyid_terminals'>terminals</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_terminals'>terminals</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="alt?-instance_method">
+  
+    #<strong>alt?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Is this rule of the form (alt …)?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+400
+401
+402</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 400</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_alt?'>alt?</span>
+  <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Array</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span> <span class='op'>==</span> <span class='symbol'>:alt</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="build-instance_method">
+  
+    #<strong>build</strong>(expr, kind: nil, cleanup: nil, **options)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Build a new rule creating a symbol and numbering from the current rule Symbol and number creation is handled by the top-most rule in such a chain.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>expr</span>
+      
+      
+        <span class='type'>(<tt>Array</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>kind</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>(nil)</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>cleanup</span>
+      
+      
+        <span class='type'>(<tt>Hash{Symbol =&gt; Symbol}</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>(nil)</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>options</span>
+      
+      
+        <span class='type'>(<tt>Hash{Symbol =&gt; Object}</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+184
+185
+186
+187
+188
+189
+190
+191
+192</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 184</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_build'>build</span><span class='lparen'>(</span><span class='id identifier rubyid_expr'>expr</span><span class='comma'>,</span> <span class='label'>kind:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>cleanup:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_new_sym'>new_sym</span><span class='comma'>,</span> <span class='id identifier rubyid_new_id'>new_id</span> <span class='op'>=</span> <span class='ivar'>@top_rule</span><span class='period'>.</span><span class='id identifier rubyid_send'>send</span><span class='lparen'>(</span><span class='symbol'>:make_sym_id</span><span class='rparen'>)</span>
+  <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_new_sym'>new_sym</span><span class='comma'>,</span> <span class='id identifier rubyid_new_id'>new_id</span><span class='comma'>,</span> <span class='id identifier rubyid_expr'>expr</span><span class='comma'>,</span>
+                 <span class='label'>kind:</span> <span class='id identifier rubyid_kind'>kind</span><span class='comma'>,</span>
+                 <span class='label'>ebnf:</span> <span class='ivar'>@ebnf</span><span class='comma'>,</span>
+                 <span class='label'>top_rule:</span> <span class='ivar'>@top_rule</span><span class='comma'>,</span>
+                 <span class='label'>cleanup:</span> <span class='id identifier rubyid_cleanup'>cleanup</span><span class='comma'>,</span>
+                 <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="eql?-instance_method">
+  
+    #<strong>eql?</strong>(other)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Two rules are equivalent if they have the same <span class='object_link'><a href="#expr-instance_method" title="EBNF::Rule#expr (method)">#expr</a></span>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>other</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+430
+431
+432</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 430</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_eql?'>eql?</span><span class='lparen'>(</span><span class='id identifier rubyid_other'>other</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_expr'>expr</span> <span class='op'>==</span> <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_expr'>expr</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="first_includes_eps?-instance_method">
+  
+    #<strong>first_includes_eps?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Do the firsts of this rule include the empty string?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+650
+651
+652</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 650</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_first_includes_eps?'>first_includes_eps?</span>
+  <span class='ivar'>@first</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@first</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='symbol'>:_eps</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="for_sxp-instance_method">
+  
+    #<strong>for_sxp</strong>  &#x21d2; <tt>Array</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Return representation for building S-Expressions.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 197</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_for_sxp'>for_sxp</span>
+  <span class='id identifier rubyid_elements'>elements</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='id identifier rubyid_kind'>kind</span><span class='comma'>,</span> <span class='id identifier rubyid_sym'>sym</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_elements'>elements</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_id'>id</span> <span class='kw'>if</span> <span class='id identifier rubyid_id'>id</span>
+  <span class='id identifier rubyid_elements'>elements</span> <span class='op'>&lt;&lt;</span> <span class='lbracket'>[</span><span class='symbol'>:start</span><span class='comma'>,</span> <span class='kw'>true</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id identifier rubyid_start'>start</span>
+  <span class='id identifier rubyid_elements'>elements</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_sort_by'>sort_by</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:to_s</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_unshift'>unshift</span><span class='lparen'>(</span><span class='symbol'>:first</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_first'>first</span>
+  <span class='id identifier rubyid_elements'>elements</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_follow'>follow</span><span class='period'>.</span><span class='id identifier rubyid_sort_by'>sort_by</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:to_s</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_unshift'>unshift</span><span class='lparen'>(</span><span class='symbol'>:follow</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_follow'>follow</span>
+  <span class='id identifier rubyid_elements'>elements</span> <span class='op'>&lt;&lt;</span> <span class='lbracket'>[</span><span class='symbol'>:cleanup</span><span class='comma'>,</span> <span class='id identifier rubyid_cleanup'>cleanup</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id identifier rubyid_cleanup'>cleanup</span>
+  <span class='id identifier rubyid_elements'>elements</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_expr'>expr</span>
+  <span class='id identifier rubyid_elements'>elements</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="inspect-instance_method">
+  
+    #<strong>inspect</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+409
+410
+411
+412
+413</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 409</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_inspect'>inspect</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>#&lt;EBNF::Rule:</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_object_id'>object_id</span><span class='embexpr_end'>}</span><span class='tstring_content'> </span><span class='tstring_end'>&quot;</span></span> <span class='op'>+</span>
+  <span class='lbrace'>{</span><span class='label'>sym:</span> <span class='id identifier rubyid_sym'>sym</span><span class='comma'>,</span> <span class='label'>id:</span> <span class='id identifier rubyid_id'>id</span><span class='comma'>,</span> <span class='label'>kind:</span> <span class='id identifier rubyid_kind'>kind</span><span class='comma'>,</span> <span class='label'>expr:</span> <span class='id identifier rubyid_expr'>expr</span><span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span> <span class='op'>+</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>&gt;</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="non_terminals-instance_method">
+  
+    #<strong>non_terminals</strong>(ast, expr = @expr)  &#x21d2; <tt>Array&lt;<span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span>&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+  <div class="note notetag">
+    <strong>Note:</strong>
+    <div class='inline'>
+<p>this is used for LL(1) tansformation, so rule types are limited</p>
+</div>
+  </div>
+
+
+<p>Return the non-terminals for this rule.</p>
+<ul><li>
+<p><code>alt</code> =&gt; this is every non-terminal.</p>
+</li><li>
+<p><code>diff</code> =&gt; this is every non-terminal.</p>
+</li><li>
+<p><code>hex</code> =&gt; nil</p>
+</li><li>
+<p><code>istr</code> =&gt; nil</p>
+</li><li>
+<p><code>not</code> =&gt; this is the last expression, if any.</p>
+</li><li>
+<p><code>opt</code> =&gt; this is the last expression, if any.</p>
+</li><li>
+<p><code>plus</code> =&gt; this is the last expression, if any.</p>
+</li><li>
+<p><code>range</code> =&gt; nil</p>
+</li><li>
+<p><code>rept</code> =&gt; this is the last expression, if any.</p>
+</li><li>
+<p><code>seq</code> =&gt; this is the first expression in the sequence, if any.</p>
+</li><li>
+<p><code>star</code> =&gt; this is the last expression, if any.</p>
+</li></ul>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>ast</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span>&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>The set of rules, used to turn symbols into rules</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>expr</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;Symbol,String,Array&gt;</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>@expr</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>(@expr) The expression to check, defaults to the rule expression. Typically, if the expression is recursive, the embedded expression is called recursively.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span>&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+474
+475
+476
+477
+478
+479
+480
+481
+482
+483
+484
+485
+486</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 474</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_non_terminals'>non_terminals</span><span class='lparen'>(</span><span class='id identifier rubyid_ast'>ast</span><span class='comma'>,</span> <span class='id identifier rubyid_expr'>expr</span> <span class='op'>=</span> <span class='ivar'>@expr</span><span class='rparen'>)</span>
+  <span class='lparen'>(</span><span class='lbracket'>[</span><span class='symbol'>:alt</span><span class='comma'>,</span> <span class='symbol'>:diff</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='rparen'>)</span> <span class='op'>?</span> <span class='id identifier rubyid_expr'>expr</span><span class='lbracket'>[</span><span class='int'>1</span><span class='op'>..</span><span class='op'>-</span><span class='int'>1</span><span class='rbracket'>]</span> <span class='op'>:</span> <span class='id identifier rubyid_expr'>expr</span><span class='lbracket'>[</span><span class='int'>1</span><span class='comma'>,</span><span class='int'>1</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_sym'>sym</span><span class='op'>|</span>
+    <span class='kw'>case</span> <span class='id identifier rubyid_sym'>sym</span>
+    <span class='kw'>when</span> <span class='const'>Symbol</span>
+      <span class='id identifier rubyid_r'>r</span> <span class='op'>=</span> <span class='id identifier rubyid_ast'>ast</span><span class='period'>.</span><span class='id identifier rubyid_detect'>detect</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_r'>r</span><span class='op'>|</span> <span class='id identifier rubyid_r'>r</span><span class='period'>.</span><span class='id identifier rubyid_sym'>sym</span> <span class='op'>==</span> <span class='id identifier rubyid_sym'>sym</span><span class='rbrace'>}</span>
+      <span class='id identifier rubyid_r'>r</span> <span class='kw'>if</span> <span class='id identifier rubyid_r'>r</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_r'>r</span><span class='period'>.</span><span class='id identifier rubyid_rule?'>rule?</span>
+    <span class='kw'>when</span> <span class='const'>Array</span>
+      <span class='id identifier rubyid_non_terminals'>non_terminals</span><span class='lparen'>(</span><span class='id identifier rubyid_ast'>ast</span><span class='comma'>,</span> <span class='id identifier rubyid_sym'>sym</span><span class='rparen'>)</span>
+    <span class='kw'>else</span>
+      <span class='kw'>nil</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_flatten'>flatten</span><span class='period'>.</span><span class='id identifier rubyid_compact'>compact</span><span class='period'>.</span><span class='id identifier rubyid_uniq'>uniq</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="pass?-instance_method">
+  
+    #<strong>pass?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Is this a pass?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+389
+390
+391</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 389</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_pass?'>pass?</span>
+  <span class='id identifier rubyid_kind'>kind</span> <span class='op'>==</span> <span class='symbol'>:pass</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="rule?-instance_method">
+  
+    #<strong>rule?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Is this a rule?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+395
+396
+397</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 395</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_rule?'>rule?</span>
+  <span class='id identifier rubyid_kind'>kind</span> <span class='op'>==</span> <span class='symbol'>:rule</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="seq?-instance_method">
+  
+    #<strong>seq?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Is this rule of the form (seq …)?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+405
+406
+407</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 405</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_seq?'>seq?</span>
+  <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Array</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span> <span class='op'>==</span> <span class='symbol'>:seq</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="starts_with?-instance_method">
+  
+    #<strong>starts_with?</strong>(sym)  &#x21d2; <tt>Array&lt;Symbol, String&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Does this rule start with <code>sym</code>? It does if expr is that sym, expr starts with alt and contains that sym, or expr starts with seq and the next element is that sym.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>sym</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>, <tt>class</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Symbol matching any start element, or if it is String, any start element which is a String</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;Symbol, String&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>list of symbol (singular), or strings which are start symbol, or nil if there are none</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+551
+552
+553
+554
+555
+556
+557
+558
+559</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 551</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_starts_with?'>starts_with?</span><span class='lparen'>(</span><span class='id identifier rubyid_sym'>sym</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_seq?'>seq?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_sym'>sym</span> <span class='op'>===</span> <span class='lparen'>(</span><span class='id identifier rubyid_v'>v</span> <span class='op'>=</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='int'>1</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='rparen'>)</span><span class='rparen'>)</span>
+    <span class='lbracket'>[</span><span class='id identifier rubyid_v'>v</span><span class='rbracket'>]</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_alt?'>alt?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_e'>e</span><span class='op'>|</span> <span class='id identifier rubyid_sym'>sym</span> <span class='op'>===</span> <span class='id identifier rubyid_e'>e</span><span class='rbrace'>}</span>
+    <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_select'>select</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_e'>e</span><span class='op'>|</span> <span class='id identifier rubyid_sym'>sym</span> <span class='op'>===</span> <span class='id identifier rubyid_e'>e</span><span class='rbrace'>}</span>
+  <span class='kw'>else</span>
+    <span class='kw'>nil</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="symbols-instance_method">
+  
+    #<strong>symbols</strong>(expr = @expr)  &#x21d2; <tt>Array&lt;<span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span>&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Return the symbols used in the rule.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>expr</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;Symbol,String,Array&gt;</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>@expr</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>(@expr) The expression to check, defaults to the rule expression. Typically, if the expression is recursive, the embedded expression is called recursively.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span>&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+529
+530
+531
+532
+533
+534
+535
+536
+537
+538</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 529</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_symbols'>symbols</span><span class='lparen'>(</span><span class='id identifier rubyid_expr'>expr</span> <span class='op'>=</span> <span class='ivar'>@expr</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_expr'>expr</span><span class='lbracket'>[</span><span class='int'>1</span><span class='op'>..</span><span class='op'>-</span><span class='int'>1</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_sym'>sym</span><span class='op'>|</span>
+    <span class='kw'>case</span> <span class='id identifier rubyid_sym'>sym</span>
+    <span class='kw'>when</span> <span class='const'>Symbol</span>
+      <span class='id identifier rubyid_sym'>sym</span>
+    <span class='kw'>when</span> <span class='const'>Array</span>
+      <span class='id identifier rubyid_symbols'>symbols</span><span class='lparen'>(</span><span class='id identifier rubyid_sym'>sym</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_flatten'>flatten</span><span class='period'>.</span><span class='id identifier rubyid_compact'>compact</span><span class='period'>.</span><span class='id identifier rubyid_uniq'>uniq</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="terminal?-instance_method">
+  
+    #<strong>terminal?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Is this a terminal?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+383
+384
+385</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 383</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_terminal?'>terminal?</span>
+  <span class='id identifier rubyid_kind'>kind</span> <span class='op'>==</span> <span class='symbol'>:terminal</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="terminals-instance_method">
+  
+    #<strong>terminals</strong>(ast, expr = @expr)  &#x21d2; <tt>Array&lt;<span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span>&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+  <div class="note notetag">
+    <strong>Note:</strong>
+    <div class='inline'>
+<p>this is used for LL(1) tansformation, so rule types are limited</p>
+</div>
+  </div>
+
+
+<p>Return the terminals for this rule.</p>
+<ul><li>
+<p><code>alt</code> =&gt; this is every terminal.</p>
+</li><li>
+<p><code>diff</code> =&gt; this is every terminal.</p>
+</li><li>
+<p><code>hex</code> =&gt; nil</p>
+</li><li>
+<p><code>istr</code> =&gt; nil</p>
+</li><li>
+<p><code>not</code> =&gt; this is the last expression, if any.</p>
+</li><li>
+<p><code>opt</code> =&gt; this is the last expression, if any.</p>
+</li><li>
+<p><code>plus</code> =&gt; this is the last expression, if any.</p>
+</li><li>
+<p><code>range</code> =&gt; nil</p>
+</li><li>
+<p><code>rept</code> =&gt; this is the last expression, if any.</p>
+</li><li>
+<p><code>seq</code> =&gt; this is the first expression in the sequence, if any.</p>
+</li><li>
+<p><code>star</code> =&gt; this is the last expression, if any.</p>
+</li></ul>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>ast</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span>&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>The set of rules, used to turn symbols into rules</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>expr</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;Symbol,String,Array&gt;</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>@expr</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>(@expr) The expression to check, defaults to the rule expression. Typically, if the expression is recursive, the embedded expression is called recursively.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span>&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+509
+510
+511
+512
+513
+514
+515
+516
+517
+518
+519
+520
+521</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 509</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_terminals'>terminals</span><span class='lparen'>(</span><span class='id identifier rubyid_ast'>ast</span><span class='comma'>,</span> <span class='id identifier rubyid_expr'>expr</span> <span class='op'>=</span> <span class='ivar'>@expr</span><span class='rparen'>)</span>
+  <span class='lparen'>(</span><span class='lbracket'>[</span><span class='symbol'>:alt</span><span class='comma'>,</span> <span class='symbol'>:diff</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='rparen'>)</span> <span class='op'>?</span> <span class='id identifier rubyid_expr'>expr</span><span class='lbracket'>[</span><span class='int'>1</span><span class='op'>..</span><span class='op'>-</span><span class='int'>1</span><span class='rbracket'>]</span> <span class='op'>:</span> <span class='id identifier rubyid_expr'>expr</span><span class='lbracket'>[</span><span class='int'>1</span><span class='comma'>,</span><span class='int'>1</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_sym'>sym</span><span class='op'>|</span>
+    <span class='kw'>case</span> <span class='id identifier rubyid_sym'>sym</span>
+    <span class='kw'>when</span> <span class='const'>Symbol</span>
+      <span class='id identifier rubyid_r'>r</span> <span class='op'>=</span> <span class='id identifier rubyid_ast'>ast</span><span class='period'>.</span><span class='id identifier rubyid_detect'>detect</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_r'>r</span><span class='op'>|</span> <span class='id identifier rubyid_r'>r</span><span class='period'>.</span><span class='id identifier rubyid_sym'>sym</span> <span class='op'>==</span> <span class='id identifier rubyid_sym'>sym</span><span class='rbrace'>}</span>
+      <span class='id identifier rubyid_r'>r</span> <span class='kw'>if</span> <span class='id identifier rubyid_r'>r</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_r'>r</span><span class='period'>.</span><span class='id identifier rubyid_terminal?'>terminal?</span>
+    <span class='kw'>when</span> <span class='const'>String</span>
+      <span class='id identifier rubyid_sym'>sym</span>
+    <span class='kw'>when</span> <span class='const'>Array</span>
+      <span class='id identifier rubyid_terminals'>terminals</span><span class='lparen'>(</span><span class='id identifier rubyid_ast'>ast</span><span class='comma'>,</span> <span class='id identifier rubyid_sym'>sym</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_flatten'>flatten</span><span class='period'>.</span><span class='id identifier rubyid_compact'>compact</span><span class='period'>.</span><span class='id identifier rubyid_uniq'>uniq</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="to_bnf-instance_method">
+  
+    #<strong>to_bnf</strong>  &#x21d2; <tt>Array&lt;<span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span>&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Transform EBNF rule to BNF rules:</p>
+<ul><li>
+<p>Transform <code>(rule a &quot;n&quot; (op1 (op2)))</code> into two rules:</p>
+
+<pre class="code ruby"><code class="ruby">(rule a &quot;n&quot; (op1 _a_1))
+(rule _a_1 &quot;n.1&quot; (op2))
+</code></pre>
+</li><li>
+<p>Transform <code>(rule a (opt b))</code> into <code>(rule a (alt _empty b))</code></p>
+</li><li>
+<p>Transform <code>(rule a (star b))</code> into <code>(rule a (alt _empty (seq b a)))</code></p>
+</li><li>
+<p>Transform <code>(rule a (plus b))</code> into <code>(rule a (seq b (star b)</code></p>
+</li></ul>
+
+<p>Transformation includes information used to re-construct non-transformed.</p>
+
+<p>AST representation</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span>&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 259</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_to_bnf'>to_bnf</span>
+  <span class='kw'>return</span> <span class='lbracket'>[</span><span class='kw'>self</span><span class='rbracket'>]</span> <span class='kw'>unless</span> <span class='id identifier rubyid_rule?'>rule?</span>
+  <span class='id identifier rubyid_new_rules'>new_rules</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+
+  <span class='comment'># Look for rules containing recursive definition and rewrite to multiple rules. If `expr` contains elements which are in array form, where the first element of that array is a symbol, create a new rule for it.
+</span>  <span class='kw'>if</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_e'>e</span><span class='op'>|</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Array</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#BNF_OPS-constant" title="EBNF::Rule::BNF_OPS (constant)">BNF_OPS</a></span></span> <span class='op'>+</span> <span class='const'><span class='object_link'><a href="#TERM_OPS-constant" title="EBNF::Rule::TERM_OPS (constant)">TERM_OPS</a></span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='rparen'>)</span><span class='rbrace'>}</span>
+    <span class='comment'>#   * Transform (a [n] rule (op1 (op2))) into two rules:
+</span>    <span class='comment'>#     (a.1 [n.1] rule (op1 a.2))
+</span>    <span class='comment'>#     (a.2 [n.2] rule (op2))
+</span>    <span class='comment'># duplicate ourselves for rewriting
+</span>    <span class='id identifier rubyid_this'>this</span> <span class='op'>=</span> <span class='id identifier rubyid_dup'>dup</span>
+    <span class='id identifier rubyid_new_rules'>new_rules</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_this'>this</span>
+
+    <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_each_with_index'>each_with_index</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_e'>e</span><span class='comma'>,</span> <span class='id identifier rubyid_index'>index</span><span class='op'>|</span>
+      <span class='kw'>next</span> <span class='kw'>unless</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Array</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Symbol</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_new_rule'>new_rule</span> <span class='op'>=</span> <span class='id identifier rubyid_build'>build</span><span class='lparen'>(</span><span class='id identifier rubyid_e'>e</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_this'>this</span><span class='period'>.</span><span class='id identifier rubyid_expr'>expr</span><span class='lbracket'>[</span><span class='id identifier rubyid_index'>index</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_new_rule'>new_rule</span><span class='period'>.</span><span class='id identifier rubyid_sym'>sym</span>
+      <span class='id identifier rubyid_new_rules'>new_rules</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_new_rule'>new_rule</span>
+    <span class='kw'>end</span>
+
+    <span class='comment'># Return new rules after recursively applying #to_bnf
+</span>    <span class='id identifier rubyid_new_rules'>new_rules</span> <span class='op'>=</span> <span class='id identifier rubyid_new_rules'>new_rules</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_r'>r</span><span class='op'>|</span> <span class='id identifier rubyid_r'>r</span><span class='period'>.</span><span class='id identifier rubyid_to_bnf'>to_bnf</span><span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_flatten'>flatten</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span> <span class='op'>==</span> <span class='symbol'>:opt</span>
+    <span class='id identifier rubyid_this'>this</span> <span class='op'>=</span> <span class='id identifier rubyid_dup'>dup</span>
+    <span class='comment'>#   * Transform (rule a (opt b)) into (rule a (alt _empty b))
+</span>    <span class='id identifier rubyid_this'>this</span><span class='period'>.</span><span class='id identifier rubyid_expr'>expr</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='symbol'>:alt</span><span class='comma'>,</span> <span class='symbol'>:_empty</span><span class='comma'>,</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_this'>this</span><span class='period'>.</span><span class='id identifier rubyid_cleanup'>cleanup</span> <span class='op'>=</span> <span class='symbol'>:opt</span>
+    <span class='id identifier rubyid_new_rules'>new_rules</span> <span class='op'>=</span> <span class='id identifier rubyid_this'>this</span><span class='period'>.</span><span class='id identifier rubyid_to_bnf'>to_bnf</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span> <span class='op'>==</span> <span class='symbol'>:star</span>
+    <span class='comment'>#   * Transform (rule a (star b)) into (rule a (alt _empty (seq b a)))
+</span>    <span class='id identifier rubyid_this'>this</span> <span class='op'>=</span> <span class='id identifier rubyid_dup'>dup</span>
+    <span class='id identifier rubyid_this'>this</span><span class='period'>.</span><span class='id identifier rubyid_cleanup'>cleanup</span> <span class='op'>=</span> <span class='symbol'>:star</span>
+    <span class='id identifier rubyid_new_rule'>new_rule</span> <span class='op'>=</span> <span class='id identifier rubyid_this'>this</span><span class='period'>.</span><span class='id identifier rubyid_build'>build</span><span class='lparen'>(</span><span class='lbracket'>[</span><span class='symbol'>:seq</span><span class='comma'>,</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='comma'>,</span> <span class='id identifier rubyid_this'>this</span><span class='period'>.</span><span class='id identifier rubyid_sym'>sym</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='label'>cleanup:</span> <span class='symbol'>:merge</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_this'>this</span><span class='period'>.</span><span class='id identifier rubyid_expr'>expr</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='symbol'>:alt</span><span class='comma'>,</span> <span class='symbol'>:_empty</span><span class='comma'>,</span> <span class='id identifier rubyid_new_rule'>new_rule</span><span class='period'>.</span><span class='id identifier rubyid_sym'>sym</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_new_rules'>new_rules</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='id identifier rubyid_this'>this</span><span class='rbracket'>]</span> <span class='op'>+</span> <span class='id identifier rubyid_new_rule'>new_rule</span><span class='period'>.</span><span class='id identifier rubyid_to_bnf'>to_bnf</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span> <span class='op'>==</span> <span class='symbol'>:plus</span>
+    <span class='comment'>#   * Transform (rule a (plus b)) into (rule a (seq b (star b)
+</span>    <span class='id identifier rubyid_this'>this</span> <span class='op'>=</span> <span class='id identifier rubyid_dup'>dup</span>
+    <span class='id identifier rubyid_this'>this</span><span class='period'>.</span><span class='id identifier rubyid_cleanup'>cleanup</span> <span class='op'>=</span> <span class='symbol'>:plus</span>
+    <span class='id identifier rubyid_this'>this</span><span class='period'>.</span><span class='id identifier rubyid_expr'>expr</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='symbol'>:seq</span><span class='comma'>,</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='symbol'>:star</span><span class='comma'>,</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='rbracket'>]</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_new_rules'>new_rules</span> <span class='op'>=</span> <span class='id identifier rubyid_this'>this</span><span class='period'>.</span><span class='id identifier rubyid_to_bnf'>to_bnf</span>
+  <span class='kw'>elsif</span> <span class='lbracket'>[</span><span class='symbol'>:alt</span><span class='comma'>,</span> <span class='symbol'>:seq</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='rparen'>)</span>
+    <span class='comment'># Otherwise, no further transformation necessary
+</span>    <span class='id identifier rubyid_new_rules'>new_rules</span> <span class='op'>&lt;&lt;</span> <span class='kw'>self</span>
+  <span class='kw'>elsif</span> <span class='lbracket'>[</span><span class='symbol'>:diff</span><span class='comma'>,</span> <span class='symbol'>:hex</span><span class='comma'>,</span> <span class='symbol'>:range</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='rparen'>)</span>
+    <span class='comment'># This rules are fine, they just need to be terminals
+</span>    <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Encountered </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>, which is a </span><span class='embexpr_beg'>#{</span><span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span><span class='embexpr_end'>}</span><span class='tstring_content'>, not :terminal</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_terminal?'>terminal?</span>
+    <span class='id identifier rubyid_new_rules'>new_rules</span> <span class='op'>&lt;&lt;</span> <span class='kw'>self</span>
+  <span class='kw'>else</span>
+    <span class='comment'># Some case we didn&#39;t think of
+</span>    <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Error trying to transform </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'> to BNF</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+  
+  <span class='kw'>return</span> <span class='id identifier rubyid_new_rules'>new_rules</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="to_peg-instance_method">
+  
+    #<strong>to_peg</strong>  &#x21d2; <tt>Array&lt;<span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span>&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Transform EBNF rule for PEG:</p>
+<ul><li>
+<p>Transform <code>(rule a &quot;n&quot; (op1 ... (op2 y) ...z))</code> into two rules:</p>
+
+<pre class="code ruby"><code class="ruby">(rule a &quot;n&quot; (op1 ... _a_1 ... z))
+(rule _a_1 &quot;n.1&quot; (op2 y))
+</code></pre>
+</li><li>
+<p>Transform <code>(rule a &quot;n&quot; (diff op1 op2))</code> into two rules:</p>
+
+<pre class="code ruby"><code class="ruby">(rule a &quot;n&quot; (seq _a_1 op1))
+(rule _a_1 &quot;n.1&quot; (not op1))
+</code></pre>
+</li></ul>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span>&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 328</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_to_peg'>to_peg</span>
+  <span class='id identifier rubyid_new_rules'>new_rules</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+
+  <span class='comment'># Look for rules containing sub-sequences
+</span>  <span class='kw'>if</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_e'>e</span><span class='op'>|</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Array</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Symbol</span><span class='rparen'>)</span><span class='rbrace'>}</span>
+    <span class='comment'># duplicate ourselves for rewriting
+</span>    <span class='id identifier rubyid_this'>this</span> <span class='op'>=</span> <span class='id identifier rubyid_dup'>dup</span>
+    <span class='id identifier rubyid_new_rules'>new_rules</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_this'>this</span>
+
+    <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_each_with_index'>each_with_index</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_e'>e</span><span class='comma'>,</span> <span class='id identifier rubyid_index'>index</span><span class='op'>|</span>
+      <span class='kw'>next</span> <span class='kw'>unless</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Array</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Symbol</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_new_rule'>new_rule</span> <span class='op'>=</span> <span class='id identifier rubyid_build'>build</span><span class='lparen'>(</span><span class='id identifier rubyid_e'>e</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_this'>this</span><span class='period'>.</span><span class='id identifier rubyid_expr'>expr</span><span class='lbracket'>[</span><span class='id identifier rubyid_index'>index</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_new_rule'>new_rule</span><span class='period'>.</span><span class='id identifier rubyid_sym'>sym</span>
+      <span class='id identifier rubyid_new_rules'>new_rules</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_new_rule'>new_rule</span>
+    <span class='kw'>end</span>
+
+    <span class='comment'># Return new rules after recursively applying #to_bnf
+</span>    <span class='id identifier rubyid_new_rules'>new_rules</span> <span class='op'>=</span> <span class='id identifier rubyid_new_rules'>new_rules</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_r'>r</span><span class='op'>|</span> <span class='id identifier rubyid_r'>r</span><span class='period'>.</span><span class='id identifier rubyid_to_peg'>to_peg</span><span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_flatten'>flatten</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span> <span class='op'>==</span> <span class='symbol'>:diff</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_terminal?'>terminal?</span>
+    <span class='id identifier rubyid_this'>this</span> <span class='op'>=</span> <span class='id identifier rubyid_dup'>dup</span>
+    <span class='id identifier rubyid_new_rule'>new_rule</span> <span class='op'>=</span> <span class='id identifier rubyid_build'>build</span><span class='lparen'>(</span><span class='lbracket'>[</span><span class='symbol'>:not</span><span class='comma'>,</span> <span class='id identifier rubyid_expr'>expr</span><span class='lbracket'>[</span><span class='int'>2</span><span class='rbracket'>]</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_this'>this</span><span class='period'>.</span><span class='id identifier rubyid_expr'>expr</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='symbol'>:seq</span><span class='comma'>,</span> <span class='id identifier rubyid_new_rule'>new_rule</span><span class='period'>.</span><span class='id identifier rubyid_sym'>sym</span><span class='comma'>,</span> <span class='id identifier rubyid_expr'>expr</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_new_rules'>new_rules</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_this'>this</span>
+    <span class='id identifier rubyid_new_rules'>new_rules</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_new_rule'>new_rule</span>
+  <span class='kw'>elsif</span> <span class='lbracket'>[</span><span class='symbol'>:hex</span><span class='comma'>,</span> <span class='symbol'>:istr</span><span class='comma'>,</span> <span class='symbol'>:range</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='rparen'>)</span>
+    <span class='comment'># This rules are fine, they just need to be terminals
+</span>    <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Encountered </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>, which is a </span><span class='embexpr_beg'>#{</span><span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span><span class='embexpr_end'>}</span><span class='tstring_content'>, not :terminal</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_terminal?'>terminal?</span>
+    <span class='id identifier rubyid_new_rules'>new_rules</span> <span class='op'>&lt;&lt;</span> <span class='kw'>self</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_new_rules'>new_rules</span> <span class='op'>&lt;&lt;</span> <span class='kw'>self</span>
+  <span class='kw'>end</span>
+  
+  <span class='kw'>return</span> <span class='id identifier rubyid_new_rules'>new_rules</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_r'>r</span><span class='op'>|</span> <span class='id identifier rubyid_r'>r</span><span class='period'>.</span><span class='id identifier rubyid_extend'>extend</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../EBNF.html" title="EBNF (module)">EBNF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="PEG.html" title="EBNF::PEG (module)">PEG</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="PEG/Rule.html" title="EBNF::PEG::Rule (module)">Rule</a></span></span><span class='rparen'>)</span><span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="to_regexp-instance_method">
+  
+    #<strong>to_regexp</strong>  &#x21d2; <tt>Regexp</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>For :hex or :range, create a regular expression.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Regexp</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+367
+368
+369
+370
+371
+372
+373
+374
+375
+376
+377
+378</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 367</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_to_regexp'>to_regexp</span>
+  <span class='kw'>case</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span>
+  <span class='kw'>when</span> <span class='symbol'>:hex</span>
+    <span class='const'>Regexp</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_translate_codepoints'>translate_codepoints</span><span class='lparen'>(</span><span class='id identifier rubyid_expr'>expr</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='kw'>when</span> <span class='symbol'>:istr</span>
+    <span class='tstring'><span class='regexp_beg'>/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='embexpr_end'>}</span><span class='regexp_end'>/ui</span></span>
+  <span class='kw'>when</span> <span class='symbol'>:range</span>
+    <span class='const'>Regexp</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>[</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_translate_codepoints'>translate_codepoints</span><span class='lparen'>(</span><span class='id identifier rubyid_expr'>expr</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'>]</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Can&#39;t turn </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'> into a regexp</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="to_ruby-instance_method">
+  
+    #<strong>to_ruby</strong>  &#x21d2; <tt>String</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Return a Ruby representation of this rule</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+240
+241
+242</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 240</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_to_ruby'>to_ruby</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>EBNF::Rule.new(</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_sym'>sym</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>, </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_id'>id</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>, </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='embexpr_beg'>#{</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>, kind: </span><span class='tstring_end'>&#39;</span></span> <span class='op'>+</span> <span class='id identifier rubyid_kind'>kind</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span> <span class='kw'>unless</span> <span class='id identifier rubyid_kind'>kind</span> <span class='op'>==</span> <span class='symbol'>:rule</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="to_sxp-instance_method">
+  
+    #<strong>to_sxp</strong>(**options)  &#x21d2; <tt>String</tt> 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='to_s-instance_method'>to_s</span></span>
+    </span>
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Return SXP representation of this rule</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+211
+212
+213
+214</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 211</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_to_sxp'>to_sxp</span><span class='lparen'>(</span><span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_require'>require</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>sxp</span><span class='tstring_end'>&#39;</span></span> <span class='kw'>unless</span> <span class='kw'>defined?</span><span class='lparen'>(</span><span class='const'>SXP</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_for_sxp'>for_sxp</span><span class='period'>.</span><span class='id identifier rubyid_to_sxp'>to_sxp</span><span class='lparen'>(</span><span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="to_ttl-instance_method">
+  
+    #<strong>to_ttl</strong>  &#x21d2; <tt>String</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Serializes this rule to an Turtle.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 221</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_to_ttl'>to_ttl</span>
+  <span class='ivar'>@ebnf</span><span class='period'>.</span><span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>to_ttl</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='id identifier rubyid_inspect'>inspect</span><span class='rbrace'>}</span> <span class='kw'>if</span> <span class='ivar'>@ebnf</span>
+  <span class='id identifier rubyid_statements'>statements</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>%{</span><span class='tstring_content'>:</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_sym'>sym</span><span class='embexpr_end'>}</span><span class='tstring_content'> rdfs:label &quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_sym'>sym</span><span class='embexpr_end'>}</span><span class='tstring_content'>&quot;;</span><span class='tstring_end'>}</span></span><span class='rbracket'>]</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_orig'>orig</span>
+    <span class='id identifier rubyid_comment'>comment</span> <span class='op'>=</span> <span class='id identifier rubyid_orig'>orig</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='period'>.</span><span class='id identifier rubyid_strip'>strip</span><span class='period'>.</span>
+      <span class='id identifier rubyid_gsub'>gsub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>&quot;&quot;&quot;</span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>\&quot;\&quot;\&quot;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='period'>.</span>
+      <span class='id identifier rubyid_gsub'>gsub</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\\</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\\\\</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='period'>.</span>
+      <span class='id identifier rubyid_sub'>sub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>^\&quot;</span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>\&quot;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='period'>.</span>
+      <span class='id identifier rubyid_sub'>sub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>\&quot;$</span><span class='regexp_end'>/m</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>\&quot;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_statements'>statements</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>%{</span><span class='tstring_content'>  rdfs:comment </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_comment'>comment</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>;</span><span class='tstring_end'>}</span></span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_statements'>statements</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>%{</span><span class='tstring_content'>  dc:identifier &quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_id'>id</span><span class='embexpr_end'>}</span><span class='tstring_content'>&quot;;</span><span class='tstring_end'>}</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_id'>id</span>
+  
+  <span class='id identifier rubyid_statements'>statements</span> <span class='op'>+=</span> <span class='id identifier rubyid_ttl_expr'>ttl_expr</span><span class='lparen'>(</span><span class='id identifier rubyid_expr'>expr</span><span class='comma'>,</span> <span class='id identifier rubyid_terminal?'>terminal?</span> <span class='op'>?</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>re</span><span class='tstring_end'>&quot;</span></span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>g</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='int'>1</span><span class='comma'>,</span> <span class='kw'>false</span><span class='rparen'>)</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span> <span class='op'>+</span> <span class='id identifier rubyid_statements'>statements</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="translate_codepoints-instance_method">
+  
+    #<strong>translate_codepoints</strong>(str)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Utility function to translate code points of the form ‘#xN’ into ruby unicode characters</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+449
+450
+451</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 449</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_translate_codepoints'>translate_codepoints</span><span class='lparen'>(</span><span class='id identifier rubyid_str'>str</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_str'>str</span><span class='period'>.</span><span class='id identifier rubyid_gsub'>gsub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>#x\h+</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_c'>c</span><span class='op'>|</span> <span class='id identifier rubyid_c'>c</span><span class='lbracket'>[</span><span class='int'>2</span><span class='op'>..</span><span class='op'>-</span><span class='int'>1</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_scanf'>scanf</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>%x</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_chr'>chr</span><span class='lparen'>(</span><span class='const'>Encoding</span><span class='op'>::</span><span class='const'>UTF_8</span><span class='rparen'>)</span><span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="valid?-instance_method">
+  
+    #<strong>valid?</strong>(ast)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Validate the rule, with respect to an AST.</p>
+
+<p>Uses <code>#validate!</code> and catches <code>RangeError</code></p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>ast</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span>&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>The set of rules, used to turn symbols into rules</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+640
+641
+642
+643
+644
+645</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 640</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_valid?'>valid?</span><span class='lparen'>(</span><span class='id identifier rubyid_ast'>ast</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_validate!'>validate!</span><span class='lparen'>(</span><span class='id identifier rubyid_ast'>ast</span><span class='rparen'>)</span>
+  <span class='kw'>true</span>
+<span class='kw'>rescue</span> <span class='const'>SyntaxError</span>
+  <span class='kw'>false</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="validate!-instance_method">
+  
+    #<strong>validate!</strong>(ast, expr = @expr)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Validate the rule, with respect to an AST.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>ast</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="" title="EBNF::Rule (class)">Rule</a></span>&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>The set of rules, used to turn symbols into rules</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>expr</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;Symbol,String,Array&gt;</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>@expr</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>(@expr) The expression to check, defaults to the rule expression. Typically, if the expression is recursive, the embedded expression is called recursively.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>RangeError</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+570
+571
+572
+573
+574
+575
+576
+577
+578
+579
+580
+581
+582
+583
+584
+585
+586
+587
+588
+589
+590
+591
+592
+593
+594
+595
+596
+597
+598
+599
+600
+601
+602
+603
+604
+605
+606
+607
+608
+609
+610
+611
+612
+613
+614
+615
+616
+617
+618
+619
+620
+621
+622
+623
+624
+625
+626
+627
+628
+629
+630</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/rule.rb', line 570</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_validate!'>validate!</span><span class='lparen'>(</span><span class='id identifier rubyid_ast'>ast</span><span class='comma'>,</span> <span class='id identifier rubyid_expr'>expr</span> <span class='op'>=</span> <span class='ivar'>@expr</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_op'>op</span> <span class='op'>=</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>SyntaxError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Unknown operator: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_op'>op</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='const'><span class='object_link'><a href="#OP_ARGN-constant" title="EBNF::Rule::OP_ARGN (constant)">OP_ARGN</a></span></span><span class='period'>.</span><span class='id identifier rubyid_key?'>key?</span><span class='lparen'>(</span><span class='id identifier rubyid_op'>op</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>SyntaxError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Argument count missmatch on operator </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_op'>op</span><span class='embexpr_end'>}</span><span class='tstring_content'>, had </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>-</span> <span class='int'>1</span><span class='embexpr_end'>}</span><span class='tstring_content'> expected </span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#OP_ARGN-constant" title="EBNF::Rule::OP_ARGN (constant)">OP_ARGN</a></span></span><span class='lbracket'>[</span><span class='id identifier rubyid_op'>op</span><span class='rbracket'>]</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span>
+    <span class='const'><span class='object_link'><a href="#OP_ARGN-constant" title="EBNF::Rule::OP_ARGN (constant)">OP_ARGN</a></span></span><span class='lbracket'>[</span><span class='id identifier rubyid_op'>op</span><span class='rbracket'>]</span> <span class='op'>&amp;&amp;</span> <span class='const'><span class='object_link'><a href="#OP_ARGN-constant" title="EBNF::Rule::OP_ARGN (constant)">OP_ARGN</a></span></span><span class='lbracket'>[</span><span class='id identifier rubyid_op'>op</span><span class='rbracket'>]</span> <span class='op'>!=</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>-</span> <span class='int'>1</span>
+
+  <span class='comment'># rept operator needs min and max
+</span>  <span class='kw'>if</span> <span class='id identifier rubyid_op'>op</span> <span class='op'>==</span> <span class='symbol'>:alt</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>SyntaxError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>alt operation must have at least one operand, had </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>-</span> <span class='int'>1</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>&gt;</span> <span class='int'>1</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_op'>op</span> <span class='op'>==</span> <span class='symbol'>:rept</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>SyntaxError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>rept operation must an non-negative integer minimum, was </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_expr'>expr</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span>
+      <span class='id identifier rubyid_expr'>expr</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Integer</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_expr'>expr</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span> <span class='op'>&gt;=</span> <span class='int'>0</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>SyntaxError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>rept operation must an non-negative integer maximum or &#39;*&#39;, was </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_expr'>expr</span><span class='lbracket'>[</span><span class='int'>2</span><span class='rbracket'>]</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span>
+      <span class='id identifier rubyid_expr'>expr</span><span class='lbracket'>[</span><span class='int'>2</span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>*</span><span class='tstring_end'>&#39;</span></span> <span class='op'>||</span> <span class='id identifier rubyid_expr'>expr</span><span class='lbracket'>[</span><span class='int'>2</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Integer</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_expr'>expr</span><span class='lbracket'>[</span><span class='int'>2</span><span class='rbracket'>]</span> <span class='op'>&gt;=</span> <span class='int'>0</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>case</span> <span class='id identifier rubyid_op'>op</span>
+  <span class='kw'>when</span> <span class='symbol'>:hex</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>SyntaxError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Hex operand must be of form &#39;#xN+&#39;: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_sym'>sym</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='period'>.</span><span class='id identifier rubyid_match?'>match?</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>^#x\h+$</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span>
+  <span class='kw'>when</span> <span class='symbol'>:range</span>
+    <span class='id identifier rubyid_str'>str</span> <span class='op'>=</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='period'>.</span><span class='id identifier rubyid_dup'>dup</span>
+    <span class='id identifier rubyid_str'>str</span> <span class='op'>=</span> <span class='id identifier rubyid_str'>str</span><span class='lbracket'>[</span><span class='int'>1</span><span class='op'>..</span><span class='op'>-</span><span class='int'>1</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id identifier rubyid_str'>str</span><span class='period'>.</span><span class='id identifier rubyid_start_with?'>start_with?</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>^</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_str'>str</span> <span class='op'>=</span> <span class='id identifier rubyid_str'>str</span><span class='lbracket'>[</span><span class='int'>0</span><span class='op'>..</span><span class='op'>-</span><span class='int'>2</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id identifier rubyid_str'>str</span><span class='period'>.</span><span class='id identifier rubyid_end_with?'>end_with?</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>-</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>  <span class='comment'># Allowed at end of range
+</span>    <span class='id identifier rubyid_scanner'>scanner</span> <span class='op'>=</span> <span class='const'>StringScanner</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_str'>str</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_hex'>hex</span> <span class='op'>=</span> <span class='id identifier rubyid_rchar'>rchar</span> <span class='op'>=</span> <span class='id identifier rubyid_in_range'>in_range</span> <span class='op'>=</span> <span class='kw'>false</span>
+    <span class='kw'>while</span> <span class='op'>!</span><span class='id identifier rubyid_scanner'>scanner</span><span class='period'>.</span><span class='id identifier rubyid_eos?'>eos?</span>
+      <span class='kw'>begin</span>
+        <span class='kw'>if</span> <span class='id identifier rubyid_scanner'>scanner</span><span class='period'>.</span><span class='id identifier rubyid_scan'>scan</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="Terminals.html" title="EBNF::Terminals (module)">Terminals</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Terminals.html#HEX-constant" title="EBNF::Terminals::HEX (constant)">HEX</a></span></span><span class='rparen'>)</span>
+          <span class='id identifier rubyid_raise'>raise</span> <span class='const'>SyntaxError</span> <span class='kw'>if</span> <span class='id identifier rubyid_in_range'>in_range</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_rchar'>rchar</span>
+          <span class='id identifier rubyid_rchar'>rchar</span> <span class='op'>=</span> <span class='id identifier rubyid_in_range'>in_range</span> <span class='op'>=</span> <span class='kw'>false</span>
+          <span class='id identifier rubyid_hex'>hex</span> <span class='op'>=</span> <span class='kw'>true</span>
+        <span class='kw'>elsif</span> <span class='id identifier rubyid_scanner'>scanner</span><span class='period'>.</span><span class='id identifier rubyid_scan'>scan</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="Terminals.html" title="EBNF::Terminals (module)">Terminals</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Terminals.html#R_CHAR-constant" title="EBNF::Terminals::R_CHAR (constant)">R_CHAR</a></span></span><span class='rparen'>)</span>
+          <span class='id identifier rubyid_raise'>raise</span> <span class='const'>SyntaxError</span> <span class='kw'>if</span> <span class='id identifier rubyid_in_range'>in_range</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_hex'>hex</span>
+          <span class='id identifier rubyid_hex'>hex</span> <span class='op'>=</span> <span class='id identifier rubyid_in_range'>in_range</span> <span class='op'>=</span> <span class='kw'>false</span>
+          <span class='id identifier rubyid_rchar'>rchar</span> <span class='op'>=</span> <span class='kw'>true</span>
+        <span class='kw'>else</span>
+          <span class='id identifier rubyid_raise'>raise</span><span class='lparen'>(</span><span class='const'>SyntaxError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Range contains illegal components at offset </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_scanner'>scanner</span><span class='period'>.</span><span class='id identifier rubyid_pos'>pos</span><span class='embexpr_end'>}</span><span class='tstring_content'>: was </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+        <span class='kw'>end</span>
+
+        <span class='kw'>if</span> <span class='id identifier rubyid_scanner'>scanner</span><span class='period'>.</span><span class='id identifier rubyid_scan'>scan</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>\-</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span>
+          <span class='id identifier rubyid_raise'>raise</span> <span class='const'>SyntaxError</span> <span class='kw'>if</span> <span class='id identifier rubyid_in_range'>in_range</span>
+          <span class='id identifier rubyid_in_range'>in_range</span> <span class='op'>=</span> <span class='kw'>true</span>
+        <span class='kw'>end</span>
+      <span class='kw'>rescue</span> <span class='const'>SyntaxError</span>
+        <span class='id identifier rubyid_raise'>raise</span><span class='lparen'>(</span><span class='const'>SyntaxError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Range contains illegal components at offset </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_scanner'>scanner</span><span class='period'>.</span><span class='id identifier rubyid_pos'>pos</span><span class='embexpr_end'>}</span><span class='tstring_content'>: was </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>else</span>
+    <span class='lparen'>(</span><span class='lbracket'>[</span><span class='symbol'>:alt</span><span class='comma'>,</span> <span class='symbol'>:diff</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='rparen'>)</span> <span class='op'>?</span> <span class='id identifier rubyid_expr'>expr</span><span class='lbracket'>[</span><span class='int'>1</span><span class='op'>..</span><span class='op'>-</span><span class='int'>1</span><span class='rbracket'>]</span> <span class='op'>:</span> <span class='id identifier rubyid_expr'>expr</span><span class='lbracket'>[</span><span class='int'>1</span><span class='comma'>,</span><span class='int'>1</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_sym'>sym</span><span class='op'>|</span>
+      <span class='kw'>case</span> <span class='id identifier rubyid_sym'>sym</span>
+      <span class='kw'>when</span> <span class='const'>Symbol</span>
+        <span class='id identifier rubyid_r'>r</span> <span class='op'>=</span> <span class='id identifier rubyid_ast'>ast</span><span class='period'>.</span><span class='id identifier rubyid_detect'>detect</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_r'>r</span><span class='op'>|</span> <span class='id identifier rubyid_r'>r</span><span class='period'>.</span><span class='id identifier rubyid_sym'>sym</span> <span class='op'>==</span> <span class='id identifier rubyid_sym'>sym</span><span class='rbrace'>}</span>
+        <span class='id identifier rubyid_raise'>raise</span> <span class='const'>SyntaxError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>No rule found for </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_sym'>sym</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_r'>r</span>
+      <span class='kw'>when</span> <span class='const'>Array</span>
+        <span class='id identifier rubyid_validate!'>validate!</span><span class='lparen'>(</span><span class='id identifier rubyid_ast'>ast</span><span class='comma'>,</span> <span class='id identifier rubyid_sym'>sym</span><span class='rparen'>)</span>
+      <span class='kw'>when</span> <span class='const'>String</span>
+        <span class='id identifier rubyid_raise'>raise</span> <span class='const'>SyntaxError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>String must be of the form CHAR*</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_sym'>sym</span><span class='period'>.</span><span class='id identifier rubyid_match?'>match?</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>^</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="Terminals.html" title="EBNF::Terminals (module)">Terminals</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Terminals.html#CHAR-constant" title="EBNF::Terminals::CHAR (constant)">CHAR</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>*$</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Fri Jan 28 00:02:16 2022 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.27 (ruby-3.1.0).
+</div>
+
+    </div>
+  </body>
+</html>

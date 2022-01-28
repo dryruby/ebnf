@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: EBNF::LL1::Scanner
+  
+    &mdash; EBNF parser and parser generator
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "EBNF::LL1::Scanner";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (S)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../EBNF.html" title="EBNF (module)">EBNF</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../LL1.html" title="EBNF::LL1 (module)">LL1</a></span></span>
+     &raquo; 
+    <span class="title">Scanner</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: EBNF::LL1::Scanner
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">StringScanner</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">StringScanner</li>
+          
+            <li class="next">EBNF::LL1::Scanner</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/ebnf/ll1/scanner.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    
+<p>Overload StringScanner with file operations and line counting</p>
+<ul><li>
+<p>Reloads scanner as required until EOF.</p>
+</li><li>
+<p>Loads to a high-water and reloads when remaining size reaches a low-water.</p>
+</li></ul>
+
+<p>FIXME: Only implements the subset required by the Lexer for now.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+  
+    <h2>
+      Constant Summary
+      <small><a href="#" class="constants_summary_toggle">collapse</a></small>
+    </h2>
+
+    <dl class="constants">
+      
+        <dt id="HIGH_WATER-constant" class="">HIGH_WATER =
+          <div class="docstring">
+  <div class="discussion">
+    
+<p>Hopefully large enough to deal with long multi-line comments</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='int'>512</span> <span class='op'>*</span> <span class='int'>1024</span></pre></dd>
+      
+        <dt id="LOW_WATER-constant" class="">LOW_WATER =
+          
+        </dt>
+        <dd><pre class="code"><span class='int'>4</span> <span class='op'>*</span> <span class='int'>1024</span></pre></dd>
+      
+    </dl>
+  
+
+
+
+
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#input-instance_method" title="#input (instance method)">#<strong>input</strong>  &#x21d2; String, ... </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#lineno-instance_method" title="#lineno (instance method)">#<strong>lineno</strong>  &#x21d2; Integer </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>The current line number (one-based).</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#ensure_buffer_full-instance_method" title="#ensure_buffer_full (instance method)">#<strong>ensure_buffer_full</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Ensures that the input buffer is full to the high water mark, or end of file.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#eos%3F-instance_method" title="#eos? (instance method)">#<strong>eos?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Returns true if the scan pointer is at the end of the string.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(input, **options)  &#x21d2; Scanner </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Create a scanner, from an IO.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#rest-instance_method" title="#rest (instance method)">#<strong>rest</strong>  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Returns the “rest” of the line, or the next line if at EOL (i.e. everything after the scan pointer).</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#scan-instance_method" title="#scan (instance method)">#<strong>scan</strong>(pattern)  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Tries to match with <code>pattern</code> at the current position.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#scan_until-instance_method" title="#scan_until (instance method)">#<strong>scan_until</strong>(pattern)  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Scans the string until the pattern is matched.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#skip-instance_method" title="#skip (instance method)">#<strong>skip</strong>(pattern)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Attempts to skip over the given <code>pattern</code> beginning with the scan pointer.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#skip_until-instance_method" title="#skip_until (instance method)">#<strong>skip_until</strong>(pattern)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Advances the scan pointer until pattern is matched and consumed.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#terminate-instance_method" title="#terminate (instance method)">#<strong>terminate</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Set the scan pointer to the end of the string and clear matching data.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#unscan-instance_method" title="#unscan (instance method)">#<strong>unscan</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Sets the scan pointer to the previous position.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  <div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(input, **options)  &#x21d2; <tt><span class='object_link'><a href="" title="EBNF::LL1::Scanner (class)">Scanner</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Create a scanner, from an IO</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>input</span>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt>IO</tt>, <tt>#read</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>options</span>
+      
+      
+        <span class='type'>(<tt>Hash{Symbol =&gt; Object}</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>options[Integer]</span>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>a customizable set of options</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+  
+    
+    
+    
+    
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+34
+35
+36
+37
+38
+39
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/ll1/scanner.rb', line 34</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_input'>input</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+  <span class='ivar'>@options</span> <span class='op'>=</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_merge'>merge</span><span class='lparen'>(</span><span class='label'>high_water:</span> <span class='const'><span class='object_link'><a href="#HIGH_WATER-constant" title="EBNF::LL1::Scanner::HIGH_WATER (constant)">HIGH_WATER</a></span></span><span class='comma'>,</span> <span class='label'>low_water:</span> <span class='const'><span class='object_link'><a href="#LOW_WATER-constant" title="EBNF::LL1::Scanner::LOW_WATER (constant)">LOW_WATER</a></span></span><span class='rparen'>)</span>
+
+  <span class='ivar'>@previous_lineno</span> <span class='op'>=</span> <span class='ivar'>@lineno</span> <span class='op'>=</span> <span class='int'>1</span>
+  <span class='ivar'>@input</span> <span class='op'>=</span> <span class='id identifier rubyid_input'>input</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>String</span><span class='rparen'>)</span> <span class='op'>?</span> <span class='id identifier rubyid_encode_utf8'>encode_utf8</span><span class='lparen'>(</span><span class='id identifier rubyid_input'>input</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='id identifier rubyid_input'>input</span>
+  <span class='kw'>super</span><span class='lparen'>(</span><span class='id identifier rubyid_input'>input</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>String</span><span class='rparen'>)</span> <span class='op'>?</span> <span class='ivar'>@input</span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_feed_me'>feed_me</span>
+  <span class='kw'>self</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id=""></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="input-instance_method">
+  
+    #<strong>input</strong>  &#x21d2; <tt>String</tt>, ...  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt>IO</tt>, <tt>StringIO</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+18
+19
+20</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/ll1/scanner.rb', line 18</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_input'>input</span>
+  <span class='ivar'>@input</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="lineno=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="lineno-instance_method">
+  
+    #<strong>lineno</strong>  &#x21d2; <tt>Integer</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>The current line number (one-based).</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+24
+25
+26</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/ll1/scanner.rb', line 24</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_lineno'>lineno</span>
+  <span class='ivar'>@lineno</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="ensure_buffer_full-instance_method">
+  
+    #<strong>ensure_buffer_full</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Ensures that the input buffer is full to the high water mark, or end of file. Useful when matching tokens that may be longer than the low water mark</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+46
+47
+48
+49
+50
+51
+52
+53
+54</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/ll1/scanner.rb', line 46</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_ensure_buffer_full'>ensure_buffer_full</span>
+  <span class='comment'># Read up to high-water mark ensuring we&#39;re at an end of line
+</span>  <span class='kw'>if</span> <span class='ivar'>@input</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:eof?</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='ivar'>@input</span><span class='period'>.</span><span class='id identifier rubyid_eof?'>eof?</span>
+    <span class='id identifier rubyid_diff'>diff</span> <span class='op'>=</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:high_water</span><span class='rbracket'>]</span> <span class='op'>-</span> <span class='id identifier rubyid_rest_size'>rest_size</span>
+    <span class='id identifier rubyid_string'>string</span> <span class='op'>=</span> <span class='id identifier rubyid_encode_utf8'>encode_utf8</span><span class='lparen'>(</span><span class='ivar'>@input</span><span class='period'>.</span><span class='id identifier rubyid_read'>read</span><span class='lparen'>(</span><span class='id identifier rubyid_diff'>diff</span><span class='rparen'>)</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_string'>string</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_encode_utf8'>encode_utf8</span><span class='lparen'>(</span><span class='ivar'>@input</span><span class='period'>.</span><span class='id identifier rubyid_gets'>gets</span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='ivar'>@input</span><span class='period'>.</span><span class='id identifier rubyid_eof?'>eof?</span>
+    <span class='kw'>self</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_string'>string</span> <span class='kw'>if</span> <span class='id identifier rubyid_string'>string</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="eos?-instance_method">
+  
+    #<strong>eos?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns true if the scan pointer is at the end of the string</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+60
+61
+62
+63</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/ll1/scanner.rb', line 60</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_eos?'>eos?</span>
+  <span class='id identifier rubyid_feed_me'>feed_me</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="rest-instance_method">
+  
+    #<strong>rest</strong>  &#x21d2; <tt>String</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns the “rest” of the line, or the next line if at EOL (i.e. everything after the scan pointer). If there is no more data (eos? = true), it returns “”.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+70
+71
+72
+73</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/ll1/scanner.rb', line 70</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_rest'>rest</span>
+  <span class='id identifier rubyid_feed_me'>feed_me</span>
+  <span class='id identifier rubyid_encode_utf8'>encode_utf8</span> <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="scan-instance_method">
+  
+    #<strong>scan</strong>(pattern)  &#x21d2; <tt>String</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Tries to match with <code>pattern</code> at the current position.</p>
+
+<p>If there is a match, the scanner advances the “scan pointer” and returns the matched string. Otherwise, the scanner returns nil.</p>
+
+<p>If the scanner begins with the multi-line start expression</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+      <pre class="example code"><code><span class='id identifier rubyid_s'>s</span> <span class='op'>=</span> <span class='const'>StringScanner</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>test string</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+<span class='id identifier rubyid_p'>p</span> <span class='id identifier rubyid_s'>s</span><span class='period'>.</span><span class='id identifier rubyid_scan'>scan</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>\w+</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span>   <span class='comment'># -&gt; &quot;test&quot;
+</span><span class='id identifier rubyid_p'>p</span> <span class='id identifier rubyid_s'>s</span><span class='period'>.</span><span class='id identifier rubyid_scan'>scan</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>\w+</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span>   <span class='comment'># -&gt; nil
+</span><span class='id identifier rubyid_p'>p</span> <span class='id identifier rubyid_s'>s</span><span class='period'>.</span><span class='id identifier rubyid_scan'>scan</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>\s+</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span>   <span class='comment'># -&gt; &quot; &quot;
+</span><span class='id identifier rubyid_p'>p</span> <span class='id identifier rubyid_s'>s</span><span class='period'>.</span><span class='id identifier rubyid_scan'>scan</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>\w+</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span>   <span class='comment'># -&gt; &quot;string&quot;
+</span><span class='id identifier rubyid_p'>p</span> <span class='id identifier rubyid_s'>s</span><span class='period'>.</span><span class='id identifier rubyid_scan'>scan</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>.</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span>     <span class='comment'># -&gt; nil</span></code></pre>
+    
+  </div>
+<p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>pattern</span>
+      
+      
+        <span class='type'>(<tt>Regexp</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+92
+93
+94
+95
+96
+97
+98
+99</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/ll1/scanner.rb', line 92</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_scan'>scan</span><span class='lparen'>(</span><span class='id identifier rubyid_pattern'>pattern</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_feed_me'>feed_me</span>
+  <span class='ivar'>@previous_lineno</span> <span class='op'>=</span> <span class='ivar'>@lineno</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_matched'>matched</span> <span class='op'>=</span> <span class='id identifier rubyid_encode_utf8'>encode_utf8</span><span class='lparen'>(</span><span class='kw'>super</span><span class='rparen'>)</span>
+    <span class='ivar'>@lineno</span> <span class='op'>+=</span> <span class='id identifier rubyid_matched'>matched</span><span class='period'>.</span><span class='id identifier rubyid_count'>count</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_matched'>matched</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="scan_until-instance_method">
+  
+    #<strong>scan_until</strong>(pattern)  &#x21d2; <tt>String</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Scans the string until the pattern is matched. Returns the substring up to and including the end of the match, advancing the scan pointer to that location. If there is no match, nil is returned.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+      <pre class="example code"><code><span class='id identifier rubyid_s'>s</span> <span class='op'>=</span> <span class='const'>StringScanner</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Fri Dec 12 1975 14:39</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+<span class='id identifier rubyid_s'>s</span><span class='period'>.</span><span class='id identifier rubyid_scan_until'>scan_until</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>1</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span>        <span class='comment'># -&gt; &quot;Fri Dec 1&quot;
+</span><span class='id identifier rubyid_s'>s</span><span class='period'>.</span><span class='id identifier rubyid_pre_match'>pre_match</span>              <span class='comment'># -&gt; &quot;Fri Dec &quot;
+</span><span class='id identifier rubyid_s'>s</span><span class='period'>.</span><span class='id identifier rubyid_scan_until'>scan_until</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>XYZ</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span>      <span class='comment'># -&gt; nil</span></code></pre>
+    
+  </div>
+<p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>pattern</span>
+      
+      
+        <span class='type'>(<tt>Regexp</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+112
+113
+114
+115
+116
+117
+118
+119</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/ll1/scanner.rb', line 112</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_scan_until'>scan_until</span><span class='lparen'>(</span><span class='id identifier rubyid_pattern'>pattern</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_feed_me'>feed_me</span>
+  <span class='ivar'>@previous_lineno</span> <span class='op'>=</span> <span class='ivar'>@lineno</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_matched'>matched</span> <span class='op'>=</span> <span class='id identifier rubyid_encode_utf8'>encode_utf8</span><span class='lparen'>(</span><span class='kw'>super</span><span class='rparen'>)</span>
+    <span class='ivar'>@lineno</span> <span class='op'>+=</span> <span class='id identifier rubyid_matched'>matched</span><span class='period'>.</span><span class='id identifier rubyid_count'>count</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_matched'>matched</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="skip-instance_method">
+  
+    #<strong>skip</strong>(pattern)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Attempts to skip over the given <code>pattern</code> beginning with the scan pointer. If it matches, the scan pointer is advanced to the end of the match, and the length of the match is returned. Otherwise, <code>nil</code> is returned.</p>
+
+<p>similar to <code>scan</code>, but without returning the matched string.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>pattern</span>
+      
+      
+        <span class='type'>(<tt>Regexp</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+128
+129
+130
+131</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/ll1/scanner.rb', line 128</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_skip'>skip</span><span class='lparen'>(</span><span class='id identifier rubyid_pattern'>pattern</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_scan'>scan</span><span class='lparen'>(</span><span class='id identifier rubyid_pattern'>pattern</span><span class='rparen'>)</span>
+  <span class='kw'>nil</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="skip_until-instance_method">
+  
+    #<strong>skip_until</strong>(pattern)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Advances the scan pointer until pattern is matched and consumed. Returns the number of bytes advanced, or nil if no match was found.</p>
+
+<p>Look ahead to match pattern, and advance the scan pointer to the end of the match. Return the number of characters advanced, or nil if the match was unsuccessful.</p>
+
+<p>It’s similar to scan_until, but without returning the intervening string.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>pattern</span>
+      
+      
+        <span class='type'>(<tt>Regexp</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+140
+141
+142</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/ll1/scanner.rb', line 140</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_skip_until'>skip_until</span><span class='lparen'>(</span><span class='id identifier rubyid_pattern'>pattern</span><span class='rparen'>)</span>
+  <span class='lparen'>(</span><span class='id identifier rubyid_matched'>matched</span> <span class='op'>=</span> <span class='id identifier rubyid_scan_until'>scan_until</span><span class='lparen'>(</span><span class='id identifier rubyid_pattern'>pattern</span><span class='rparen'>)</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_matched'>matched</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="terminate-instance_method">
+  
+    #<strong>terminate</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Set the scan pointer to the end of the string and clear matching data</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+153
+154
+155
+156</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/ll1/scanner.rb', line 153</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_terminate'>terminate</span>
+  <span class='id identifier rubyid_feed_me'>feed_me</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="unscan-instance_method">
+  
+    #<strong>unscan</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Sets the scan pointer to the previous position. Only one previous position is remembered, and it changes with each scanning operation.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+146
+147
+148
+149</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/ll1/scanner.rb', line 146</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_unscan'>unscan</span>
+  <span class='ivar'>@lineno</span> <span class='op'>=</span> <span class='ivar'>@previous_lineno</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Fri Jan 28 00:02:17 2022 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.27 (ruby-3.1.0).
+</div>
+
+    </div>
+  </body>
+</html>

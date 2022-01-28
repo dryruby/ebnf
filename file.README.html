@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  File: README
+  
+    &mdash; EBNF parser and parser generator
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "README";
+  relpath = '';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="file_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="_index.html">Index</a> &raquo; 
+    <span class="title">File: README</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><div id='filecontents'>
+<h1 id="label-ISO+EBNF+Parser+example">ISO EBNF Parser example</h1>
+
+<p>This example implements an <a href="https://www.iso.org/standard/26153.html">ISO/IEC 14977</a> parser which parses compatible grammars into [<a href="S-Expression">S-Expressions]</a>. This allows the resulting [<a href="S-Expression">S-Expressions]</a> to drive a <a href="https://pdos.csail.mit.edu/~baford/packrat/thesis/">PEG}[https://en.wikipedia.org/wiki/Parsing_expression_grammar]/Parser to parser documents defined using <a href="https://www.iso.org/standard/26153.html">ISO/IEC 14977</a>.</p>
+
+<h2 id="label-Parsing+the+Grammar">Parsing the Grammar</h2>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_require'>require</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>ebnf</span><span class='tstring_end'>&#39;</span></span>
+
+<span class='id identifier rubyid_ebnf'>ebnf</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="ISOEBNFPegParser.html" title="ISOEBNFPegParser (class)">ISOEBNFPegParser</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="ISOEBNFPegParser.html#initialize-instance_method" title="ISOEBNFPegParser#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_open'>open</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>examples/ebnf.isoebnf</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='rparen'>)</span>
+</code></pre>
+
+<p>Output rules and terminals as [<a href="S-Expression">S-Expressions]</a>:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_ebnf'>ebnf</span><span class='period'>.</span><span class='id identifier rubyid_to_sxp'>to_sxp</span>
+</code></pre>
+
+<p>This generates a [S-Expression][] form of the grammar suitable for use by {EBNF.</p>
+
+<pre class="code ruby"><code class="ruby">(
+ (rule syntax (star syntax_rule))
+ (rule syntax_rule
+  (seq meta_identifier defining_symbol definitions_list terminator_symbol))
+ (rule definitions_list
+  (seq single_definition (star (seq definition_separator_symbol definitions_list))))
+ (rule single_definition (seq term (star (seq &quot;,&quot; term))))
+ (rule term (seq factor (opt (seq &quot;-&quot; exception))))
+ (rule exception (seq factor))
+ (rule factor (seq (opt (seq integer &quot;*&quot;)) primary))
+ (rule primary
+  (alt optional_sequence repeated_sequence special_sequence grouped_sequence
+   meta_identifier terminal_string empty ))
+ (rule optional_sequence
+  (seq start_option_symbol definitions_list end_option_symbol))
+ (rule repeated_sequence
+  (seq start_repeat_symbol definitions_list end_repeat_symbol))
+ (rule grouped_sequence (seq &quot;(&quot; definitions_list &quot;)&quot;))
+ (rule letter
+  (alt &quot;A&quot; &quot;B&quot; &quot;C&quot; &quot;D&quot; &quot;E&quot; &quot;F&quot; &quot;G&quot; &quot;H&quot; &quot;I&quot; &quot;J&quot; &quot;K&quot; &quot;L&quot; &quot;M&quot; &quot;N&quot; &quot;O&quot; &quot;P&quot; &quot;Q&quot; &quot;R&quot;
+   &quot;S&quot; &quot;T&quot; &quot;U&quot; &quot;V&quot; &quot;W&quot; &quot;X&quot; &quot;Y&quot; &quot;Z&quot; &quot;a&quot; &quot;b&quot; &quot;c&quot; &quot;d&quot; &quot;e&quot; &quot;f&quot; &quot;g&quot; &quot;h&quot; &quot;i&quot; &quot;j&quot; &quot;k&quot;
+   &quot;l&quot; &quot;m&quot; &quot;n&quot; &quot;o&quot; &quot;p&quot; &quot;q&quot; &quot;r&quot; &quot;s&quot; &quot;t&quot; &quot;u&quot; &quot;v&quot; &quot;w&quot; &quot;x&quot; &quot;y&quot; &quot;z&quot; ))
+ (rule decimal_digit (alt &quot;0&quot; &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; &quot;5&quot; &quot;6&quot; &quot;7&quot; &quot;8&quot; &quot;9&quot;))
+ (rule integer (seq decimal_digit (star decimal_digit)))
+ (rule meta_identifier (seq letter (star meta_identifier_character)))
+ (rule meta_identifier_character (alt letter decimal_digit &quot;_&quot;))
+ (rule terminal_string
+  (alt
+   (seq (seq &quot;&#39;&quot; first_terminal_character (star first_terminal_character) &quot;&#39;&quot;))
+   (seq (seq &quot;\&quot;&quot; second_terminal_character (star second_terminal_character) &quot;\&quot;&quot;))) )
+ (rule first_terminal_character (seq terminal_character))
+ (rule second_terminal_character (seq terminal_character))
+ (rule special_sequence (seq &quot;?&quot; (star special_sequence_character) &quot;?&quot;))
+ (rule special_sequence_character (seq terminal_character))
+ (rule terminal_character
+  (alt letter decimal_digit concatenate_symbol defining_symbol
+   definition_separator_symbol end_comment_symbol end_group_symbol
+   end_option_symbol end_repeat_symbol except_symbol first_quote_symbol
+   repetition_symbol second_quote_symbol special_sequence_symbol
+   start_comment_symbol start_group_symbol start_option_symbol
+   start_repeat_symbol terminator_symbol other_character ))
+ (rule other_character
+  (alt &quot; &quot; &quot;:&quot; &quot;+&quot; &quot;_&quot; &quot;%&quot; &quot;@&quot; &quot;&amp;&quot; &quot;#&quot; &quot;$&quot; &quot;&lt;&quot; &quot;&gt;&quot; &quot;\\&quot; &quot;^&quot; &quot;`&quot; &quot;~&quot;))
+ (rule empty (seq &quot;&quot;))
+ (rule defining_symbol (alt &quot;=&quot; &quot;:&quot;))
+ (rule definition_separator_symbol (alt &quot;|&quot; &quot;/&quot; &quot;!&quot;))
+ (rule terminator_symbol (alt &quot;;&quot; &quot;.&quot;))
+ (rule start_option_symbol (alt &quot;[&quot; &quot;(/&quot;))
+ (rule end_option_symbol (alt &quot;]&quot; &quot;/)&quot;))
+ (rule start_repeat_symbol (alt &quot;{&quot; &quot;(:&quot;))
+ (rule end_repeat_symbol (alt &quot;}&quot; &quot;:)&quot;)))
+</code></pre>
+
+<p>This can then be used as input to <a href="https://www.w3.org/TR/REC-xml/#sec-notation">EBNF.parse} to transform to <a href="https://en.wikipedia.org/wiki/Parsing_expression_grammar">PEG</a> for parsing examples of the grammar using {EBNF::PEG::Parser.</p>
+
+<pre class="code ruby"><code class="ruby">ebnf --input-format sxp --peg ebnf.sxp -o ebnf.peg.sxp
+</code></pre>
+
+<p>Note, however, that <a href="https://www.iso.org/standard/26153.html">ISO EBNF</a> doesn’t distinguish between terminal rules and non-terminal rules, so all rules are parsed as non-terminal rules with strings the only terminals. Whereas, the W3C <a href="https://www.w3.org/TR/REC-xml/#sec-notation">EBNF</a> <a href="file.iso-ebnf.html" title="definition of the grammar">definition of the grammar</a> does use terminal rules.</p>
+
+<p>When parsing files with this grammar, rules that are all capitalized <em>will</em> be treated as terminal productions, although this is an proprietary interpretation of the specification.</p>
+
+<h2 id="label-Example+Walkthrough">Example Walkthrough</h2>
+
+<p>This example uses the <a href="https://www.w3.org/TR/REC-xml/#sec-notation">EBNF</a> grammar from <a href="file.iso-ebnf.html" title="iso-ebnf">iso-ebnf</a> to generate <a href="file.meta.html" title="meta">meta</a>, which includes the resulting <code>RULES</code> table, used by <a href="file.parser.html" title="parser">parser</a> to implement a parser for the grammar.</p>
+
+<p>The first step is defining regular expressions for terminals used within the grammar. Note that the parser can operate without terminal definitions, but this can greatly improve parser performance.</p>
+
+<p>The <a href="file.parser.html" title="parser">parser</a> is implemented using the <span class='object_link'><a href="ISOEBNFPegParser.html" title="ISOEBNFPegParser (class)">ISOEBNFPegParser</a></span> class, which includes <span class='object_link'><a href="EBNF/PEG/Parser.html" title="EBNF::PEG::Parser (module)">EBNF::PEG::Parser</a></span>.</p>
+
+<h3 id="label-Parser+basics">Parser basics</h3>
+
+<p>The parser operates directly using the rules from the abstract syntax tree generated by turning the original <a href="https://www.iso.org/standard/26153.html">ISO EBNF</a> grammar using <a href="#Terminal_definitions">EBNF::PEG#make_peg}. Tokens are derived from terminal rules defined in the grammar or contained inline through non-terminal rule definitions. Tokens are either strings, which must be matched exactly, or symbols, which identify a regular expression used to match the terminal and yield a token. The association between terminal symbols and their regular expressions along with processing rules to invoke when they are identified are described in definitions</a>.</p>
+
+<p>The parser starts with the specified rule, <code>syntax</code> in this case, and executes that rule, which is expected to completely parse the input file potentially leaving some whitespace.</p>
+
+<p>Non-terminal rules have an expression using one of the following:</p>
+
+<p><code>seq</code> : A sequence of rules or terminals. If any (other than <code>opt</code> or <code>star</code>) to not parse, the rule is terminated as unmatched. <code>opt</code> : An optional rule or terminal. It either results in the matching rule or returns <code>nil</code>. <code>alt</code> : A list of alternative rules, which are attempted in order. It terminates with the first matching rule, or is terminated as unmatched, if no such rule is found. <code>plus</code> : A sequence of one or more of the matching rule. If there is no such rule, it is terminated as unmatched; otherwise, the result is an array containing all matched input. <code>rept m n</code> : A sequence of at lest <code>m</code> and at most <code>n</code> of the matching rule. It will always return an array. <code>star</code> : A sequence of zero or more of the matching rule. It will always return an array.</p>
+
+<p>The starting rule will typically be of the form <code>(star sub_rule)</code> which will attempt to parse that sub rule until the end of input.</p>
+
+<p>If a rule matches, it enters a <em>production</em>, which may invoke a <em>start production before matching is attempted, and will call any </em>production_ either if matched, or unmatched. That <em>production</em> may choose to evaluate the returned abstract syntax tree to simplify the result, or create some semantic representation of that value.</p>
+
+<p>Due to the nature of <a href="https://en.wikipedia.org/wiki/Parsing_expression_grammar">PEG</a> parsers, the same rule may be attempted at the same input location many times; this is optimized by use of a <a href="https://pdos.csail.mit.edu/~baford/packrat/thesis/">Packrat</a> memoizing cache, which remembers the result of a previous successful evaluation and short-circuits further execution.</p>
+
+<p>Processing continues by continuing to look for productions sequence and pushing those productions onto the stack. When a production is complete, any associated <em>production handler</em> is invoked, after popping off the top of the <code>prod_data</code> stack. The just removed hash is passed as <code>current</code> to the <em>production handler</em>. This is typically where the work of the parser happens. See <a href="#Production_definitions">Production definitions</a> for more information.</p>
+
+<h3 id="label-Terminal+definitions">Terminal definitions</h3>
+
+<p>The {file:parser uses a DSL to specify <code>terminals</code> and <code>productions</code> associated with rules in the grammar. Each <code>terminal</code> specifies the rule name, associated regular expression, and a block which is invoked when the parser recognizes the terminal:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_terminal'>terminal</span><span class='lparen'>(</span><span class='symbol'>:integer</span><span class='comma'>,</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>\d+</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_prod'>prod</span><span class='op'>|</span>
+  <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_to_i'>to_i</span>
+<span class='kw'>end</span>
+</code></pre>
+
+<p>In this terminal definition, the <code>integer</code> terminal is recognized using the <code>/\d+/</code>. When found, the value of the integer is returned for use by productions which include it.</p>
+
+<h3 id="label-Production+definitions">Production definitions</h3>
+
+<p>Looking at the grammar itself, we can see that the first declaration is</p>
+
+<pre class="code ruby"><code class="ruby">[1]  syntax            ::= syntax_rule*
+</code></pre>
+</div></div>
+
+      <div id="footer">
+  Generated on Fri Jan 28 00:02:13 2022 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.27 (ruby-3.1.0).
+</div>
+
+    </div>
+  </body>
+</html>

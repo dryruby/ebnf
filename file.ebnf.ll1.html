@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  File: ebnf.ll1
+  
+    &mdash; EBNF parser and parser generator
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "ebnf.ll1";
+  relpath = '';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="file_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="_index.html">Index</a> &raquo; 
+    <span class="title">File: ebnf.ll1</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><div id='filecontents'>
+<pre class="code ruby"><code class="ruby">(
+ (rule _empty &quot;0&quot; (first _eps) (seq))
+ (rule ebnf &quot;1&quot;
+  (start #t)
+  (first &quot;@pass&quot; &quot;@terminals&quot; LHS _eps)
+  (follow _eof)
+  (cleanup star)
+  (alt _empty _ebnf_2))
+ (rule _ebnf_2 &quot;1.2&quot;
+  (first &quot;@pass&quot; &quot;@terminals&quot; LHS)
+  (follow _eof)
+  (cleanup merge)
+  (seq _ebnf_1 ebnf))
+ (rule _ebnf_1 &quot;1.1&quot;
+  (first &quot;@pass&quot; &quot;@terminals&quot; LHS)
+  (follow &quot;@pass&quot; &quot;@terminals&quot; LHS _eof)
+  (alt declaration rule))
+ (rule declaration &quot;2&quot;
+  (first &quot;@pass&quot; &quot;@terminals&quot;)
+  (follow &quot;@pass&quot; &quot;@terminals&quot; LHS _eof)
+  (alt &quot;@terminals&quot; pass))
+ (rule rule &quot;3&quot; (first LHS) (follow &quot;@pass&quot; &quot;@terminals&quot; LHS _eof) (seq LHS expression))
+ (rule expression &quot;4&quot;
+  (first &quot;(&quot; HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
+  (follow &quot;)&quot; &quot;@pass&quot; &quot;@terminals&quot; LHS _eof)
+  (seq alt))
+ (rule alt &quot;5&quot;
+  (first &quot;(&quot; HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
+  (follow &quot;)&quot; &quot;@pass&quot; &quot;@terminals&quot; LHS _eof)
+  (seq seq _alt_1))
+ (rule _alt_1 &quot;5.1&quot;
+  (first _eps &quot;|&quot;)
+  (follow &quot;)&quot; &quot;@pass&quot; &quot;@terminals&quot; LHS _eof)
+  (cleanup star)
+  (alt _empty _alt_3))
+ (rule _alt_3 &quot;5.3&quot;
+  (first &quot;|&quot;)
+  (follow &quot;)&quot; &quot;@pass&quot; &quot;@terminals&quot; LHS _eof)
+  (cleanup merge)
+  (seq _alt_2 _alt_1))
+ (rule _alt_2 &quot;5.2&quot;
+  (first &quot;|&quot;)
+  (follow &quot;)&quot; &quot;@pass&quot; &quot;@terminals&quot; LHS _eof &quot;|&quot;)
+  (seq &quot;|&quot; seq))
+ (rule seq &quot;6&quot;
+  (first &quot;(&quot; HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
+  (follow &quot;)&quot; &quot;@pass&quot; &quot;@terminals&quot; LHS _eof &quot;|&quot;)
+  (cleanup plus)
+  (seq diff _seq_1))
+ (rule _seq_1 &quot;6.1&quot;
+  (first &quot;(&quot; HEX O_RANGE RANGE STRING1 STRING2 SYMBOL _eps)
+  (follow &quot;)&quot; &quot;@pass&quot; &quot;@terminals&quot; LHS _eof &quot;|&quot;)
+  (cleanup star)
+  (alt _empty _seq_2))
+ (rule _seq_2 &quot;6.2&quot;
+  (first &quot;(&quot; HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
+  (follow &quot;)&quot; &quot;@pass&quot; &quot;@terminals&quot; LHS _eof &quot;|&quot;)
+  (cleanup merge)
+  (seq diff _seq_1))
+ (rule diff &quot;7&quot;
+  (first &quot;(&quot; HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
+  (follow &quot;(&quot; &quot;)&quot; &quot;@pass&quot; &quot;@terminals&quot; HEX LHS O_RANGE RANGE STRING1 STRING2
+   SYMBOL _eof &quot;|&quot; )
+  (seq postfix _diff_1))
+ (rule _diff_1 &quot;7.1&quot;
+  (first &quot;-&quot; _eps)
+  (follow &quot;(&quot; &quot;)&quot; &quot;@pass&quot; &quot;@terminals&quot; HEX LHS O_RANGE RANGE STRING1 STRING2
+   SYMBOL _eof &quot;|&quot; )
+  (cleanup opt)
+  (alt _empty _diff_2))
+ (rule _diff_2 &quot;7.2&quot;
+  (first &quot;-&quot;)
+  (follow &quot;(&quot; &quot;)&quot; &quot;@pass&quot; &quot;@terminals&quot; HEX LHS O_RANGE RANGE STRING1 STRING2
+   SYMBOL _eof &quot;|&quot; )
+  (seq &quot;-&quot; postfix))
+ (rule postfix &quot;8&quot;
+  (first &quot;(&quot; HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
+  (follow &quot;(&quot; &quot;)&quot; &quot;-&quot; &quot;@pass&quot; &quot;@terminals&quot; HEX LHS O_RANGE RANGE STRING1
+   STRING2 SYMBOL _eof &quot;|&quot; )
+  (seq primary _postfix_1))
+ (rule _postfix_1 &quot;8.1&quot;
+  (first POSTFIX _eps)
+  (follow &quot;(&quot; &quot;)&quot; &quot;-&quot; &quot;@pass&quot; &quot;@terminals&quot; HEX LHS O_RANGE RANGE STRING1
+   STRING2 SYMBOL _eof &quot;|&quot; )
+  (cleanup opt)
+  (alt _empty POSTFIX))
+ (rule primary &quot;9&quot;
+  (first &quot;(&quot; HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
+  (follow &quot;(&quot; &quot;)&quot; &quot;-&quot; &quot;@pass&quot; &quot;@terminals&quot; HEX LHS O_RANGE POSTFIX RANGE
+   STRING1 STRING2 SYMBOL _eof &quot;|&quot; )
+  (alt HEX SYMBOL O_RANGE RANGE STRING1 STRING2 _primary_1))
+ (rule _primary_1 &quot;9.1&quot;
+  (first &quot;(&quot;)
+  (follow &quot;(&quot; &quot;)&quot; &quot;-&quot; &quot;@pass&quot; &quot;@terminals&quot; HEX LHS O_RANGE POSTFIX RANGE
+   STRING1 STRING2 SYMBOL _eof &quot;|&quot; )
+  (seq &quot;(&quot; expression &quot;)&quot;))
+ (rule pass &quot;10&quot;
+  (first &quot;@pass&quot;)
+  (follow &quot;@pass&quot; &quot;@terminals&quot; LHS _eof)
+  (seq &quot;@pass&quot; expression))
+ (terminals _terminals (seq))
+ (terminal LHS &quot;11&quot; (seq (opt (seq &quot;[&quot; SYMBOL &quot;]&quot; (plus &quot; &quot;))) SYMBOL (star &quot; &quot;) &quot;::=&quot;))
+ (terminal SYMBOL &quot;12&quot; (plus (alt (range &quot;a-z&quot;) (range &quot;A-Z&quot;) (range &quot;0-9&quot;) &quot;_&quot; &quot;.&quot;)))
+ (terminal HEX &quot;13&quot; (seq &quot;#x&quot; (plus (alt (range &quot;a-f&quot;) (range &quot;A-F&quot;) (range &quot;0-9&quot;)))))
+ (terminal RANGE &quot;14&quot;
+  (seq &quot;[&quot;
+   (plus (alt (seq R_CHAR &quot;-&quot; R_CHAR) (seq HEX &quot;-&quot; HEX) R_CHAR HEX))
+   (opt &quot;-&quot;)
+   (diff &quot;]&quot; LHS)) )
+ (terminal O_RANGE &quot;15&quot;
+  (seq &quot;[^&quot; (plus (alt (seq R_CHAR &quot;-&quot; R_CHAR) (seq HEX &quot;-&quot; HEX) R_CHAR HEX)) (opt &quot;-&quot;) &quot;]&quot;))
+ (terminal STRING1 &quot;16&quot; (seq &quot;\&quot;&quot; (star (diff CHAR &quot;\&quot;&quot;)) &quot;\&quot;&quot;))
+ (terminal STRING2 &quot;17&quot; (seq &quot;&#39;&quot; (star (diff CHAR &quot;&#39;&quot;)) &quot;&#39;&quot;))
+ (terminal CHAR &quot;18&quot;
+  (alt
+   (range &quot;#x9#xA#xD&quot;)
+   (range &quot;#x20-#xD7FF&quot;)
+   (range &quot;#xE000-#xFFFD&quot;)
+   (range &quot;#x10000-#x10FFFF&quot;)) )
+ (terminal R_CHAR &quot;19&quot; (diff CHAR (alt &quot;]&quot; &quot;-&quot; HEX)))
+ (terminal POSTFIX &quot;20&quot; (range &quot;?*+&quot;))
+ (terminal PASS &quot;21&quot;
+  (alt
+   (range &quot;#x9#xA#xD#x20&quot;)
+   (seq (alt (diff &quot;#&quot; &quot;#x&quot;) &quot;//&quot;) (star (range &quot;^#xA#xD&quot;)))
+   (seq &quot;/*&quot; (star (alt (opt (seq &quot;*&quot; (range &quot;^/&quot;))) (range &quot;^*&quot;))) &quot;*/&quot;)
+   (seq &quot;(*&quot; (star (alt (opt (seq &quot;*&quot; (range &quot;^)&quot;))) (range &quot;^*&quot;))) &quot;*)&quot;)) )
+ (pass _pass (seq PASS))
+ (rule _ebnf_3 &quot;1.3&quot; (first &quot;@pass&quot; &quot;@terminals&quot; LHS _eps) (follow _eof) (seq ebnf))
+ (rule _rule_1 &quot;3.1&quot;
+  (first &quot;(&quot; HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
+  (follow &quot;@pass&quot; &quot;@terminals&quot; LHS _eof)
+  (seq expression))
+ (rule _alt_4 &quot;5.4&quot;
+  (first _eps &quot;|&quot;)
+  (follow &quot;)&quot; &quot;@pass&quot; &quot;@terminals&quot; LHS _eof)
+  (seq _alt_1))
+ (rule _alt_5 &quot;5.5&quot;
+  (first _eps &quot;|&quot;)
+  (follow &quot;)&quot; &quot;@pass&quot; &quot;@terminals&quot; LHS _eof)
+  (seq _alt_1))
+ (rule _alt_6 &quot;5.6&quot;
+  (first &quot;(&quot; HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
+  (follow &quot;)&quot; &quot;@pass&quot; &quot;@terminals&quot; LHS _eof &quot;|&quot;)
+  (seq seq))
+ (rule _seq_3 &quot;6.3&quot;
+  (first &quot;(&quot; HEX O_RANGE RANGE STRING1 STRING2 SYMBOL _eps)
+  (follow &quot;)&quot; &quot;@pass&quot; &quot;@terminals&quot; LHS _eof &quot;|&quot;)
+  (seq _seq_1))
+ (rule _seq_4 &quot;6.4&quot;
+  (first &quot;(&quot; HEX O_RANGE RANGE STRING1 STRING2 SYMBOL _eps)
+  (follow &quot;)&quot; &quot;@pass&quot; &quot;@terminals&quot; LHS _eof &quot;|&quot;)
+  (seq _seq_1))
+ (rule _diff_3 &quot;7.3&quot;
+  (first &quot;-&quot; _eps)
+  (follow &quot;(&quot; &quot;)&quot; &quot;@pass&quot; &quot;@terminals&quot; HEX LHS O_RANGE RANGE STRING1 STRING2
+   SYMBOL _eof &quot;|&quot; )
+  (seq _diff_1))
+ (rule _diff_4 &quot;7.4&quot;
+  (first &quot;(&quot; HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
+  (follow &quot;(&quot; &quot;)&quot; &quot;@pass&quot; &quot;@terminals&quot; HEX LHS O_RANGE RANGE STRING1 STRING2
+   SYMBOL _eof &quot;|&quot; )
+  (seq postfix))
+ (rule _postfix_2 &quot;8.2&quot;
+  (first POSTFIX _eps)
+  (follow &quot;(&quot; &quot;)&quot; &quot;-&quot; &quot;@pass&quot; &quot;@terminals&quot; HEX LHS O_RANGE RANGE STRING1
+   STRING2 SYMBOL _eof &quot;|&quot; )
+  (seq _postfix_1))
+ (rule _primary_2 &quot;9.2&quot;
+  (first &quot;(&quot; HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
+  (follow &quot;(&quot; &quot;)&quot; &quot;-&quot; &quot;@pass&quot; &quot;@terminals&quot; HEX LHS O_RANGE POSTFIX RANGE
+   STRING1 STRING2 SYMBOL _eof &quot;|&quot; )
+  (seq expression &quot;)&quot;))
+ (rule _pass_1 &quot;10.1&quot;
+  (first &quot;(&quot; HEX O_RANGE RANGE STRING1 STRING2 SYMBOL)
+  (follow &quot;@pass&quot; &quot;@terminals&quot; LHS _eof)
+  (seq expression))
+ (rule _primary_3 &quot;9.3&quot;
+  (first &quot;)&quot;)
+  (follow &quot;(&quot; &quot;)&quot; &quot;-&quot; &quot;@pass&quot; &quot;@terminals&quot; HEX LHS O_RANGE POSTFIX RANGE
+   STRING1 STRING2 SYMBOL _eof &quot;|&quot; )
+  (seq &quot;)&quot;)) )
+</code></pre>
+</div></div>
+
+      <div id="footer">
+  Generated on Fri Jan 28 00:02:12 2022 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.27 (ruby-3.1.0).
+</div>
+
+    </div>
+  </body>
+</html>
