@@ -77,13 +77,13 @@ Generate formatted grammar using HTML (requires [Haml][Haml] gem):
 
 The EBNF gem can also parse [ISO/EIC 14977] Grammars (ISOEBNF) to [S-Expressions][S-Expression].
 
-    grammar = EBNF.parse(File.open('./etc/iso-ebnf.isoebnf', format: :isoebnf))
+    grammar = EBNF.parse(File.open('./etc/iso-ebnf.isoebnf'), format: :isoebnf)
 
 ### Parsing an ABNF Grammar
 
 The EBNF gem can also parse [ABNF] Grammars to [S-Expressions][S-Expression].
 
-    grammar = EBNF.parse(File.open('./etc/abnf.abnf', format: :abnf))
+    grammar = EBNF.parse(File.open('./etc/abnf.abnf'), format: :abnf)
 
 ### Parser Debugging
 
