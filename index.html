@@ -68,11 +68,11 @@
 
 <p>This is a <a href="https://ruby-lang.org/">Ruby</a> implementation of an <a href="https://www.w3.org/TR/REC-xml/#sec-notation">EBNF</a> and <a href="https://en.wikipedia.org/wiki/Backus–Naur_form">BNF</a> parser and parser generator.</p>
 
-<h3 id="label-PEG-2FPackrat+Parser"><a href="https://pdos.csail.mit.edu/~baford/packrat/thesis/">PEG}[https://en.wikipedia.org/wiki/Parsing_expression_grammar]/Parser</h3>
+<h3 id="label-PEG+-2F+Packrat+Parser"><a href="https://en.wikipedia.org/wiki/Parsing_expression_grammar">PEG</a> / <a href="https://pdos.csail.mit.edu/~baford/packrat/thesis/">Packrat</a> Parser</h3>
 
-<p>In the primary mode, it supports a Parsing Expression Grammar (<a href="https://en.wikipedia.org/wiki/Parsing_expression_grammar">PEG</a>) parser generator. This performs more minmal transformations on the parsed grammar to extract sub-productions, which allows each component of a rule to generate its own parsing event.</p>
+<p>In the primary mode, it supports a Parsing Expression Grammar (<a href="https://en.wikipedia.org/wiki/Parsing_expression_grammar">PEG</a>) parser generator. This performs more minimal transformations on the parsed grammar to extract sub-productions, which allows each component of a rule to generate its own parsing event.</p>
 
-<p>The resulting <a href="https://pdos.csail.mit.edu/~baford/packrat/thesis/">EBNF::PEG::Rule objects then parse each associated rule according to the operator semantics and use a memoizer to reduce extra work when backtracking.</p>
+<p>The resulting <a href="https://pdos.csail.mit.edu/~baford/packrat/thesis/">EBNF::PEG::Rule} objects then parse each associated rule according to the operator semantics and use a memoizer to reduce extra work when backtracking.</p>
 
 <p>These rules are driven using the {EBNF::PEG::Parser module which calls invokes the starting rule and ensures that all input is consumed.</p>
 
@@ -145,14 +145,14 @@
 
 <p>The EBNF gem can also parse [ISO/EIC 14977] Grammars (ISOEBNF) to [<a href="S-Expression">S-Expressions]</a>.</p>
 
-<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_grammar'>grammar</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="EBNF.html" title="EBNF (module)">EBNF</a></span></span><span class='period'>.</span><span class='id identifier rubyid_parse'><span class='object_link'><a href="EBNF.html#parse-class_method" title="EBNF.parse (method)">parse</a></span></span><span class='lparen'>(</span><span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_open'>open</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>./etc/iso-ebnf.isoebnf</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='label'>format:</span> <span class='symbol'>:isoebnf</span><span class='rparen'>)</span><span class='rparen'>)</span>
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_grammar'>grammar</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="EBNF.html" title="EBNF (module)">EBNF</a></span></span><span class='period'>.</span><span class='id identifier rubyid_parse'><span class='object_link'><a href="EBNF.html#parse-class_method" title="EBNF.parse (method)">parse</a></span></span><span class='lparen'>(</span><span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_open'>open</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>./etc/iso-ebnf.isoebnf</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='comma'>,</span> <span class='label'>format:</span> <span class='symbol'>:isoebnf</span><span class='rparen'>)</span>
 </code></pre>
 
 <h3 id="label-Parsing+an+ABNF+Grammar">Parsing an ABNF Grammar</h3>
 
 <p>The EBNF gem can also parse <a href="https://www.rfc-editor.org/rfc/rfc5234">ABNF</a> Grammars to [<a href="S-Expression">S-Expressions]</a>.</p>
 
-<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_grammar'>grammar</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="EBNF.html" title="EBNF (module)">EBNF</a></span></span><span class='period'>.</span><span class='id identifier rubyid_parse'><span class='object_link'><a href="EBNF.html#parse-class_method" title="EBNF.parse (method)">parse</a></span></span><span class='lparen'>(</span><span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_open'>open</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>./etc/abnf.abnf</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='label'>format:</span> <span class='symbol'>:abnf</span><span class='rparen'>)</span><span class='rparen'>)</span>
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_grammar'>grammar</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="EBNF.html" title="EBNF (module)">EBNF</a></span></span><span class='period'>.</span><span class='id identifier rubyid_parse'><span class='object_link'><a href="EBNF.html#parse-class_method" title="EBNF.parse (method)">parse</a></span></span><span class='lparen'>(</span><span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_open'>open</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>./etc/abnf.abnf</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='comma'>,</span> <span class='label'>format:</span> <span class='symbol'>:abnf</span><span class='rparen'>)</span>
 </code></pre>
 
 <h3 id="label-Parser+Debugging">Parser Debugging</h3>
@@ -353,9 +353,9 @@
 </div></div>
 
       <div id="footer">
-  Generated on Fri Jan 28 00:02:10 2022 by
+  Generated on Sat Feb 19 20:33:28 2022 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.27 (ruby-3.1.0).
+  0.9.27 (ruby-3.1.1).
 </div>
 
     </div>
