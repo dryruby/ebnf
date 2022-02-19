@@ -11,7 +11,7 @@
 This is a [Ruby][] implementation of an [EBNF][] and [BNF][] parser and parser generator.
 
 ### [PEG][]/[Packrat][] Parser
-In the primary mode, it supports a Parsing Expression Grammar ([PEG][]) parser generator. This performs more minmal transformations on the parsed grammar to extract sub-productions, which allows each component of a rule to generate its own parsing event.
+In the primary mode, it supports a Parsing Expression Grammar ([PEG][]) parser generator. This performs more minimal transformations on the parsed grammar to extract sub-productions, which allows each component of a rule to generate its own parsing event.
 
 The resulting {EBNF::PEG::Rule} objects then parse each associated rule according to the operator semantics and use a [Packrat][] memoizer to reduce extra work when backtracking.
 
