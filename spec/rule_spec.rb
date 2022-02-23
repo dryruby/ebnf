@@ -481,9 +481,13 @@ describe EBNF::Rule do
   describe "#to_regexp" do
     {
       hex: [:hex, "#x20", / /],
+      hex: [:hex, "#x5c", /\\/],
       range: [:range, "a-b", /[a-b]/],
       range2: [:range, "a-zA-Z", /[a-zA-Z]/],
       range3: [:range, "abc-", /[abc-]/],
+      range4: [:range, "#x23-#x5b", /[#-\[]/],
+      range5: [:range, "#x5d-#x5e", /[\]-^]/],
+      range6: [:range, "#x5c-#x5e", /[\\-^]/],
     }.each do |title, (op, exp, regexp)|
       it title do
         expect(EBNF::Rule.new(title, nil, [op, exp]).to_regexp).to eql regexp
