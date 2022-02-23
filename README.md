@@ -10,8 +10,8 @@
 ## Description
 This is a [Ruby][] implementation of an [EBNF][] and [BNF][] parser and parser generator.
 
-### [PEG][]/[Packrat][] Parser
-In the primary mode, it supports a Parsing Expression Grammar ([PEG][]) parser generator. This performs more minmal transformations on the parsed grammar to extract sub-productions, which allows each component of a rule to generate its own parsing event.
+### [PEG][] / [Packrat][] Parser
+In the primary mode, it supports a Parsing Expression Grammar ([PEG][]) parser generator. This performs more minimal transformations on the parsed grammar to extract sub-productions, which allows each component of a rule to generate its own parsing event.
 
 The resulting {EBNF::PEG::Rule} objects then parse each associated rule according to the operator semantics and use a [Packrat][] memoizer to reduce extra work when backtracking.
 
@@ -77,13 +77,13 @@ Generate formatted grammar using HTML (requires [Haml][Haml] gem):
 
 The EBNF gem can also parse [ISO/EIC 14977] Grammars (ISOEBNF) to [S-Expressions][S-Expression].
 
-    grammar = EBNF.parse(File.open('./etc/iso-ebnf.isoebnf', format: :isoebnf))
+    grammar = EBNF.parse(File.open('./etc/iso-ebnf.isoebnf'), format: :isoebnf)
 
 ### Parsing an ABNF Grammar
 
 The EBNF gem can also parse [ABNF] Grammars to [S-Expressions][S-Expression].
 
-    grammar = EBNF.parse(File.open('./etc/abnf.abnf', format: :abnf))
+    grammar = EBNF.parse(File.open('./etc/abnf.abnf'), format: :abnf)
 
 ### Parser Debugging
 
@@ -278,7 +278,7 @@ A copy of the [Turtle EBNF][] and derived parser files are included in the repos
 [ABNF]:         https://www.rfc-editor.org/rfc/rfc5234
 [BNF]:          https://en.wikipedia.org/wiki/Backus–Naur_form
 [EBNF]:         https://www.w3.org/TR/REC-xml/#sec-notation
-[EBNF doc]:     https://rubydoc.info/github/dryruby/ebnf
+[EBNF doc]:     https://dryruby.github.io/ebnf
 [First/Follow]: https://en.wikipedia.org/wiki/LL_parser#Constructing_an_LL.281.29_parsing_table
 [ISO/IEC 14977]:https://www.iso.org/standard/26153.html
 [LL(1)]:        https://www.csd.uwo.ca/~moreno//CS447/Lectures/Syntax.html/node14.html

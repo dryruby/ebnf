@@ -367,11 +367,11 @@ module EBNF
     def to_regexp
       case expr.first
       when :hex
-        Regexp.new(translate_codepoints(expr[1]))
+        Regexp.new(Regexp.escape(translate_codepoints(expr[1])))
       when :istr
         /#{expr.last}/ui
       when :range
-        Regexp.new("[#{translate_codepoints(expr[1])}]")
+        Regexp.new("[#{escape_regexp_character_range(translate_codepoints(expr[1]))}]")
       else
         raise "Can't turn #{expr.inspect} into a regexp"
       end
@@ -769,6 +769,12 @@ module EBNF
       @id_seq ||= 0
       @id_seq += 1
       ["_#{@sym}_#{@id_seq}#{variation}".to_sym, ("#{@id}.#{@id_seq}#{variation}" if @id)]
+    end
+
+    # Escape "[", "]", and "\" in ranges so they don't result in a warning or error
+    # about empty character classes.
+    def escape_regexp_character_range(character_range)
+      character_range.gsub(/([\[\]\\])/) {|char| "\\#{char}"}
     end
   end
 end
