@@ -99,7 +99,9 @@ The formatted HTML results are designed to be appropriate for including in speci
 On a parsing failure, and exception is raised with information that may be useful in determining the source of the error.
 
 ## EBNF Grammar
-The [EBNF][] variant used here is based on [W3C](https://w3.org/) [EBNF][] (see {file:etc/ebnf.ebnf EBNF grammar}) as defined in the
+The [EBNF][] variant used here is based on [W3C](https://w3.org/) [EBNF][]
+(see [EBNF grammar](https://dryruby.github.io/ebnf/etc/ebnf.ebnf))
+as defined in the
 [XML 1.0 recommendation](https://www.w3.org/TR/REC-xml/), with minor extensions:
 
 Note that the grammar includes an optional `[identifer]` in front of rule names, which can be in conflict with the `RANGE` terminal. It is typically not a problem, but if it comes up, try parsing with the `native` parser,  add comments or sequences to disambiguate. EBNF does not have beginning of line checks as all whitespace is treated the same, so the common practice of identifying each rule inherently leads to such ambiguity.
@@ -161,7 +163,12 @@ Within the expression on the right-hand side of a rule, the following expression
 * `@pass` defines the expression used to detect whitespace, which is removed in processing.
 * No support for `wfc` (well-formedness constraint) or `vc` (validity constraint).
 
-Parsing this grammar yields an [S-Expression][] version: {file:etc/ebnf.sxp} (or [LL(1)][] version {file:etc/ebnf.ll1.sxp} or [PEG][] version {file:etc/ebnf.peg.sxp}).
+Parsing this grammar yields an [S-Expression][S-Expression] version:
+[here](https://dryruby.github.io/ebnf/etc/ebnf.sxp)
+(or [LL(1)][] version
+[here](https://dryruby.github.io/ebnf/etc/ebnf.ll1.sxp)
+or [PEG][] version
+[here](https://dryruby.github.io/ebnf/etc/ebnf.peg.sxp)).
 
 ### Parser S-Expressions
 Intermediate representations of the grammar may be serialized to Lisp-like [S-Expressions][S-Expression]. For example, the rule
@@ -225,7 +232,7 @@ For a [PEG][] parser for a simple grammar implementing a calculator see [Calc ex
 For an example parser built using this gem that parses the [EBNF][] grammar, see [EBNF PEG Parser example](https://dryruby.github.io/ebnf/examples/ebnf-peg-parser/doc/parser.html). This example creates a parser for the [EBNF][] grammar which generates the same Abstract Syntax Tree as the built-in parser in the gem.
 
 There is also an
-[EBNF LL(1) Parser example](https://dryruby.github.io/ebnf/examples/ebnf-peg-parser/doc/parser.html).
+[EBNF LL(1) Parser example](https://dryruby.github.io/ebnf/examples/ebnf-ll1-parser/doc/parser.html).
 
 The [ISO EBNF Parser](https://dryruby.github.io/ebnf/examples/isoebnf/doc/parser.html) example parses [ISO/IEC 14977][] into [S-Expressions][S-Expression], which can be used to parse compatible grammars using this parser (either [PEG][] or [LL(1)][]).
 
