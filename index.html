@@ -171,7 +171,7 @@
 
 <h2 id="label-EBNF+Grammar">EBNF Grammar</h2>
 
-<p>The <a href="https://www.w3.org/TR/REC-xml/#sec-notation">EBNF</a> variant used here is based on <a href="https://w3.org/">W3C</a> <a href="https://www.w3.org/TR/REC-xml/#sec-notation">EBNF</a> (see <a href="https://www.w3.org/TR/REC-xml/">file:etc/ebnf.ebnf EBNF grammar) as defined in the 1.0 recommendation</a>, with minor extensions:</p>
+<p>The <a href="https://www.w3.org/TR/REC-xml/#sec-notation">EBNF</a> variant used here is based on <a href="https://w3.org/">W3C</a> <a href="https://www.w3.org/TR/REC-xml/#sec-notation">EBNF</a> (see <a href="https://dryruby.github.io/ebnf/etc/ebnf.ebnf">EBNF grammar</a>) as defined in the <a href="https://www.w3.org/TR/REC-xml/">XML 1.0 recommendation</a>, with minor extensions:</p>
 
 <p>Note that the grammar includes an optional <code>[identifer]</code> in front of rule names, which can be in conflict with the <code>RANGE</code> terminal. It is typically not a problem, but if it comes up, try parsing with the <code>native</code> parser, add comments or sequences to disambiguate. EBNF does not have beginning of line checks as all whitespace is treated the same, so the common practice of identifying each rule inherently leads to such ambiguity.</p>
 
@@ -237,7 +237,7 @@
 <p>No support for <code>wfc</code> (well-formedness constraint) or <code>vc</code> (validity constraint).</p>
 </li></ul>
 
-<p>Parsing this grammar yields an [S-Expression][] version: <a href="https://www.csd.uwo.ca/~moreno//CS447/Lectures/Syntax.html/node14.html">file:etc/ebnf.sxp (or version <a href="https://en.wikipedia.org/wiki/Parsing_expression_grammar">file:etc/ebnf.ll1.sxp or version {file:etc/ebnf.peg.sxp).</p>
+<p>Parsing this grammar yields an [<a href="S-Expression">S-Expression]</a> version: <a href="https://dryruby.github.io/ebnf/etc/ebnf.sxp">here</a> (or <a href="https://www.csd.uwo.ca/~moreno//CS447/Lectures/Syntax.html/node14.html">LL(1)</a> version <a href="https://dryruby.github.io/ebnf/etc/ebnf.ll1.sxp">here</a> or <a href="https://en.wikipedia.org/wiki/Parsing_expression_grammar">PEG</a> version <a href="https://dryruby.github.io/ebnf/etc/ebnf.peg.sxp">here</a>).</p>
 
 <h3 id="label-Parser+S-Expressions">Parser S-Expressions</h3>
 
@@ -280,7 +280,7 @@
 </table>
 <p>Additionally, rules defined with an UPPERCASE symbol are treated as terminals.</p>
 
-<p>For an <a href="https://www.csd.uwo.ca/~moreno//CS447/Lectures/Syntax.html/node14.html">LL(1)</a> parser generator, the <span class='object_link'><a href="EBNF/BNF.html#make_bnf-instance_method" title="EBNF::BNF#make_bnf (method)">EBNF::BNF#make_bnf</a></span> method can be used to transform the EBNF rule into a BNF rule.</p>
+<p>For an <a href="https://www.csd.uwo.ca/~moreno//CS447/Lectures/Syntax.html/node14.html">LL(1)</a> parser generator, the {EBNF::BNF.make_bnf method can be used to transform the EBNF rule into a BNF rule.</p>
 
 <pre class="code ruby"><code class="ruby">(rule ebnf &quot;1&quot; (alt _empty _ebnf_2))
 (rule _ebnf_1 &quot;1.1&quot; (alt declaration rule))
@@ -302,7 +302,7 @@
 
 <p>For an example parser built using this gem that parses the <a href="https://www.w3.org/TR/REC-xml/#sec-notation">EBNF</a> grammar, see <a href="https://dryruby.github.io/ebnf/examples/ebnf-peg-parser/doc/parser.html">EBNF PEG Parser example</a>. This example creates a parser for the <a href="https://www.w3.org/TR/REC-xml/#sec-notation">EBNF</a> grammar which generates the same Abstract Syntax Tree as the built-in parser in the gem.</p>
 
-<p>There is also an <a href="https://dryruby.github.io/ebnf/examples/ebnf-peg-parser/doc/parser.html">EBNF LL(1) Parser example</a>.</p>
+<p>There is also an <a href="https://dryruby.github.io/ebnf/examples/ebnf-ll1-parser/doc/parser.html">EBNF LL(1) Parser example</a>.</p>
 
 <p>The <a href="https://dryruby.github.io/ebnf/examples/isoebnf/doc/parser.html">ISO EBNF Parser</a> example parses <a href="https://www.iso.org/standard/26153.html">ISO/IEC 14977</a> into [<a href="S-Expression">S-Expressions]</a>, which can be used to parse compatible grammars using this parser (either <a href="https://en.wikipedia.org/wiki/Parsing_expression_grammar">PEG</a> or <a href="https://www.csd.uwo.ca/~moreno//CS447/Lectures/Syntax.html/node14.html">LL(1)</a>).</p>
 
@@ -353,9 +353,9 @@
 </div></div>
 
       <div id="footer">
-  Generated on Wed Feb 23 22:16:59 2022 by
-  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.27 (ruby-3.1.1).
+  Generated on Sat Jul 23 06:21:21 2022 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.28 (ruby-3.1.2).
 </div>
 
     </div>
