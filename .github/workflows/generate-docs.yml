@@ -21,13 +21,16 @@ jobs:
         run: yardoc
       - name: Copy etc files
         run: mkdir -p ./doc/yard/etc && cp ./etc/doap.* ./etc/ebnf.* ./doc/yard/etc/
-      - name: Copy example files
-        run:
-          - mkdir -p ./doc/yard/examples/calc/doc && cp ./examples/calc/doc/calc.html ./doc/yard/examples/calc/doc
-          - mkdir -p ./doc/yard/examples/ebnf-peg-parser/doc && cp ./examples/ebnf-peg-parser/doc/parser.html ./doc/yard/examples/ebnf-peg-parser/doc
-          - mkdir -p ./doc/yard/examples/ebnf-ll1-parser/doc && cp ./examples/ebnf-ll1-parser/doc/parser.html ./doc/yard/examples/ebnf-ll1-parser/doc
-          - mkdir -p ./doc/yard/examples/isoebnf/doc && cp ./examples/isoebnf/doc/parser.html ./doc/yard/examples/isoebnf/doc
-          - mkdir -p ./doc/yard/examples/abnf/doc && cp ./examples/isoebnf/abnf/parser.html ./doc/yard/examples/abnf/doc
+      - name: Copy calc example
+        run: mkdir -p ./doc/yard/examples/calc/doc && cp ./examples/calc/doc/calc.html ./doc/yard/examples/calc/doc
+      - name: Copy PEG example
+        run: mkdir -p ./doc/yard/examples/ebnf-peg-parser/doc && cp ./examples/ebnf-peg-parser/doc/parser.html ./doc/yard/examples/ebnf-peg-parser/doc
+      - name: Copy LL(1) example
+        run: mkdir -p ./doc/yard/examples/ebnf-ll1-parser/doc && cp ./examples/ebnf-ll1-parser/doc/parser.html ./doc/yard/examples/ebnf-ll1-parser/doc
+      - name: Copy ISOEBNF example
+        run: mkdir -p ./doc/yard/examples/isoebnf/doc && cp ./examples/isoebnf/doc/parser.html ./doc/yard/examples/isoebnf/doc
+      - name: Copy ABNF example
+        run: mkdir -p ./doc/yard/examples/abnf/doc && cp ./examples/isoebnf/abnf/parser.html ./doc/yard/examples/abnf/doc
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
