@@ -30,7 +30,7 @@ jobs:
       - name: Copy ISOEBNF example
         run: mkdir -p ./doc/yard/examples/isoebnf/doc && cp ./examples/isoebnf/doc/parser.html ./doc/yard/examples/isoebnf/doc
       - name: Copy ABNF example
-        run: mkdir -p ./doc/yard/examples/abnf/doc && cp ./examples/isoebnf/abnf/parser.html ./doc/yard/examples/abnf/doc
+        run: mkdir -p ./doc/yard/examples/abnf/doc && cp ./examples/abnf/doc/parser.html ./doc/yard/examples/abnf/doc
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
