@@ -411,10 +411,10 @@ module EBNF
         end
       end
       parts = {
-        alt:    (@options[:html] ? "<code>/</code> " : "/ "),
-        star:   (@options[:html] ? "<code>*</code> " : "*"),
-        plus:   (@options[:html] ? "<code>+</code> " : "1*"),
-        opt:    (@options[:html] ? "<code>?</code> " : "?")
+        alt:    (@options[:html] ? "<code>/</code>" : "/ "),
+        star:   (@options[:html] ? "<code>*</code>" : "*"),
+        plus:   (@options[:html] ? "<code>+</code>" : "1*"),
+        opt:    (@options[:html] ? "<code>?</code>" : "?")
       }
       lbrac = (@options[:html] ? "<code>[</code> " : "[")
       rbrac = (@options[:html] ? "<code>]</code> " : "]")
@@ -464,6 +464,8 @@ module EBNF
           "#{parts[:star]}#{r}"
         elsif min > 0 && max == '*'
           "#{min}#{parts[:star]}#{r}"
+        elsif min == 0
+          "#{parts[:star]}#{max}#{r}"
         else
           "#{min}#{parts[:star]}#{max}#{r}"
         end

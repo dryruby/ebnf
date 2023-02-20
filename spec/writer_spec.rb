@@ -319,7 +319,7 @@ describe EBNF::Writer do
           ],
           "rept 0 1": [
             [:rept, 0, 1, :A],
-            "0*1A"
+            "*1A"
           ],
           "rept 0 *": [
             [:rept, 0, '*', :A],
