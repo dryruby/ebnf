@@ -407,7 +407,7 @@ module EBNF
           seq.unshift(:seq)
           return format_abnf(seq, sep: nil, embedded: false)
         else
-          return (@options[:html] ? %("<code class="grammar-literal">#{'%s' if sensitive}#{@coder.encode expr}</code>") : %(#{'%s' if sensitive}"#{expr}"))
+          return (@options[:html] ? %("<code class="grammar-literal">#{@coder.encode expr}</code>") : %("#{expr}"))
         end
       end
       parts = {
