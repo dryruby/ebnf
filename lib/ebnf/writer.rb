@@ -503,6 +503,7 @@ module EBNF
           # Append any decimal values
           alt << "%d" + deces.join(".") unless deces.empty?
           deces = []
+          hex = hex.upcase
 
           if in_range
             # Add "." sequences for any previous hexes
@@ -552,7 +553,7 @@ module EBNF
       when 0x0100..0xffff then "%04X"
       else                     "%08X"
       end
-      char =  "%x" + (fmt % u.ord)
+      char =  "%x" + (fmt % u.ord).upcase
       if @options[:html]
         if u.ord <= 0x20
           char = %(<abbr title="#{ASCII_ESCAPE_NAMES[u.ord]}">#{@coder.encode char}</abbr>)
