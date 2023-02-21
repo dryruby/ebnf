@@ -38,7 +38,7 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'amazing_print',   '~> 1.4'
   gem.add_development_dependency 'rdf-spec',        '~> 3.2'
   gem.add_development_dependency 'rdf-turtle',      '~> 3.2'
-  gem.add_development_dependency 'nokogiri',        '~> 1.14'
+  gem.add_development_dependency 'nokogiri',        '~> 1.13', '>= 1.13.4'
   gem.add_development_dependency 'erubis',          '~> 2.7'
   gem.add_development_dependency 'rspec',           '~> 3.12'
   gem.add_development_dependency 'rspec-its',       '~> 1.3'
