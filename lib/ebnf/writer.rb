@@ -181,8 +181,9 @@ module EBNF
 
           if validate
             begin
+              require 'nokogiri'
               # Validate the output HTML
-              doc = Nokogiri::HTML5("<!DOCTYPE html>" + html_result, max_errors: 10)
+              doc = ::Nokogiri::HTML5("<!DOCTYPE html>" + html_result, max_errors: 10)
               raise EncodingError, "Errors found in generated HTML:\n  " +
                 doc.errors.map(&:to_s).join("\n  ") unless doc.errors.empty?
             rescue LoadError, NoMethodError
@@ -407,14 +408,14 @@ module EBNF
           seq.unshift(:seq)
           return format_abnf(seq, sep: nil, embedded: false)
         else
-          return (@options[:html] ? %("<code class="grammar-literal">#{'%s' if sensitive}#{@coder.encode expr}</code>") : %(#{'%s' if sensitive}"#{expr}"))
+          return (@options[:html] ? %("<code class="grammar-literal">#{@coder.encode expr}</code>") : %("#{expr}"))
         end
       end
       parts = {
-        alt:    (@options[:html] ? "<code>/</code> " : "/ "),
-        star:   (@options[:html] ? "<code>*</code> " : "*"),
-        plus:   (@options[:html] ? "<code>+</code> " : "1*"),
-        opt:    (@options[:html] ? "<code>?</code> " : "?")
+        alt:    (@options[:html] ? "<code>/</code>" : "/ "),
+        star:   (@options[:html] ? "<code>*</code>" : "*"),
+        plus:   (@options[:html] ? "<code>+</code>" : "1*"),
+        opt:    (@options[:html] ? "<code>?</code>" : "?")
       }
       lbrac = (@options[:html] ? "<code>[</code> " : "[")
       rbrac = (@options[:html] ? "<code>]</code> " : "]")
@@ -464,6 +465,8 @@ module EBNF
           "#{parts[:star]}#{r}"
         elsif min > 0 && max == '*'
           "#{min}#{parts[:star]}#{r}"
+        elsif min == 0
+          "#{parts[:star]}#{max}#{r}"
         else
           "#{min}#{parts[:star]}#{max}#{r}"
         end
@@ -503,6 +506,7 @@ module EBNF
           # Append any decimal values
           alt << "%d" + deces.join(".") unless deces.empty?
           deces = []
+          hex = hex.upcase
 
           if in_range
             # Add "." sequences for any previous hexes
@@ -552,7 +556,7 @@ module EBNF
       when 0x0100..0xffff then "%04X"
       else                     "%08X"
       end
-      char =  "%x" + (fmt % u.ord)
+      char =  "%x" + (fmt % u.ord).upcase
       if @options[:html]
         if u.ord <= 0x20
           char = %(<abbr title="#{ASCII_ESCAPE_NAMES[u.ord]}">#{@coder.encode char}</abbr>)

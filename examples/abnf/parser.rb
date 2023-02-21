@@ -1,4 +1,4 @@
-# # EBNF Parser for EBNF.
+# # EBNF Parser for ABNF.
 #
 # Produces an Abstract Synatx Tree in S-Expression form for the input grammar file
 require 'ebnf'
