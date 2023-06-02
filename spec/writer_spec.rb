@@ -107,6 +107,10 @@ describe EBNF::Writer do
           %{[2]     Prolog    ::=           BaseDecl? PrefixDecl*},
           %{[2] Prolog ::= BaseDecl? PrefixDecl*\n}
         ],
+        backslash: [
+          %{LHS ::= [^'\] | ECHAR},
+          %{LHS ::= [^'\] | ECHAR\n}
+        ]
       }.each do |title, (grammar, plain)|
         context title do
           subject {EBNF::Base.new(grammar, format: :native).ast}
