@@ -246,14 +246,14 @@ module EBNF
           format_ebnf_string(expr, expr.include?('"') ? "'" : '"')
       end
       parts = {
-        alt:    (@options[:html] ? "<code>|</code> " : "| "),
-        diff:   (@options[:html] ? "<code>-</code> " : "- "),
-        star:   (@options[:html] ? "<code>*</code> " : "*"),
-        plus:   (@options[:html] ? "<code>+</code> " : "+"),
-        opt:    (@options[:html] ? "<code>?</code> " : "?")
+        alt:    (@options[:html] ? %(<code class="grammar-alt">|</code> ) : "| "),
+        diff:   (@options[:html] ? %(<code class="grammar-diff">-</code> ) : "- "),
+        star:   (@options[:html] ? %(<code class="grammar-star">*</code>) : "*"),
+        plus:   (@options[:html] ? %(<code class="grammar-plus">+</code>) : "+"),
+        opt:    (@options[:html] ? %(<code class="grammar-opt">?</code>) : "?")
       }
-      lparen = (@options[:html] ? "<code>(</code> " : "(")
-      rparen = (@options[:html] ? "<code>)</code> " : ")")
+      lparen = (@options[:html] ? %[<code class="grammar-paren">(</code>] : "(")
+      rparen = (@options[:html] ? %[<code class="grammar-paren">)</code>] : ")")
 
       case expr.first
       when :istr
@@ -323,8 +323,8 @@ module EBNF
 
     # Format a range
     def format_ebnf_range(string)
-      lbrac  =  (@options[:html] ? "<code>[</code> " : "[")
-      rbrac  =  (@options[:html] ? "<code>]</code> " : "]")
+      lbrac  =  (@options[:html] ? %(<code class="grammar-brac">[</code>) : "[")
+      rbrac  =  (@options[:html] ? %(<code class="grammar-brac">]</code>) : "]")
 
       buffer = lbrac
       s = StringScanner.new(string)
@@ -412,15 +412,15 @@ module EBNF
         end
       end
       parts = {
-        alt:    (@options[:html] ? "<code>/</code>" : "/ "),
-        star:   (@options[:html] ? "<code>*</code>" : "*"),
-        plus:   (@options[:html] ? "<code>+</code>" : "1*"),
-        opt:    (@options[:html] ? "<code>?</code>" : "?")
+        alt:    (@options[:html] ? %(<code class="grammar-alt">/</code>) : "/ "),
+        star:   (@options[:html] ? %(<code class="grammar-star">*</code>) : "*"),
+        plus:   (@options[:html] ? %(<code class="grammar-plus">+</code>) : "1*"),
+        opt:    (@options[:html] ? %(<code class="grammar-opt">?</code>) : "?")
       }
-      lbrac = (@options[:html] ? "<code>[</code> " : "[")
-      rbrac = (@options[:html] ? "<code>]</code> " : "]")
-      lparen = (@options[:html] ? "<code>(</code> " : "(")
-      rparen = (@options[:html] ? "<code>)</code> " : ")")
+      lbrac = (@options[:html] ? %(<code class="grammar-brac">[</code>) : "[")
+      rbrac = (@options[:html] ? %(<code class="grammar-brac">]</code>) : "]")
+      lparen = (@options[:html] ? %[<code class="grammar-paren">(</code>] : "(")
+      rparen = (@options[:html] ? %[<code class="grammar-paren">)</code>] : ")")
 
       case expr.first
       when :istr
@@ -597,11 +597,11 @@ module EBNF
         end
       end
       parts = {
-        alt:    (@options[:html] ? "<code>|</code> " : "| "),
-        diff:   (@options[:html] ? "<code>-</code> " : "- "),
+        alt:    (@options[:html] ? %(<code class="grammar-alt">|</code> ) : "| "),
+        diff:   (@options[:html] ? %(<code class="grammar-diff">-</code> ) : "- "),
       }
-      lparen = (@options[:html] ? "<code>(</code> " : "(")
-      rparen = (@options[:html] ? "<code>)</code> " : ")")
+      lparen = (@options[:html] ? %[<code class="grammar-paren">(</code>] : "(")
+      rparen = (@options[:html] ? %[<code class="grammar-paren">)</code>] : ")")
 
       case expr.first
       when :istr
@@ -709,6 +709,7 @@ module EBNF
     end
 
     ERB_DESC = %q(
+      <!-- Generated with ebnf version #{EBNF::VERSION}. See https://github.com/dryruby/ebnf. -->
       <table class="grammar">
         <tbody id="grammar-productions" class="<%= @format %>">
           <% for rule in @rules %>
