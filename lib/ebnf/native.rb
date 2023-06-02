@@ -289,7 +289,8 @@ module EBNF
         l, s = s[1..-1].split(m.rstrip, 2)
         [Unescape.unescape_string(l), s]
       when '[' # RANGE, O_RANGE
-        l, s = s[1..-1].split(/(?<=[^\\])\]/, 2)
+        # Includes RANGE and O_RANGE which can't include a ']'
+        l, s = s[1..-1].split(']', 2)
         [[:range, Unescape.unescape_string(l)], s]
       when '#' # HEX
         s.match(/(#x\h+)(.*)$/)
