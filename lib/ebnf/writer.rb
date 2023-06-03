@@ -150,14 +150,14 @@ module EBNF
                 split(/\s*--rule-extensions--\s*/).each_with_index do |formatted, ndx|
                   assign = case format
                   when :ebnf
-                    formatted.sub!(%r{\s*<code>\|</code>\s*}, '')
-                    (ndx > 0 ? (rule.alt? ? '|' : '') : '::=')
+                    formatted.sub!(%r{\s*<code[^>]*>\|</code>\s*}, '')
+                    (ndx > 0 ? (rule.alt? ? '<code class="grammar-alt">|</code>' : '') : '::=')
                   when :abnf
-                    formatted.sub!(%r{\s*<code>/</code>\s*}, '')
-                    (ndx > 0 ? '=/' : '=')
+                    formatted.sub!(%r{\s*<code[^>]>/</code>\s*}, '')
+                    (ndx > 0 ? '<code class="grammar-alt">=/</code>' : '=')
                   else
-                    formatted.sub!(%r{\s*<code>\|</code>\s*}, '')
-                    (ndx > 0 ? (rule.alt? ? '|' : '') : '=')
+                    formatted.sub!(%r{\s*<code[^>]>\|</code>\s*}, '')
+                    (ndx > 0 ? (rule.alt? ? '<code class="grammar-alt">|</code>' : '') : '=')
                   end
                   lines << OpenStruct.new(id: ((ndx == 0 ? "[#{rule.id}]" : "") if rule.id),
                                           sym: (rule.sym if ndx == 0 || format == :abnf),
