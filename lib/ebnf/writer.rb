@@ -351,8 +351,8 @@ module EBNF
         end
       end
 
-      res = "#{quote}#{string}#{quote}"
-      @options[:html] ? @coder.encode(res) : res
+      res = @options[:html] ? %(<code class="grammar-literal">#{@coder.encode(string)}</code>) : string
+      res = "#{quote}#{res}#{quote}"
     end
 
     def escape_ebnf_hex(u)
