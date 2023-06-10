@@ -133,7 +133,8 @@ module EBNF
           formatted_rules = rules.map do |rule|
             if rule.kind == :terminals || rule.kind == :pass
               OpenStruct.new(id: ("@#{rule.kind}"),
-                             sym: nil,
+                             class: :declaration,
+                             sym: rule.kind,
                              assign: nil,
                              formatted: (
                                rule.kind == :terminals ?
@@ -161,6 +162,7 @@ module EBNF
                   end
                   lines << OpenStruct.new(id: ((ndx == 0 ? "[#{rule.id}]" : "") if rule.id),
                                           sym: (rule.sym if ndx == 0 || format == :abnf),
+                                          class: :production,
                                           assign: assign,
                                           formatted: formatted)
                 end
@@ -170,6 +172,7 @@ module EBNF
                 lines
               else
                 OpenStruct.new(id: ("[#{rule.id}]" if rule.id),
+                               class: :production,
                                sym: rule.sym,
                                assign: (format == :ebnf ? '::=' : '='),
                                formatted: (formatted_expr + (format == :isoebnf ? ' ;' : '')))
@@ -708,17 +711,16 @@ module EBNF
       chars.length == 1 ? chars.last.inspect : chars.unshift(:alt)
     end
 
-    ERB_DESC = %q(
-      <!-- Generated with ebnf version #{EBNF::VERSION}. See https://github.com/dryruby/ebnf. -->
-      <table class="grammar">
+    ERB_DESC = %(<!-- Generated with ebnf version #{EBNF::VERSION}. See https://github.com/dryruby/ebnf. -->\n) +
+      %q(<table class="grammar">
         <tbody id="grammar-productions" class="<%= @format %>">
           <% for rule in @rules %>
-          <tr<%= %{ id="grammar-production-#{rule.sym}"} unless %w(=/ |).include?(rule.assign) || rule.sym.nil?%>>
+          <tr<%= %{ id="grammar-#{rule.class}-#{rule.sym}"} unless %w(=/ |).include?(rule.assign) || rule.sym.nil?%>>
             <% if rule.id %>
             <td<%= " colspan=2" unless rule.sym %>><%= rule.id %></td>
             <% end %>
             <% if rule.sym %>
-            <td><code><%== rule.sym %></code></td>
+            <td><code><%== (rule.sym unless rule.class == :declaration) %></code></td>
             <% end %>
             <td><%= rule.assign %></td>
             <td><%= rule.formatted %></td>
