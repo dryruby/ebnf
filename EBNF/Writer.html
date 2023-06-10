@@ -171,17 +171,16 @@
         <dt id="ERB_DESC-constant" class="">ERB_DESC =
           
         </dt>
-        <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>%q(</span><span class='tstring_content'>
-  &lt;!-- Generated with ebnf version #{EBNF::VERSION}. See https://github.com/dryruby/ebnf. --&gt;
-  &lt;table class=&quot;grammar&quot;&gt;
+        <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>%(</span><span class='tstring_content'>&lt;!-- Generated with ebnf version </span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="../EBNF.html" title="EBNF (module)">EBNF</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="VERSION.html" title="EBNF::VERSION (module)">VERSION</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>. See https://github.com/dryruby/ebnf. --&gt;\n</span><span class='tstring_end'>)</span></span> <span class='op'>+</span>
+  <span class='tstring'><span class='tstring_beg'>%q(</span><span class='tstring_content'>&lt;table class=&quot;grammar&quot;&gt;
     &lt;tbody id=&quot;grammar-productions&quot; class=&quot;&lt;%= @format %&gt;&quot;&gt;
       &lt;% for rule in @rules %&gt;
-      &lt;tr&lt;%= %{ id=&quot;grammar-production-#{rule.sym}&quot;} unless %w(=/ |).include?(rule.assign) || rule.sym.nil?%&gt;&gt;
+      &lt;tr&lt;%= %{ id=&quot;grammar-#{rule[:class]}-#{rule.sym}&quot;} unless %w(=/ |).include?(rule.assign) || rule.sym.nil?%&gt;&gt;
         &lt;% if rule.id %&gt;
         &lt;td&lt;%= &quot; colspan=2&quot; unless rule.sym %&gt;&gt;&lt;%= rule.id %&gt;&lt;/td&gt;
         &lt;% end %&gt;
         &lt;% if rule.sym %&gt;
-        &lt;td&gt;&lt;code&gt;&lt;%== rule.sym %&gt;&lt;/code&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;code&gt;&lt;%== (rule.sym unless rule.class == :declaration) %&gt;&lt;/code&gt;&lt;/td&gt;
         &lt;% end %&gt;
         &lt;td&gt;&lt;%= rule.assign %&gt;&lt;/td&gt;
         &lt;td&gt;&lt;%= rule.formatted %&gt;&lt;/td&gt;
@@ -855,7 +854,10 @@
 229
 230
 231
-232</pre>
+232
+233
+234
+235</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/ebnf/writer.rb', line 106</span>
@@ -890,7 +892,8 @@
       <span class='id identifier rubyid_formatted_rules'>formatted_rules</span> <span class='op'>=</span> <span class='id identifier rubyid_rules'>rules</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_rule'>rule</span><span class='op'>|</span>
         <span class='kw'>if</span> <span class='id identifier rubyid_rule'>rule</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span> <span class='op'>==</span> <span class='symbol'>:terminals</span> <span class='op'>||</span> <span class='id identifier rubyid_rule'>rule</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span> <span class='op'>==</span> <span class='symbol'>:pass</span>
           <span class='const'>OpenStruct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='label'>id:</span> <span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>@</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_rule'>rule</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span>
-                         <span class='label'>sym:</span> <span class='kw'>nil</span><span class='comma'>,</span>
+                         <span class='label'>class:</span> <span class='symbol'>:declaration</span><span class='comma'>,</span>
+                         <span class='label'>sym:</span> <span class='id identifier rubyid_rule'>rule</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span><span class='comma'>,</span>
                          <span class='label'>assign:</span> <span class='kw'>nil</span><span class='comma'>,</span>
                          <span class='label'>formatted:</span> <span class='lparen'>(</span>
                            <span class='id identifier rubyid_rule'>rule</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span> <span class='op'>==</span> <span class='symbol'>:terminals</span> <span class='op'>?</span>
@@ -907,17 +910,18 @@
             <span class='id identifier rubyid_split'>split</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>\s*--rule-extensions--\s*</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_each_with_index'>each_with_index</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_formatted'>formatted</span><span class='comma'>,</span> <span class='id identifier rubyid_ndx'>ndx</span><span class='op'>|</span>
               <span class='id identifier rubyid_assign'>assign</span> <span class='op'>=</span> <span class='kw'>case</span> <span class='id identifier rubyid_format'>format</span>
               <span class='kw'>when</span> <span class='symbol'>:ebnf</span>
-                <span class='id identifier rubyid_formatted'>formatted</span><span class='period'>.</span><span class='id identifier rubyid_sub!'>sub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>\s*&lt;code&gt;\|&lt;/code&gt;\s*</span><span class='regexp_end'>}</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
-                <span class='lparen'>(</span><span class='id identifier rubyid_ndx'>ndx</span> <span class='op'>&gt;</span> <span class='int'>0</span> <span class='op'>?</span> <span class='lparen'>(</span><span class='id identifier rubyid_rule'>rule</span><span class='period'>.</span><span class='id identifier rubyid_alt?'>alt?</span> <span class='op'>?</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>|</span><span class='tstring_end'>&#39;</span></span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>::=</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+                <span class='id identifier rubyid_formatted'>formatted</span><span class='period'>.</span><span class='id identifier rubyid_sub!'>sub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>\s*&lt;code[^&gt;]*&gt;\|&lt;/code&gt;\s*</span><span class='regexp_end'>}</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+                <span class='lparen'>(</span><span class='id identifier rubyid_ndx'>ndx</span> <span class='op'>&gt;</span> <span class='int'>0</span> <span class='op'>?</span> <span class='lparen'>(</span><span class='id identifier rubyid_rule'>rule</span><span class='period'>.</span><span class='id identifier rubyid_alt?'>alt?</span> <span class='op'>?</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>&lt;code class=&quot;grammar-alt&quot;&gt;|&lt;/code&gt;</span><span class='tstring_end'>&#39;</span></span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>::=</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
               <span class='kw'>when</span> <span class='symbol'>:abnf</span>
-                <span class='id identifier rubyid_formatted'>formatted</span><span class='period'>.</span><span class='id identifier rubyid_sub!'>sub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>\s*&lt;code&gt;/&lt;/code&gt;\s*</span><span class='regexp_end'>}</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
-                <span class='lparen'>(</span><span class='id identifier rubyid_ndx'>ndx</span> <span class='op'>&gt;</span> <span class='int'>0</span> <span class='op'>?</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>=/</span><span class='tstring_end'>&#39;</span></span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>=</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+                <span class='id identifier rubyid_formatted'>formatted</span><span class='period'>.</span><span class='id identifier rubyid_sub!'>sub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>\s*&lt;code[^&gt;]&gt;/&lt;/code&gt;\s*</span><span class='regexp_end'>}</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+                <span class='lparen'>(</span><span class='id identifier rubyid_ndx'>ndx</span> <span class='op'>&gt;</span> <span class='int'>0</span> <span class='op'>?</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>&lt;code class=&quot;grammar-alt&quot;&gt;=/&lt;/code&gt;</span><span class='tstring_end'>&#39;</span></span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>=</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
               <span class='kw'>else</span>
-                <span class='id identifier rubyid_formatted'>formatted</span><span class='period'>.</span><span class='id identifier rubyid_sub!'>sub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>\s*&lt;code&gt;\|&lt;/code&gt;\s*</span><span class='regexp_end'>}</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
-                <span class='lparen'>(</span><span class='id identifier rubyid_ndx'>ndx</span> <span class='op'>&gt;</span> <span class='int'>0</span> <span class='op'>?</span> <span class='lparen'>(</span><span class='id identifier rubyid_rule'>rule</span><span class='period'>.</span><span class='id identifier rubyid_alt?'>alt?</span> <span class='op'>?</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>|</span><span class='tstring_end'>&#39;</span></span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>=</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+                <span class='id identifier rubyid_formatted'>formatted</span><span class='period'>.</span><span class='id identifier rubyid_sub!'>sub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>\s*&lt;code[^&gt;]&gt;\|&lt;/code&gt;\s*</span><span class='regexp_end'>}</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+                <span class='lparen'>(</span><span class='id identifier rubyid_ndx'>ndx</span> <span class='op'>&gt;</span> <span class='int'>0</span> <span class='op'>?</span> <span class='lparen'>(</span><span class='id identifier rubyid_rule'>rule</span><span class='period'>.</span><span class='id identifier rubyid_alt?'>alt?</span> <span class='op'>?</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>&lt;code class=&quot;grammar-alt&quot;&gt;|&lt;/code&gt;</span><span class='tstring_end'>&#39;</span></span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>=</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
               <span class='kw'>end</span>
               <span class='id identifier rubyid_lines'>lines</span> <span class='op'>&lt;&lt;</span> <span class='const'>OpenStruct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='label'>id:</span> <span class='lparen'>(</span><span class='lparen'>(</span><span class='id identifier rubyid_ndx'>ndx</span> <span class='op'>==</span> <span class='int'>0</span> <span class='op'>?</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>[</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_rule'>rule</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='embexpr_end'>}</span><span class='tstring_content'>]</span><span class='tstring_end'>&quot;</span></span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_rule'>rule</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='rparen'>)</span><span class='comma'>,</span>
                                       <span class='label'>sym:</span> <span class='lparen'>(</span><span class='id identifier rubyid_rule'>rule</span><span class='period'>.</span><span class='id identifier rubyid_sym'>sym</span> <span class='kw'>if</span> <span class='id identifier rubyid_ndx'>ndx</span> <span class='op'>==</span> <span class='int'>0</span> <span class='op'>||</span> <span class='id identifier rubyid_format'>format</span> <span class='op'>==</span> <span class='symbol'>:abnf</span><span class='rparen'>)</span><span class='comma'>,</span>
+                                      <span class='label'>class:</span> <span class='symbol'>:production</span><span class='comma'>,</span>
                                       <span class='label'>assign:</span> <span class='id identifier rubyid_assign'>assign</span><span class='comma'>,</span>
                                       <span class='label'>formatted:</span> <span class='id identifier rubyid_formatted'>formatted</span><span class='rparen'>)</span>
             <span class='kw'>end</span>
@@ -927,6 +931,7 @@
             <span class='id identifier rubyid_lines'>lines</span>
           <span class='kw'>else</span>
             <span class='const'>OpenStruct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='label'>id:</span> <span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>[</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_rule'>rule</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='embexpr_end'>}</span><span class='tstring_content'>]</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_rule'>rule</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='rparen'>)</span><span class='comma'>,</span>
+                           <span class='label'>class:</span> <span class='symbol'>:production</span><span class='comma'>,</span>
                            <span class='label'>sym:</span> <span class='id identifier rubyid_rule'>rule</span><span class='period'>.</span><span class='id identifier rubyid_sym'>sym</span><span class='comma'>,</span>
                            <span class='label'>assign:</span> <span class='lparen'>(</span><span class='id identifier rubyid_format'>format</span> <span class='op'>==</span> <span class='symbol'>:ebnf</span> <span class='op'>?</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>::=</span><span class='tstring_end'>&#39;</span></span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>=</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='comma'>,</span>
                            <span class='label'>formatted:</span> <span class='lparen'>(</span><span class='id identifier rubyid_formatted_expr'>formatted_expr</span> <span class='op'>+</span> <span class='lparen'>(</span><span class='id identifier rubyid_format'>format</span> <span class='op'>==</span> <span class='symbol'>:isoebnf</span> <span class='op'>?</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'> ;</span><span class='tstring_end'>&#39;</span></span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='rparen'>)</span><span class='rparen'>)</span>
@@ -1409,9 +1414,6 @@
       <pre class="lines">
 
 
-553
-554
-555
 556
 557
 558
@@ -1434,10 +1436,13 @@
 575
 576
 577
-578</pre>
+578
+579
+580
+581</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/ebnf/writer.rb', line 553</span>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/writer.rb', line 556</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_escape_abnf_hex'>escape_abnf_hex</span><span class='lparen'>(</span><span class='id identifier rubyid_u'>u</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_fmt'>fmt</span> <span class='op'>=</span> <span class='kw'>case</span> <span class='id identifier rubyid_u'>u</span><span class='period'>.</span><span class='id identifier rubyid_ord'>ord</span>
@@ -1485,9 +1490,6 @@
       <pre class="lines">
 
 
-358
-359
-360
 361
 362
 363
@@ -1513,10 +1515,13 @@
 383
 384
 385
-386</pre>
+386
+387
+388
+389</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/ebnf/writer.rb', line 358</span>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/writer.rb', line 361</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_escape_ebnf_hex'>escape_ebnf_hex</span><span class='lparen'>(</span><span class='id identifier rubyid_u'>u</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_fmt'>fmt</span> <span class='op'>=</span> <span class='kw'>case</span> <span class='id identifier rubyid_u'>u</span><span class='period'>.</span><span class='id identifier rubyid_ord'>ord</span>
@@ -1578,9 +1583,6 @@
       <pre class="lines">
 
 
-393
-394
-395
 396
 397
 398
@@ -1661,10 +1663,13 @@
 473
 474
 475
-476</pre>
+476
+477
+478
+479</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/ebnf/writer.rb', line 393</span>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/writer.rb', line 396</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_format_abnf'>format_abnf</span><span class='lparen'>(</span><span class='id identifier rubyid_expr'>expr</span><span class='comma'>,</span> <span class='label'>sep:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>embedded:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>sensitive:</span> <span class='kw'>true</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='lparen'>(</span><span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:html</span><span class='rbracket'>]</span> <span class='op'>?</span> <span class='tstring'><span class='tstring_beg'>%(</span><span class='tstring_content'>&lt;a href=&quot;#grammar-production-</span><span class='embexpr_beg'>#{</span><span class='ivar'>@coder</span><span class='period'>.</span><span class='id identifier rubyid_encode'>encode</span> <span class='id identifier rubyid_expr'>expr</span><span class='embexpr_end'>}</span><span class='tstring_content'>&quot;&gt;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@coder</span><span class='period'>.</span><span class='id identifier rubyid_encode'>encode</span> <span class='id identifier rubyid_expr'>expr</span><span class='embexpr_end'>}</span><span class='tstring_content'>&lt;/a&gt;</span><span class='tstring_end'>)</span></span> <span class='op'>:</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Symbol</span><span class='rparen'>)</span>
@@ -1781,16 +1786,16 @@
       <pre class="lines">
 
 
-479
-480
-481
 482
 483
 484
-485</pre>
+485
+486
+487
+488</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/ebnf/writer.rb', line 479</span>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/writer.rb', line 482</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_format_abnf_char'>format_abnf_char</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>[\x20-\x21\x23-\x7E]</span><span class='regexp_end'>/</span></span><span class='period'>.</span><span class='id identifier rubyid_match?'>match?</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='rparen'>)</span>
@@ -1845,9 +1850,6 @@
       <pre class="lines">
 
 
-490
-491
-492
 493
 494
 495
@@ -1906,10 +1908,13 @@
 548
 549
 550
-551</pre>
+551
+552
+553
+554</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/ebnf/writer.rb', line 490</span>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/writer.rb', line 493</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_format_abnf_range'>format_abnf_range</span><span class='lparen'>(</span><span class='id identifier rubyid_string'>string</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_alt'>alt</span><span class='comma'>,</span> <span class='id identifier rubyid_o_dash'>o_dash</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='symbol'>:alt</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='kw'>false</span>
@@ -2004,9 +2009,6 @@
       <pre class="lines">
 
 
-241
-242
-243
 244
 245
 246
@@ -2074,10 +2076,13 @@
 308
 309
 310
-311</pre>
+311
+312
+313
+314</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/ebnf/writer.rb', line 241</span>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/writer.rb', line 244</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_format_ebnf'>format_ebnf</span><span class='lparen'>(</span><span class='id identifier rubyid_expr'>expr</span><span class='comma'>,</span> <span class='label'>sep:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>embedded:</span> <span class='kw'>false</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='lparen'>(</span><span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:html</span><span class='rbracket'>]</span> <span class='op'>?</span> <span class='tstring'><span class='tstring_beg'>%(</span><span class='tstring_content'>&lt;a href=&quot;#grammar-production-</span><span class='embexpr_beg'>#{</span><span class='ivar'>@coder</span><span class='period'>.</span><span class='id identifier rubyid_encode'>encode</span> <span class='id identifier rubyid_expr'>expr</span><span class='embexpr_end'>}</span><span class='tstring_content'>&quot;&gt;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@coder</span><span class='period'>.</span><span class='id identifier rubyid_encode'>encode</span> <span class='id identifier rubyid_expr'>expr</span><span class='embexpr_end'>}</span><span class='tstring_content'>&lt;/a&gt;</span><span class='tstring_end'>)</span></span> <span class='op'>:</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Symbol</span><span class='rparen'>)</span>
@@ -2181,18 +2186,18 @@
       <pre class="lines">
 
 
-314
-315
-316
 317
 318
 319
 320
 321
-322</pre>
+322
+323
+324
+325</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/ebnf/writer.rb', line 314</span>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/writer.rb', line 317</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_format_ebnf_char'>format_ebnf_char</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='rparen'>)</span>
   <span class='kw'>case</span> <span class='id identifier rubyid_c'>c</span><span class='period'>.</span><span class='id identifier rubyid_ord'>ord</span>
@@ -2234,9 +2239,6 @@
       <pre class="lines">
 
 
-325
-326
-327
 328
 329
 330
@@ -2251,10 +2253,13 @@
 339
 340
 341
-342</pre>
+342
+343
+344
+345</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/ebnf/writer.rb', line 325</span>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/writer.rb', line 328</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_format_ebnf_range'>format_ebnf_range</span><span class='lparen'>(</span><span class='id identifier rubyid_string'>string</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_lbrac'>lbrac</span>  <span class='op'>=</span>  <span class='lparen'>(</span><span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:html</span><span class='rbracket'>]</span> <span class='op'>?</span> <span class='tstring'><span class='tstring_beg'>%(</span><span class='tstring_content'>&lt;code class=&quot;grammar-brac&quot;&gt;[&lt;/code&gt;</span><span class='tstring_end'>)</span></span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>[</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -2305,9 +2310,6 @@
       <pre class="lines">
 
 
-345
-346
-347
 348
 349
 350
@@ -2316,10 +2318,13 @@
 353
 354
 355
-356</pre>
+356
+357
+358
+359</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/ebnf/writer.rb', line 345</span>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/writer.rb', line 348</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_format_ebnf_string'>format_ebnf_string</span><span class='lparen'>(</span><span class='id identifier rubyid_string'>string</span><span class='comma'>,</span> <span class='id identifier rubyid_quote'>quote</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>&quot;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
   <span class='id identifier rubyid_string'>string</span><span class='period'>.</span><span class='id identifier rubyid_each_char'>each_char</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_c'>c</span><span class='op'>|</span>
@@ -2330,8 +2335,8 @@
     <span class='kw'>end</span>
   <span class='kw'>end</span>
 
-  <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_quote'>quote</span><span class='embexpr_end'>}</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_string'>string</span><span class='embexpr_end'>}</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_quote'>quote</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
-  <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:html</span><span class='rbracket'>]</span> <span class='op'>?</span> <span class='ivar'>@coder</span><span class='period'>.</span><span class='id identifier rubyid_encode'>encode</span><span class='lparen'>(</span><span class='id identifier rubyid_res'>res</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='id identifier rubyid_res'>res</span>
+  <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:html</span><span class='rbracket'>]</span> <span class='op'>?</span> <span class='tstring'><span class='tstring_beg'>%(</span><span class='tstring_content'>&lt;code class=&quot;grammar-literal&quot;&gt;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@coder</span><span class='period'>.</span><span class='id identifier rubyid_encode'>encode</span><span class='lparen'>(</span><span class='id identifier rubyid_string'>string</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'>&lt;/code&gt;</span><span class='tstring_end'>)</span></span> <span class='op'>:</span> <span class='id identifier rubyid_string'>string</span>
+  <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_quote'>quote</span><span class='embexpr_end'>}</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_res'>res</span><span class='embexpr_end'>}</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_quote'>quote</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -2364,9 +2369,6 @@
       <pre class="lines">
 
 
-585
-586
-587
 588
 589
 590
@@ -2446,10 +2448,13 @@
 664
 665
 666
-667</pre>
+667
+668
+669
+670</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/ebnf/writer.rb', line 585</span>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/writer.rb', line 588</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_format_isoebnf'>format_isoebnf</span><span class='lparen'>(</span><span class='id identifier rubyid_expr'>expr</span><span class='comma'>,</span> <span class='label'>sep:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>embedded:</span> <span class='kw'>false</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='lparen'>(</span><span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:html</span><span class='rbracket'>]</span> <span class='op'>?</span> <span class='tstring'><span class='tstring_beg'>%(</span><span class='tstring_content'>&lt;a href=&quot;#grammar-production-</span><span class='embexpr_beg'>#{</span><span class='ivar'>@coder</span><span class='period'>.</span><span class='id identifier rubyid_encode'>encode</span> <span class='id identifier rubyid_expr'>expr</span><span class='embexpr_end'>}</span><span class='tstring_content'>&quot;&gt;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@coder</span><span class='period'>.</span><span class='id identifier rubyid_encode'>encode</span> <span class='id identifier rubyid_expr'>expr</span><span class='embexpr_end'>}</span><span class='tstring_content'>&lt;/a&gt;</span><span class='tstring_end'>)</span></span> <span class='op'>:</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_expr'>expr</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Symbol</span><span class='rparen'>)</span>
@@ -2578,9 +2583,6 @@
       <pre class="lines">
 
 
-671
-672
-673
 674
 675
 676
@@ -2616,10 +2618,13 @@
 706
 707
 708
-709</pre>
+709
+710
+711
+712</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/ebnf/writer.rb', line 671</span>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/writer.rb', line 674</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_format_isoebnf_range'>format_isoebnf_range</span><span class='lparen'>(</span><span class='id identifier rubyid_string'>string</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_chars'>chars</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
@@ -2670,7 +2675,7 @@
 </div>
 
       <div id="footer">
-  Generated on Fri Jun  2 21:11:37 2023 by
+  Generated on Sat Jun 10 00:38:27 2023 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.34 (ruby-3.1.4).
 </div>

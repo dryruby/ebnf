@@ -1816,7 +1816,7 @@ end</code></pre>
       <pre class="code"><span class="info file"># File 'lib/ebnf/ll1/lexer.rb', line 203</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_recover'>recover</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_types'>types</span><span class='rparen'>)</span>
-   <span class='kw'>until</span> <span class='id identifier rubyid_scanner'>scanner</span><span class='period'>.</span><span class='id identifier rubyid_eos?'>eos?</span> <span class='op'>||</span> <span class='id identifier rubyid_tok'>tok</span> <span class='op'>=</span> <span class='id identifier rubyid_match_token'>match_token</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_types'>types</span><span class='rparen'>)</span>
+  <span class='kw'>until</span> <span class='id identifier rubyid_scanner'>scanner</span><span class='period'>.</span><span class='id identifier rubyid_eos?'>eos?</span> <span class='op'>||</span> <span class='id identifier rubyid_tok'>tok</span> <span class='op'>=</span> <span class='id identifier rubyid_match_token'>match_token</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_types'>types</span><span class='rparen'>)</span>
     <span class='kw'>if</span> <span class='id identifier rubyid_scanner'>scanner</span><span class='period'>.</span><span class='id identifier rubyid_skip_until'>skip_until</span><span class='lparen'>(</span><span class='ivar'>@whitespace</span> <span class='op'>||</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>\s+</span><span class='regexp_end'>/m</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='comment'># Skip past current &quot;token&quot;
 </span>      <span class='comment'># No whitespace at the end, must be and end of string
 </span>      <span class='id identifier rubyid_scanner'>scanner</span><span class='period'>.</span><span class='id identifier rubyid_terminate'>terminate</span>
@@ -2108,7 +2108,7 @@ end</code></pre>
 </div>
 
       <div id="footer">
-  Generated on Fri Jun  2 21:11:38 2023 by
+  Generated on Sat Jun 10 00:38:27 2023 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.34 (ruby-3.1.4).
 </div>
