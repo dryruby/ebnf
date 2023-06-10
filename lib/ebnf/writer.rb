@@ -715,7 +715,7 @@ module EBNF
       %q(<table class="grammar">
         <tbody id="grammar-productions" class="<%= @format %>">
           <% for rule in @rules %>
-          <tr<%= %{ id="grammar-#{rule.class}-#{rule.sym}"} unless %w(=/ |).include?(rule.assign) || rule.sym.nil?%>>
+          <tr<%= %{ id="grammar-#{rule[:class]}-#{rule.sym}"} unless %w(=/ |).include?(rule.assign) || rule.sym.nil?%>>
             <% if rule.id %>
             <td<%= " colspan=2" unless rule.sym %>><%= rule.id %></td>
             <% end %>
