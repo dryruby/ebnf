@@ -50,7 +50,7 @@ module EBNF
       0x22 => 'dquote',
       0x27 => 'apos',
       0x2F => 'slash',
-      0x5C => 'back slash',
+      0x5C => 'backslash',
       0x60 => 'grave',
       0x7F => 'delete',
       0x80 => 'padding character',
