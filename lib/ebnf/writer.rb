@@ -11,42 +11,81 @@ module EBNF
     LINE_LENGTH = 80
     LINE_LENGTH_HTML = 200
 
-    # ASCII escape names
-    ASCII_ESCAPE_NAMES = [
-      "null",                 #x00
-      "start of heading",     #x01
-      "start of text",        #x02
-      "end of text",          #x03
-      "end of transmission",  #x04
-      "enquiry",              #x05
-      "acknowledge",          #x06
-      "bell",                 #x07
-      "backspace",            #x08
-      "horizontal tab",       #x09
-      "new line",             #x0A
-      "vertical tab",         #x0B
-      "form feed",            #x0C
-      "carriage return",      #x0D
-      "shift out",            #x0E
-      "shift in",             #x0F
-      "data link escape",     #x10
-      "device control 1",     #x11
-      "device control 2",     #x12
-      "device control 3",     #x13
-      "device control 4",     #x14
-      "negative acknowledge", #x15
-      "synchronous idle",     #x16
-      "end of trans. block",  #x17
-      "cancel",               #x18
-      "end of medium",        #x19
-      "substitute",           #x1A
-      "escape",               #x1B
-      "file separator",       #x1C
-      "group separator",      #x1D
-      "record separator",     #x1E
-      "unit separator",       #x1F
-      "space"                 #x20
-      ]
+    # UNICODE escape names
+    # From https://en.wikipedia.org/wiki/List_of_Unicode_characters
+    UNICODE_ESCAPE_NAMES = {
+      0x00 => 'null',
+      0x01 => 'start of heading',
+      0x02 => 'start of text',
+      0x03 => 'end of text',
+      0x04 => 'end of transmission',
+      0x05 => 'enquiry',
+      0x06 => 'acknowledge',
+      0x07 => 'bell',
+      0x08 => 'backspace',
+      0x09 => 'horizontal tab',
+      0x0A => 'new line',
+      0x0B => 'vertical tab',
+      0x0C => 'form feed',
+      0x0D => 'carriage return',
+      0x0E => 'shift out',
+      0x0F => 'shift in',
+      0x10 => 'data link escape',
+      0x11 => 'device control 1',
+      0x12 => 'device control 2',
+      0x13 => 'device control 3',
+      0x14 => 'device control 4',
+      0x15 => 'negative acknowledge',
+      0x16 => 'synchronous idle',
+      0x17 => 'end of trans. block',
+      0x18 => 'cancel',
+      0x19 => 'end of medium',
+      0x1A => 'substitute',
+      0x1B => 'escape',
+      0x1C => 'file separator',
+      0x1D => 'group separator',
+      0x1E => 'record separator',
+      0x1F => 'unit separator',
+      0x20 => 'space',
+      0x22 => 'dquote',
+      0x27 => 'apos',
+      0x2F => 'slash',
+      0x5C => 'backslash',
+      0x60 => 'grave',
+      0x7F => 'delete',
+      0x80 => 'padding character',
+      0x81 => 'high octet preset',
+      0x82 => 'break permitted here',
+      0x83 => 'no break here',
+      0x84 => 'index',
+      0x85 => 'next line',
+      0x86 => 'start of selected area',
+      0x87 => 'end of selected area',
+      0x88 => 'character tabulation set',
+      0x89 => 'character tabulation with justification',
+      0x8A => 'line tabulation set',
+      0x8B => 'partial line forward',
+      0x8C => 'partial line backward',
+      0x8D => 'reverse line feed',
+      0x8E => 'single-shift two',
+      0x8F => 'single-shift three',
+      0x90 => 'device control string',
+      0x91 => 'private use 1',
+      0x92 => 'private use 2',
+      0x93 => 'set transmit state',
+      0x94 => 'cancel character',
+      0x95 => 'message waiting',
+      0x96 => 'start of protected area',
+      0x97 => 'end of protected area',
+      0x98 => 'start of string',
+      0x99 => 'single graphic character introducer',
+      0x9A => 'single character intro introducer',
+      0x9B => 'control sequence introducer',
+      0x9C => 'string terminator',
+      0x9D => 'operating system command',
+      0x9E => 'private message',
+      0x9F => 'application program command',
+    }
 
     ##
     # Format rules to a String
@@ -360,27 +399,19 @@ module EBNF
 
     def escape_ebnf_hex(u)
       fmt = case u.ord
-      when 0x00..0x20     then "#x%02X"
       when 0x0000..0x00ff then "#x%02X"
       when 0x0100..0xffff then "#x%04X"
       else                     "#x%08X"
       end
       char = fmt % u.ord
       if @options[:html]
-        char = if u.ord <= 0x20
-          %(<abbr title="#{ASCII_ESCAPE_NAMES[u.ord]}">#{@coder.encode char}</abbr>)
-        elsif u.ord == 0x22
-          %(<abbr title="quot">>&quot;</abbr>)
-        elsif u.ord < 0x7F
-          %(<abbr title="ascii '#{@coder.encode u}'">#{@coder.encode char}</abbr>)
-        elsif u.ord == 0x7F
-          %(<abbr title="delete">#{@coder.encode char}</abbr>)
-        elsif u.ord <= 0xFF
-          %(<abbr title="extended ascii '#{@coder.encode char}'">#{char}</abbr>)
-        elsif (%w(Control Private-use Surrogate Noncharacter Reserved) - ::Unicode::Types.of(u)).empty?
-          %(<abbr title="unicode '#{u}'">#{char}</abbr>)
+        char = if UNICODE_ESCAPE_NAMES.include?(u.ord)
+          %(<abbr title="#{UNICODE_ESCAPE_NAMES[u.ord]}">#{char}</abbr>)
+        elsif ([::Unicode::Types.of(u)] - %w(Control Private-use Surrogate Noncharacter Reserved)).empty?
+          %(<abbr title="unicode '#{@coder.encode u}'">#{char}</abbr>)
         else
-          %(<abbr title="unicode '#{::Unicode::Types.of(u).first}'">#{char}</abbr>)
+          uni_esc = "U+%04X" % u.ord
+          %(<abbr title="unicode #{uni_esc}">#{char}</abbr>)
         end
         %(<code class="grammar-char-escape">#{char}</code>)
       else
@@ -561,18 +592,13 @@ module EBNF
       end
       char =  "%x" + (fmt % u.ord).upcase
       if @options[:html]
-        if u.ord <= 0x20
-          char = %(<abbr title="#{ASCII_ESCAPE_NAMES[u.ord]}">#{@coder.encode char}</abbr>)
-        elsif u.ord == 0x22
-          %(<abbr title="quot">>&quot;</abbr>)
-        elsif u.ord < 0x7F
-          char = %(<abbr title="ascii '#{u}'">#{@coder.encode char}</abbr>)
-        elsif u.ord == 0x7F
-          char = %(<abbr title="delete">#{@coder.encode char}</abbr>)
-        elsif u.ord <= 0xFF
-          char = %(<abbr title="extended ascii '#{u}'">#{char}</abbr>)
+        char = if UNICODE_ESCAPE_NAMES.include?(u.ord)
+          %(<abbr title="#{UNICODE_ESCAPE_NAMES[u.ord]}">#{char}</abbr>)
+        elsif ([::Unicode::Types.of(u)] - %w(Control Private-use Surrogate Noncharacter Reserved)).empty?
+          %(<abbr title="unicode '#{@coder.encode u}'">#{char}</abbr>)
         else
-          char = %(<abbr title="unicode '#{u.unicode_normaliz}'">#{char}</abbr>)
+          uni_esc = "U+%04X" % u.ord
+          %(<abbr title="unicode #{uni_esc}">#{char}</abbr>)
         end
         %(<code class="grammar-char-escape">#{char}</code>)
       else
