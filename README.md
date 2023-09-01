@@ -290,7 +290,7 @@ A copy of the [Turtle EBNF][] and derived parser files are included in the repos
 [ISO/IEC 14977]:https://www.iso.org/standard/26153.html
 [LL(1)]:        https://www.csd.uwo.ca/~moreno//CS447/Lectures/Syntax.html/node14.html
 [LL(1) Parser]: https://en.wikipedia.org/wiki/LL_parser
-[Logger]:       https://ruby-doc.org/stdlib-2.4.0/libdoc/logger/rdoc/Logger.html
+[Logger]:       https://ruby-doc.org/stdlib-3.0.0/libdoc/logger/rdoc/Logger.html
 [S-expression]: https://en.wikipedia.org/wiki/S-expression
 [Tokenizer]:    https://en.wikipedia.org/wiki/Lexical_analysis#Tokenizer
 [Turtle]:       https://www.w3.org/TR/2012/WD-turtle-20120710/
