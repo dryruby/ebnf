@@ -84,7 +84,19 @@ describe EBNF::Writer do
           '//tbody/tr/td[1]/text()': "[2]",
           '//tbody/tr/td[2]/code/text()': "Prolog",
           '//tbody/tr/td[3]/text()': "::=",
-          #'//tbody/tr/td[4]/*/text()': /BaseDecl\? PrefixDecl\*/,
+          #'//tbody/tr/td[4]/text()': /BaseDecl\? PrefixDecl\*/,
+        }
+      ],
+      statement: [
+        %{[2] statement             ::= directive | triples '.'},
+        {
+          '//table/@class': "grammar",
+          '//table/tbody/@id': "grammar-productions",
+          '//tbody/tr/@id': "grammar-production-statement",
+          '//tbody/tr/td[1]/text()': "[2]",
+          '//tbody/tr/td[2]/code/text()': "statement",
+          '//tbody/tr/td[3]/text()': "::=",
+          #'//tbody/tr/td[4]/text()': /directive | triples '.'/,
         }
       ],
     }.each do |title, (grammar, xpaths)|
@@ -103,20 +115,20 @@ describe EBNF::Writer do
   context "EBNF" do
     describe "#initialize" do
       {
-        prolog: [
-          %{[2]     Prolog    ::=           BaseDecl? PrefixDecl*},
-          %{[2] Prolog ::= BaseDecl? PrefixDecl*\n}
-        ],
-        backslash: [
-          %{LHS ::= [^'\] | ECHAR},
-          %{LHS ::= [^'\] | ECHAR\n}
-        ]
-      }.each do |title, (grammar, plain)|
+        prolog: {
+          ebnf:   %{[2]     Prolog    ::=           BaseDecl? PrefixDecl*},
+          plain:  %{[2] Prolog ::= BaseDecl? PrefixDecl*\n}
+        },
+        backslash: {
+          ebnf:   %{LHS ::= [^'\] | ECHAR},
+          plain:  %{LHS ::= [^'\] | ECHAR}
+        }
+      }.each do |title, params|
         context title do
-          subject {EBNF::Base.new(grammar, format: :native).ast}
+          subject {EBNF::Base.new(params[:ebnf], format: :native).ast}
 
           it "generates plain" do
-            expect {EBNF::Writer.new(subject)}.to write(plain).to(:output)
+            expect {EBNF::Writer.new(subject)}.to write(params[:plain]).to(:output)
           end
         end
       end
@@ -141,6 +153,10 @@ describe EBNF::Writer do
           ],
           "istr": [
             [:istr, "foo"],
+            %("foo")
+          ],
+          "str": [
+            'foo',
             %("foo")
           ],
           "opt": [

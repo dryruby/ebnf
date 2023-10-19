@@ -461,26 +461,17 @@
     </tr>
   </thead>
   <tbody>
-    <tr id='section-EBNF_Parser_for_EBNF.'>
+    <tr id='section-EBNF_Parser_for_ABNF.'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-EBNF_Parser_for_EBNF.">&#182;</a>
+          <a class="pilcrow" href="#section-EBNF_Parser_for_ABNF.">&#182;</a>
         </div>
         <h1>EBNF Parser for ABNF.</h1>
 
 <p>Produces an Abstract Synatx Tree in S-Expression form for the input grammar file</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre><span class="nb">require</span> <span class="s1">&#39;ebnf&#39;</span>
-<span class="nb">require</span> <span class="s1">&#39;ebnf/terminals&#39;</span>
-<span class="nb">require</span> <span class="s1">&#39;ebnf/peg/parser&#39;</span>
-<span class="nb">require</span> <span class="s1">&#39;core&#39;</span>    <span class="c1"># &quot;Core&quot; rules used in the ABNF spec.</span>
-<span class="nb">require</span> <span class="s1">&#39;meta&#39;</span>    <span class="c1"># &quot;ABNF&quot; rules used for parsing ABNF, itself</span>
-<span class="nb">require</span> <span class="s1">&#39;scanf&#39;</span>
-<span class="nb">require</span> <span class="s1">&#39;logger&#39;</span>
-
-<span class="k">class</span> <span class="nc">ABNFParser</span>
-  <span class="kp">include</span> <span class="no">EBNF</span><span class="o">::</span><span class="no">PEG</span><span class="o">::</span><span class="no">Parser</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-2'>
@@ -491,13 +482,7 @@
         <p>Regular expressions for both &quot;Core&quot; and ABNF-specific terminals.</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="no">ALPHA</span> <span class="o">=</span> <span class="sr">%r{[\x41-\x5A\x61-\x7A]}</span>
-  <span class="no">VCHAR</span> <span class="o">=</span> <span class="sr">%r{[\x20-\x7E]}</span>
-  <span class="no">WSP</span> <span class="o">=</span> <span class="sr">%r{[\x20\x09]}</span>
-  <span class="no">CRLF</span> <span class="o">=</span> <span class="sr">%r{\x0D?\x0A}</span>
-  <span class="no">COMMENT</span> <span class="o">=</span> <span class="sr">%r{;(?:</span><span class="si">#{</span><span class="no">WSP</span><span class="si">}</span><span class="sr">|</span><span class="si">#{</span><span class="no">VCHAR</span><span class="si">}</span><span class="sr">)*</span><span class="si">#{</span><span class="no">CRLF</span><span class="si">}</span><span class="sr">}</span>
-  <span class="no">C_NL</span> <span class="o">=</span> <span class="sr">%r{</span><span class="si">#{</span><span class="no">COMMENT</span><span class="si">}</span><span class="sr">|</span><span class="si">#{</span><span class="no">CRLF</span><span class="si">}</span><span class="sr">}</span>
-  <span class="no">C_WSP</span> <span class="o">=</span> <span class="sr">%r{</span><span class="si">#{</span><span class="no">WSP</span><span class="si">}</span><span class="sr">|(?:</span><span class="si">#{</span><span class="no">C_NL</span><span class="si">}#{</span><span class="no">WSP</span><span class="si">}</span><span class="sr">)}</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-3'>
@@ -510,7 +495,7 @@
 <p>@return [Hash{Symbol =&gt; EBNF::Rule}]</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="kp">attr_reader</span> <span class="ss">:parsed_rules</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-4'>
@@ -532,9 +517,7 @@
         <p><code>rulename     ::=  ALPHA (ALPHA | DIGIT | &quot;-&quot;)*</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:rulename</span><span class="p">,</span><span class="sr"> /#{ALPHA}(?:</span><span class="si">#{</span><span class="no">ALPHA</span><span class="si">}</span><span class="sr">|[0-9-])*/</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="n">value</span><span class="o">.</span><span class="n">to_sym</span>
-  <span class="k">end</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-6'>
@@ -545,7 +528,7 @@
         <p><code>defined_as   ::=  c_wsp* (&quot;=&quot; | &quot;=/&quot;) c_wsp*</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:defined_as</span><span class="p">,</span><span class="sr"> /#{C_WSP}*=\/?</span><span class="si">#{</span><span class="no">C_WSP</span><span class="si">}</span><span class="sr">*/</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span><span class="n">value</span><span class="o">|</span> <span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">}</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-7'>
@@ -553,12 +536,10 @@
         <div class="pilwrap">
           <a class="pilcrow" href="#section-7">&#182;</a>
         </div>
-        <p><code>quoted_string::=  DQUOTE [#x20-#x21#x23-#x7E]* DQUOTE</code></p>
+        <p><code>quoted_string ::=  DQUOTE [#x20-#x21#x23-#x7E]* DQUOTE</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:quoted_string</span><span class="p">,</span><span class="sr"> /&quot;[\x20-\x21\x23-\x7E]*&quot;/</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">2</span><span class="o">]</span>
-  <span class="k">end</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-8'>
@@ -569,8 +550,7 @@
         <p><code>bin_val      ::=  &quot;b&quot; BIT+ ((&quot;.&quot; BIT+)+ | (&quot;-&quot; BIT+))?</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:bin_val</span><span class="p">,</span><span class="sr"> /b[01]+(?:(?:(?:\.[01]+)+)|(?:-[01]+))?/</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">include?</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-9'>
@@ -581,8 +561,7 @@
         <p>Interpret segments in binary creating a sequence of hex characters or a string</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>      <span class="n">hex_or_string</span><span class="p">(</span><span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="o">].</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span><span class="o">|</span><span class="n">b</span><span class="o">|</span> <span class="n">b</span><span class="o">.</span><span class="n">to_i</span><span class="p">(</span><span class="n">base</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">chr</span><span class="p">(</span><span class="no">Encoding</span><span class="o">::</span><span class="no">UTF_8</span><span class="p">)})</span>
-    <span class="k">elsif</span> <span class="n">value</span><span class="o">.</span><span class="n">include?</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-10'>
@@ -593,8 +572,7 @@
         <p>Interpret as a range</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>      <span class="o">[</span><span class="ss">:range</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="o">].</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span><span class="o">|</span><span class="n">b</span><span class="o">|</span> <span class="s2">&quot;#x%x&quot;</span> <span class="o">%</span> <span class="n">b</span><span class="o">.</span><span class="n">to_i</span><span class="p">(</span><span class="n">base</span><span class="o">=</span><span class="mi">2</span><span class="p">)}</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span><span class="o">]</span>
-    <span class="k">else</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-11'>
@@ -605,9 +583,7 @@
         <p>Interpret as a single HEX character</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>      <span class="o">[</span><span class="ss">:hex</span><span class="p">,</span> <span class="s2">&quot;#x%x&quot;</span> <span class="o">%</span> <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="o">].</span><span class="n">to_i</span><span class="p">(</span><span class="n">base</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">]</span>
-    <span class="k">end</span>
-  <span class="k">end</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-12'>
@@ -618,8 +594,7 @@
         <p><code>dec_val      ::=  &quot;d&quot; DIGIT+ ((&quot;.&quot; DIGIT+)+ | (&quot;-&quot; DIGIT+))?</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:dec_val</span><span class="p">,</span><span class="sr"> /d[0-9]+(?:(?:(?:\.[0-9]+)+)|(?:-[0-9]+))?/</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">include?</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-13'>
@@ -630,8 +605,7 @@
         <p>Interpret segments in decimal creating a sequence of hex characters or a string</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>      <span class="n">hex_or_string</span><span class="p">(</span><span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="o">].</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span><span class="o">|</span><span class="n">b</span><span class="o">|</span> <span class="n">b</span><span class="o">.</span><span class="n">to_i</span><span class="o">.</span><span class="n">chr</span><span class="p">(</span><span class="no">Encoding</span><span class="o">::</span><span class="no">UTF_8</span><span class="p">)})</span>
-    <span class="k">elsif</span> <span class="n">value</span><span class="o">.</span><span class="n">include?</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-14'>
@@ -642,8 +616,7 @@
         <p>Interpret as a range</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>      <span class="o">[</span><span class="ss">:range</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="o">].</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span><span class="o">|</span><span class="n">d</span><span class="o">|</span> <span class="s2">&quot;#x%x&quot;</span> <span class="o">%</span> <span class="n">d</span><span class="o">.</span><span class="n">to_i</span><span class="p">}</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span><span class="o">]</span>
-    <span class="k">else</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-15'>
@@ -654,9 +627,7 @@
         <p>Interpret as a single HEX character</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>      <span class="o">[</span><span class="ss">:hex</span><span class="p">,</span> <span class="s2">&quot;#x%x&quot;</span> <span class="o">%</span> <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="o">].</span><span class="n">to_i</span><span class="o">]</span>
-    <span class="k">end</span>
-  <span class="k">end</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-16'>
@@ -667,8 +638,7 @@
         <p><code>hex_val      ::=  &quot;x&quot; HEXDIG+  ((&quot;.&quot; HEXDIG+)+ | (&quot;-&quot; HEXDIG+))?</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:hex_val</span><span class="p">,</span><span class="sr"> /x[0-9A-F]+(?:(?:(?:\.[0-9A-F]+)+)|(?:-[0-9A-F]+))?/i</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">include?</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-17'>
@@ -679,8 +649,7 @@
         <p>Interpret segments in hexadecimal creating a sequence of hex characters or a string</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>      <span class="n">hex_or_string</span><span class="p">(</span><span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="o">].</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span><span class="o">|</span><span class="n">b</span><span class="o">|</span> <span class="n">b</span><span class="o">.</span><span class="n">to_i</span><span class="p">(</span><span class="n">base</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span><span class="o">.</span><span class="n">chr</span><span class="p">(</span><span class="no">Encoding</span><span class="o">::</span><span class="no">UTF_8</span><span class="p">)})</span>
-    <span class="k">elsif</span> <span class="n">value</span><span class="o">.</span><span class="n">include?</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-18'>
@@ -691,8 +660,7 @@
         <p>Interpret as a range</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>      <span class="o">[</span><span class="ss">:range</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="o">].</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span><span class="o">|</span><span class="n">h</span><span class="o">|</span> <span class="s2">&quot;#x%x&quot;</span> <span class="o">%</span> <span class="n">h</span><span class="o">.</span><span class="n">to_i</span><span class="p">(</span><span class="n">base</span><span class="o">=</span><span class="mi">16</span><span class="p">)}</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span><span class="o">]</span>
-    <span class="k">else</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-19'>
@@ -703,9 +671,7 @@
         <p>Interpret as a single HEX character</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>      <span class="o">[</span><span class="ss">:hex</span><span class="p">,</span> <span class="s2">&quot;#x</span><span class="si">#{</span><span class="n">value</span><span class="o">[</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="o">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">]</span>
-    <span class="k">end</span>
-  <span class="k">end</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-20'>
@@ -716,7 +682,7 @@
         <p><code>c_wsp        ::=  WSP | (c_nl WSP)</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:c_wsp</span><span class="p">,</span> <span class="no">C_WSP</span><span class="p">)</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-21'>
@@ -727,7 +693,7 @@
         <p><code>c_nl         ::=  comment | CRLF</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:c_nl</span><span class="p">,</span> <span class="no">C_NL</span><span class="p">)</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-22'>
@@ -738,7 +704,7 @@
         <p><code>DIGIT        ::=  [#x30-#x39]</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">terminal</span><span class="p">(</span><span class="ss">:DIGIT</span><span class="p">,</span><span class="sr"> /\d/</span><span class="p">)</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-Non-terminal_productions'>
@@ -760,7 +726,7 @@
         <p>The <code>start_production</code> on <code>:rule</code> allows the parser to present the value as a single Hash, rather than an array of individual hashes.</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">start_production</span><span class="p">(</span><span class="ss">:rule</span><span class="p">,</span> <span class="n">as_hash</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-25'>
@@ -771,7 +737,7 @@
         <p><code>rule         ::=  rulename defined_as elements c_nl</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:rule</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-26'>
@@ -783,10 +749,7 @@
 Invoke callback</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>    <span class="n">sym</span> <span class="o">=</span> <span class="n">value</span><span class="o">[</span><span class="ss">:rulename</span><span class="o">]</span>
-    <span class="n">elements</span> <span class="o">=</span> <span class="n">value</span><span class="o">[</span><span class="ss">:elements</span><span class="o">]</span>
-
-    <span class="k">if</span> <span class="n">value</span><span class="o">[</span><span class="ss">:defined_as</span><span class="o">]</span> <span class="o">==</span> <span class="s2">&quot;=/&quot;</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-27'>
@@ -797,9 +760,7 @@ Invoke callback</p>
         <p>append to rule alternate</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>      <span class="n">rule</span> <span class="o">=</span> <span class="n">parsed_rules</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="n">sym</span><span class="p">)</span> <span class="p">{</span><span class="k">raise</span> <span class="s2">&quot;No existing rule found for </span><span class="si">#{</span><span class="n">sym</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">}</span>
-      <span class="n">rule</span><span class="o">.</span><span class="n">expr</span> <span class="o">=</span> <span class="o">[</span><span class="ss">:alt</span><span class="p">,</span> <span class="n">rule</span><span class="o">.</span><span class="n">expr</span><span class="o">]</span> <span class="k">unless</span> <span class="n">rule</span><span class="o">.</span><span class="n">alt?</span>
-      <span class="k">if</span> <span class="n">elements</span><span class="o">.</span><span class="n">first</span> <span class="o">==</span> <span class="ss">:alt</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-28'>
@@ -810,8 +771,7 @@ Invoke callback</p>
         <p>append alternatives to rule</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>        <span class="n">rule</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">elements</span><span class="o">[</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="o">]</span><span class="p">)</span>
-      <span class="k">else</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-29'>
@@ -822,9 +782,7 @@ Invoke callback</p>
         <p>add elements as last alternative</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>        <span class="n">rule</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">elements</span><span class="p">)</span>
-      <span class="k">end</span>
-    <span class="k">else</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-30'>
@@ -835,12 +793,7 @@ Invoke callback</p>
         <p>There shouldn&#39;t be an existing rule</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>      <span class="k">raise</span> <span class="s2">&quot;Redefining rule </span><span class="si">#{</span><span class="n">sym</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">parsed_rules</span><span class="o">.</span><span class="n">has_key?</span><span class="p">(</span><span class="n">sym</span><span class="p">)</span>
-      <span class="n">parsed_rules</span><span class="o">[</span><span class="n">sym</span><span class="o">]</span> <span class="o">=</span> <span class="no">EBNF</span><span class="o">::</span><span class="no">Rule</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">sym</span><span class="o">.</span><span class="n">to_sym</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="n">elements</span><span class="p">)</span>
-    <span class="k">end</span>
-    <span class="n">progress</span><span class="p">(</span><span class="ss">:rule</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span><span class="n">parsed_rules</span><span class="o">[</span><span class="n">sym</span><span class="o">].</span><span class="n">to_sxp</span><span class="p">}</span>
-    <span class="n">sym</span>
-  <span class="k">end</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-31'>
@@ -851,9 +804,7 @@ Invoke callback</p>
         <p><code>elements     ::=  alternation c_wsp*</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:elements</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="n">value</span><span class="o">.</span><span class="n">first</span><span class="o">[</span><span class="ss">:alternation</span><span class="o">]</span>
-  <span class="k">end</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-32'>
@@ -864,13 +815,7 @@ Invoke callback</p>
         <p><code>alternation  ::=  concatenation (c_wsp* &quot;/&quot; c_wsp* concatenation)*</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:alternation</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="k">unless</span> <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:_alternation_1</span><span class="o">].</span><span class="n">empty?</span>
-      <span class="o">[</span><span class="ss">:alt</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">first</span><span class="o">[</span><span class="ss">:concatenation</span><span class="o">]]</span> <span class="o">+</span> <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:_alternation_1</span><span class="o">]</span>
-    <span class="k">else</span>
-      <span class="n">value</span><span class="o">.</span><span class="n">first</span><span class="o">[</span><span class="ss">:concatenation</span><span class="o">]</span>
-    <span class="k">end</span>
-  <span class="k">end</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-33'>
@@ -881,14 +826,7 @@ Invoke callback</p>
         <p>The <code>_aleteration_2</code> rule comes from the expanded PEG grammar and serves as an opportunity to custommize the values presented to the <code>aleteration</code> rule.</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:_alternation_2</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="k">if</span> <span class="nb">Array</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:concatenation</span><span class="o">]</span><span class="p">)</span><span class="o">.</span><span class="n">first</span> <span class="o">==</span> <span class="ss">:alt</span>
-      <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:concatenation</span><span class="o">][</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="o">]</span>
-    <span class="k">else</span>
-      <span class="o">[</span><span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:concatenation</span><span class="o">]]</span>
-    <span class="k">end</span>
-    <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:concatenation</span><span class="o">]</span>
-  <span class="k">end</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-34'>
@@ -899,17 +837,7 @@ Invoke callback</p>
         <p><code>concatenation::=  repetition (c_wsp+ repetition)*</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:concatenation</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="k">unless</span> <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:_concatenation_1</span><span class="o">].</span><span class="n">empty?</span>
-      <span class="o">[</span><span class="ss">:seq</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">first</span><span class="o">[</span><span class="ss">:repetition</span><span class="o">]]</span> <span class="o">+</span> <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:_concatenation_1</span><span class="o">]</span>
-    <span class="k">else</span>
-      <span class="n">value</span><span class="o">.</span><span class="n">first</span><span class="o">[</span><span class="ss">:repetition</span><span class="o">]</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-  <span class="n">start_production</span><span class="p">(</span><span class="ss">:_concatenation_2</span><span class="p">,</span> <span class="n">as_hash</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span>
-  <span class="n">production</span><span class="p">(</span><span class="ss">:_concatenation_2</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="n">value</span><span class="o">[</span><span class="ss">:repetition</span><span class="o">]</span>
-  <span class="k">end</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-35'>
@@ -920,17 +848,7 @@ Invoke callback</p>
         <p><code>repetition   ::=  repeat? element</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:repetition</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="n">rept</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">first</span><span class="o">[</span><span class="ss">:_repetition_1</span><span class="o">]</span>
-    <span class="n">elt</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:element</span><span class="o">]</span>
-    <span class="k">case</span> <span class="n">rept</span>
-    <span class="k">when</span> <span class="o">[</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="o">]</span> <span class="k">then</span> <span class="o">[</span><span class="ss">:star</span><span class="p">,</span> <span class="n">elt</span><span class="o">]</span>
-    <span class="k">when</span> <span class="o">[</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="o">]</span> <span class="k">then</span> <span class="o">[</span><span class="ss">:plus</span><span class="p">,</span> <span class="n">elt</span><span class="o">]</span>
-    <span class="k">when</span> <span class="kp">nil</span>      <span class="k">then</span> <span class="n">elt</span>
-    <span class="k">else</span>
-      <span class="o">[</span><span class="ss">:rept</span><span class="p">,</span> <span class="n">rept</span><span class="o">.</span><span class="n">first</span><span class="p">,</span> <span class="n">rept</span><span class="o">.</span><span class="n">last</span><span class="p">,</span> <span class="n">elt</span><span class="o">]</span>
-    <span class="k">end</span>
-  <span class="k">end</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-36'>
@@ -941,18 +859,7 @@ Invoke callback</p>
         <p><code>repeat       ::=  DIGIT+ | (DIGIT* &quot;*&quot; DIGIT*)</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:repeat</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">is_a?</span><span class="p">(</span><span class="nb">Integer</span><span class="p">)</span>
-      <span class="o">[</span><span class="n">value</span><span class="p">,</span> <span class="n">value</span><span class="o">]</span>
-    <span class="k">else</span>
-      <span class="o">[</span><span class="n">value</span><span class="o">.</span><span class="n">first</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">]</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-  <span class="n">start_production</span><span class="p">(</span><span class="ss">:_repeat_1</span><span class="p">,</span> <span class="n">as_hash</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span>
-  <span class="n">production</span><span class="p">(</span><span class="ss">:_repeat_1</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span><span class="n">value</span><span class="o">|</span> <span class="n">value</span><span class="o">.</span><span class="n">values</span><span class="p">}</span>
-  <span class="n">production</span><span class="p">(</span><span class="ss">:_repeat_2</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span><span class="n">value</span><span class="o">|</span> <span class="n">value</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_i</span><span class="p">}</span>
-  <span class="n">production</span><span class="p">(</span><span class="ss">:_repeat_3</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span><span class="n">value</span><span class="o">|</span> <span class="n">value</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_i</span><span class="p">}</span>
-  <span class="n">production</span><span class="p">(</span><span class="ss">:_repeat_4</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span><span class="n">value</span><span class="o">|</span> <span class="n">value</span><span class="o">.</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">?</span> <span class="n">value</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_i</span> <span class="p">:</span> <span class="s1">&#39;*&#39;</span><span class="p">}</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-37'>
@@ -963,9 +870,7 @@ Invoke callback</p>
         <p><code>element      ::=  rulename | group | option | char_val | num_val | prose_val</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:element</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="n">value</span>
-  <span class="k">end</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-38'>
@@ -976,10 +881,7 @@ Invoke callback</p>
         <p><code>group        ::=  &quot;(&quot; c_wsp* alternation c_wsp* &quot;)&quot;</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">start_production</span><span class="p">(</span><span class="ss">:group</span><span class="p">,</span> <span class="n">as_hash</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span>
-  <span class="n">production</span><span class="p">(</span><span class="ss">:group</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="n">value</span><span class="o">[</span><span class="ss">:alternation</span><span class="o">]</span>
-  <span class="k">end</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-39'>
@@ -990,10 +892,7 @@ Invoke callback</p>
         <p><code>option       ::=  &quot;[&quot; c_wsp* alternation c_wsp* &quot;]&quot;</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">start_production</span><span class="p">(</span><span class="ss">:option</span><span class="p">,</span> <span class="n">as_hash</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span>
-  <span class="n">production</span><span class="p">(</span><span class="ss">:option</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="o">[</span><span class="ss">:opt</span><span class="p">,</span> <span class="n">value</span><span class="o">[</span><span class="ss">:alternation</span><span class="o">]]</span>
-  <span class="k">end</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-40'>
@@ -1004,9 +903,7 @@ Invoke callback</p>
         <p><code>case_insensitive_string ::= &quot;%i&quot;? quoted_string</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:case_insensitive_string</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="n">str</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:quoted_string</span><span class="o">]</span>
-    <span class="k">if</span> <span class="n">str</span><span class="o">.</span><span class="n">match?</span><span class="p">(</span><span class="sr">/[[:alpha:]]/</span><span class="p">)</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-41'>
@@ -1017,11 +914,7 @@ Invoke callback</p>
         <p>Only need to use case-insensitive if there are alphabetic characters in the string.</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>      <span class="o">[</span><span class="ss">:istr</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:quoted_string</span><span class="o">]]</span>
-    <span class="k">else</span>
-      <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:quoted_string</span><span class="o">]</span>
-    <span class="k">end</span>
-  <span class="k">end</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-42'>
@@ -1032,9 +925,7 @@ Invoke callback</p>
         <p><code>case_sensitive_string ::= &quot;%s&quot; quoted_string</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:case_sensitive_string</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:quoted_string</span><span class="o">]</span>
-  <span class="k">end</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-43'>
@@ -1045,9 +936,7 @@ Invoke callback</p>
         <p><code>num_val      ::=  &quot;%&quot; (bin_val | dec_val | hex_val)</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">production</span><span class="p">(</span><span class="ss">:num_val</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">value</span><span class="o">|</span>
-    <span class="n">value</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="ss">:_num_val_1</span><span class="o">]</span>
-  <span class="k">end</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-Parser_invocation.'>
@@ -1066,7 +955,7 @@ Invoke callback</p>
 @return [EBNFParser]</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">input</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-45'>
@@ -1077,11 +966,7 @@ Invoke callback</p>
         <p>If the <code>level</code> option is set, instantiate a logger for collecting trace information.</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>    <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">has_key?</span><span class="p">(</span><span class="ss">:level</span><span class="p">)</span>
-      <span class="n">options</span><span class="o">[</span><span class="ss">:logger</span><span class="o">]</span> <span class="o">=</span> <span class="no">Logger</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="no">STDERR</span><span class="p">)</span>
-      <span class="n">options</span><span class="o">[</span><span class="ss">:logger</span><span class="o">].</span><span class="n">level</span> <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="ss">:level</span><span class="o">]</span>
-      <span class="n">options</span><span class="o">[</span><span class="ss">:logger</span><span class="o">].</span><span class="n">formatter</span> <span class="o">=</span> <span class="nb">lambda</span> <span class="p">{</span><span class="o">|</span><span class="n">severity</span><span class="p">,</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">progname</span><span class="p">,</span> <span class="n">msg</span><span class="o">|</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">severity</span><span class="si">}</span><span class="s2"> </span><span class="si">#{</span><span class="n">msg</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">}</span>
-    <span class="k">end</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-46'>
@@ -1092,9 +977,7 @@ Invoke callback</p>
         <p>Read input, if necessary, which will be used in a Scanner.</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>    <span class="vi">@input</span> <span class="o">=</span> <span class="n">input</span><span class="o">.</span><span class="n">respond_to?</span><span class="p">(</span><span class="ss">:read</span><span class="p">)</span> <span class="p">?</span> <span class="n">input</span><span class="o">.</span><span class="n">read</span> <span class="p">:</span> <span class="n">input</span><span class="o">.</span><span class="n">to_s</span>
-
-    <span class="vi">@parsed_rules</span> <span class="o">=</span> <span class="p">{}</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-47'>
@@ -1105,12 +988,7 @@ Invoke callback</p>
         <p>Parses into <code>@parsed_rules</code></p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>    <span class="n">parse</span><span class="p">(</span><span class="vi">@input</span><span class="p">,</span>
-          <span class="ss">:rulelist</span><span class="p">,</span>        <span class="c1"># Starting rule</span>
-          <span class="no">ABNFMeta</span><span class="o">::</span><span class="no">RULES</span><span class="p">,</span>  <span class="c1"># PEG rules</span>
-          <span class="n">whitespace</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>   <span class="c1"># No implicit whitespace</span>
-          <span class="o">**</span><span class="n">options</span><span class="p">)</span>
-  <span class="k">end</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-48'>
@@ -1123,7 +1001,7 @@ Invoke callback</p>
 <p>@return [Array<a href="EBNF::Rule">EBNF::Rule</a>]</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">ast</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-49'>
@@ -1134,13 +1012,7 @@ Invoke callback</p>
         <p>Add built-in rules for standard ABNF rules not </p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>    <span class="n">parsed_rules</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:symbols</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="o">.</span><span class="n">uniq</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">sym</span><span class="o">|</span>
-      <span class="n">rule</span> <span class="o">=</span> <span class="no">ABNFCore</span><span class="o">::</span><span class="no">RULES</span><span class="o">.</span><span class="n">detect</span> <span class="p">{</span><span class="o">|</span><span class="n">r</span><span class="o">|</span> <span class="n">r</span><span class="o">.</span><span class="n">sym</span> <span class="o">==</span> <span class="n">sym</span><span class="p">}</span>
-      <span class="n">parsed_rules</span><span class="o">[</span><span class="n">sym</span><span class="o">]</span> <span class="o">||=</span> <span class="n">rule</span> <span class="k">if</span> <span class="n">rule</span>
-    <span class="k">end</span>
-
-    <span class="n">parsed_rules</span><span class="o">.</span><span class="n">values</span>
-  <span class="k">end</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-50'>
@@ -1149,10 +1021,11 @@ Invoke callback</p>
           <a class="pilcrow" href="#section-50">&#182;</a>
         </div>
         <p>Output formatted S-Expression of grammar</p>
+
+<p>@return [String]</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">to_sxp</span>
-    <span class="nb">require</span> <span class="s1">&#39;sxp&#39;</span> <span class="k">unless</span> <span class="n">defined?</span><span class="p">(</span><span class="no">SXP</span><span class="p">)</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-51'>
@@ -1163,10 +1036,7 @@ Invoke callback</p>
         <p>Output rules as a formatted S-Expression</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>    <span class="no">SXP</span><span class="o">::</span><span class="no">Generator</span><span class="o">.</span><span class="n">string</span><span class="p">(</span><span class="n">ast</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:for_sxp</span><span class="p">))</span>
-  <span class="k">end</span>
-
-<span class="kp">private</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-52'>
@@ -1180,21 +1050,7 @@ Invoke callback</p>
 @return [String,Array]</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">hex_or_string</span><span class="p">(</span><span class="n">characters</span><span class="p">)</span>
-    <span class="n">seq</span> <span class="o">=</span> <span class="o">[</span><span class="ss">:seq</span><span class="o">]</span>
-    <span class="n">str_result</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-    <span class="n">characters</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span>
-      <span class="k">if</span> <span class="no">VCHAR</span><span class="o">.</span><span class="n">match?</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
-        <span class="n">str_result</span> <span class="o">&lt;&lt;</span> <span class="n">c</span>
-      <span class="k">else</span>
-        <span class="k">if</span> <span class="n">str_result</span><span class="o">.</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span>
-          <span class="n">seq</span> <span class="o">&lt;&lt;</span> <span class="n">str_result</span>
-          <span class="n">str_result</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-        <span class="k">end</span>
-        <span class="n">seq</span> <span class="o">&lt;&lt;</span> <span class="o">[</span><span class="ss">:hex</span><span class="p">,</span> <span class="s2">&quot;#x%x&quot;</span> <span class="o">%</span> <span class="n">c</span><span class="o">.</span><span class="n">hex</span><span class="o">]</span>
-      <span class="k">end</span>
-    <span class="k">end</span>
-    <span class="n">seq</span> <span class="o">&lt;&lt;</span> <span class="n">str_result</span> <span class="k">if</span> <span class="n">str_result</span><span class="o">.</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
     <tr id='section-53'>
@@ -1206,13 +1062,7 @@ Invoke callback</p>
 
       </td>
       <td class=code>
-        <div class='highlight'><pre>    <span class="k">if</span> <span class="n">seq</span><span class="o">.</span><span class="n">length</span> <span class="o">==</span> <span class="mi">2</span> <span class="o">&amp;&amp;</span> <span class="n">seq</span><span class="o">.</span><span class="n">last</span><span class="o">.</span><span class="n">is_a?</span><span class="p">(</span><span class="nb">String</span><span class="p">)</span>
-      <span class="n">seq</span><span class="o">.</span><span class="n">last</span>
-    <span class="k">else</span>
-      <span class="n">seq</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span></pre></div>
+        <div class='highlight'><pre></pre></div>
       </td>
     </tr>
   </table>

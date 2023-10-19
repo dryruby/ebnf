@@ -25,7 +25,7 @@ describe EBNF::Base do
                         |   STRING2
                         |   '(' expression ')'
         
-      } => %{((rule primary "9" (alt HEX RANGE O_RANGE STRING1 STRING2 (seq "(" expression ")"))))},
+      } => %{((rule primary "9" (alt HEX RANGE O_RANGE STRING1 STRING2 (seq '(' expression ')'))))},
       %{#[1] rule ::= 'FOO'} => %{()},
       %{//[1] rule ::= 'FOO'} => %{()},
       %{[18] SolutionModifier ::= _SolutionModifier_1 _SolutionModifier_2} =>
@@ -33,7 +33,7 @@ describe EBNF::Base do
       %{[18.1]  _SolutionModifier_1 ::= _empty | GroupClause} =>
         %{((rule _SolutionModifier_1 "18.1" (alt _empty GroupClause)))},
       %q{[18] STRING1    ::= '"' (CHAR - '"')* '"'} =>
-        %q{((terminal STRING1 "18" (seq "\"" (star (diff CHAR "\"")) "\"")))},
+        %q{((terminal STRING1 "18" (seq '"' (star (diff CHAR '"')) '"')))},
       %q{[161s] WS ::= #x20 | #x9 | #xD | #xA} =>
         %q{((terminal WS "161s" (alt (hex "#x20") (hex "#x9") (hex "#xD") (hex "#xA"))))},
       %q{[1] shexDoc ::= directive* # leading CODE} =>

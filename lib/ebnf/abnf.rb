@@ -208,15 +208,15 @@ module EBNF
       str = value.last[:quoted_string]
       if str.match?(/[[:alpha:]]/)
         # Only need to use case-insensitive if there are alphabetic characters in the string.
-        [:istr, value.last[:quoted_string]]
+        [:istr, value.last[:quoted_string].tap {|s| s.quote_style = :dquote}]
       else
-        value.last[:quoted_string]
+        value.last[:quoted_string].tap {|s| s.quote_style = :dquote}
       end
     end
 
     # `case_sensitive_string ::= "%s" quoted_string`
     production(:case_sensitive_string) do |value|
-      value.last[:quoted_string]
+      value.last[:quoted_string].tap {|s| s.quote_style = :squote}
     end
 
     # `num_val      ::=  "%" (bin_val | dec_val | hex_val)`

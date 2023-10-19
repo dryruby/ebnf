@@ -21,7 +21,7 @@ describe EBNF do
                         |   STRING1
                         |   STRING2
                         |   '(' expression ')'
-      } => %{((rule primary "9" (alt HEX RANGE O_RANGE STRING1 STRING2 (seq "(" expression ")"))))},
+      } => %{((rule primary "9" (alt HEX RANGE O_RANGE STRING1 STRING2 (seq '(' expression ')'))))},
       %{
         primary     ::= HEX
                     |   RANGE
@@ -29,7 +29,7 @@ describe EBNF do
                     |   STRING1
                     |   STRING2
                     |   '(' expression ')'
-      } => %{((rule primary (alt HEX RANGE O_RANGE STRING1 STRING2 (seq "(" expression ")"))))},
+      } => %{((rule primary (alt HEX RANGE O_RANGE STRING1 STRING2 (seq '(' expression ')'))))},
     }.each do |input, expected|
       context input do
         subject {EBNF.parse(input)}

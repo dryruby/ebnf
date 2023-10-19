@@ -63,14 +63,16 @@ module EBNF
     #
     #     [16] STRING1    ::= '"' (CHAR - '"')* '"'
     terminal(:STRING1, STRING1) do |value|
-      value[1..-2]
+      using ::EBNF
+      value[1..-2].tap {|s| s.quote_style = :dquote}
     end
 
     # Match single quote string
     #
     #     [17] STRING2    ::= "'" (CHAR - "'")* "'"
     terminal(:STRING2, STRING2) do |value|
-      value[1..-2]
+      using ::EBNF
+      value[1..-2].tap {|s| s.quote_style = :squote}
     end
 
     # The `CHAR` and `R_CHAR` productions are not used explicitly

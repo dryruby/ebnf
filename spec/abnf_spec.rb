@@ -156,7 +156,7 @@ describe EBNF::ABNF do
       ],
       "case sensitive": [
         %(rulename = %s"aBc"),
-        %{((rule rulename (seq "aBc")))}
+        %{((rule rulename (seq 'aBc')))}
       ],
     }.each do |title, (input, expect)|
       it title do

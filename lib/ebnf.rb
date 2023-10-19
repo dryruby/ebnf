@@ -1,3 +1,5 @@
+require 'sxp' unless defined?(SXP)
+
 module EBNF
   autoload :ABNF,     "ebnf/abnf"
   autoload :Base,     "ebnf/base"

@@ -35,11 +35,11 @@ class EBNFPegParser
   end
 
   terminal(:STRING1, STRING1, unescape: true) do |value|
-    value[1..-2]
+    value[1..-2].tap {|s| s.quote_style = :dquote}
   end
 
   terminal(:STRING2, STRING2, unescape: true) do |value|
-    value[1..-2]
+    value[1..-2].tap {|s| s.quote_style = :squote}
   end
 
   terminal(:POSTFIX, POSTFIX)

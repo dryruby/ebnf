@@ -243,9 +243,9 @@ module EBNF
       # Format each rule, considering the available rhs size
       rules.each do |rule|
         buffer = if rule.pass?
-          "\n%-#{lhs_length-2}s      " % "@pass"
+          "\n%-#{lhs_length-2}s      " % '@pass'
         elsif rule.kind == :terminals
-          "\n%-#{lhs_length-2}s" % "@terminals"
+          "\n%-#{lhs_length-2}s" % '@terminals'
         else
           lhs_fmt % {id: "[#{rule.id}]", sym: rule.sym}
         end
@@ -285,7 +285,7 @@ module EBNF
       if expr.is_a?(String)
         return expr.length == 1 ?
           format_ebnf_char(expr) :
-          format_ebnf_string(expr, expr.include?('"') ? "'" : '"')
+          format_ebnf_string(expr)
       end
       parts = {
         alt:    (@options[:html] ? %(<code class="grammar-alt">|</code> ) : "| "),
@@ -354,11 +354,12 @@ module EBNF
 
     # Format a single-character string, prefering hex for non-main ASCII
     def format_ebnf_char(c)
+      quote = c.as_dquote? ? '"' : "'"
       case c.ord
-      when (0x21)         then (@options[:html] ? %("<code class="grammar-literal">#{@coder.encode c}</code>") : %{"#{c}"})
+      when 0x21           then (@options[:html] ? %("<code class="grammar-literal">#{@coder.encode c}</code>") : %{"#{c}"})
       when 0x22           then (@options[:html] ? %('<code class="grammar-literal">&quot;</code>') : %{'"'})
-      when (0x23..0x7e)   then (@options[:html] ? %("<code class="grammar-literal">#{@coder.encode c}</code>") : %{"#{c}"})
-      when (0x80..0xFFFD) then (@options[:html] ? %("<code class="grammar-literal">#{@coder.encode c}</code>") : %{"#{c}"})
+      when (0x23..0x7e)   then (@options[:html] ? %(#{quote}<code class="grammar-literal">#{@coder.encode c}</code>#{quote}) : %{#{quote}#{c}#{quote}})
+      when (0x80..0xFFFD) then (@options[:html] ? %(#{quote}<code class="grammar-literal">#{@coder.encode c}</code>#{quote}) : %{#{quote}#{c}#{quote}})
       else                     escape_ebnf_hex(c)
       end
     end
@@ -384,7 +385,8 @@ module EBNF
     end
 
     # Escape a string, using as many UTF-8 characters as possible
-    def format_ebnf_string(string, quote = '"')
+    def format_ebnf_string(string)
+      quote = string.as_dquote? ? '"' : "'"
       string.each_char do |c|
         case c.ord
         when 0x00..0x19, quote.ord

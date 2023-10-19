@@ -1,71 +1,66 @@
     (
-     (rule turtleDoc "1" (star statement))
-     (rule statement "2" (alt directive (seq triples ".")))
-     (rule directive "3" (alt prefixID base sparqlPrefix sparqlBase))
-     (rule prefixID "4" (seq "@prefix" PNAME_NS IRIREF "."))
-     (rule base "5" (seq "@base" IRIREF "."))
-     (rule sparqlPrefix "28s" (seq SPARQL_PREFIX PNAME_NS IRIREF))
-     (rule sparqlBase "29s" (seq SPARQL_BASE IRIREF))
-     (rule triples "6"
+     (rule turtleDoc (star statement))
+     (rule statement (alt directive (seq triples '.')))
+     (rule directive (alt prefixID base sparqlPrefix sparqlBase))
+     (rule prefixID (seq '@prefix' PNAME_NS IRIREF '.'))
+     (rule base (seq '@base' IRIREF '.'))
+     (rule sparqlPrefix (seq "PREFIX" PNAME_NS IRIREF))
+     (rule sparqlBase (seq "BASE" IRIREF))
+     (rule triples
       (alt
        (seq subject predicateObjectList)
        (seq blankNodePropertyList (opt predicateObjectList))) )
-     (rule predicateObjectList "7"
-      (seq verb objectList (star (seq ";" (opt (seq verb objectList))))))
-     (rule objectList "8" (seq object (star (seq "," object))))
-     (rule verb "9" (alt predicate "a"))
-     (rule subject "10" (alt iri BlankNode collection))
-     (rule predicate "11" (seq iri))
-     (rule object "12" (alt iri BlankNode collection blankNodePropertyList literal))
-     (rule literal "13" (alt RDFLiteral NumericLiteral BooleanLiteral))
-     (rule blankNodePropertyList "14" (seq "[" predicateObjectList "]"))
-     (rule collection "15" (seq "(" (star object) ")"))
-     (rule NumericLiteral "16" (alt INTEGER DECIMAL DOUBLE))
-     (rule RDFLiteral "128s" (seq String (opt (alt LANGTAG (seq "^^" iri)))))
-     (rule BooleanLiteral "133s" (alt "true" "false"))
-     (rule String "17"
+     (rule predicateObjectList
+      (seq verb objectList (star (seq ';' (opt (seq verb objectList))))))
+     (rule objectList (seq object (star (seq ',' object))))
+     (rule verb (alt predicate 'a'))
+     (rule subject (alt iri BlankNode collection))
+     (rule predicate (seq iri))
+     (rule object (alt iri BlankNode collection blankNodePropertyList literal))
+     (rule literal (alt RDFLiteral NumericLiteral BooleanLiteral))
+     (rule blankNodePropertyList (seq '[' predicateObjectList ']'))
+     (rule collection (seq '(' (star object) ')'))
+     (rule NumericLiteral (alt INTEGER DECIMAL DOUBLE))
+     (rule RDFLiteral (seq String (opt (alt LANGTAG (seq '^^' iri)))))
+     (rule BooleanLiteral (alt 'true' 'false'))
+     (rule String
       (alt STRING_LITERAL_QUOTE STRING_LITERAL_SINGLE_QUOTE
        STRING_LITERAL_LONG_SINGLE_QUOTE STRING_LITERAL_LONG_QUOTE ))
-     (rule iri "135s" (alt IRIREF PrefixedName))
-     (rule PrefixedName "136s" (alt PNAME_LN PNAME_NS))
-     (rule BlankNode "137s" (alt BLANK_NODE_LABEL ANON))
+     (rule iri (alt IRIREF PrefixedName))
+     (rule PrefixedName (alt PNAME_LN PNAME_NS))
+     (rule BlankNode (alt BLANK_NODE_LABEL ANON))
      (terminals _terminals (seq))
-     (terminal IRIREF "18"
-      (seq "<" (star (alt (diff (range "^<>\"{}|^`\\") (range "#x00-#x20")) UCHAR)) ">"))
-     (terminal PNAME_NS "139s" (seq (opt PN_PREFIX) ":"))
-     (terminal PNAME_LN "140s" (seq PNAME_NS PN_LOCAL))
-     (terminal BLANK_NODE_LABEL "141s"
-      (seq "_:" (alt PN_CHARS_U (range "0-9")) (opt (seq (star (alt PN_CHARS ".")) PN_CHARS))))
-     (terminal LANGTAG "144s"
-      (seq "@" (plus (range "a-zA-Z")) (star (seq "-" (plus (range "a-zA-Z0-9"))))))
-     (terminal INTEGER "19" (seq (opt (range "+-")) (plus (range "0-9"))))
-     (terminal DECIMAL "20"
-      (seq (opt (range "+-")) (seq (star (range "0-9")) "." (plus (range "0-9")))))
-     (terminal DOUBLE "21"
+     (terminal IRIREF (seq '<' (star (alt (range "^#x00-#x20<>\"{}|^`\\") UCHAR)) '>'))
+     (terminal PNAME_NS (seq (opt PN_PREFIX) ':'))
+     (terminal PNAME_LN (seq PNAME_NS PN_LOCAL))
+     (terminal BLANK_NODE_LABEL
+      (seq '_:' (alt PN_CHARS_U (range "0-9")) (opt (seq (star (alt PN_CHARS '.')) PN_CHARS))))
+     (terminal LANGTAG (seq '@' (plus (range "a-zA-Z")) (star (seq '-' (plus (range "a-zA-Z0-9"))))))
+     (terminal INTEGER (seq (opt (range "+-")) (plus (range "0-9"))))
+     (terminal DECIMAL (seq (opt (range "+-")) (seq (star (range "0-9")) '.' (plus (range "0-9")))))
+     (terminal DOUBLE
       (seq
        (opt (range "+-"))
        (alt
-        (seq (plus (range "0-9")) "." (star (range "0-9")) EXPONENT)
-        (seq "." (plus (range "0-9")) EXPONENT)
+        (seq (plus (range "0-9")) '.' (star (range "0-9")) EXPONENT)
+        (seq '.' (plus (range "0-9")) EXPONENT)
         (seq (plus (range "0-9")) EXPONENT)) ))
-     (terminal EXPONENT "154s" (seq (range "eE") (opt (range "+-")) (plus (range "0-9"))))
-     (terminal STRING_LITERAL_QUOTE "22"
-      (seq "\"" (star (alt (range "^#x22#x5C#xA#xD") ECHAR UCHAR)) "\""))
-     (terminal STRING_LITERAL_SINGLE_QUOTE "23"
+     (terminal EXPONENT (seq (range "eE") (opt (range "+-")) (plus (range "0-9"))))
+     (terminal STRING_LITERAL_QUOTE
+      (seq '"' (star (alt (range "^#x22#x5C#xA#xD") ECHAR UCHAR)) '"'))
+     (terminal STRING_LITERAL_SINGLE_QUOTE
       (seq "'" (star (alt (range "^#x27#x5C#xA#xD") ECHAR UCHAR)) "'"))
-     (terminal STRING_LITERAL_LONG_SINGLE_QUOTE "24"
+     (terminal STRING_LITERAL_LONG_SINGLE_QUOTE
       (seq "'''" (star (seq (opt (alt "'" "''")) (alt (range "^'\\") ECHAR UCHAR))) "'''"))
-     (terminal STRING_LITERAL_LONG_QUOTE "25"
-      (seq "\"\"\"" (star (seq (opt (alt "\"" "\"\"")) (alt (range "^\"\\") ECHAR UCHAR))) "\"\"\""))
-     (terminal UCHAR "26"
-      (alt (seq "\\u" HEX HEX HEX HEX) (seq "\\U" HEX HEX HEX HEX HEX HEX HEX HEX)))
-     (terminal ECHAR "159s" (seq "\\" (range "tbnrf\\\"'")))
-     (terminal SPARQL_PREFIX "28t"
-      (seq (range "Pp") (range "Rr") (range "Ee") (range "Ff") (range "Ii") (range "Xx")))
-     (terminal SPARQL_BASE "29t" (seq (range "Bb") (range "Aa") (range "Ss") (range "Ee")))
-     (terminal WS "161s" (alt (hex "#x20") (hex "#x9") (hex "#xD") (hex "#xA")))
-     (terminal ANON "162s" (seq "[" (star WS) "]"))
-     (terminal PN_CHARS_BASE "163s"
+     (terminal STRING_LITERAL_LONG_QUOTE
+      (seq '"""' (star (seq (opt (alt '"' '""')) (alt (range "^\"\\") ECHAR UCHAR))) '"""'))
+     (terminal UCHAR
+      (alt (seq '\\u' HEX HEX HEX HEX) (seq '\\U' HEX HEX HEX HEX HEX HEX HEX HEX)))
+     (terminal ECHAR (seq '\\' (range "tbnrf\\\"'")))
+     (terminal NIL (seq '(' (star WS) ')'))
+     (terminal WS (alt (hex "#x20") (hex "#x9") (hex "#xD") (hex "#xA")))
+     (terminal ANON (seq '[' (star WS) ']'))
+     (terminal PN_CHARS_BASE
       (alt
        (range "A-Z")
        (range "a-z")
@@ -81,23 +76,22 @@
        (range "#xF900-#xFDCF")
        (range "#xFDF0-#xFFFD")
        (range "#x10000-#xEFFFF")) )
-     (terminal PN_CHARS_U "164s" (alt PN_CHARS_BASE "_"))
-     (terminal PN_CHARS "166s"
-      (alt PN_CHARS_U "-"
+     (terminal PN_CHARS_U (alt PN_CHARS_BASE '_'))
+     (terminal PN_CHARS
+      (alt PN_CHARS_U '-'
        (range "0-9")
        (hex "#x00B7")
        (range "#x0300-#x036F")
        (range "#x203F-#x2040")) )
-     (terminal PN_PREFIX "167s"
-      (seq PN_CHARS_BASE (opt (seq (star (alt PN_CHARS ".")) PN_CHARS))))
-     (terminal PN_LOCAL "168s"
+     (terminal PN_PREFIX (seq PN_CHARS_BASE (opt (seq (star (alt PN_CHARS '.')) PN_CHARS))))
+     (terminal PN_LOCAL
       (seq
-       (alt PN_CHARS_U ":" (range "0-9") PLX)
-       (opt (seq (star (alt PN_CHARS "." ":" PLX)) (alt PN_CHARS ":" PLX)))) )
-     (terminal PLX "169s" (alt PERCENT PN_LOCAL_ESC))
-     (terminal PERCENT "170s" (seq "%" HEX HEX))
-     (terminal HEX "171s" (range "0-9A-Fa-f"))
-     (terminal PN_LOCAL_ESC "172s"
-      (seq "\\"
-       (alt "_" "~" "." "-" "!" "$" "&" "'" "(" ")" "*" "+" "," ";" "=" "/" "?" "#"
-        "@" "%" )) ))
+       (alt PN_CHARS_U ':' (range "0-9") PLX)
+       (opt (seq (star (alt PN_CHARS '.' ':' PLX)) (alt PN_CHARS ':' PLX)))) )
+     (terminal PLX (alt PERCENT PN_LOCAL_ESC))
+     (terminal PERCENT (seq '%' HEX HEX))
+     (terminal HEX (alt (range "0-9") (range "A-F") (range "a-f")))
+     (terminal PN_LOCAL_ESC
+      (seq '\\'
+       (alt '_' '~' '.' '-' '!' '$' '&' "'" '(' ')' '*' '+' ',' ';' '=' '/' '?' '#'
+        '@' '%' )) ))
