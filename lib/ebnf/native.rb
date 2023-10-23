@@ -288,11 +288,11 @@ module EBNF
       case m = s[0,1]
       when '"', "'" # STRING1 or STRING2
         l, s = s[1..-1].split(m.rstrip, 2)
-        [Unescape.unescape_string(l).tap {|str| str.quote_style = (m == "'" ? :squote : :dquote)}, s]
+        [Unescape.unescape(l).tap {|str| str.quote_style = (m == "'" ? :squote : :dquote)}, s]
       when '[' # RANGE, O_RANGE
         # Includes RANGE and O_RANGE which can't include a ']'
         l, s = s[1..-1].split(']', 2)
-        [[:range, Unescape.unescape_string(l)], s]
+        [[:range, Unescape.unescape(l)], s]
       when '#' # HEX
         s.match(/(#x\h+)(.*)$/)
         l, s = $1, $2

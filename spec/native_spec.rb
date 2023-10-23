@@ -42,6 +42,12 @@ describe EBNF::Native do
                 UCHAR))
               '>')))},
       ],
+      "UCHAR": [
+        %(UCHAR ::= ( '\\u' HEX HEX HEX HEX ) | ( '\\U' HEX HEX HEX HEX HEX HEX HEX HEX )),
+        %{(
+         (terminal UCHAR
+          (alt (seq '\\\\u' HEX HEX HEX HEX) (seq '\\\\U' HEX HEX HEX HEX HEX HEX HEX HEX))) )}
+      ]
     }.each do |title, (input, expect)|
       it title do
         expect(parse(input).to_sxp).to produce(expect, logger)
