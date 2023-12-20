@@ -507,7 +507,7 @@
       <pre class="code"><span class="info file"># File 'lib/ebnf/unescape.rb', line 50</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_unescape_string'>unescape_string</span><span class='lparen'>(</span><span class='id identifier rubyid_input'>input</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_input'>input</span><span class='period'>.</span><span class='id identifier rubyid_gsub'>gsub</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#ECHAR-constant" title="EBNF::Unescape::ECHAR (constant)">ECHAR</a></span></span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_escaped'>escaped</span><span class='op'>|</span> <span class='const'><span class='object_link'><a href="#ESCAPE_CHARS-constant" title="EBNF::Unescape::ESCAPE_CHARS (constant)">ESCAPE_CHARS</a></span></span><span class='lbracket'>[</span><span class='id identifier rubyid_escaped'>escaped</span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='id identifier rubyid_escaped'>escaped</span><span class='lbracket'>[</span><span class='int'>1</span><span class='op'>..</span><span class='op'>-</span><span class='int'>1</span><span class='rbracket'>]</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_input'>input</span><span class='period'>.</span><span class='id identifier rubyid_gsub'>gsub</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#ECHAR-constant" title="EBNF::Unescape::ECHAR (constant)">ECHAR</a></span></span><span class='rparen'>)</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_escaped'>escaped</span><span class='op'>|</span> <span class='const'><span class='object_link'><a href="#ESCAPE_CHARS-constant" title="EBNF::Unescape::ESCAPE_CHARS (constant)">ESCAPE_CHARS</a></span></span><span class='lbracket'>[</span><span class='id identifier rubyid_escaped'>escaped</span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='id identifier rubyid_escaped'>escaped</span><span class='rbrace'>}</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -519,7 +519,7 @@
 </div>
 
       <div id="footer">
-  Generated on Fri Sep  1 20:07:33 2023 by
+  Generated on Wed Dec 20 21:06:22 2023 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.34 (ruby-3.1.4).
 </div>
