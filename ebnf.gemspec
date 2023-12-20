@@ -30,7 +30,7 @@ Gem::Specification.new do |gem|
 
   gem.required_ruby_version = '>= 3.0'
   gem.requirements          = []
-  gem.add_runtime_dependency     'sxp',             '~> 1.3'
+  gem.add_runtime_dependency     'sxp',             '~> 2.0'
   gem.add_runtime_dependency     'scanf',           '~> 1.0'
   gem.add_runtime_dependency     'rdf',             '~> 3.3' # Required by sxp
   gem.add_runtime_dependency     'htmlentities',    '~> 4.3'

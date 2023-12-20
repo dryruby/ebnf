@@ -250,6 +250,10 @@ and [First Follow Notation-3 rules](https://www.w3.org/2000/10/swap/grammar/firs
 ## Documentation
 Full documentation available on [Rubydoc.info][EBNF doc].
 
+## Change Log
+
+See [Release Notes on GitHub](https://github.com/dryruby/ebnf/releases)
+
 ## Future Work
 * Better LL(1) parser tests
 
