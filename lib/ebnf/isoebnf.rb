@@ -56,7 +56,7 @@ module EBNF
     # `[17] terminal_string             ::= ("'" first_terminal_character+ "'")`
     # `                                   | ('"' second_terminal_character+ '"')`
     terminal(:terminal_string, /(?:'#{FIRST_TERMINAL_CHARACTER}+')|(?:"#{SECOND_TERMINAL_CHARACTER}+")/x) do |value|
-      value[1..-2]
+      value[1..-2].tap {|s| s.quote_style = (value.start_with?("'") ? :squote : :dquote) }
     end
 
     # `[20] special_sequence            ::= '?' special_sequence_character* '?'`

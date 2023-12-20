@@ -1,4 +1,5 @@
 require 'strscan'
+require 'sxp' unless defined?(SXP)
 
 # Extended Bakus-Nour Form (EBNF), being the W3C variation is
 # originaly defined in the
@@ -152,7 +153,6 @@ module EBNF
           end
         end
       when :sxp
-        require 'sxp' unless defined?(SXP)
         @ast = SXP::Reader::Basic.read(input).map {|e| Rule.from_sxp(e)}
       else
         raise "unknown input format #{format.inspect}"

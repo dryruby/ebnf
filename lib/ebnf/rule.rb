@@ -1,5 +1,6 @@
 require 'scanf'
 require 'strscan'
+require 'sxp' unless defined?(SXP)
 
 module EBNF
   # Represent individual parsed rules
@@ -158,7 +159,6 @@ module EBNF
     # @return [Rule]
     def self.from_sxp(sxp)
       if sxp.is_a?(String)
-        require 'sxp' unless defined?(SXP)
         sxp = SXP.parse(sxp)
       end
       expr = sxp.detect {|e| e.is_a?(Array) && ![:first, :follow, :start].include?(e.first.to_sym)}
@@ -209,7 +209,6 @@ module EBNF
     #
     # @return [String]
     def to_sxp(**options)
-      require 'sxp' unless defined?(SXP)
       for_sxp.to_sxp(**options)
     end
 

@@ -80,11 +80,11 @@ describe EBNF::ISOEBNF do
              "S" "T" "U" "V" "W" "X" "Y" "Z" "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k"
              "l" "m" "n" "o" "p" "q" "r" "s" "t" "u" "v" "w" "x" "y" "z" ))
            (rule digit (alt "0" "1" "2" "3" "4" "5" "6" "7" "8" "9"))
-           (rule symbol (alt "[" "]" "{" "}" "(" ")" "<" ">" "'" "\"" "=" "|" "." "," ";"))
+           (rule symbol (alt "[" "]" "{" "}" "(" ")" "<" ">" "'" '"' "=" "|" "." "," ";"))
            (rule character (alt letter digit symbol "_"))
            (rule identifier (seq letter (star (alt letter digit "_"))))
            (rule terminal
-            (alt (seq "'" character (star character) "'") (seq "\"" character (star character) "\"")))
+            (alt (seq "'" character (star character) "'") (seq '"' character (star character) '"')))
            (rule lhs (seq identifier))
            (rule rhs
             (alt identifier terminal
@@ -116,11 +116,11 @@ describe EBNF::ISOEBNF do
           all_characters = ? all visible characters ? ;
         },
         %q{((rule program
-            (seq "PROGRAM" white_space identifier white_space "BEGIN" white_space
-             (star (seq assignment ";" white_space)) "END." ))
+            (seq 'PROGRAM' white_space identifier white_space 'BEGIN' white_space
+             (star (seq assignment ";" white_space)) 'END.' ))
            (rule identifier (seq alphabetic_character (star (alt alphabetic_character digit))))
            (rule number (seq (opt "-") digit (star digit)))
-           (rule string (seq "\"" (star (diff all_characters "\"")) "\""))
+           (rule string (seq '"' (star (diff all_characters '"')) '"'))
            (rule assignment (seq identifier ":=" (seq (alt number identifier string))))
            (rule alphabetic_character
             (alt "A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P" "Q" "R"

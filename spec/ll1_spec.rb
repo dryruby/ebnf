@@ -75,7 +75,7 @@ describe EBNF::Base do
           },
           %{
             ((rule _empty "0" (first _eps) (seq))
-             (rule base "5" (first "@base") (seq "@base" IRIREF "."))
+             (rule base "5" (first '@base') (seq '@base' IRIREF "."))
              (rule _base_1 "5.1" (seq IRIREF "."))
              (rule _base_2 "5.2" (first ".") (seq ".")))
           }, nil
@@ -88,7 +88,7 @@ describe EBNF::Base do
           },
           %{(
             (rule _empty "0" (first _eps) (seq))
-            (terminal IRIREF "18" (seq "<" (star (alt "range" UCHAR)) ">"))
+            (terminal IRIREF "18" (seq '<' (star (alt "range" UCHAR)) '>'))
             (rule sparqlBase "29s" (first SPARQL_BASE) (seq SPARQL_BASE IRIREF))
             (terminal SPARQL_BASE "29t" (seq (range "Bb") (range "Aa") (range "Ss") (range "Ee")))
             (rule _sparqlBase_1 "29s.1" (first IRIREF) (seq IRIREF)))
@@ -100,12 +100,12 @@ describe EBNF::Base do
           },
           %{
             ((rule _empty "0" (first _eps) (seq))
-             (rule declaration "2" (first "@pass" "@terminals") (alt "@terminals" "@pass")))
+             (rule declaration "2" (first '@pass' '@terminals') (alt '@terminals' '@pass')))
           }, nil
         ],
         "Query (FF.1/6)" => [
           %{
-            [2] Query        ::= 'BASE'? 'SELECT'
+            [2] Query        ::= "BASE"? "SELECT"
           },
           %{
             ((rule _empty "0" (first _eps) (seq))
@@ -133,7 +133,7 @@ describe EBNF::Base do
           %{
             [18]    SolutionModifier	  ::= _SolutionModifier_1 
             [18.1]  _SolutionModifier_1 ::= _empty | GroupClause
-            [19]    GroupClause	        ::= 'GROUP'
+            [19]    GroupClause	        ::= "GROUP"
           },
           %{
             ((rule _empty "0" (first _eps) (seq))
@@ -148,10 +148,10 @@ describe EBNF::Base do
           },
           %[
             ((rule _empty "0" (first _eps) (seq) )
-             (rule GroupGraphPattern "54" (first "{") (seq "{" _GroupGraphPattern_1 "}"))
-             (rule _GroupGraphPattern_1 "54.1" (first "E" _eps) (follow "}") (cleanup opt) (alt _empty "E"))
-             (rule _GroupGraphPattern_2 "54.2" (first "E" "}") (seq _GroupGraphPattern_1 "}"))
-             (rule _GroupGraphPattern_3 "54.3" (first "}") (seq "}")))
+             (rule GroupGraphPattern "54" (first '{') (seq '{' _GroupGraphPattern_1 '}'))
+             (rule _GroupGraphPattern_1 "54.1" (first "E" _eps) (follow '}') (cleanup opt) (alt _empty "E"))
+             (rule _GroupGraphPattern_2 "54.2" (first "E" '}') (seq _GroupGraphPattern_1 '}'))
+             (rule _GroupGraphPattern_3 "54.3" (first '}') (seq '}')))
           ]
         ]
       }.each do |name, (input, expected, start)|
@@ -233,15 +233,15 @@ describe EBNF::Base do
           },
           %{
             ((rule _empty "0" (first _eps) (seq))
-             (rule turtleDoc "1" (start #t) (first "BASE" "IRI" _eps) (follow _eof) (cleanup star)
+             (rule turtleDoc "1" (start #t) (first 'BASE' 'IRI' _eps) (follow _eof) (cleanup star)
               (alt _empty _turtleDoc_1))
-             (rule _turtleDoc_1 "1.1" (first "BASE" "IRI") (follow _eof) (cleanup merge) (seq statement turtleDoc))
-             (rule _turtleDoc_2 "1.2" (first "BASE" "IRI" _eps) (follow _eof) (seq turtleDoc))
-             (rule statement "2" (first "BASE" "IRI") (follow "BASE" "IRI" _eof) (alt directive _statement_1))
-             (rule _statement_1 "2.1" (first "IRI") (follow "BASE" "IRI" _eof) (seq triples "."))
-             (rule _statement_2 "2.2" (first ".") (follow "BASE" "IRI" _eof) (seq "."))
-             (rule directive "3" (first "BASE") (follow "BASE" "IRI" _eof) (seq "BASE"))
-             (rule triples "4" (first "IRI") (follow ".") (seq "IRI")))
+             (rule _turtleDoc_1 "1.1" (first 'BASE' 'IRI') (follow _eof) (cleanup merge) (seq statement turtleDoc))
+             (rule _turtleDoc_2 "1.2" (first 'BASE' 'IRI' _eps) (follow _eof) (seq turtleDoc))
+             (rule statement "2" (first 'BASE' 'IRI') (follow 'BASE' 'IRI' _eof) (alt directive _statement_1))
+             (rule _statement_1 "2.1" (first 'IRI') (follow 'BASE' 'IRI' _eof) (seq triples "."))
+             (rule _statement_2 "2.2" (first ".") (follow 'BASE' 'IRI' _eof) (seq "."))
+             (rule directive "3" (first 'BASE') (follow 'BASE' 'IRI' _eof) (seq 'BASE'))
+             (rule triples "4" (first 'IRI') (follow ".") (seq 'IRI')))
           }, :turtleDoc
         ]
       }.each do |name, (input, expected, start)|

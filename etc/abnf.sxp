@@ -28,7 +28,7 @@
       (seq "x" (plus HEXDIG) (opt (alt (plus (seq "." (plus HEXDIG))) (seq "-" (plus HEXDIG))))))
      (terminal prose_val (seq "<" (star (range "#x20-#x3D#x3F-#x7E")) ">"))
      (terminal ALPHA (range "#x41-#x5A#x61-#x7A"))
-     (terminal BIT (alt "0" "1"))
+     (terminal BIT (alt '0' '1'))
      (terminal CHAR (range "#x01-#x7F"))
      (terminal CR (hex "#x0D"))
      (terminal CRLF (seq (opt CR) LF))

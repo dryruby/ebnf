@@ -22,7 +22,7 @@ describe EBNF::Parser do
       ],
       "aliteration": [
         %{[2] declaration ::= '@terminals' | '@pass'},
-        %{((rule declaration "2" (alt "@terminals" "@pass")))},
+        %{((rule declaration "2" (alt '@terminals' '@pass')))},
       ],
       "posfix": [
         %{[9] postfix     ::= primary ( [?*+] )?},
@@ -35,12 +35,12 @@ describe EBNF::Parser do
       "IRIREF": [
         %([18] IRIREF     ::= '<' ([^<>"{}|^`\]-[#x00-#x20] | UCHAR)* '>'),
         %{((terminal IRIREF "18"
-            (seq "<"
+            (seq '<'
               (star
                 (alt
                   (diff (range "^<>\\\"{}|^`") (range "#x00-#x20"))
                 UCHAR))
-              ">")))},
+              '>')))},
       ],
       "minimal whitespace": [
         %{[xx]minimal::=whitespace[yy]whitespace::=PASS},
@@ -61,7 +61,7 @@ describe EBNF::Parser do
         ],
         "aliteration": [
           %{declaration ::= '@terminals' | '@pass'},
-          %{((rule declaration (alt "@terminals" "@pass")))},
+          %{((rule declaration (alt '@terminals' '@pass')))},
         ],
         "posfix": [
           %{postfix     ::= primary ( [?*+] )?},
@@ -74,12 +74,12 @@ describe EBNF::Parser do
         "IRIREF": [
           %(IRIREF     ::= '<' ([^<>"{}|^`\]-[#x00-#x20] | UCHAR)* '>'),
           %{((terminal IRIREF
-              (seq "<"
+              (seq '<'
                 (star
                   (alt
                     (diff (range "^<>\\\"{}|^`") (range "#x00-#x20"))
                   UCHAR))
-                ">")))},
+                '>')))},
         ],
       }.each do |title, (input, expect)|
         it title do
@@ -91,7 +91,7 @@ describe EBNF::Parser do
 
   describe "#expression" do
     {
-      "'abc' def" => %{(seq "abc" def)},
+      "'abc' def" => %{(seq 'abc' def)},
       %{[0-9]} => %{(range "0-9")},
       %{#x00B7} => %{(hex "#x00B7")},
       %{[#x0300-#x036F]} => %{(range "#x0300-#x036F")},
@@ -114,9 +114,9 @@ describe EBNF::Parser do
       %{[#x20#x21#x22]} => %{(range "#x20#x21#x22")},
       %{BaseDecl? PrefixDecl*} => %{(seq (opt BaseDecl) (star PrefixDecl))},
       %{NCCHAR1 | '-' | [0-9] | #x00B7 | [#x0300-#x036F] | [#x203F-#x2040]} =>
-        %{(alt NCCHAR1 "-" (range "0-9") (hex "#x00B7") (range "#x0300-#x036F") (range "#x203F-#x2040"))},
+        %{(alt NCCHAR1 '-' (range "0-9") (hex "#x00B7") (range "#x0300-#x036F") (range "#x203F-#x2040"))},
       %{'<' ([^<>"{}|^`\]-[#x00-#x20] | UCHAR)* '>'} =>
-        %{(seq "<" (star (alt (diff (range "^<>\\\"{}|^`") (range "#x00-#x20")) UCHAR)) ">")},
+        %{(seq '<' (star (alt (diff (range "^<>\\\"{}|^`") (range "#x00-#x20")) UCHAR)) '>')},
     }.each do |input, expected|
       it "given #{input.inspect} produces #{expected}" do
         rule = parse("rule ::= #{input}").ast.first

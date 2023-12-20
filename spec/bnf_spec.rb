@@ -24,7 +24,7 @@ describe EBNF::BNF do
       } =>
       %{((rule _empty "0" (seq))
          (rule primary "9" (alt HEX RANGE O_RANGE STRING1 STRING2 _primary_1 ))
-         (rule _primary_1 "9.1" (seq "(" expression ")")))},
+         (rule _primary_1 "9.1" (seq '(' expression ')')))},
       %{
         [1]  R1 ::= 1 2
         [2]  R2 ::= 1 2

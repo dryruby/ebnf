@@ -480,8 +480,8 @@ describe EBNF::Rule do
 
   describe "#to_regexp" do
     {
-      hex: [:hex, "#x20", / /],
-      hex: [:hex, "#x5c", /\\/],
+      hex: [:hex, "#x20", /\ /],
+      hex2: [:hex, "#x5c", /\\/],
       range: [:range, "a-b", /[a-b]/],
       range2: [:range, "a-zA-Z", /[a-zA-Z]/],
       range3: [:range, "abc-", /[abc-]/],

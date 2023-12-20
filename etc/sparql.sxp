@@ -4,117 +4,117 @@
       (seq Prologue (alt SelectQuery ConstructQuery DescribeQuery AskQuery)))
      (rule UpdateUnit "3" (seq Update))
      (rule Prologue "4" (star (alt BaseDecl PrefixDecl)))
-     (rule BaseDecl "5" (seq "BASE" IRIREF))
-     (rule PrefixDecl "6" (seq "PREFIX" PNAME_NS IRIREF))
+     (rule BaseDecl "5" (seq 'BASE' IRIREF))
+     (rule PrefixDecl "6" (seq 'PREFIX' PNAME_NS IRIREF))
      (rule SelectQuery "7"
       (seq SelectClause (star DatasetClause) WhereClause SolutionModifier ValuesClause))
      (rule SubSelect "8" (seq SelectClause WhereClause SolutionModifier ValuesClause))
      (rule SelectClause "9"
-      (seq "SELECT"
-       (opt (alt "DISTINCT" "REDUCED"))
-       (alt (plus (alt Var (seq "(" Expression "AS" Var ")"))) "*")) )
+      (seq 'SELECT'
+       (opt (alt 'DISTINCT' 'REDUCED'))
+       (alt (plus (alt Var (seq '(' Expression 'AS' Var ')'))) '*')) )
      (rule ConstructQuery "10"
-      (seq "CONSTRUCT"
+      (seq 'CONSTRUCT'
        (alt
         (seq ConstructTemplate (star DatasetClause) WhereClause SolutionModifier)
-        (seq (star DatasetClause) "WHERE" "{" (opt TriplesTemplate) "}" SolutionModifier)) ValuesClause ))
+        (seq (star DatasetClause) 'WHERE' '{' (opt TriplesTemplate) '}' SolutionModifier)) ValuesClause ))
      (rule DescribeQuery "11"
-      (seq "DESCRIBE"
-       (alt (plus VarOrIri) "*")
+      (seq 'DESCRIBE'
+       (alt (plus VarOrIri) '*')
        (star DatasetClause)
        (opt WhereClause) SolutionModifier ValuesClause ))
-     (rule AskQuery "12" (seq "ASK" (star DatasetClause) WhereClause ValuesClause))
-     (rule DatasetClause "13" (seq "FROM" (alt DefaultGraphClause NamedGraphClause)))
+     (rule AskQuery "12" (seq 'ASK' (star DatasetClause) WhereClause ValuesClause))
+     (rule DatasetClause "13" (seq 'FROM' (alt DefaultGraphClause NamedGraphClause)))
      (rule DefaultGraphClause "14" (seq SourceSelector))
-     (rule NamedGraphClause "15" (seq "NAMED" SourceSelector))
+     (rule NamedGraphClause "15" (seq 'NAMED' SourceSelector))
      (rule SourceSelector "16" (seq iri))
-     (rule WhereClause "17" (seq (opt "WHERE") GroupGraphPattern))
+     (rule WhereClause "17" (seq (opt 'WHERE') GroupGraphPattern))
      (rule SolutionModifier "18"
       (seq (opt GroupClause) (opt HavingClause) (opt OrderClause) (opt LimitOffsetClauses)))
-     (rule GroupClause "19" (seq "GROUP" "BY" (plus GroupCondition)))
+     (rule GroupClause "19" (seq 'GROUP' 'BY' (plus GroupCondition)))
      (rule GroupCondition "20"
-      (alt BuiltInCall FunctionCall (seq "(" Expression (opt (seq "AS" Var)) ")") Var))
-     (rule HavingClause "21" (seq "HAVING" (plus HavingCondition)))
+      (alt BuiltInCall FunctionCall (seq '(' Expression (opt (seq 'AS' Var)) ')') Var))
+     (rule HavingClause "21" (seq 'HAVING' (plus HavingCondition)))
      (rule HavingCondition "22" (seq Constraint))
-     (rule OrderClause "23" (seq "ORDER" "BY" (plus OrderCondition)))
+     (rule OrderClause "23" (seq 'ORDER' 'BY' (plus OrderCondition)))
      (rule OrderCondition "24"
-      (alt (seq (alt "ASC" "DESC") BrackettedExpression) (alt Constraint Var)))
+      (alt (seq (alt 'ASC' 'DESC') BrackettedExpression) (alt Constraint Var)))
      (rule LimitOffsetClauses "25"
       (alt (seq LimitClause (opt OffsetClause)) (seq OffsetClause (opt LimitClause))))
-     (rule LimitClause "26" (seq "LIMIT" INTEGER))
-     (rule OffsetClause "27" (seq "OFFSET" INTEGER))
-     (rule ValuesClause "28" (opt (seq "VALUES" DataBlock)))
-     (rule Update "29" (seq Prologue (opt (seq Update1 (opt (seq ";" Update))))))
+     (rule LimitClause "26" (seq 'LIMIT' INTEGER))
+     (rule OffsetClause "27" (seq 'OFFSET' INTEGER))
+     (rule ValuesClause "28" (opt (seq 'VALUES' DataBlock)))
+     (rule Update "29" (seq Prologue (opt (seq Update1 (opt (seq ';' Update))))))
      (rule Update1 "30"
       (alt Load Clear Drop Add Move Copy Create InsertData DeleteData DeleteWhere
        Modify ))
-     (rule Load "31" (seq "LOAD" (opt "SILENT") iri (opt (seq "INTO" GraphRef))))
-     (rule Clear "32" (seq "CLEAR" (opt "SILENT") GraphRefAll))
-     (rule Drop "33" (seq "DROP" (opt "SILENT") GraphRefAll))
-     (rule Create "34" (seq "CREATE" (opt "SILENT") GraphRef))
-     (rule Add "35" (seq "ADD" (opt "SILENT") GraphOrDefault "TO" GraphOrDefault))
-     (rule Move "36" (seq "MOVE" (opt "SILENT") GraphOrDefault "TO" GraphOrDefault))
-     (rule Copy "37" (seq "COPY" (opt "SILENT") GraphOrDefault "TO" GraphOrDefault))
-     (rule InsertData "38" (seq "INSERT DATA" QuadData))
-     (rule DeleteData "39" (seq "DELETE DATA" QuadData))
-     (rule DeleteWhere "40" (seq "DELETE WHERE" QuadPattern))
+     (rule Load "31" (seq 'LOAD' (opt 'SILENT') iri (opt (seq 'INTO' GraphRef))))
+     (rule Clear "32" (seq 'CLEAR' (opt 'SILENT') GraphRefAll))
+     (rule Drop "33" (seq 'DROP' (opt 'SILENT') GraphRefAll))
+     (rule Create "34" (seq 'CREATE' (opt 'SILENT') GraphRef))
+     (rule Add "35" (seq 'ADD' (opt 'SILENT') GraphOrDefault 'TO' GraphOrDefault))
+     (rule Move "36" (seq 'MOVE' (opt 'SILENT') GraphOrDefault 'TO' GraphOrDefault))
+     (rule Copy "37" (seq 'COPY' (opt 'SILENT') GraphOrDefault 'TO' GraphOrDefault))
+     (rule InsertData "38" (seq 'INSERT DATA' QuadData))
+     (rule DeleteData "39" (seq 'DELETE DATA' QuadData))
+     (rule DeleteWhere "40" (seq 'DELETE WHERE' QuadPattern))
      (rule Modify "41"
       (seq
-       (opt (seq "WITH" iri))
+       (opt (seq 'WITH' iri))
        (alt (seq DeleteClause (opt InsertClause)) InsertClause)
-       (star UsingClause) "WHERE" GroupGraphPattern ))
-     (rule DeleteClause "42" (seq "DELETE" QuadPattern))
-     (rule InsertClause "43" (seq "INSERT" QuadPattern))
-     (rule UsingClause "44" (seq "USING" (alt iri (seq "NAMED" iri))))
-     (rule GraphOrDefault "45" (alt "DEFAULT" (seq (opt "GRAPH") iri)))
-     (rule GraphRef "46" (seq "GRAPH" iri))
-     (rule GraphRefAll "47" (alt GraphRef "DEFAULT" "NAMED" "ALL"))
-     (rule QuadPattern "48" (seq "{" Quads "}"))
-     (rule QuadData "49" (seq "{" Quads "}"))
+       (star UsingClause) 'WHERE' GroupGraphPattern ))
+     (rule DeleteClause "42" (seq 'DELETE' QuadPattern))
+     (rule InsertClause "43" (seq 'INSERT' QuadPattern))
+     (rule UsingClause "44" (seq 'USING' (alt iri (seq 'NAMED' iri))))
+     (rule GraphOrDefault "45" (alt 'DEFAULT' (seq (opt 'GRAPH') iri)))
+     (rule GraphRef "46" (seq 'GRAPH' iri))
+     (rule GraphRefAll "47" (alt GraphRef 'DEFAULT' 'NAMED' 'ALL'))
+     (rule QuadPattern "48" (seq '{' Quads '}'))
+     (rule QuadData "49" (seq '{' Quads '}'))
      (rule Quads "50"
-      (seq (opt TriplesTemplate) (star (seq QuadsNotTriples (opt ".") (opt TriplesTemplate)))))
-     (rule QuadsNotTriples "51" (seq "GRAPH" VarOrIri "{" (opt TriplesTemplate) "}"))
-     (rule TriplesTemplate "52" (seq TriplesSameSubject (opt (seq "." (opt TriplesTemplate)))))
-     (rule GroupGraphPattern "53" (seq "{" (alt SubSelect GroupGraphPatternSub) "}"))
+      (seq (opt TriplesTemplate) (star (seq QuadsNotTriples (opt '.') (opt TriplesTemplate)))))
+     (rule QuadsNotTriples "51" (seq 'GRAPH' VarOrIri '{' (opt TriplesTemplate) '}'))
+     (rule TriplesTemplate "52" (seq TriplesSameSubject (opt (seq '.' (opt TriplesTemplate)))))
+     (rule GroupGraphPattern "53" (seq '{' (alt SubSelect GroupGraphPatternSub) '}'))
      (rule GroupGraphPatternSub "54"
-      (seq (opt TriplesBlock) (star (seq GraphPatternNotTriples (opt ".") (opt TriplesBlock)))))
-     (rule TriplesBlock "55" (seq TriplesSameSubjectPath (opt (seq "." (opt TriplesBlock)))))
+      (seq (opt TriplesBlock) (star (seq GraphPatternNotTriples (opt '.') (opt TriplesBlock)))))
+     (rule TriplesBlock "55" (seq TriplesSameSubjectPath (opt (seq '.' (opt TriplesBlock)))))
      (rule GraphPatternNotTriples "56"
       (alt GroupOrUnionGraphPattern OptionalGraphPattern MinusGraphPattern
        GraphGraphPattern ServiceGraphPattern Filter Bind InlineData ))
-     (rule OptionalGraphPattern "57" (seq "OPTIONAL" GroupGraphPattern))
-     (rule GraphGraphPattern "58" (seq "GRAPH" VarOrIri GroupGraphPattern))
+     (rule OptionalGraphPattern "57" (seq 'OPTIONAL' GroupGraphPattern))
+     (rule GraphGraphPattern "58" (seq 'GRAPH' VarOrIri GroupGraphPattern))
      (rule ServiceGraphPattern "59"
-      (seq "SERVICE" (opt "SILENT") VarOrIri GroupGraphPattern))
-     (rule Bind "60" (seq "BIND" "(" Expression "AS" Var ")"))
-     (rule InlineData "61" (seq "VALUES" DataBlock))
+      (seq 'SERVICE' (opt 'SILENT') VarOrIri GroupGraphPattern))
+     (rule Bind "60" (seq 'BIND' '(' Expression 'AS' Var ')'))
+     (rule InlineData "61" (seq 'VALUES' DataBlock))
      (rule DataBlock "62" (alt InlineDataOneVar InlineDataFull))
-     (rule InlineDataOneVar "63" (seq Var "{" (star DataBlockValue) "}"))
+     (rule InlineDataOneVar "63" (seq Var '{' (star DataBlockValue) '}'))
      (rule InlineDataFull "64"
       (seq
-       (alt NIL (seq "(" (star Var) ")")) "{"
-       (star (alt (seq "(" (star DataBlockValue) ")") NIL)) "}" ))
+       (alt NIL (seq '(' (star Var) ')')) '{'
+       (star (alt (seq '(' (star DataBlockValue) ')') NIL)) '}' ))
      (rule DataBlockValue "65"
-      (alt iri RDFLiteral NumericLiteral BooleanLiteral "UNDEF"))
-     (rule MinusGraphPattern "66" (seq "MINUS" GroupGraphPattern))
+      (alt iri RDFLiteral NumericLiteral BooleanLiteral 'UNDEF'))
+     (rule MinusGraphPattern "66" (seq 'MINUS' GroupGraphPattern))
      (rule GroupOrUnionGraphPattern "67"
-      (seq GroupGraphPattern (star (seq "UNION" GroupGraphPattern))))
-     (rule Filter "68" (seq "FILTER" Constraint))
+      (seq GroupGraphPattern (star (seq 'UNION' GroupGraphPattern))))
+     (rule Filter "68" (seq 'FILTER' Constraint))
      (rule Constraint "69" (alt BrackettedExpression BuiltInCall FunctionCall))
      (rule FunctionCall "70" (seq iri ArgList))
      (rule ArgList "71"
-      (alt NIL (seq "(" (opt "DISTINCT") Expression (star (seq "," Expression)) ")")))
-     (rule ExpressionList "72" (alt NIL (seq "(" Expression (star (seq "," Expression)) ")")))
-     (rule ConstructTemplate "73" (seq "{" (opt ConstructTriples) "}"))
+      (alt NIL (seq '(' (opt 'DISTINCT') Expression (star (seq ',' Expression)) ')')))
+     (rule ExpressionList "72" (alt NIL (seq '(' Expression (star (seq ',' Expression)) ')')))
+     (rule ConstructTemplate "73" (seq '{' (opt ConstructTriples) '}'))
      (rule ConstructTriples "74"
-      (seq TriplesSameSubject (opt (seq "." (opt ConstructTriples)))))
+      (seq TriplesSameSubject (opt (seq '.' (opt ConstructTriples)))))
      (rule TriplesSameSubject "75"
       (alt (seq VarOrTerm PropertyListNotEmpty) (seq TriplesNode PropertyList)))
      (rule PropertyList "76" (opt PropertyListNotEmpty))
      (rule PropertyListNotEmpty "77"
-      (seq Verb ObjectList (star (seq ";" (opt (seq Verb ObjectList))))))
-     (rule Verb "78" (alt VarOrIri "a"))
-     (rule ObjectList "79" (seq Object (star (seq "," Object))))
+      (seq Verb ObjectList (star (seq ';' (opt (seq Verb ObjectList))))))
+     (rule Verb "78" (alt VarOrIri 'a'))
+     (rule ObjectList "79" (seq Object (star (seq ',' Object))))
      (rule Object "80" (seq GraphNode))
      (rule TriplesSameSubjectPath "81"
       (alt (seq VarOrTerm PropertyListNotEmptyPath) (seq TriplesNode PropertyListPath)))
@@ -122,33 +122,33 @@
      (rule PropertyListNotEmptyPath "83"
       (seq
        (alt VerbPath VerbSimple) ObjectList
-       (star (seq ";" (opt (seq (alt VerbPath VerbSimple) ObjectList))))) )
+       (star (seq ';' (opt (seq (alt VerbPath VerbSimple) ObjectList))))) )
      (rule VerbPath "84" (seq Path))
      (rule VerbSimple "85" (seq Var))
-     (rule ObjectListPath "86" (seq ObjectPath (star (seq "," ObjectPath))))
+     (rule ObjectListPath "86" (seq ObjectPath (star (seq ',' ObjectPath))))
      (rule ObjectPath "87" (seq GraphNodePath))
      (rule Path "88" (seq PathAlternative))
-     (rule PathAlternative "89" (seq PathSequence (star (seq "|" PathSequence))))
-     (rule PathSequence "90" (seq PathEltOrInverse (star (seq "/" PathEltOrInverse))))
+     (rule PathAlternative "89" (seq PathSequence (star (seq '|' PathSequence))))
+     (rule PathSequence "90" (seq PathEltOrInverse (star (seq '/' PathEltOrInverse))))
      (rule PathElt "91" (seq PathPrimary (opt PathMod)))
-     (rule PathEltOrInverse "92" (alt PathElt (seq "^" PathElt)))
+     (rule PathEltOrInverse "92" (alt PathElt (seq '^' PathElt)))
      (rule PathMod "93"
-      (alt "*" "?" "+"
-       (seq "{"
-        (alt (seq Integer (alt (seq "," (alt "}" (seq Integer "}"))) "}")) (seq "," Integer "}"))) ))
+      (alt '*' '?' '+'
+       (seq '{'
+        (alt (seq Integer (alt (seq ',' (alt '}' (seq Integer '}'))) '}')) (seq ',' Integer '}'))) ))
      (rule PathPrimary "94"
-      (alt iri "a" (seq "!" PathNegatedPropertySet) (seq "(" Path ")")))
+      (alt iri 'a' (seq '!' PathNegatedPropertySet) (seq '(' Path ')')))
      (rule PathNegatedPropertySet "95"
       (alt PathOneInPropertySet
-       (seq "(" (opt (seq PathOneInPropertySet (star (seq "|" PathOneInPropertySet)))) ")")) )
-     (rule PathOneInPropertySet "96" (alt iri "a" (seq "^" (alt iri "a"))))
+       (seq '(' (opt (seq PathOneInPropertySet (star (seq '|' PathOneInPropertySet)))) ')')) )
+     (rule PathOneInPropertySet "96" (alt iri 'a' (seq '^' (alt iri 'a'))))
      (rule Integer "97" (seq INTEGER))
      (rule TriplesNode "98" (alt Collection BlankNodePropertyList))
-     (rule BlankNodePropertyList "99" (seq "[" PropertyListNotEmpty "]"))
+     (rule BlankNodePropertyList "99" (seq '[' PropertyListNotEmpty ']'))
      (rule TriplesNodePath "100" (alt CollectionPath BlankNodePropertyListPath))
-     (rule BlankNodePropertyListPath "101" (seq "[" PropertyListPathNotEmpty "]"))
-     (rule Collection "102" (seq "(" (plus GraphNode) ")"))
-     (rule CollectionPath "103" (seq "(" (plus GraphNodePath) ")"))
+     (rule BlankNodePropertyListPath "101" (seq '[' PropertyListPathNotEmpty ']'))
+     (rule Collection "102" (seq '(' (plus GraphNode) ')'))
+     (rule CollectionPath "103" (seq '(' (plus GraphNodePath) ')'))
      (rule GraphNode "104" (alt VarOrTerm TriplesNode))
      (rule GraphNodePath "105" (alt VarOrTerm TriplesNodePath))
      (rule VarOrTerm "106" (alt Var GraphTerm))
@@ -158,117 +158,117 @@
       (alt iri RDFLiteral NumericLiteral BooleanLiteral BlankNode NIL))
      (rule Expression "110" (seq ConditionalOrExpression))
      (rule ConditionalOrExpression "111"
-      (seq ConditionalAndExpression (star (seq "||" ConditionalAndExpression))))
-     (rule ConditionalAndExpression "112" (seq ValueLogical (star (seq "&&" ValueLogical))))
+      (seq ConditionalAndExpression (star (seq '||' ConditionalAndExpression))))
+     (rule ConditionalAndExpression "112" (seq ValueLogical (star (seq '&&' ValueLogical))))
      (rule ValueLogical "113" (seq RelationalExpression))
      (rule RelationalExpression "114"
       (seq NumericExpression
        (opt
         (alt
-         (seq "=" NumericExpression)
-         (seq "!=" NumericExpression)
-         (seq "<" NumericExpression)
-         (seq ">" NumericExpression)
-         (seq "<=" NumericExpression)
-         (seq ">=" NumericExpression)
-         (seq "IN" ExpressionList)
-         (seq "NOT" "IN" ExpressionList)) )) )
+         (seq '=' NumericExpression)
+         (seq '!=' NumericExpression)
+         (seq '<' NumericExpression)
+         (seq '>' NumericExpression)
+         (seq '<=' NumericExpression)
+         (seq '>=' NumericExpression)
+         (seq 'IN' ExpressionList)
+         (seq 'NOT' 'IN' ExpressionList)) )) )
      (rule NumericExpression "115" (seq AdditiveExpression))
      (rule AdditiveExpression "116"
       (seq MultiplicativeExpression
        (star
         (alt
-         (seq "+" MultiplicativeExpression)
-         (seq "-" MultiplicativeExpression)
+         (seq '+' MultiplicativeExpression)
+         (seq '-' MultiplicativeExpression)
          (seq
           (alt NumericLiteralPositive NumericLiteralNegative)
-          (opt (alt (seq "*" UnaryExpression) (seq "/" UnaryExpression)))) )) ))
+          (opt (alt (seq '*' UnaryExpression) (seq '/' UnaryExpression)))) )) ))
      (rule MultiplicativeExpression "117"
-      (seq UnaryExpression (star (alt (seq "*" UnaryExpression) (seq "/" UnaryExpression)))))
+      (seq UnaryExpression (star (alt (seq '*' UnaryExpression) (seq '/' UnaryExpression)))))
      (rule UnaryExpression "118"
       (alt
-       (seq "!" PrimaryExpression)
-       (seq "+" PrimaryExpression)
-       (seq "-" PrimaryExpression) PrimaryExpression ))
+       (seq '!' PrimaryExpression)
+       (seq '+' PrimaryExpression)
+       (seq '-' PrimaryExpression) PrimaryExpression ))
      (rule PrimaryExpression "119"
       (alt BrackettedExpression BuiltInCall iriOrFunction RDFLiteral NumericLiteral
        BooleanLiteral Var ))
-     (rule BrackettedExpression "120" (seq "(" Expression ")"))
+     (rule BrackettedExpression "120" (seq '(' Expression ')'))
      (rule BuiltInCall "121"
       (alt Aggregate
-       (seq "STR" "(" Expression ")")
-       (seq "LANG" "(" Expression ")")
-       (seq "LANGMATCHES" "(" Expression "," Expression ")")
-       (seq "DATATYPE" "(" Expression ")")
-       (seq "BOUND" "(" Var ")")
-       (seq "IRI" "(" Expression ")")
-       (seq "URI" "(" Expression ")")
-       (seq "BNODE" (alt (seq "(" Expression ")") NIL))
-       (seq "RAND" NIL)
-       (seq "ABS" "(" Expression ")")
-       (seq "CEIL" "(" Expression ")")
-       (seq "FLOOR" "(" Expression ")")
-       (seq "ROUND" "(" Expression ")")
-       (seq "CONCAT" ExpressionList) SubstringExpression
-       (seq "STRLEN" "(" Expression ")") StrReplaceExpression
-       (seq "UCASE" "(" Expression ")")
-       (seq "LCASE" "(" Expression ")")
-       (seq "ENCODE_FOR_URI" "(" Expression ")")
-       (seq "CONTAINS" "(" Expression "," Expression ")")
-       (seq "STRSTARTS" "(" Expression "," Expression ")")
-       (seq "STRENDS" "(" Expression "," Expression ")")
-       (seq "STRBEFORE" "(" Expression "," Expression ")")
-       (seq "STRAFTER" "(" Expression "," Expression ")")
-       (seq "YEAR" "(" Expression ")")
-       (seq "MONTH" "(" Expression ")")
-       (seq "DAY" "(" Expression ")")
-       (seq "HOURS" "(" Expression ")")
-       (seq "MINUTES" "(" Expression ")")
-       (seq "SECONDS" "(" Expression ")")
-       (seq "TIMEZONE" "(" Expression ")")
-       (seq "TZ" "(" Expression ")")
-       (seq "NOW" NIL)
-       (seq "UUID" NIL)
-       (seq "STRUUID" NIL)
-       (seq "MD5" "(" Expression ")")
-       (seq "SHA1" "(" Expression ")")
-       (seq "SHA224" "(" Expression ")")
-       (seq "SHA256" "(" Expression ")")
-       (seq "SHA384" "(" Expression ")")
-       (seq "SHA512" "(" Expression ")")
-       (seq "COALESCE" ExpressionList)
-       (seq "IF" "(" Expression "," Expression "," Expression ")")
-       (seq "STRLANG" "(" Expression "," Expression ")")
-       (seq "STRDT" "(" Expression "," Expression ")")
-       (seq "sameTerm" "(" Expression "," Expression ")")
-       (seq "isIRI" "(" Expression ")")
-       (seq "isURI" "(" Expression ")")
-       (seq "isBLANK" "(" Expression ")")
-       (seq "isLITERAL" "(" Expression ")")
-       (seq "isNUMERIC" "(" Expression ")") RegexExpression ExistsFunc
+       (seq 'STR' '(' Expression ')')
+       (seq 'LANG' '(' Expression ')')
+       (seq 'LANGMATCHES' '(' Expression ',' Expression ')')
+       (seq 'DATATYPE' '(' Expression ')')
+       (seq 'BOUND' '(' Var ')')
+       (seq 'IRI' '(' Expression ')')
+       (seq 'URI' '(' Expression ')')
+       (seq 'BNODE' (alt (seq '(' Expression ')') NIL))
+       (seq 'RAND' NIL)
+       (seq 'ABS' '(' Expression ')')
+       (seq 'CEIL' '(' Expression ')')
+       (seq 'FLOOR' '(' Expression ')')
+       (seq 'ROUND' '(' Expression ')')
+       (seq 'CONCAT' ExpressionList) SubstringExpression
+       (seq 'STRLEN' '(' Expression ')') StrReplaceExpression
+       (seq 'UCASE' '(' Expression ')')
+       (seq 'LCASE' '(' Expression ')')
+       (seq 'ENCODE_FOR_URI' '(' Expression ')')
+       (seq 'CONTAINS' '(' Expression ',' Expression ')')
+       (seq 'STRSTARTS' '(' Expression ',' Expression ')')
+       (seq 'STRENDS' '(' Expression ',' Expression ')')
+       (seq 'STRBEFORE' '(' Expression ',' Expression ')')
+       (seq 'STRAFTER' '(' Expression ',' Expression ')')
+       (seq 'YEAR' '(' Expression ')')
+       (seq 'MONTH' '(' Expression ')')
+       (seq 'DAY' '(' Expression ')')
+       (seq 'HOURS' '(' Expression ')')
+       (seq 'MINUTES' '(' Expression ')')
+       (seq 'SECONDS' '(' Expression ')')
+       (seq 'TIMEZONE' '(' Expression ')')
+       (seq 'TZ' '(' Expression ')')
+       (seq 'NOW' NIL)
+       (seq 'UUID' NIL)
+       (seq 'STRUUID' NIL)
+       (seq 'MD5' '(' Expression ')')
+       (seq 'SHA1' '(' Expression ')')
+       (seq 'SHA224' '(' Expression ')')
+       (seq 'SHA256' '(' Expression ')')
+       (seq 'SHA384' '(' Expression ')')
+       (seq 'SHA512' '(' Expression ')')
+       (seq 'COALESCE' ExpressionList)
+       (seq 'IF' '(' Expression ',' Expression ',' Expression ')')
+       (seq 'STRLANG' '(' Expression ',' Expression ')')
+       (seq 'STRDT' '(' Expression ',' Expression ')')
+       (seq 'sameTerm' '(' Expression ',' Expression ')')
+       (seq 'isIRI' '(' Expression ')')
+       (seq 'isURI' '(' Expression ')')
+       (seq 'isBLANK' '(' Expression ')')
+       (seq 'isLITERAL' '(' Expression ')')
+       (seq 'isNUMERIC' '(' Expression ')') RegexExpression ExistsFunc
        NotExistsFunc ))
      (rule RegexExpression "122"
-      (seq "REGEX" "(" Expression "," Expression (opt (seq "," Expression)) ")"))
+      (seq 'REGEX' '(' Expression ',' Expression (opt (seq ',' Expression)) ')'))
      (rule SubstringExpression "123"
-      (seq "SUBSTR" "(" Expression "," Expression (opt (seq "," Expression)) ")"))
+      (seq 'SUBSTR' '(' Expression ',' Expression (opt (seq ',' Expression)) ')'))
      (rule StrReplaceExpression "124"
-      (seq "REPLACE" "(" Expression "," Expression "," Expression
-       (opt (seq "," Expression)) ")" ))
-     (rule ExistsFunc "125" (seq "EXISTS" GroupGraphPattern))
-     (rule NotExistsFunc "126" (seq "NOT" "EXISTS" GroupGraphPattern))
+      (seq 'REPLACE' '(' Expression ',' Expression ',' Expression
+       (opt (seq ',' Expression)) ')' ))
+     (rule ExistsFunc "125" (seq 'EXISTS' GroupGraphPattern))
+     (rule NotExistsFunc "126" (seq 'NOT' 'EXISTS' GroupGraphPattern))
      (rule Aggregate "127"
       (alt
-       (seq "COUNT" "(" (opt "DISTINCT") (alt "*" Expression) ")")
-       (seq "SUM" "(" (opt "DISTINCT") Expression ")")
-       (seq "MIN" "(" (opt "DISTINCT") Expression ")")
-       (seq "MAX" "(" (opt "DISTINCT") Expression ")")
-       (seq "AVG" "(" (opt "DISTINCT") Expression ")")
-       (seq "SAMPLE" "(" (opt "DISTINCT") Expression ")")
-       (seq "GROUP_CONCAT" "("
-        (opt "DISTINCT") Expression
-        (opt (seq ";" "SEPARATOR" "=" String)) ")" )) )
+       (seq 'COUNT' '(' (opt 'DISTINCT') (alt '*' Expression) ')')
+       (seq 'SUM' '(' (opt 'DISTINCT') Expression ')')
+       (seq 'MIN' '(' (opt 'DISTINCT') Expression ')')
+       (seq 'MAX' '(' (opt 'DISTINCT') Expression ')')
+       (seq 'AVG' '(' (opt 'DISTINCT') Expression ')')
+       (seq 'SAMPLE' '(' (opt 'DISTINCT') Expression ')')
+       (seq 'GROUP_CONCAT' '('
+        (opt 'DISTINCT') Expression
+        (opt (seq ';' 'SEPARATOR' '=' String)) ')' )) )
      (rule iriOrFunction "128" (seq iri (opt ArgList)))
-     (rule RDFLiteral "129" (seq String (opt (alt LANGTAG (seq "^^" iri)))))
+     (rule RDFLiteral "129" (seq String (opt (alt LANGTAG (seq '^^' iri)))))
      (rule NumericLiteral "130"
       (alt NumericLiteralUnsigned NumericLiteralPositive NumericLiteralNegative))
      (rule NumericLiteralUnsigned "131" (alt INTEGER DECIMAL DOUBLE))
@@ -276,7 +276,7 @@
       (alt INTEGER_POSITIVE DECIMAL_POSITIVE DOUBLE_POSITIVE))
      (rule NumericLiteralNegative "133"
       (alt INTEGER_NEGATIVE DECIMAL_NEGATIVE DOUBLE_NEGATIVE))
-     (rule BooleanLiteral "134" (alt "true" "false"))
+     (rule BooleanLiteral "134" (alt 'true' 'false'))
      (rule String "135"
       (alt STRING_LITERAL1 STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2))
      (rule iri "136" (alt IRIREF PrefixedName))
@@ -284,41 +284,41 @@
      (rule BlankNode "138" (alt BLANK_NODE_LABEL ANON))
      (terminals _terminals (seq))
      (terminal IRIREF "139"
-      (seq "<" (star (diff (range "^<>\"{}|^`\\") (range "#x00-#x20"))) ">"))
-     (terminal PNAME_NS "140" (seq (opt PN_PREFIX) ":"))
+      (seq '<' (star (diff (range "^<>\"{}|^`\\") (range "#x00-#x20"))) '>'))
+     (terminal PNAME_NS "140" (seq (opt PN_PREFIX) ':'))
      (terminal PNAME_LN "141" (seq PNAME_NS PN_LOCAL))
      (terminal BLANK_NODE_LABEL "142"
-      (seq "_:" (alt PN_CHARS_U (range "0-9")) (opt (seq (star (alt PN_CHARS ".")) PN_CHARS))))
-     (terminal VAR1 "143" (seq "?" VARNAME))
-     (terminal VAR2 "144" (seq "$" VARNAME))
+      (seq '_:' (alt PN_CHARS_U (range "0-9")) (opt (seq (star (alt PN_CHARS '.')) PN_CHARS))))
+     (terminal VAR1 "143" (seq '?' VARNAME))
+     (terminal VAR2 "144" (seq '$' VARNAME))
      (terminal LANGTAG "145"
-      (seq "@" (plus (range "a-zA-Z")) (star (seq "-" (plus (range "a-zA-Z0-9"))))))
+      (seq '@' (plus (range "a-zA-Z")) (star (seq '-' (plus (range "a-zA-Z0-9"))))))
      (terminal INTEGER "146" (plus (range "0-9")))
-     (terminal DECIMAL "147" (seq (star (range "0-9")) "." (plus (range "0-9"))))
+     (terminal DECIMAL "147" (seq (star (range "0-9")) '.' (plus (range "0-9"))))
      (terminal DOUBLE "148"
       (alt
-       (seq (plus (range "0-9")) "." (star (range "0-9")) EXPONENT)
-       (seq "." (plus (range "0-9")) EXPONENT)
+       (seq (plus (range "0-9")) '.' (star (range "0-9")) EXPONENT)
+       (seq '.' (plus (range "0-9")) EXPONENT)
        (seq (plus (range "0-9")) EXPONENT)) )
-     (terminal INTEGER_POSITIVE "149" (seq "+" INTEGER))
-     (terminal DECIMAL_POSITIVE "150" (seq "+" DECIMAL))
-     (terminal DOUBLE_POSITIVE "151" (seq "+" DOUBLE))
-     (terminal INTEGER_NEGATIVE "152" (seq "-" INTEGER))
-     (terminal DECIMAL_NEGATIVE "153" (seq "-" DECIMAL))
-     (terminal DOUBLE_NEGATIVE "154" (seq "-" DOUBLE))
+     (terminal INTEGER_POSITIVE "149" (seq '+' INTEGER))
+     (terminal DECIMAL_POSITIVE "150" (seq '+' DECIMAL))
+     (terminal DOUBLE_POSITIVE "151" (seq '+' DOUBLE))
+     (terminal INTEGER_NEGATIVE "152" (seq '-' INTEGER))
+     (terminal DECIMAL_NEGATIVE "153" (seq '-' DECIMAL))
+     (terminal DOUBLE_NEGATIVE "154" (seq '-' DOUBLE))
      (terminal EXPONENT "155" (seq (range "eE") (opt (range "+-")) (plus (range "0-9"))))
      (terminal STRING_LITERAL1 "156"
       (seq "'" (star (alt (range "^#x27#x5C#xA#xD") ECHAR)) "'"))
      (terminal STRING_LITERAL2 "157"
-      (seq "\"" (star (alt (range "^#x22#x5C#xA#xD") ECHAR)) "\""))
+      (seq '"' (star (alt (range "^#x22#x5C#xA#xD") ECHAR)) '"'))
      (terminal STRING_LITERAL_LONG1 "158"
       (seq "'''" (star (seq (opt (alt "'" "''")) (alt (range "^'\\") ECHAR))) "'''"))
      (terminal STRING_LITERAL_LONG2 "159"
-      (seq "\"\"\"" (star (seq (opt (alt "\"" "\"\"")) (alt (range "^\"\\") ECHAR))) "\"\"\""))
-     (terminal ECHAR "160" (seq "\\" (range "tbnrf\\\"'")))
-     (terminal NIL "161" (seq "(" (star WS) ")"))
+      (seq '"""' (star (seq (opt (alt '"' '""')) (alt (range "^\"\\") ECHAR))) '"""'))
+     (terminal ECHAR "160" (seq '\\' (range "tbnrf\\\"'")))
+     (terminal NIL "161" (seq '(' (star WS) ')'))
      (terminal WS "162" (alt (hex "#x20") (hex "#x9") (hex "#xD") (hex "#xA")))
-     (terminal ANON "163" (seq "[" (star WS) "]"))
+     (terminal ANON "163" (seq '[' (star WS) ']'))
      (terminal PN_CHARS_BASE "164"
       (alt
        (range "A-Za-z")
@@ -334,7 +334,7 @@
        (range "#xF900-#xFDCF")
        (range "#xFDF0-#xFFFD")
        (range "#x10000-#xEFFFF")) )
-     (terminal PN_CHARS_U "165" (alt PN_CHARS_BASE "_"))
+     (terminal PN_CHARS_U "165" (alt PN_CHARS_BASE '_'))
      (terminal VARNAME "166"
       (seq
        (alt PN_CHARS_U (range "0-9"))
@@ -345,19 +345,19 @@
          (range "#x0300-#x036F")
          (range "#x203F-#x2040")) )) )
      (terminal PN_CHARS "167"
-      (alt PN_CHARS_U "-"
+      (alt PN_CHARS_U '-'
        (range "0-9")
        (hex "#x00B7")
        (range "#x0300-#x036F")
        (range "#x203F-#x2040")) )
      (terminal PN_PREFIX "168"
-      (seq PN_CHARS_BASE (opt (seq (star (alt PN_CHARS ".")) PN_CHARS))))
+      (seq PN_CHARS_BASE (opt (seq (star (alt PN_CHARS '.')) PN_CHARS))))
      (terminal PN_LOCAL "169"
-      (seq (alt PN_CHARS_U (range "0-9")) (opt (seq (star (alt PN_CHARS ".")) PN_CHARS))))
+      (seq (alt PN_CHARS_U (range "0-9")) (opt (seq (star (alt PN_CHARS '.')) PN_CHARS))))
      (terminal PLX "170" (alt PERCENT PN_LOCAL_ESC))
-     (terminal PERCENT "171" (seq "%" HEX HEX))
+     (terminal PERCENT "171" (seq '%' HEX HEX))
      (terminal HEX "172" (range "0-9A-Fa-f"))
      (terminal PN_LOCAL_ESC "173"
-      (seq "\\"
-       (alt "_" "~" "." "-" "!" "$" "&" "'" "(" ")" "*" "+" "," ";" "=" "/" "?" "#"
-        "@" "%" )) ))
+      (seq '\\'
+       (alt '_' '~' '.' '-' '!' '$' '&' "'" '(' ')' '*' '+' ',' ';' '=' '/' '?' '#'
+        '@' '%' )) ))

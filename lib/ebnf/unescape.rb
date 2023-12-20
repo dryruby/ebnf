@@ -48,7 +48,7 @@ module EBNF::Unescape
   # @return [String]
   # @see    https://www.w3.org/TR/rdf-sparql-query/#grammarEscapes
   def unescape_string(input)
-    input.gsub(ECHAR) { |escaped| ESCAPE_CHARS[escaped] || escaped[1..-1]}
+    input.gsub(ECHAR) {|escaped| ESCAPE_CHARS[escaped] || escaped}
   end
   module_function :unescape_string
 
