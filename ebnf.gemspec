@@ -35,6 +35,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency     'rdf',             '~> 3.3' # Required by sxp
   gem.add_runtime_dependency     'htmlentities',    '~> 4.3'
   gem.add_runtime_dependency     'unicode-types',   '~> 1.8'
+  gem.add_runtime_dependency     'base64',      '~> 0.2'
   gem.add_development_dependency 'amazing_print',   '~> 1.4'
   gem.add_development_dependency 'rdf-spec',        '~> 3.3'
   gem.add_development_dependency 'rdf-turtle',      '~> 3.3'
