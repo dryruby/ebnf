@@ -603,7 +603,7 @@ module EBNF::LL1
       if handler
         # Create a new production data element, potentially allowing handler
         # to customize before pushing on the @prod_data stack
-        debug("#{prod}(:start):#{@prod_data.length}") {@prod_data.last}
+        progress("#{prod}(:start):#{@prod_data.length}") {@prod_data.last}
         data = {}
         begin
           self.class.eval_with_binding(self) {
@@ -617,12 +617,12 @@ module EBNF::LL1
       elsif [:merge, :star].include?(@cleanup[prod])
         # Save current data to merge later
         @prod_data << {}
-        debug("#{prod}(:start}:#{@prod_data.length}:cleanup:#{@cleanup[prod]}") { get_token.inspect + (@recovering ? ' recovering' : '')}
+        progress("#{prod}(:start}:#{@prod_data.length}:cleanup:#{@cleanup[prod]}") { get_token.inspect + (@recovering ? ' recovering' : '')}
       else
         # Make sure we push as many was we pop, even if there is no
         # explicit start handler
         @prod_data << {} if self.class.production_handlers[prod]
-        debug("#{prod}(:start:#{@prod_data.length})") { get_token.inspect + (@recovering ? ' recovering' : '')}
+        progress("#{prod}(:start:#{@prod_data.length})") { get_token.inspect + (@recovering ? ' recovering' : '')}
       end
       #puts "prod_data(s): " + @prod_data.inspect
     end
