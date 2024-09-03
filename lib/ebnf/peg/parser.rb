@@ -372,7 +372,7 @@ module EBNF::PEG
     def onStart(prod)
       handler = self.class.start_handlers[prod]
       @productions << prod
-      debug("#{prod}(:start)", "",
+      progress("#{prod}(:start)", "",
         lineno: (scanner.lineno if scanner),
         pos: (scanner.pos if scanner)
       ) do
@@ -422,7 +422,7 @@ module EBNF::PEG
           @recovering = false
         end
       end
-      debug("#{prod}(:finish)", "",
+      progress("#{prod}(:finish)", "",
              lineno: (scanner.lineno if scanner),
              level: result == :unmatched ? 0 : 1) do
         "#{result.inspect}@(#{scanner ? scanner.pos : '?'}), rest: #{scanner ? scanner.rest[0..20].inspect : '?'}"
