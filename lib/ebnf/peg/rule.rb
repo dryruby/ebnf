@@ -87,12 +87,17 @@ module EBNF::PEG
             raise "No rule found for #{prod}" unless rule
             rule.parse(input, **options)
           when String
-            s = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))
-            case start_options[:insensitive_strings]
-            when :lower then s && s.downcase
-            when :upper then s && s.upcase
-            else s
-            end || :unmatched
+            # If the input matches any terminal, then it can't be treated as a string
+            if matched = parser.class.terminal_regexps.detect {|sym, re| input.scan(re)}
+              :unmatched
+            else
+              s = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))
+              case start_options[:insensitive_strings]
+              when :lower then s && s.downcase
+              when :upper then s && s.upcase
+              else s
+              end || :unmatched
+            end
           end
           if alt == :unmatched
             # Update furthest failure for strings and terminals
@@ -128,9 +133,18 @@ module EBNF::PEG
         when Symbol
           rule = parser.find_rule(prod)
           raise "No rule found for #{prod}" unless rule
-          rule.parse(input)
+          rule.parse(input, **options)
         when String
-          input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts)) || :unmatched
+          if matched = parser.class.terminal_regexps.detect {|sym, re| input.scan(re)}
+            :unmatched
+          else
+            s = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))
+            case start_options[:insensitive_strings]
+            when :lower then s && s.downcase
+            when :upper then s && s.upcase
+            else s
+            end || :unmatched
+          end
         end
         if res != :unmatched
           # Update furthest failure for terminals
@@ -179,12 +193,16 @@ module EBNF::PEG
             raise "No rule found for #{prod}" unless rule
             rule.parse(input, **options.merge(_rept_data: accumulator))
           when String
-            s = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))
-            case start_options[:insensitive_strings]
-            when :lower then s && s.downcase
-            when :upper then s && s.upcase
-            else s
-            end || :unmatched
+            if matched = parser.class.terminal_regexps.detect {|sym, re| input.scan(re)}
+              :unmatched
+            else
+              s = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))
+              case start_options[:insensitive_strings]
+              when :lower then s && s.downcase
+              when :upper then s && s.upcase
+              else s
+              end || :unmatched
+            end
           end
           if res == :unmatched
             # Update furthest failure for strings and terminals
@@ -247,11 +265,12 @@ module EBNF::PEG
       when Symbol
         rule = parser.find_rule(prod)
         raise "No rule found for #{prod}" unless rule
-        while (max == '*' || result.length < max) && (res = rule.parse(input)) != :unmatched
+        while (max == '*' || result.length < max) && (res = rule.parse(input, **options.merge(_rept_data: result))) != :unmatched
           eat_whitespace(input) unless terminal?
           result << res
         end
       when String
+        # FIXME: don't match a string, if input matches a terminal
         while (res = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))) && (max == '*' || result.length < max)
           eat_whitespace(input) unless terminal?
           result << case options[:insensitive_strings]
