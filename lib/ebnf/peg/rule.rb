@@ -13,7 +13,7 @@ module EBNF::PEG
     ##
     # Parse a rule or terminal, invoking callbacks, as appropriate
 
-    # If there is are `start_production` and/or `production`,
+    # If there are `start_production` and/or `production` handlers,
     # they are invoked with a `prod_data` stack, the input stream and offset.
     # Otherwise, the results are added as an array value
     # to a hash indexed by the rule name.
@@ -31,8 +31,9 @@ module EBNF::PEG
     # * `star`: returns an array of the values matched for the specified production. For Terminals, these are concatenated into a single string.
     #
     # @param [Scanner] input
+    # @param [Hash] **options Other data that may be passed to handlers.
     # @return [Hash{Symbol => Object}, :unmatched] A hash with keys for matched component of the expression. Returns :unmatched if the input does not match the production.
-    def parse(input)
+    def parse(input, **options)
       # Save position and linenumber for backtracking
       pos, lineno = input.pos, input.lineno
 
@@ -71,7 +72,7 @@ module EBNF::PEG
       else
         eat_whitespace(input)
       end
-      start_options = parser.onStart(sym)
+      start_options = options.merge(parser.onStart(sym, **options))
       string_regexp_opts = start_options[:insensitive_strings] ? Regexp::IGNORECASE : 0
 
       result = case expr.first
@@ -84,7 +85,7 @@ module EBNF::PEG
           when Symbol
             rule = parser.find_rule(prod)
             raise "No rule found for #{prod}" unless rule
-            rule.parse(input)
+            rule.parse(input, **options)
           when String
             s = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))
             case start_options[:insensitive_strings]
@@ -148,7 +149,7 @@ module EBNF::PEG
       when :plus
         # Result is an array of all expressions while they match,
         # at least one must match
-        plus = rept(input, 1, '*', expr[1], string_regexp_opts)
+        plus = rept(input, 1, '*', expr[1], string_regexp_opts, **options)
 
         # Update furthest failure for strings and terminals
         parser.update_furthest_failure(input.pos, input.lineno, expr[1]) if terminal?
@@ -163,7 +164,7 @@ module EBNF::PEG
       when :rept
         # Result is an array of all expressions while they match,
         # an empty array of none match
-        rept = rept(input, expr[1], expr[2], expr[3], string_regexp_opts)
+        rept = rept(input, expr[1], expr[2], expr[3], string_regexp_opts, **options)
 
         # # Update furthest failure for strings and terminals
         parser.update_furthest_failure(input.pos, input.lineno, expr[3]) if terminal?
@@ -176,7 +177,7 @@ module EBNF::PEG
           when Symbol
             rule = parser.find_rule(prod)
             raise "No rule found for #{prod}" unless rule
-            rule.parse(input)
+            rule.parse(input, **options.merge(_rept_data: accumulator))
           when String
             s = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))
             case start_options[:insensitive_strings]
@@ -204,7 +205,7 @@ module EBNF::PEG
       when :star
         # Result is an array of all expressions while they match,
         # an empty array of none match
-        star = rept(input, 0, '*', expr[1], string_regexp_opts)
+        star = rept(input, 0, '*', expr[1], string_regexp_opts, **options)
 
         # Update furthest failure for strings and terminals
         parser.update_furthest_failure(input.pos, input.lineno, expr[1]) if terminal?
@@ -217,7 +218,7 @@ module EBNF::PEG
         input.pos, input.lineno = pos, lineno
       end
 
-      result = parser.onFinish(result)
+      result = parser.onFinish(result, **options)
       (parser.packrat[sym] ||= {})[pos] = {
         pos: input.pos,
         lineno: input.lineno,
@@ -229,7 +230,8 @@ module EBNF::PEG
     ##
     # Repitition, 0-1, 0-n, 1-n, ...
     #
-    # Note, nil results are removed from the result, but count towards min/max calculations
+    # Note, nil results are removed from the result, but count towards min/max calculations.
+    # Saves temporary production data to prod_data stack.
     #
     # @param [Scanner] input
     # @param [Integer] min
