@@ -91,8 +91,7 @@ module EBNF::PEG
 
       ##
       # Defines a production called at the beggining of a particular production
-      # with data from previous production along with data defined for the
-      # current production. Block is called in an evaluation block from
+      # with data from previous production. Block is called in an evaluation block from
       # the enclosing parser.
       #
       # @param [Symbol] term

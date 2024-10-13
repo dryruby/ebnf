@@ -89,6 +89,7 @@ module EBNF::PEG
           when String
             # If the input matches any terminal, then it can't be treated as a string
             if matched = parser.class.terminal_regexps.detect {|sym, re| input.scan(re)}
+              input.unscan  # Reset scan position
               :unmatched
             else
               s = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))
@@ -136,6 +137,7 @@ module EBNF::PEG
           rule.parse(input, **options)
         when String
           if matched = parser.class.terminal_regexps.detect {|sym, re| input.scan(re)}
+            input.unscan  # Reset scan position
             :unmatched
           else
             s = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))
@@ -194,6 +196,7 @@ module EBNF::PEG
             rule.parse(input, **options.merge(_rept_data: accumulator))
           when String
             if matched = parser.class.terminal_regexps.detect {|sym, re| input.scan(re)}
+              input.unscan  # Reset scan position
               :unmatched
             else
               s = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))
