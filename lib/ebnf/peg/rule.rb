@@ -77,7 +77,7 @@ module EBNF::PEG
 
       result = case expr.first
       when :alt
-        # Return the first expression to match.
+        # Return the first expression to match. Look at strings before terminals before non-terminals, with strings ordered by longest first
         # Result is either :unmatched, or the value of the matching rule
         alt = :unmatched
         expr[1..-1].each do |prod|
@@ -87,9 +87,8 @@ module EBNF::PEG
             raise "No rule found for #{prod}" unless rule
             rule.parse(input, **options)
           when String
-            # If the input matches any terminal, then it can't be treated as a string
-            if matched = parser.class.terminal_regexps.detect {|sym, re| input.scan(re)}
-              input.unscan  # Reset scan position
+            # If the input matches a terminal for which the string is a prefix, don't match the string
+            if terminal_also_matches(input, prod, string_regexp_opts)
               :unmatched
             else
               s = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))
@@ -136,8 +135,7 @@ module EBNF::PEG
           raise "No rule found for #{prod}" unless rule
           rule.parse(input, **options)
         when String
-          if matched = parser.class.terminal_regexps.detect {|sym, re| input.scan(re)}
-            input.unscan  # Reset scan position
+          if terminal_also_matches(input, prod, string_regexp_opts)
             :unmatched
           else
             s = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))
@@ -195,8 +193,7 @@ module EBNF::PEG
             raise "No rule found for #{prod}" unless rule
             rule.parse(input, **options.merge(_rept_data: accumulator))
           when String
-            if matched = parser.class.terminal_regexps.detect {|sym, re| input.scan(re)}
-              input.unscan  # Reset scan position
+            if terminal_also_matches(input, prod, string_regexp_opts)
               :unmatched
             else
               s = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))
@@ -236,6 +233,7 @@ module EBNF::PEG
       end
 
       if result == :unmatched
+        # Rewind input to entry point if unmatched.
         input.pos, input.lineno = pos, lineno
       end
 
@@ -287,6 +285,15 @@ module EBNF::PEG
       result.length < min ? :unmatched : result.compact
     end
 
+    ##
+    # See if a terminal could have a longer match than a string
+    def terminal_also_matches(input, prod, string_regexp_opts)
+      str_regex = Regexp.new(Regexp.quote(prod), string_regexp_opts)
+      input.match?(str_regex) && parser.class.terminal_regexps.any? do |sym, re|
+        (match_len = input.match?(re)) && match_len > prod.length
+      end
+    end
+      
     ##
     # Eat whitespace between non-terminal rules
     def eat_whitespace(input)
