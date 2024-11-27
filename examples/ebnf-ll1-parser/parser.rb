@@ -276,10 +276,10 @@ class EBNFLL1Parser
     @input = input.respond_to?(:read) ? input.read : input.to_s
 
     # If the `level` option is set, instantiate a logger for collecting trace information.
-    if options.has_key?(:level)
-      options[:logger] = Logger.new(STDERR)
-      options[:logger].level = options.fetch(:level, 2)
-      options[:logger].formatter = lambda {|severity, datetime, progname, msg| "#{severity} #{msg}\n"}
+    if options.key?(:level)
+      options[:logger] ||= Logger.new(STDERR).
+        tap {|x| x.level = options[:level]}.
+        tap {|x| x.formatter = lambda {|severity, datetime, progname, msg| "#{severity} #{msg}\n"}}
     end
 
     parsing_terminals = false

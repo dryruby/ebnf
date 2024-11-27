@@ -14,9 +14,9 @@ describe EBNF::Base do
         %{((rule Prolog "2" (seq (opt BaseDecl) (star PrefixDecl))))},
       %{
         @terminals
-        [3] terminal ::= [A-Z]+
+        terminal ::= [A-Z]+
       } => %{((terminals _terminals (seq))
-              (terminal terminal "3" (plus (range "A-Z"))))},
+              (terminal terminal (plus (range "A-Z"))))},
       %{
         [9] primary     ::= HEX
                         |   RANGE
@@ -125,11 +125,11 @@ describe EBNF::Base do
   end
 
   describe "#to_s" do
-    specify {expect(subject.to_s).to include("[1]  ebnf")}
+    specify {expect(subject.to_s).to include("ebnf")}
   end
 
   describe "#to_html" do
-    specify {expect(subject.to_s).to include("[1]  ebnf")}
+    specify {expect(subject.to_s).to include("ebnf")}
   end
 
   describe "#to_ruby" do
