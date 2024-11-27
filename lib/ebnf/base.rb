@@ -311,7 +311,7 @@ module EBNF
 
     # Progress output, less than debugging
     def progress(*args, **options)
-      debug(*args, **options.merge(level: Logger::INFO))
+      debug(*args, level: Logger::INFO, **options)
     end
 
     # Error output
@@ -319,7 +319,7 @@ module EBNF
       depth = options[:depth] || @depth
       args << yield if block_given?
       message = "#{args.join(': ')}"
-      debug(message, **options.merge(level: Logger::ERROR))
+      debug(message, level: Logger::ERROR, **options)
       @errors << message
       $stderr.puts(message)
     end
@@ -335,9 +335,8 @@ module EBNF
     #   @param [String] message ("")
     #
     # @yieldreturn [String] added to message
-    def debug(*args, **options)
+    def debug(*args, level: Logger::DEBUG, **options)
       return unless @options.key?(:logger)
-      level = @options[:level] || Logger::DEBUG
       depth = options[:depth] || @depth
       args << yield if block_given?
       message = "#{args.join(': ')}"

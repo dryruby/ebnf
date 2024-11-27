@@ -87,7 +87,7 @@ end
 
 input = File.open(ARGV[0]) if ARGV[0]
 
-logger = options[:live] ? Logger.new(STDERR) : RDF::Spec.logger
+logger = Logger.new(STDERR)
 logger.level = options[:level] || Logger::ERROR
 logger.formatter = lambda {|severity, datetime, progname, msg| "%5s %s\n" % [severity, msg]}
 
