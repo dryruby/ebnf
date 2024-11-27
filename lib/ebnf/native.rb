@@ -52,7 +52,7 @@ module EBNF
           yield r unless r.empty?
           #debug("eachRule(rule)") { "[#{cur_lineno}] #{s.inspect}" }
           @lineno = cur_lineno
-          r = s
+          r = s.gsub(/[<>]/, '') # Remove angle brackets
         else
           # Collect until end of line, or start of comment or quote
           s = scanner.scan_until(%r{(?:[/\(]\*)|#(?!x)|//|["']|$})
@@ -81,6 +81,7 @@ module EBNF
       num, sym = num_sym.split(']', 2).map(&:strip)
       num, sym = "", num if sym.nil?
       num = num[1..-1]
+      sym = sym[1..-2] if sym.start_with?('<') && sym.end_with?('>')
       r = Rule.new(sym && sym.to_sym, num, expression(expr).first, ebnf: self)
       debug("ruleParts") { r.inspect }
       r
@@ -226,7 +227,7 @@ module EBNF
     #     (a ' b c')
     #     
     #     >>> postfix("a? b c")
-    #     ((opt, a) ' b c')
+    #     ((opt a) ' b c')
     def postfix(s)
       debug("postfix") {"(#{s.inspect})"}
       e, s = depth {primary(s)}
@@ -297,8 +298,8 @@ module EBNF
         s.match(/(#x\h+)(.*)$/)
         l, s = $1, $2
         [[:hex, l], s]
-      when /[\w\.]/ # SYMBOL
-        s.match(/([\w\.]+)(.*)$/)
+      when '<', /[\w\.]/ # SYMBOL
+        s.match(/<?([\w\.]+)>?(.*)$/)
         l, s = $1, $2
         [l.to_sym, s]
       when '-'

@@ -34,7 +34,9 @@
 
     [11] LHS        ::= ('[' SYMBOL ']' ' '+)? SYMBOL ' '* '::='
 
-    [12] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | '_' | '.')+
+    [12] SYMBOL     ::= '<' O_SYMBOL '>' | O_SYMBOL
+
+    [12a] O_SYMBOL  ::= ([a-z] | [A-Z] | [0-9] | '_' | '.')+
 
     [13] HEX        ::= '#x' ([a-f] | [A-F] | [0-9])+
 

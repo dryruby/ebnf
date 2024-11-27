@@ -60,6 +60,10 @@ describe EBNF::Native do
           %{Prolog    ::=           BaseDecl? PrefixDecl*},
           %{((rule Prolog (seq (opt BaseDecl) (star PrefixDecl))))}
         ],
+        "prolog (with brackets)": [
+          %{<Prolog>    ::=           <BaseDecl>? <PrefixDecl>*},
+          %{((rule Prolog (seq (opt BaseDecl) (star PrefixDecl))))}
+        ],
         "aliteration": [
           %{declaration ::= '@terminals' | '@pass'},
           %{((rule declaration (alt '@terminals' '@pass')))},
@@ -111,7 +115,7 @@ describe EBNF::Native do
       %{NCCHAR1 | '-' | [0-9] | #x00B7 | [#x0300-#x036F] | [#x203F-#x2040]} =>
         %{(alt NCCHAR1 '-' (range "0-9") (hex "#x00B7") (range "#x0300-#x036F") (range "#x203F-#x2040"))},
       %{'<' ([^<>"{}|^`\]-[#x00-#x20] | UCHAR)* '>'} =>
-        %{(seq '<' (star (alt (diff (range "^<>\\\"{}|^`") (range "#x00-#x20")) UCHAR)) '>')}
+        %{(seq '<' (star (alt (diff (range "^<>\\\"{}|^`") (range "#x00-#x20")) UCHAR)) '>')},
     }.each do |input, expected|
       it "given #{input.inspect} produces #{expected}" do
         rule = parse("rule ::= #{input}").ast.first

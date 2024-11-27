@@ -1,4 +1,4 @@
-<!-- Generated with ebnf version 2.4.0. See https://github.com/dryruby/ebnf. -->
+<!-- Generated with ebnf version 2.5.0. See https://github.com/dryruby/ebnf. -->
 <table class="grammar">
   <tbody id="grammar-productions" class="ebnf">
     <tr id="grammar-production-ebnf">
@@ -76,6 +76,12 @@
     <tr id="grammar-production-SYMBOL">
       <td>[12]</td>
       <td><code>SYMBOL</code></td>
+      <td>::=</td>
+      <td><code class="grammar-paren">(</code>'<code class="grammar-literal">&lt;</code>' <a href="#grammar-production-O_SYMBOL">O_SYMBOL</a> '<code class="grammar-literal">&gt;</code>'<code class="grammar-paren">)</code> <code class="grammar-alt">|</code> <a href="#grammar-production-O_SYMBOL">O_SYMBOL</a></td>
+    </tr>
+    <tr id="grammar-production-O_SYMBOL">
+      <td>[12a]</td>
+      <td><code>O_SYMBOL</code></td>
       <td>::=</td>
       <td><code class="grammar-paren">(</code><code class="grammar-brac">[</code><code class="grammar-literal">a-z</code><code class="grammar-brac">]</code> <code class="grammar-alt">|</code> <code class="grammar-brac">[</code><code class="grammar-literal">A-Z</code><code class="grammar-brac">]</code> <code class="grammar-alt">|</code> <code class="grammar-brac">[</code><code class="grammar-literal">0-9</code><code class="grammar-brac">]</code> <code class="grammar-alt">|</code> '<code class="grammar-literal">_</code>' <code class="grammar-alt">|</code> '<code class="grammar-literal">.</code>'<code class="grammar-paren">)</code><code class="grammar-plus">+</code></td>
     </tr>

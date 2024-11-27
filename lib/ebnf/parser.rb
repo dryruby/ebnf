@@ -26,15 +26,17 @@ module EBNF
 
     # Match the Left hand side of a rule or terminal
     #
-    #     [11] LHS        ::= ('[' SYMBOL+ ']' ' '+)? SYMBOL ' '* '::='
+    #     [11] LHS        ::= ('[' SYMBOL+ ']' ' '+)? <? SYMBOL >? ' '* '::='
     terminal(:LHS, LHS) do |value, prod|
-      value.to_s.scan(/(?:\[([^\]]+)\])?\s*(\w+)\s*::=/).first
+      value.to_s.scan(/(?:\[([^\]]+)\])?\s*<?(\w+)>?\s*::=/).first
     end
 
     # Match `SYMBOL` terminal
     #
-    #     [12] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | '_' | '.')+
+    #     [12] SYMBOL     ::= '<' O_SYMBOL '>' | O_SYMBOL
+    #     [12a] O_SYMBOL  ::= ([a-z] | [A-Z] | [0-9] | '_' | '.')+
     terminal(:SYMBOL, SYMBOL) do |value|
+      value = value[1..-2] if value.start_with?('<') && value.end_with?('>')
       value.to_sym
     end
 
@@ -266,10 +268,10 @@ module EBNF
     # @return [EBNFParser]
     def initialize(input, **options, &block)
       # If the `level` option is set, instantiate a logger for collecting trace information.
-      if options.has_key?(:level)
-        options[:logger] = Logger.new(STDERR)
-        options[:logger].level = options[:level]
-        options[:logger].formatter = lambda {|severity, datetime, progname, msg| "#{severity} #{msg}\n"}
+      if options.key?(:level)
+        options[:logger] ||= Logger.new(STDERR).
+          tap {|x| x.level = options[:level]}.
+          tap {|x| x.formatter = lambda {|severity, datetime, progname, msg| "#{severity} #{msg}\n"}}
       end
 
       # Read input, if necessary, which will be used in a Scanner.
