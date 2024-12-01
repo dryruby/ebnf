@@ -1,4 +1,3 @@
-(* W3C EBNF for ISO/IEC 14977 : 1996 EBNF *)
 (* Scoured from https://www.cl.cam.ac.uk/~mgk25/iso-14977.pdf *)
 
 syntax            = syntax_rule, {syntax_rule} ;
@@ -44,10 +43,10 @@ repeated_sequence = start_repeat_symbol, definitions_list, end_repeat_symbol
 grouped_sequence  = '(', definitions_list, ')'
                     (* The brackets ( and ) allow any <definitions list> to be a <primary> *);
 
-terminal_string             = ("'", first_terminal_character, {first_terminal_character}, "'")
-                            | ('"', second_terminal_character, {second_terminal_character}, '"')
-                              (* A <terminal string> represents the
-                                 <characters> between the quote symbols '_' or "_" *);
+terminal_string   = ("'", first_terminal_character, {first_terminal_character}, "'")
+                  | ('"', second_terminal_character, {second_terminal_character}, '"')
+                    (* A <terminal string> represents the
+                       <characters> between the quote symbols '_' or "_" *);
 
 meta_identifier   = letter, {meta_identifier_character}
                     (* A <meta identifier> is the name of a syntactic element of the language being defined *);

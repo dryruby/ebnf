@@ -106,8 +106,8 @@ module EBNF
     #   Format of input, one of `:abnf`, `:ebnf`, `:isoebnf`, `:isoebnf`, `:native`, or `:sxp`.
     #   Use `:native` for the native EBNF parser, rather than the PEG parser.
     # @param [Hash{Symbol => Object}] options
-    # @option options [Boolean, Array] :debug
-    #   Output debug information to an array or $stdout.
+    # @option options [Boolean] :level
+    #   Trace level. 0(debug), 1(info), 2(warn), 3(error).
     # @option options [Boolean, Array] :validate
     #   Validate resulting grammar.
     def initialize(input, format: :ebnf, **options)
@@ -311,13 +311,7 @@ module EBNF
 
     # Progress output, less than debugging
     def progress(*args, **options)
-      return unless @options[:progress] || @options[:debug]
-      depth = options[:depth] || @depth
-      args << yield if block_given?
-      message = "#{args.join(': ')}"
-      str = "[#{@lineno}]#{' ' * depth}#{message}"
-      @options[:debug] << str if @options[:debug].is_a?(Array)
-      $stderr.puts(str) if @options[:progress] || @options[:debug] == true
+      debug(*args, level: Logger::INFO, **options)
     end
 
     # Error output
@@ -325,10 +319,9 @@ module EBNF
       depth = options[:depth] || @depth
       args << yield if block_given?
       message = "#{args.join(': ')}"
+      debug(message, level: Logger::ERROR, **options)
       @errors << message
-      str = "[#{@lineno}]#{' ' * depth}#{message}"
-      @options[:debug] << str if @options[:debug].is_a?(Array)
-      $stderr.puts(str)
+      $stderr.puts(message)
     end
 
     ##
@@ -342,14 +335,17 @@ module EBNF
     #   @param [String] message ("")
     #
     # @yieldreturn [String] added to message
-    def debug(*args, **options)
-      return unless @options[:debug]
+    def debug(*args, level: Logger::DEBUG, **options)
+      return unless @options.key?(:logger)
       depth = options[:depth] || @depth
       args << yield if block_given?
       message = "#{args.join(': ')}"
       str = "[#{@lineno}]#{' ' * depth}#{message}"
-      @options[:debug] << str if @options[:debug].is_a?(Array)
-      $stderr.puts(str) if @options[:debug] == true
+      if @options[:logger].respond_to?(:add)
+        @options[:logger].add(level, str)
+      elsif @options[:logger].respond_to?(:<<)
+        @options[:logger] << "[#{lineno}] " + str
+      end
     end
   end
 end

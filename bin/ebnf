@@ -9,6 +9,7 @@ $:.unshift(File.expand_path(File.join(File.dirname(__FILE__), "..", 'lib')))
 require 'rubygems'
 require 'getoptlong'
 require 'ebnf'
+require 'rdf/spec'
 
 options = {
   output_format: :sxp,
@@ -86,7 +87,11 @@ end
 
 input = File.open(ARGV[0]) if ARGV[0]
 
-ebnf = EBNF.parse(input || STDIN, **options)
+logger = Logger.new(STDERR)
+logger.level = options[:level] || Logger::ERROR
+logger.formatter = lambda {|severity, datetime, progname, msg| "%5s %s\n" % [severity, msg]}
+
+ebnf = EBNF.parse(input || STDIN, logger: logger, **options)
 ebnf.make_bnf if options[:bnf] || options[:ll1]
 ebnf.make_peg if options[:peg]
 if options[:ll1]

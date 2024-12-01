@@ -13,6 +13,7 @@ group :development do
   gem "redcarpet",      platforms: :mri
   gem "rocco",          platforms: :mri
   gem "pygmentize",     platforms: :mri
+  gem 'getoptlong'
 end
 
 group :development, :test do

@@ -5,9 +5,8 @@
 
     # Use the LHS terminal to match the identifier, rule name and assignment due to
     # confusion between the identifier and RANGE.
-    # Note, for grammars not using identifiers, it is still possible to confuse
-    # a rule ending with a range the next rule, as it may be interpreted as an identifier.
-    # In such case, best to enclose the rule in '()'.
+    # The PEG parser has special rules for matching LHS and RANGE
+    # so that RANGE is not confused with LHS.
     [3] rule        ::= LHS expression
 
     [4] expression  ::= alt
@@ -34,11 +33,13 @@
 
     [11] LHS        ::= ('[' SYMBOL ']' ' '+)? SYMBOL ' '* '::='
 
-    [12] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | '_' | '.')+
+    [12] SYMBOL     ::= '<' O_SYMBOL '>' | O_SYMBOL
+
+    [12a] O_SYMBOL  ::= ([a-z] | [A-Z] | [0-9] | '_' | '.')+
 
     [13] HEX        ::= '#x' ([a-f] | [A-F] | [0-9])+
 
-    [14] RANGE      ::= '[' ((R_CHAR '-' R_CHAR) | (HEX '-' HEX) | R_CHAR | HEX)+ '-'? ']' - LHS
+    [14] RANGE      ::= '[' ((R_CHAR '-' R_CHAR) | (HEX '-' HEX) | R_CHAR | HEX)+ '-'? ']'
 
     [15] O_RANGE    ::= '[^' ((R_CHAR '-' R_CHAR) | (HEX '-' HEX) | R_CHAR | HEX)+ '-'? ']'
 

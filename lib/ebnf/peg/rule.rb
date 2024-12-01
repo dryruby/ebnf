@@ -13,7 +13,7 @@ module EBNF::PEG
     ##
     # Parse a rule or terminal, invoking callbacks, as appropriate
 
-    # If there is are `start_production` and/or `production`,
+    # If there are `start_production` and/or `production` handlers,
     # they are invoked with a `prod_data` stack, the input stream and offset.
     # Otherwise, the results are added as an array value
     # to a hash indexed by the rule name.
@@ -31,8 +31,9 @@ module EBNF::PEG
     # * `star`: returns an array of the values matched for the specified production. For Terminals, these are concatenated into a single string.
     #
     # @param [Scanner] input
+    # @param [Hash] **options Other data that may be passed to handlers.
     # @return [Hash{Symbol => Object}, :unmatched] A hash with keys for matched component of the expression. Returns :unmatched if the input does not match the production.
-    def parse(input)
+    def parse(input, **options)
       # Save position and linenumber for backtracking
       pos, lineno = input.pos, input.lineno
 
@@ -48,6 +49,7 @@ module EBNF::PEG
         # use that to match the input,
         # otherwise,
         if regexp = parser.terminal_regexp(sym)
+          regexp = regexp.call() if regexp.is_a?(Proc)
           term_opts = parser.terminal_options(sym)
           if matched = input.scan(regexp)
             # Optionally map matched
@@ -71,12 +73,12 @@ module EBNF::PEG
       else
         eat_whitespace(input)
       end
-      start_options = parser.onStart(sym)
+      start_options = options.merge(parser.onStart(sym, **options))
       string_regexp_opts = start_options[:insensitive_strings] ? Regexp::IGNORECASE : 0
 
       result = case expr.first
       when :alt
-        # Return the first expression to match.
+        # Return the first expression to match. Look at strings before terminals before non-terminals, with strings ordered by longest first
         # Result is either :unmatched, or the value of the matching rule
         alt = :unmatched
         expr[1..-1].each do |prod|
@@ -84,14 +86,19 @@ module EBNF::PEG
           when Symbol
             rule = parser.find_rule(prod)
             raise "No rule found for #{prod}" unless rule
-            rule.parse(input)
+            rule.parse(input, **options)
           when String
-            s = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))
-            case start_options[:insensitive_strings]
-            when :lower then s && s.downcase
-            when :upper then s && s.upcase
-            else s
-            end || :unmatched
+            # If the input matches a terminal for which the string is a prefix, don't match the string
+            if terminal_also_matches(input, prod, string_regexp_opts)
+              :unmatched
+            else
+              s = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))
+              case start_options[:insensitive_strings]
+              when :lower then s && s.downcase
+              when :upper then s && s.upcase
+              else s
+              end || :unmatched
+            end
           end
           if alt == :unmatched
             # Update furthest failure for strings and terminals
@@ -127,9 +134,18 @@ module EBNF::PEG
         when Symbol
           rule = parser.find_rule(prod)
           raise "No rule found for #{prod}" unless rule
-          rule.parse(input)
+          rule.parse(input, **options)
         when String
-          input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts)) || :unmatched
+          if terminal_also_matches(input, prod, string_regexp_opts)
+            :unmatched
+          else
+            s = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))
+            case start_options[:insensitive_strings]
+            when :lower then s && s.downcase
+            when :upper then s && s.upcase
+            else s
+            end || :unmatched
+          end
         end
         if res != :unmatched
           # Update furthest failure for terminals
@@ -148,7 +164,7 @@ module EBNF::PEG
       when :plus
         # Result is an array of all expressions while they match,
         # at least one must match
-        plus = rept(input, 1, '*', expr[1], string_regexp_opts)
+        plus = rept(input, 1, '*', expr[1], string_regexp_opts, **options)
 
         # Update furthest failure for strings and terminals
         parser.update_furthest_failure(input.pos, input.lineno, expr[1]) if terminal?
@@ -163,7 +179,7 @@ module EBNF::PEG
       when :rept
         # Result is an array of all expressions while they match,
         # an empty array of none match
-        rept = rept(input, expr[1], expr[2], expr[3], string_regexp_opts)
+        rept = rept(input, expr[1], expr[2], expr[3], string_regexp_opts, **options)
 
         # # Update furthest failure for strings and terminals
         parser.update_furthest_failure(input.pos, input.lineno, expr[3]) if terminal?
@@ -176,14 +192,18 @@ module EBNF::PEG
           when Symbol
             rule = parser.find_rule(prod)
             raise "No rule found for #{prod}" unless rule
-            rule.parse(input)
+            rule.parse(input, **options.merge(_rept_data: accumulator))
           when String
-            s = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))
-            case start_options[:insensitive_strings]
-            when :lower then s && s.downcase
-            when :upper then s && s.upcase
-            else s
-            end || :unmatched
+            if terminal_also_matches(input, prod, string_regexp_opts)
+              :unmatched
+            else
+              s = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))
+              case start_options[:insensitive_strings]
+              when :lower then s && s.downcase
+              when :upper then s && s.upcase
+              else s
+              end || :unmatched
+            end
           end
           if res == :unmatched
             # Update furthest failure for strings and terminals
@@ -204,7 +224,7 @@ module EBNF::PEG
       when :star
         # Result is an array of all expressions while they match,
         # an empty array of none match
-        star = rept(input, 0, '*', expr[1], string_regexp_opts)
+        star = rept(input, 0, '*', expr[1], string_regexp_opts, **options)
 
         # Update furthest failure for strings and terminals
         parser.update_furthest_failure(input.pos, input.lineno, expr[1]) if terminal?
@@ -214,10 +234,11 @@ module EBNF::PEG
       end
 
       if result == :unmatched
+        # Rewind input to entry point if unmatched.
         input.pos, input.lineno = pos, lineno
       end
 
-      result = parser.onFinish(result)
+      result = parser.onFinish(result, **options)
       (parser.packrat[sym] ||= {})[pos] = {
         pos: input.pos,
         lineno: input.lineno,
@@ -229,7 +250,8 @@ module EBNF::PEG
     ##
     # Repitition, 0-1, 0-n, 1-n, ...
     #
-    # Note, nil results are removed from the result, but count towards min/max calculations
+    # Note, nil results are removed from the result, but count towards min/max calculations.
+    # Saves temporary production data to prod_data stack.
     #
     # @param [Scanner] input
     # @param [Integer] min
@@ -245,11 +267,12 @@ module EBNF::PEG
       when Symbol
         rule = parser.find_rule(prod)
         raise "No rule found for #{prod}" unless rule
-        while (max == '*' || result.length < max) && (res = rule.parse(input)) != :unmatched
+        while (max == '*' || result.length < max) && (res = rule.parse(input, **options.merge(_rept_data: result))) != :unmatched
           eat_whitespace(input) unless terminal?
           result << res
         end
       when String
+        # FIXME: don't match a string, if input matches a terminal
         while (res = input.scan(Regexp.new(Regexp.quote(prod), string_regexp_opts))) && (max == '*' || result.length < max)
           eat_whitespace(input) unless terminal?
           result << case options[:insensitive_strings]
@@ -263,6 +286,16 @@ module EBNF::PEG
       result.length < min ? :unmatched : result.compact
     end
 
+    ##
+    # See if a terminal could have a longer match than a string
+    def terminal_also_matches(input, prod, string_regexp_opts)
+      str_regex = Regexp.new(Regexp.quote(prod), string_regexp_opts)
+      input.match?(str_regex) && parser.class.terminal_regexps.any? do |sym, re|
+        re = re.call() if re.is_a?(Proc)
+        (match_len = input.match?(re)) && match_len > prod.length
+      end
+    end
+      
     ##
     # Eat whitespace between non-terminal rules
     def eat_whitespace(input)

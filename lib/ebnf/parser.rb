@@ -11,6 +11,12 @@ module EBNF
     # @return [Array<EBNF::Rule>]
     attr_reader :ast
 
+    # Set on first rule
+    attr_reader :lhs_includes_identifier
+
+    # Regular expression to match a [...] range, which may be distinguisehd from an LHS
+    attr_reader :range
+
     # ## Terminals
     # Define rules for Terminals, placing results on the input stack, making them available to upstream non-Terminal rules.
     #
@@ -26,15 +32,32 @@ module EBNF
 
     # Match the Left hand side of a rule or terminal
     #
-    #     [11] LHS        ::= ('[' SYMBOL+ ']' ' '+)? SYMBOL ' '* '::='
+    #     [11] LHS        ::= ('[' SYMBOL+ ']' ' '+)? <? SYMBOL >? ' '* '::='
     terminal(:LHS, LHS) do |value, prod|
-      value.to_s.scan(/(?:\[([^\]]+)\])?\s*(\w+)\s*::=/).first
+      md = value.to_s.scan(/(?:\[([^\]]+)\])?\s*<?(\w+)>?\s*::=/).first
+      if @lhs_includes_identifier.nil?
+        @lhs_includes_identifier = !md[0].nil?
+        @range = md[0] ? RANGE_NOT_LHS : RANGE
+      elsif @lhs_includes_identifier && !md[0]
+        error("LHS",
+          "Rule does not begin with a [xxx] identifier, which was established on the first rule",
+          production: :LHS,
+          rest: value)
+      elsif !@lhs_includes_identifier && md[0]
+        error("LHS",
+          "Rule begins with a [xxx] identifier, which was not established on the first rule",
+          production: :LHS,
+          rest: value)
+      end
+      md
     end
 
     # Match `SYMBOL` terminal
     #
-    #     [12] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | '_' | '.')+
+    #     [12] SYMBOL     ::= '<' O_SYMBOL '>' | O_SYMBOL
+    #     [12a] O_SYMBOL  ::= ([a-z] | [A-Z] | [0-9] | '_' | '.')+
     terminal(:SYMBOL, SYMBOL) do |value|
+      value = value[1..-2] if value.start_with?('<') && value.end_with?('>')
       value.to_sym
     end
 
@@ -46,9 +69,10 @@ module EBNF
     end
 
     # Terminal for `RANGE` is matched as part of a `primary` rule.
+    # Note that this won't match if rules include identifiers.
     #
-    #     [14] RANGE      ::= '[' ((R_CHAR '-' R_CHAR) | (HEX '-' HEX) | R_CHAR | HEX)+ '-'? ']' - LHS
-    terminal(:RANGE, RANGE) do |value|
+    #     [14] RANGE      ::= '[' ((R_CHAR '-' R_CHAR) | (HEX '-' HEX) | R_CHAR | HEX)+ '-'? ']'
+    terminal(:RANGE, proc {@range}) do |value|
       [:range, value[1..-2]]
     end
 
@@ -128,7 +152,9 @@ module EBNF
       # Invoke callback
       id, sym = value[:LHS]
       expression = value[:expression]
-      callback.call(:rule, EBNF::Rule.new(sym.to_sym, id, expression))
+      rule = EBNF::Rule.new(sym.to_sym, id, expression)
+      progress(:rule, rule.to_sxp)
+      callback.call(:rule, rule)
       nil
     end
 
@@ -266,11 +292,14 @@ module EBNF
     # @return [EBNFParser]
     def initialize(input, **options, &block)
       # If the `level` option is set, instantiate a logger for collecting trace information.
-      if options.has_key?(:level)
-        options[:logger] = Logger.new(STDERR)
-        options[:logger].level = options[:level]
-        options[:logger].formatter = lambda {|severity, datetime, progname, msg| "#{severity} #{msg}\n"}
+      if options.key?(:level)
+        options[:logger] ||= Logger.new(STDERR).
+          tap {|x| x.level = options[:level]}.
+          tap {|x| x.formatter = lambda {|severity, datetime, progname, msg| "#{severity} #{msg}\n"}}
       end
+
+      # This is established on the first rule.
+      self.class.instance_variable_set(:@lhs_includes_identifier, nil)
 
       # Read input, if necessary, which will be used in a Scanner.
       @input = input.respond_to?(:read) ? input.read : input.to_s

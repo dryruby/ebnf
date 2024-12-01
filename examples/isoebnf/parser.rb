@@ -200,10 +200,10 @@ class ISOEBNFPegParser
   # @return [EBNFParser]
   def initialize(input, **options, &block)
     # If the `level` option is set, instantiate a logger for collecting trace information.
-    if options.has_key?(:level)
-      options[:logger] = Logger.new(STDERR)
-      options[:logger].level = options[:level]
-      options[:logger].formatter = lambda {|severity, datetime, progname, msg| "#{severity} #{msg}\n"}
+    if options.key?(:level)
+      options[:logger] ||= Logger.new(STDERR).
+        tap {|x| x.level = options[:level]}.
+        tap {|x| x.formatter = lambda {|severity, datetime, progname, msg| "#{severity} #{msg}\n"}}
     end
 
     # Read input, if necessary, which will be used in a Scanner.

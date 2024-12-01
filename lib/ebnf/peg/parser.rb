@@ -68,10 +68,9 @@ module EBNF::PEG
       #
       # @param [Symbol] term
       #   The terminal name.
-      # @param [Regexp] regexp (nil)
-      #   Pattern used to scan for this terminal,
-      #   defaults to the expression defined in the associated rule.
-      #   If unset, the terminal rule is used for matching.
+      # @param [Regexp, Proc] regexp
+      #   Pattern used to scan for this terminal.
+      #   Passing a Proc will evaluate that proc to retrieve a regular expression.
       # @param [Hash] options
       # @option options [Boolean] :unescape
       #   Cause strings and codepoints to be unescaped.
@@ -83,8 +82,8 @@ module EBNF::PEG
       # @yieldparam [Proc] block
       #   Block passed to initialization for yielding to calling parser.
       #   Should conform to the yield specs for #initialize
-      def terminal(term, regexp = nil, **options, &block)
-        terminal_regexps[term] = regexp if regexp
+      def terminal(term, regexp, **options, &block)
+        terminal_regexps[term] = regexp
         terminal_handlers[term] = block if block_given?
         terminal_options[term] = options.freeze
       end
@@ -138,6 +137,8 @@ module EBNF::PEG
       # @yieldparam [Proc] block
       #   Block passed to initialization for yielding to calling parser.
       #   Should conform to the yield specs for #initialize
+      # @yieldparam [Hash] **options
+      #   Other data that may be passed to the production
       # @yieldreturn [Object] the result of this production.
       # Yield to generate a triple
       def production(term, clear_packrat: false, &block)
@@ -183,6 +184,8 @@ module EBNF::PEG
     #   Identify the symbol of the starting rule with `start`.
     # @param  [Hash{Symbol => Object}] options
     # @option options[Integer] :high_water passed to lexer
+    # @option options[:upper, :lower] :insensitive_strings
+    #   Perform case-insensitive match of strings not defined as terminals, and map to either upper or lower case.
     # @option options [Logger] :logger for errors/progress/debug.
     # @option options[Integer] :low_water passed to lexer
     # @option options[Boolean] :seq_hash (false)
@@ -201,7 +204,7 @@ module EBNF::PEG
     #   or errors raised during processing callbacks. Internal
     #   errors are raised using {Error}.
     # @todo FIXME implement seq_hash
-    def parse(input = nil, start = nil, rules = nil, **options, &block)
+    def parse(input = nil, start = nil, rules = nil, insensitive_strings: nil, **options, &block)
       start ||= options[:start]
       rules ||= options[:rules] || []
       @rules = rules.inject({}) {|memo, rule| memo.merge(rule.sym => rule)}
@@ -230,7 +233,7 @@ module EBNF::PEG
       start_rule = @rules[start]
       raise Error, "Starting production #{start.inspect} not defined" unless start_rule
 
-      result = start_rule.parse(scanner)
+      result = start_rule.parse(scanner, insensitive_strings: insensitive_strings)
       if result == :unmatched
         # Start rule wasn't matched, which is about the only error condition
         error("--top--", @furthest_failure.to_s,
@@ -367,21 +370,17 @@ module EBNF::PEG
     # Start for production
     # Adds data avoiable during the processing of the production
     #
+    # @param [Symbol] prod
+    # @param [Hash] **options other options available for handlers
     # @return [Hash] composed of production options. Currently only `as_hash` is supported.
     # @see ClassMethods#start_production
-    def onStart(prod)
+    def onStart(prod, **options)
       handler = self.class.start_handlers[prod]
       @productions << prod
-      debug("#{prod}(:start)", "",
-        lineno: (scanner.lineno if scanner),
-        pos: (scanner.pos if scanner)
-      ) do
-          "#{prod}, pos: #{scanner ? scanner.pos : '?'}, rest: #{scanner ? scanner.rest[0..20].inspect : '?'}"
-      end
       if handler
         # Create a new production data element, potentially allowing handler
         # to customize before pushing on the @prod_data stack
-        data = {_production: prod}
+        data = {_production: prod}.merge(options)
         begin
           self.class.eval_with_binding(self) {
             handler.call(data, @parse_callback)
@@ -396,14 +395,21 @@ module EBNF::PEG
         # explicit start handler
         @prod_data << {_production: prod}
       end
+      progress("#{prod}(:start)", "",
+        lineno: (scanner.lineno if scanner),
+        pos: (scanner.pos if scanner)
+      ) do
+        "#{data.inspect}@(#{scanner ? scanner.pos : '?'}), rest: #{scanner ? scanner.rest[0..20].inspect : '?'}"
+      end
       return self.class.start_options.fetch(prod, {}) # any options on this production
     end
 
     # Finish of production
     #
     # @param [Object] result parse result
+    # @param [Hash] **options other options available for handlers
     # @return [Object] parse result, or the value returned from the handler
-    def onFinish(result)
+    def onFinish(result, **options)
       #puts "prod_data(f): " + @prod_data.inspect
       prod = @productions.last
       handler, clear_packrat = self.class.production_handlers[prod]
@@ -415,14 +421,14 @@ module EBNF::PEG
         # Pop production data element from stack, potentially allowing handler to use it
         result = begin
           self.class.eval_with_binding(self) {
-            handler.call(result, data, @parse_callback)
+            handler.call(result, data, @parse_callback, **options)
           }
         rescue ArgumentError, Error => e
           error("finish", "#{e.class}: #{e.message}", production: prod, backtrace: e.backtrace)
           @recovering = false
         end
       end
-      debug("#{prod}(:finish)", "",
+      progress("#{prod}(:finish)", "",
              lineno: (scanner.lineno if scanner),
              level: result == :unmatched ? 0 : 1) do
         "#{result.inspect}@(#{scanner ? scanner.pos : '?'}), rest: #{scanner ? scanner.rest[0..20].inspect : '?'}"
@@ -572,5 +578,5 @@ module EBNF::PEG
         super(message.to_s)
       end
     end # class Error
-  end # class Parser
-end # module EBNF::LL1
+  end # module Parser
+end # module EBNF::PEG

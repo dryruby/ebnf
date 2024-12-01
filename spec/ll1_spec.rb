@@ -5,6 +5,11 @@ require 'ebnf'
 require 'sxp'
 
 describe EBNF::Base do
+  let(:logger) {RDF::Spec.logger}
+  after(:each) do |example|
+    puts logger.to_s if example.exception && !example.exception.is_a?(RSpec::Expectations::ExpectationNotMetError)
+  end
+
   describe "#first_follow" do
     context "start" do
       context "with legitimate start rule" do
@@ -421,11 +426,8 @@ describe EBNF::Base do
   end
 
   def parse(value, **options)
-    @debug = []
-    options = {debug: @debug}.merge(options)
     ebnf = EBNF::Base.new(value, **options)
     ebnf.make_bnf
-    @debug.clear
     ebnf.first_follow(options[:start])
     ebnf
   end

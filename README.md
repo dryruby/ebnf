@@ -26,10 +26,9 @@ As LL(1) grammars operate using `alt` and `seq` primitives, allowing for a match
 * Transform `a ::= b+` into `a ::= b b*`
 * Transform `a ::= b*` into `a ::= _empty | (b a)`
 * Transform `a ::= op1 (op2)` into two rules:
-  ```
-  a     ::= op1 _a_1
-  _a_1_ ::= op2
-  ```
+
+        a     ::= op1 _a_1
+        _a_1_ ::= op2
 
 Of note in this implementation is that the tokenizer and parser are streaming, so that they can process inputs of arbitrary size.
 
@@ -75,7 +74,7 @@ Generate formatted grammar using HTML (requires [Haml][Haml] gem):
 
 ### Parsing an ISO/IEC 14977 Grammar
 
-The EBNF gem can also parse [ISO/EIC 14977] Grammars (ISOEBNF) to [S-Expressions][S-Expression].
+The EBNF gem can also parse  [ISO/IEC 14977][] Grammars (ISOEBNF) to [S-Expressions][S-Expression].
 
     grammar = EBNF.parse(File.open('./etc/iso-ebnf.isoebnf'), format: :isoebnf)
 
@@ -96,7 +95,7 @@ The {EBNF::Writer} class can be used to write parsed grammars out, either as for
 The formatted HTML results are designed to be appropriate for including in specifications.
 
 ### Parser Errors
-On a parsing failure, and exception is raised with information that may be useful in determining the source of the error.
+On a parsing failure, an exception is raised with information that may be useful in determining the source of the error.
 
 ## EBNF Grammar
 The [EBNF][] variant used here is based on [W3C](https://w3.org/) [EBNF][]
@@ -104,7 +103,7 @@ The [EBNF][] variant used here is based on [W3C](https://w3.org/) [EBNF][]
 as defined in the
 [XML 1.0 recommendation](https://www.w3.org/TR/REC-xml/), with minor extensions:
 
-Note that the grammar includes an optional `[identifer]` in front of rule names, which can be in conflict with the `RANGE` terminal. It is typically not a problem, but if it comes up, try parsing with the `native` parser,  add comments or sequences to disambiguate. EBNF does not have beginning of line checks as all whitespace is treated the same, so the common practice of identifying each rule inherently leads to such ambiguity.
+Note that the grammar includes an optional `[number]` in front of rule names, which can be in conflict with the `RANGE` terminal. It is typically not a problem, but if it comes up, try parsing with the `native` parser,  add comments or sequences to disambiguate. EBNF does not have beginning of line checks as all whitespace is treated the same, so the common practice of identifying each rule inherently leads to such ambiguity.
 
 The character set for EBNF is UTF-8.
 
@@ -116,7 +115,7 @@ which can also be proceeded by an optional number enclosed in square brackets to
 
     [1] symbol ::= expression
 
-(Note, this can introduce an ambiguity if the previous rule ends in a range or enum and the current rule has no identifier. In this case, enclosing `expression` within parentheses, or adding intervening comments can resolve the ambiguity.)
+(Note, introduces an ambiguity if the previous rule ends in a range or enum and the current rule has no number. The parsers dynamically determine the terminal rules for the `LHS` (the identifier, symbol, and `::=`) and `RANGE`).
 
 Symbols are written in CAPITAL CASE if they are the start symbol of a regular language (terminals), otherwise with they are treated as non-terminal rules. Literal strings are quoted.
 
@@ -134,7 +133,7 @@ Within the expression on the right-hand side of a rule, the following expression
   <tr><td><code>[^abc], [^#xN#xN#xN]</code></td>
     <td>matches any UTF-8 R\_CHAR or HEX with a value not among the characters given. The last component may be '-'. Enumerations and ranges of excluded values may be mixed in one set of brackets.</td></tr>
   <tr><td><code>"string"</code></td>
-    <td>matches a literal string matching that given inside the double quotes.</td></tr>
+    <td>matches a literal string matching that given inside the double quotes case insensitively.</td></tr>
   <tr><td><code>'string'</code></td>
     <td>matches a literal string matching that given inside the single quotes.</td></tr>
   <tr><td><code>A (B | C)</code></td>
@@ -158,7 +157,8 @@ Within the expression on the right-hand side of a rule, the following expression
 </table>
 
 * Comments include `//` and `#` through end of line (other than hex character) and `/* ... */ (* ... *) which may cross lines`
-* All rules **MAY** start with an identifier, contained within square brackets. For example `[1] rule`, where the value within the brackets is a symbol `([a-z] | [A-Z] | [0-9] | "_" | ".")+`
+* All rules **MAY** start with an number, contained within square brackets. For example `[1] rule`, where the value within the brackets is a symbol `([a-z] | [A-Z] | [0-9] | "_" | ".")+`, which is not retained after parsing
+* Symbols **MAY** be enclosed in angle brackets `'<'` and `>`, which are dropped when parsing.
 * `@terminals` causes following rules to be treated as terminals. Any terminal which is all upper-case (eg`TERMINAL`), or any rules with expressions that match characters (`#xN`, `[a-z]`, `[^a-z]`, `[abc]`, `[^abc]`, `"string"`, `'string'`, or `A - B`), are also treated as terminals.
 * `@pass` defines the expression used to detect whitespace, which is removed in processing.
 * No support for `wfc` (well-formedness constraint) or `vc` (validity constraint).
@@ -177,7 +177,7 @@ Intermediate representations of the grammar may be serialized to Lisp-like [S-Ex
 
 is serialized as
 
-    (rule ebnf "1" (star (alt declaration rule)))
+    (rule ebnf (star (alt declaration rule)))
 
 Different components of an EBNF rule expression are transformed into their own operator:
 

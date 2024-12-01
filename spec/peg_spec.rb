@@ -20,8 +20,28 @@ describe EBNF::PEG do
                         |   '(' expression ')'
         
       } =>
-        %{((rule primary "9" (alt HEX RANGE O_RANGE STRING1 STRING2 _primary_1))
-           (rule _primary_1 "9.1" (seq '(' expression ')')))},
+      %{((rule primary "9" (alt HEX RANGE O_RANGE STRING1 STRING2 _primary_1))
+         (rule _primary_1 "9.1" (seq '(' expression ')')))},
+      %{
+        primary     ::= HEX
+                    |   RANGE
+                    |   O_RANGE
+                    |   STRING1
+                    |   STRING2
+                    |   '(' expression ')'
+      } =>
+      %{((rule primary (alt HEX RANGE O_RANGE STRING1 STRING2 _primary_1))
+         (rule _primary_1 (seq '(' expression ')')))},
+      %{
+        <primary>   ::= <HEX>
+                    |   <RANGE>
+                    |   <O_RANGE>
+                    |   <STRING1>
+                    |   <STRING2>
+                    |   '(' <expression> ')'
+      } =>
+      %{((rule primary (alt HEX RANGE O_RANGE STRING1 STRING2 _primary_1))
+         (rule _primary_1 (seq '(' expression ')')))},
       %{[1] start ::= A B C} =>
         %{((rule start "1" (seq A B C)))},
       %{[1] start ::= A B? C* D+} =>

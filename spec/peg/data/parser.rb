@@ -26,7 +26,7 @@ class EBNFPegParser
 
   terminal(:HEX, HEX)
 
-  terminal(:RANGE, RANGE, unescape: true) do |value|
+  terminal(:RANGE, RANGE_NOT_LHS, unescape: true) do |value|
     [:range, value[1..-2]]
   end
 

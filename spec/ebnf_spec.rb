@@ -30,6 +30,14 @@ describe EBNF do
                     |   STRING2
                     |   '(' expression ')'
       } => %{((rule primary (alt HEX RANGE O_RANGE STRING1 STRING2 (seq '(' expression ')'))))},
+      %{
+        <primary>   ::= <HEX>
+                    |   <RANGE>
+                    |   <O_RANGE>
+                    |   <STRING1>
+                    |   <STRING2>
+                    |   '(' <expression> ')'
+      } => %{((rule primary (alt HEX RANGE O_RANGE STRING1 STRING2 (seq '(' expression ')'))))},
     }.each do |input, expected|
       context input do
         subject {EBNF.parse(input)}
