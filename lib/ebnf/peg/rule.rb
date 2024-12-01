@@ -49,6 +49,7 @@ module EBNF::PEG
         # use that to match the input,
         # otherwise,
         if regexp = parser.terminal_regexp(sym)
+          regexp = regexp.call() if regexp.is_a?(Proc)
           term_opts = parser.terminal_options(sym)
           if matched = input.scan(regexp)
             # Optionally map matched
@@ -290,6 +291,7 @@ module EBNF::PEG
     def terminal_also_matches(input, prod, string_regexp_opts)
       str_regex = Regexp.new(Regexp.quote(prod), string_regexp_opts)
       input.match?(str_regex) && parser.class.terminal_regexps.any? do |sym, re|
+        re = re.call() if re.is_a?(Proc)
         (match_len = input.match?(re)) && match_len > prod.length
       end
     end

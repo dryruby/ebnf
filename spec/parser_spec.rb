@@ -43,9 +43,9 @@ describe EBNF::Parser do
               '>')))},
       ],
       "minimal whitespace": [
-        %{[xx]minimal::=whitespace[yy]whitespace::=PASS},
-        %{((rule minimal "xx" (seq whitespace (range "yy")))
-           (rule whitespace (seq PASS)))}
+        %{[xx]minimal::=whitespace[yy]whitespace::=" "},
+        %{((rule minimal "xx" (seq whitespace))
+           (rule whitespace "yy" (seq " ")))}
       ]
     }.each do |title, (input, expect)|
       it title do

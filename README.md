@@ -26,10 +26,9 @@ As LL(1) grammars operate using `alt` and `seq` primitives, allowing for a match
 * Transform `a ::= b+` into `a ::= b b*`
 * Transform `a ::= b*` into `a ::= _empty | (b a)`
 * Transform `a ::= op1 (op2)` into two rules:
-  ```
-  a     ::= op1 _a_1
-  _a_1_ ::= op2
-  ```
+
+        a     ::= op1 _a_1
+        _a_1_ ::= op2
 
 Of note in this implementation is that the tokenizer and parser are streaming, so that they can process inputs of arbitrary size.
 
@@ -96,7 +95,7 @@ The {EBNF::Writer} class can be used to write parsed grammars out, either as for
 The formatted HTML results are designed to be appropriate for including in specifications.
 
 ### Parser Errors
-On a parsing failure, and exception is raised with information that may be useful in determining the source of the error.
+On a parsing failure, an exception is raised with information that may be useful in determining the source of the error.
 
 ## EBNF Grammar
 The [EBNF][] variant used here is based on [W3C](https://w3.org/) [EBNF][]
@@ -116,7 +115,7 @@ which can also be proceeded by an optional number enclosed in square brackets to
 
     [1] symbol ::= expression
 
-(Note, this can introduce an ambiguity if the previous rule ends in a range or enum and the current rule has no number. In this case, enclosing `expression` within parentheses, or adding intervening comments can resolve the ambiguity.)
+(Note, introduces an ambiguity if the previous rule ends in a range or enum and the current rule has no number. The parsers dynamically determine the terminal rules for the `LHS` (the identifier, symbol, and `::=`) and `RANGE`).
 
 Symbols are written in CAPITAL CASE if they are the start symbol of a regular language (terminals), otherwise with they are treated as non-terminal rules. Literal strings are quoted.
 

@@ -912,7 +912,7 @@ describe EBNF::Rule do
       SYMBOL: [:O_SYMBOL],
       O_SYMBOL: [],
       HEX: [],
-      RANGE: [:R_CHAR, :HEX, :LHS],
+      RANGE: [:R_CHAR, :HEX],
       O_RANGE: [:R_CHAR, :HEX],
       STRING1: [:CHAR],
       STRING2: [:CHAR],

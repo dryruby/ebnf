@@ -68,10 +68,9 @@ module EBNF::PEG
       #
       # @param [Symbol] term
       #   The terminal name.
-      # @param [Regexp] regexp (nil)
-      #   Pattern used to scan for this terminal,
-      #   defaults to the expression defined in the associated rule.
-      #   If unset, the terminal rule is used for matching.
+      # @param [Regexp, Proc] regexp
+      #   Pattern used to scan for this terminal.
+      #   Passing a Proc will evaluate that proc to retrieve a regular expression.
       # @param [Hash] options
       # @option options [Boolean] :unescape
       #   Cause strings and codepoints to be unescaped.
@@ -83,8 +82,8 @@ module EBNF::PEG
       # @yieldparam [Proc] block
       #   Block passed to initialization for yielding to calling parser.
       #   Should conform to the yield specs for #initialize
-      def terminal(term, regexp = nil, **options, &block)
-        terminal_regexps[term] = regexp if regexp
+      def terminal(term, regexp, **options, &block)
+        terminal_regexps[term] = regexp
         terminal_handlers[term] = block if block_given?
         terminal_options[term] = options.freeze
       end
