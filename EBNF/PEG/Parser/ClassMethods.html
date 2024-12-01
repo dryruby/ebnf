@@ -250,7 +250,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#terminal-instance_method" title="#terminal (instance method)">#<strong>terminal</strong>(term, regexp = nil, **options) {|value, prod| ... } &#x21d2; Object </a>
+      <a href="#terminal-instance_method" title="#terminal (instance method)">#<strong>terminal</strong>(term, regexp, **options) {|value, prod| ... } &#x21d2; Object </a>
     
 
     
@@ -362,7 +362,6 @@
       <pre class="lines">
 
 
-159
 160
 161
 162
@@ -375,10 +374,11 @@
 169
 170
 171
-172</pre>
+172
+173</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/ebnf/peg/parser.rb', line 159</span>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/peg/parser.rb', line 160</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_method_missing'>method_missing</span><span class='lparen'>(</span><span class='id identifier rubyid_method'>method</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='ivar'>@delegate</span> <span class='op'>||=</span> <span class='kw'>nil</span>
@@ -460,13 +460,13 @@
       <pre class="lines">
 
 
-152
 153
 154
-155</pre>
+155
+156</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/ebnf/peg/parser.rb', line 152</span>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/peg/parser.rb', line 153</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_eval_with_binding'>eval_with_binding</span><span class='lparen'>(</span><span class='id identifier rubyid_object'>object</span><span class='rparen'>)</span>
   <span class='ivar'>@delegate</span> <span class='op'>=</span> <span class='id identifier rubyid_object'>object</span>
@@ -600,6 +600,22 @@
       
     </li>
   
+    <li>
+      
+        <span class='name'>**options</span>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Other data that may be passed to the production</p>
+</div>
+      
+    </li>
+  
 </ul>
 <p class="tag_title">Yield Returns:</p>
 <ul class="yieldreturn">
@@ -626,12 +642,12 @@
       <pre class="lines">
 
 
-143
 144
-145</pre>
+145
+146</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/ebnf/peg/parser.rb', line 143</span>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/peg/parser.rb', line 144</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_production'>production</span><span class='lparen'>(</span><span class='id identifier rubyid_term'>term</span><span class='comma'>,</span> <span class='label'>clear_packrat:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_production_handlers'>production_handlers</span><span class='lbracket'>[</span><span class='id identifier rubyid_term'>term</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='id identifier rubyid_block'>block</span><span class='comma'>,</span> <span class='id identifier rubyid_clear_packrat'>clear_packrat</span><span class='rbracket'>]</span>
@@ -875,13 +891,13 @@
       <pre class="lines">
 
 
+114
 115
 116
-117
-118</pre>
+117</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/ebnf/peg/parser.rb', line 115</span>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/peg/parser.rb', line 114</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_start_production'>start_production</span><span class='lparen'>(</span><span class='id identifier rubyid_term'>term</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_start_handlers'>start_handlers</span><span class='lbracket'>[</span><span class='id identifier rubyid_term'>term</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_block'>block</span>
@@ -895,7 +911,7 @@
       <div class="method_details ">
   <h3 class="signature " id="terminal-instance_method">
   
-    #<strong>terminal</strong>(term, regexp = nil, **options) {|value, prod| ... } &#x21d2; <tt>Object</tt> 
+    #<strong>terminal</strong>(term, regexp, **options) {|value, prod| ... } &#x21d2; <tt>Object</tt> 
   
 
   
@@ -936,15 +952,13 @@
         <span class='name'>regexp</span>
       
       
-        <span class='type'>(<tt>Regexp</tt>)</span>
+        <span class='type'>(<tt>Regexp</tt>, <tt>Proc</tt>)</span>
       
-      
-        <em class="default">(defaults to: <tt>nil</tt>)</em>
       
       
         &mdash;
         <div class='inline'>
-<p>(nil) Pattern used to scan for this terminal, defaults to the expression defined in the associated rule. If unset, the terminal rule is used for matching.</p>
+<p>Pattern used to scan for this terminal. Passing a Proc will evaluate that proc to retrieve a regular expression.</p>
 </div>
       
     </li>
@@ -1060,17 +1074,17 @@
       <pre class="lines">
 
 
+85
 86
 87
 88
-89
-90</pre>
+89</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/ebnf/peg/parser.rb', line 86</span>
+      <pre class="code"><span class="info file"># File 'lib/ebnf/peg/parser.rb', line 85</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_terminal'>terminal</span><span class='lparen'>(</span><span class='id identifier rubyid_term'>term</span><span class='comma'>,</span> <span class='id identifier rubyid_regexp'>regexp</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_terminal_regexps'>terminal_regexps</span><span class='lbracket'>[</span><span class='id identifier rubyid_term'>term</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_regexp'>regexp</span> <span class='kw'>if</span> <span class='id identifier rubyid_regexp'>regexp</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_terminal'>terminal</span><span class='lparen'>(</span><span class='id identifier rubyid_term'>term</span><span class='comma'>,</span> <span class='id identifier rubyid_regexp'>regexp</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_terminal_regexps'>terminal_regexps</span><span class='lbracket'>[</span><span class='id identifier rubyid_term'>term</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_regexp'>regexp</span>
   <span class='id identifier rubyid_terminal_handlers'>terminal_handlers</span><span class='lbracket'>[</span><span class='id identifier rubyid_term'>term</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_block'>block</span> <span class='kw'>if</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
   <span class='id identifier rubyid_terminal_options'>terminal_options</span><span class='lbracket'>[</span><span class='id identifier rubyid_term'>term</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span>
 <span class='kw'>end</span></pre>
@@ -1162,9 +1176,9 @@
 </div>
 
       <div id="footer">
-  Generated on Wed Dec 20 21:06:23 2023 by
+  Generated on Sun Dec  1 23:46:59 2024 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.34 (ruby-3.1.4).
+  0.9.37 (ruby-3.1.6).
 </div>
 
     </div>

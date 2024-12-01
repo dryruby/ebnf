@@ -109,14 +109,25 @@
     <dl class="constants">
       
         <dt id="SYMBOL_BASE-constant" class="">SYMBOL_BASE =
-          
+          <div class="docstring">
+  <div class="discussion">
+    
+<p>Word boundaries</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
         </dt>
         <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>%r(</span><span class='tstring_content'>\b[a-zA-Z0-9_\.]+\b</span><span class='regexp_end'>)u</span></span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span></pre></dd>
       
         <dt id="SYMBOL-constant" class="">SYMBOL =
           
         </dt>
-        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>%r(</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#SYMBOL_BASE-constant" title="EBNF::Terminals::SYMBOL_BASE (constant)">SYMBOL_BASE</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>(?!\s*::=)</span><span class='regexp_end'>)u</span></span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span></pre></dd>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>%r(</span><span class='tstring_content'>(?:</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#SYMBOL_BASE-constant" title="EBNF::Terminals::SYMBOL_BASE (constant)">SYMBOL_BASE</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>|(?:&lt;</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#SYMBOL_BASE-constant" title="EBNF::Terminals::SYMBOL_BASE (constant)">SYMBOL_BASE</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>&gt;))(?!\s*::=)</span><span class='regexp_end'>)u</span></span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span></pre></dd>
       
         <dt id="HEX-constant" class="">HEX =
           
@@ -133,15 +144,20 @@
         </dt>
         <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>%r(</span><span class='tstring_content'>[\u0009\u000A\u000D\u0020-\u002C\u002E-\u005C\u005E-\uD7FF\u{10000}-\u{10FFFF}]</span><span class='regexp_end'>)u</span></span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span></pre></dd>
       
-        <dt id="RANGE-constant" class="">RANGE =
-          
-        </dt>
-        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>%r(</span><span class='tstring_content'>\[(?:(?:</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#R_CHAR-constant" title="EBNF::Terminals::R_CHAR (constant)">R_CHAR</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>\-</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#R_CHAR-constant" title="EBNF::Terminals::R_CHAR (constant)">R_CHAR</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>)|(?:</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#HEX-constant" title="EBNF::Terminals::HEX (constant)">HEX</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>\-</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#HEX-constant" title="EBNF::Terminals::HEX (constant)">HEX</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>)|</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#R_CHAR-constant" title="EBNF::Terminals::R_CHAR (constant)">R_CHAR</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>|</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#HEX-constant" title="EBNF::Terminals::HEX (constant)">HEX</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>)+-?\](?!\s+</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#SYMBOL_BASE-constant" title="EBNF::Terminals::SYMBOL_BASE (constant)">SYMBOL_BASE</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>\s*::=)</span><span class='regexp_end'>)u</span></span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span></pre></dd>
-      
         <dt id="LHS-constant" class="">LHS =
           
         </dt>
-        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>%r(</span><span class='tstring_content'>(?:\[</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#SYMBOL_BASE-constant" title="EBNF::Terminals::SYMBOL_BASE (constant)">SYMBOL_BASE</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>\])?\s*</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#SYMBOL_BASE-constant" title="EBNF::Terminals::SYMBOL_BASE (constant)">SYMBOL_BASE</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>\s*::=</span><span class='regexp_end'>)u</span></span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span></pre></dd>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>%r(</span><span class='tstring_content'>(?:\[</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#SYMBOL_BASE-constant" title="EBNF::Terminals::SYMBOL_BASE (constant)">SYMBOL_BASE</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>\])?\s*&lt;?</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#SYMBOL_BASE-constant" title="EBNF::Terminals::SYMBOL_BASE (constant)">SYMBOL_BASE</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>&gt;?\s*::=</span><span class='regexp_end'>)u</span></span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span></pre></dd>
+      
+        <dt id="RANGE-constant" class="">RANGE =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>%r(</span><span class='tstring_content'>\[(?:(?:</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#R_CHAR-constant" title="EBNF::Terminals::R_CHAR (constant)">R_CHAR</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>\-</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#R_CHAR-constant" title="EBNF::Terminals::R_CHAR (constant)">R_CHAR</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>)|(?:</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#HEX-constant" title="EBNF::Terminals::HEX (constant)">HEX</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>\-</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#HEX-constant" title="EBNF::Terminals::HEX (constant)">HEX</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>)|</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#R_CHAR-constant" title="EBNF::Terminals::R_CHAR (constant)">R_CHAR</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>|</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#HEX-constant" title="EBNF::Terminals::HEX (constant)">HEX</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>)+-?\]</span><span class='regexp_end'>)u</span></span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span></pre></dd>
+      
+        <dt id="RANGE_NOT_LHS-constant" class="">RANGE_NOT_LHS =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>%r(</span><span class='tstring_content'>\[(?:(?:</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#R_CHAR-constant" title="EBNF::Terminals::R_CHAR (constant)">R_CHAR</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>\-</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#R_CHAR-constant" title="EBNF::Terminals::R_CHAR (constant)">R_CHAR</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>)|(?:</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#HEX-constant" title="EBNF::Terminals::HEX (constant)">HEX</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>\-</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#HEX-constant" title="EBNF::Terminals::HEX (constant)">HEX</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>)|</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#R_CHAR-constant" title="EBNF::Terminals::R_CHAR (constant)">R_CHAR</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>|</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#HEX-constant" title="EBNF::Terminals::HEX (constant)">HEX</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>)+-?\](?!\s*&lt;?</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#SYMBOL_BASE-constant" title="EBNF::Terminals::SYMBOL_BASE (constant)">SYMBOL_BASE</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>&gt;?\s*::=)</span><span class='regexp_end'>)u</span></span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span></pre></dd>
       
         <dt id="O_RANGE-constant" class="">O_RANGE =
           
@@ -187,9 +203,9 @@
 </div>
 
       <div id="footer">
-  Generated on Wed Dec 20 21:06:22 2023 by
+  Generated on Sun Dec  1 23:46:58 2024 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.34 (ruby-3.1.4).
+  0.9.37 (ruby-3.1.6).
 </div>
 
     </div>

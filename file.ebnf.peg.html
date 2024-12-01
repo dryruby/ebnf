@@ -82,24 +82,25 @@
  (terminal _LHS_3 &quot;11.3&quot; (seq &#39;[&#39; SYMBOL &#39;]&#39; _LHS_4))
  (terminal _LHS_4 &quot;11.4&quot; (plus &#39; &#39;))
  (terminal _LHS_2 &quot;11.2&quot; (star &#39; &#39;))
- (terminal SYMBOL &quot;12&quot; (plus _SYMBOL_1))
- (terminal _SYMBOL_1 &quot;12.1&quot; (alt _SYMBOL_2 _SYMBOL_3 _SYMBOL_4 &#39;_&#39; &#39;.&#39;))
- (terminal _SYMBOL_2 &quot;12.2&quot; (range &quot;a-z&quot;))
- (terminal _SYMBOL_3 &quot;12.3&quot; (range &quot;A-Z&quot;))
- (terminal _SYMBOL_4 &quot;12.4&quot; (range &quot;0-9&quot;))
+ (terminal SYMBOL &quot;12&quot; (alt _SYMBOL_1 O_SYMBOL))
+ (terminal _SYMBOL_1 &quot;12.1&quot; (seq &#39;&lt;&#39; O_SYMBOL &#39;&gt;&#39;))
+ (terminal O_SYMBOL &quot;12a&quot; (plus _O_SYMBOL_1))
+ (terminal _O_SYMBOL_1 &quot;12a.1&quot; (alt _O_SYMBOL_2 _O_SYMBOL_3 _O_SYMBOL_4 &#39;_&#39; &#39;.&#39;))
+ (terminal _O_SYMBOL_2 &quot;12a.2&quot; (range &quot;a-z&quot;))
+ (terminal _O_SYMBOL_3 &quot;12a.3&quot; (range &quot;A-Z&quot;))
+ (terminal _O_SYMBOL_4 &quot;12a.4&quot; (range &quot;0-9&quot;))
  (terminal HEX &quot;13&quot; (seq &#39;#x&#39; _HEX_1))
  (terminal _HEX_1 &quot;13.1&quot; (plus _HEX_2))
  (terminal _HEX_2 &quot;13.2&quot; (alt _HEX_3 _HEX_4 _HEX_5))
  (terminal _HEX_3 &quot;13.3&quot; (range &quot;a-f&quot;))
  (terminal _HEX_4 &quot;13.4&quot; (range &quot;A-F&quot;))
  (terminal _HEX_5 &quot;13.5&quot; (range &quot;0-9&quot;))
- (terminal RANGE &quot;14&quot; (seq &#39;[&#39; _RANGE_1 _RANGE_2 _RANGE_3))
- (terminal _RANGE_1 &quot;14.1&quot; (plus _RANGE_4))
- (terminal _RANGE_4 &quot;14.4&quot; (alt _RANGE_5 _RANGE_6 R_CHAR HEX))
- (terminal _RANGE_5 &quot;14.5&quot; (seq R_CHAR &#39;-&#39; R_CHAR))
- (terminal _RANGE_6 &quot;14.6&quot; (seq HEX &#39;-&#39; HEX))
+ (terminal RANGE &quot;14&quot; (seq &#39;[&#39; _RANGE_1 _RANGE_2 &#39;]&#39;))
+ (terminal _RANGE_1 &quot;14.1&quot; (plus _RANGE_3))
+ (terminal _RANGE_3 &quot;14.3&quot; (alt _RANGE_4 _RANGE_5 R_CHAR HEX))
+ (terminal _RANGE_4 &quot;14.4&quot; (seq R_CHAR &#39;-&#39; R_CHAR))
+ (terminal _RANGE_5 &quot;14.5&quot; (seq HEX &#39;-&#39; HEX))
  (terminal _RANGE_2 &quot;14.2&quot; (opt &#39;-&#39;))
- (terminal _RANGE_3 &quot;14.3&quot; (diff &#39;]&#39; LHS))
  (terminal O_RANGE &quot;15&quot; (seq &#39;[^&#39; _O_RANGE_1 _O_RANGE_2 &#39;]&#39;))
  (terminal _O_RANGE_1 &quot;15.1&quot; (plus _O_RANGE_3))
  (terminal _O_RANGE_3 &quot;15.3&quot; (alt _O_RANGE_4 _O_RANGE_5 R_CHAR HEX))
@@ -146,9 +147,9 @@
 </div></div>
 
       <div id="footer">
-  Generated on Wed Dec 20 21:06:20 2023 by
+  Generated on Sun Dec  1 23:46:56 2024 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.34 (ruby-3.1.4).
+  0.9.37 (ruby-3.1.6).
 </div>
 
     </div>

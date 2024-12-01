@@ -88,7 +88,11 @@
 </li><li>
 <p>Transform <code>a ::= b*</code> into <code>a ::= _empty | (b a)</code></p>
 </li><li>
-<p>Transform <code>a ::= op1 (op2)</code> into two rules:  <code>   a     ::= op1 _a_1   <em>a_1</em> ::= op2 </code></p>
+<p>Transform <code>a ::= op1 (op2)</code> into two rules:</p>
+
+<pre class="code ruby"><code class="ruby">a     ::= op1 _a_1
+_a_1_ ::= op2
+</code></pre>
 </li></ul>
 
 <p>Of note in this implementation is that the tokenizer and parser are streaming, so that they can process inputs of arbitrary size.</p>
@@ -143,7 +147,7 @@
 
 <h3 id="label-Parsing+an+ISO-2FIEC+14977+Grammar">Parsing an ISO/IEC 14977 Grammar</h3>
 
-<p>The EBNF gem can also parse [ISO/EIC 14977] Grammars (ISOEBNF) to [<a href="S-Expression">S-Expressions]</a>.</p>
+<p>The EBNF gem can also parse <a href="https://www.iso.org/standard/26153.html">ISO/IEC 14977</a> Grammars (ISOEBNF) to [<a href="S-Expression">S-Expressions]</a>.</p>
 
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_grammar'>grammar</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="EBNF.html" title="EBNF (module)">EBNF</a></span></span><span class='period'>.</span><span class='id identifier rubyid_parse'><span class='object_link'><a href="EBNF.html#parse-class_method" title="EBNF.parse (method)">parse</a></span></span><span class='lparen'>(</span><span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_open'>open</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>./etc/iso-ebnf.isoebnf</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='comma'>,</span> <span class='label'>format:</span> <span class='symbol'>:isoebnf</span><span class='rparen'>)</span>
 </code></pre>
@@ -167,13 +171,13 @@
 
 <h3 id="label-Parser+Errors">Parser Errors</h3>
 
-<p>On a parsing failure, and exception is raised with information that may be useful in determining the source of the error.</p>
+<p>On a parsing failure, an exception is raised with information that may be useful in determining the source of the error.</p>
 
 <h2 id="label-EBNF+Grammar">EBNF Grammar</h2>
 
 <p>The <a href="https://www.w3.org/TR/REC-xml/#sec-notation">EBNF</a> variant used here is based on <a href="https://w3.org/">W3C</a> <a href="https://www.w3.org/TR/REC-xml/#sec-notation">EBNF</a> (see <a href="https://dryruby.github.io/ebnf/etc/ebnf.ebnf">EBNF grammar</a>) as defined in the <a href="https://www.w3.org/TR/REC-xml/">XML 1.0 recommendation</a>, with minor extensions:</p>
 
-<p>Note that the grammar includes an optional <code>[identifer]</code> in front of rule names, which can be in conflict with the <code>RANGE</code> terminal. It is typically not a problem, but if it comes up, try parsing with the <code>native</code> parser, add comments or sequences to disambiguate. EBNF does not have beginning of line checks as all whitespace is treated the same, so the common practice of identifying each rule inherently leads to such ambiguity.</p>
+<p>Note that the grammar includes an optional <code>[number]</code> in front of rule names, which can be in conflict with the <code>RANGE</code> terminal. It is typically not a problem, but if it comes up, try parsing with the <code>native</code> parser, add comments or sequences to disambiguate. EBNF does not have beginning of line checks as all whitespace is treated the same, so the common practice of identifying each rule inherently leads to such ambiguity.</p>
 
 <p>The character set for EBNF is UTF-8.</p>
 
@@ -187,7 +191,7 @@
 <pre class="code ruby"><code class="ruby">[1] symbol ::= expression
 </code></pre>
 
-<p>(Note, this can introduce an ambiguity if the previous rule ends in a range or enum and the current rule has no identifier. In this case, enclosing <code>expression</code> within parentheses, or adding intervening comments can resolve the ambiguity.)</p>
+<p>(Note, introduces an ambiguity if the previous rule ends in a range or enum and the current rule has no number. The parsers dynamically determine the terminal rules for the <code>LHS</code> (the identifier, symbol, and <code>::=</code>) and <code>RANGE</code>).</p>
 
 <p>Symbols are written in CAPITAL CASE if they are the start symbol of a regular language (terminals), otherwise with they are treated as non-terminal rules. Literal strings are quoted.</p>
 
@@ -204,7 +208,7 @@
   <tr><td><code>[^abc], [^#xN#xN#xN]</code></td>
     <td>matches any UTF-8 R\_CHAR or HEX with a value not among the characters given. The last component may be '-'. Enumerations and ranges of excluded values may be mixed in one set of brackets.</td></tr>
   <tr><td><code>"string"</code></td>
-    <td>matches a literal string matching that given inside the double quotes.</td></tr>
+    <td>matches a literal string matching that given inside the double quotes case insensitively.</td></tr>
   <tr><td><code>'string'</code></td>
     <td>matches a literal string matching that given inside the single quotes.</td></tr>
   <tr><td><code>A (B | C)</code></td>
@@ -228,7 +232,9 @@
 </table><ul><li>
 <p>Comments include <code>//</code> and <code>#</code> through end of line (other than hex character) and <code>/* ... */ (* ... *) which may cross lines</code></p>
 </li><li>
-<p>All rules <strong>MAY</strong> start with an identifier, contained within square brackets. For example <code>[1] rule</code>, where the value within the brackets is a symbol <code>([a-z] | [A-Z] | [0-9] | &quot;_&quot; | &quot;.&quot;)+</code></p>
+<p>All rules <strong>MAY</strong> start with an number, contained within square brackets. For example <code>[1] rule</code>, where the value within the brackets is a symbol <code>([a-z] | [A-Z] | [0-9] | &quot;_&quot; | &quot;.&quot;)+</code>, which is not retained after parsing</p>
+</li><li>
+<p>Symbols <strong>MAY</strong> be enclosed in angle brackets <code>&#39;&lt;&#39;</code> and <code>&gt;</code>, which are dropped when parsing.</p>
 </li><li>
 <p><code>@terminals</code> causes following rules to be treated as terminals. Any terminal which is all upper-case (eg<code>TERMINAL</code>), or any rules with expressions that match characters (<code>#xN</code>, <code>[a-z]</code>, <code>[^a-z]</code>, <code>[abc]</code>, <code>[^abc]</code>, <code>&quot;string&quot;</code>, <code>&#39;string&#39;</code>, or <code>A - B</code>), are also treated as terminals.</p>
 </li><li>
@@ -248,7 +254,7 @@
 
 <p>is serialized as</p>
 
-<pre class="code ruby"><code class="ruby">(rule ebnf &quot;1&quot; (star (alt declaration rule)))
+<pre class="code ruby"><code class="ruby"><span class='lparen'>(</span><span class='id identifier rubyid_rule'>rule</span> <span class='id identifier rubyid_ebnf'>ebnf</span> <span class='lparen'>(</span><span class='id identifier rubyid_star'>star</span> <span class='lparen'>(</span><span class='id identifier rubyid_alt'>alt</span> <span class='id identifier rubyid_declaration'>declaration</span> <span class='id identifier rubyid_rule'>rule</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='rparen'>)</span>
 </code></pre>
 
 <p>Different components of an EBNF rule expression are transformed into their own operator:</p>
@@ -357,9 +363,9 @@
 </div></div>
 
       <div id="footer">
-  Generated on Wed Dec 20 21:06:19 2023 by
+  Generated on Sun Dec  1 23:46:55 2024 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.34 (ruby-3.1.4).
+  0.9.37 (ruby-3.1.6).
 </div>
 
     </div>

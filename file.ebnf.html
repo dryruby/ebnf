@@ -65,9 +65,8 @@
 
 # Use the LHS terminal to match the identifier, rule name and assignment due to
 # confusion between the identifier and RANGE.
-# Note, for grammars not using identifiers, it is still possible to confuse
-# a rule ending with a range the next rule, as it may be interpreted as an identifier.
-# In such case, best to enclose the rule in &#39;()&#39;.
+# The PEG parser has special rules for matching LHS and RANGE
+# so that RANGE is not confused with LHS.
 [3] rule        ::= LHS expression
 
 [4] expression  ::= alt
@@ -94,11 +93,13 @@
 
 [11] LHS        ::= (&#39;[&#39; SYMBOL &#39;]&#39; &#39; &#39;+)? SYMBOL &#39; &#39;* &#39;::=&#39;
 
-[12] SYMBOL     ::= ([a-z] | [A-Z] | [0-9] | &#39;_&#39; | &#39;.&#39;)+
+[12] SYMBOL     ::= &#39;&lt;&#39; O_SYMBOL &#39;&gt;&#39; | O_SYMBOL
+
+[12a] O_SYMBOL  ::= ([a-z] | [A-Z] | [0-9] | &#39;_&#39; | &#39;.&#39;)+
 
 [13] HEX        ::= &#39;#x&#39; ([a-f] | [A-F] | [0-9])+
 
-[14] RANGE      ::= &#39;[&#39; ((R_CHAR &#39;-&#39; R_CHAR) | (HEX &#39;-&#39; HEX) | R_CHAR | HEX)+ &#39;-&#39;? &#39;]&#39; - LHS
+[14] RANGE      ::= &#39;[&#39; ((R_CHAR &#39;-&#39; R_CHAR) | (HEX &#39;-&#39; HEX) | R_CHAR | HEX)+ &#39;-&#39;? &#39;]&#39;
 
 [15] O_RANGE    ::= &#39;[^&#39; ((R_CHAR &#39;-&#39; R_CHAR) | (HEX &#39;-&#39; HEX) | R_CHAR | HEX)+ &#39;-&#39;? &#39;]&#39;
 
@@ -124,9 +125,9 @@
 </div></div>
 
       <div id="footer">
-  Generated on Wed Dec 20 21:06:20 2023 by
+  Generated on Sun Dec  1 23:46:56 2024 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.34 (ruby-3.1.4).
+  0.9.37 (ruby-3.1.6).
 </div>
 
     </div>

@@ -160,13 +160,11 @@
   (seq &#39;@pass&#39; expression))
  (terminals _terminals (seq))
  (terminal LHS &quot;11&quot; (seq (opt (seq &#39;[&#39; SYMBOL &#39;]&#39; (plus &#39; &#39;))) SYMBOL (star &#39; &#39;) &#39;::=&#39;))
- (terminal SYMBOL &quot;12&quot; (plus (alt (range &quot;a-z&quot;) (range &quot;A-Z&quot;) (range &quot;0-9&quot;) &#39;_&#39; &#39;.&#39;)))
+ (terminal SYMBOL &quot;12&quot; (alt (seq &#39;&lt;&#39; O_SYMBOL &#39;&gt;&#39;) O_SYMBOL))
+ (terminal O_SYMBOL &quot;12a&quot; (plus (alt (range &quot;a-z&quot;) (range &quot;A-Z&quot;) (range &quot;0-9&quot;) &#39;_&#39; &#39;.&#39;)))
  (terminal HEX &quot;13&quot; (seq &#39;#x&#39; (plus (alt (range &quot;a-f&quot;) (range &quot;A-F&quot;) (range &quot;0-9&quot;)))))
  (terminal RANGE &quot;14&quot;
-  (seq &#39;[&#39;
-   (plus (alt (seq R_CHAR &#39;-&#39; R_CHAR) (seq HEX &#39;-&#39; HEX) R_CHAR HEX))
-   (opt &#39;-&#39;)
-   (diff &#39;]&#39; LHS)) )
+  (seq &#39;[&#39; (plus (alt (seq R_CHAR &#39;-&#39; R_CHAR) (seq HEX &#39;-&#39; HEX) R_CHAR HEX)) (opt &#39;-&#39;) &#39;]&#39;))
  (terminal O_RANGE &quot;15&quot;
   (seq &#39;[^&#39; (plus (alt (seq R_CHAR &#39;-&#39; R_CHAR) (seq HEX &#39;-&#39; HEX) R_CHAR HEX)) (opt &#39;-&#39;) &#39;]&#39;))
  (terminal STRING1 &quot;16&quot; (seq &#39;&quot;&#39; (star (diff CHAR &#39;&quot;&#39;)) &#39;&quot;&#39;))
@@ -244,9 +242,9 @@
 </div></div>
 
       <div id="footer">
-  Generated on Wed Dec 20 21:06:20 2023 by
+  Generated on Sun Dec  1 23:46:56 2024 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.34 (ruby-3.1.4).
+  0.9.37 (ruby-3.1.6).
 </div>
 
     </div>
