@@ -34,17 +34,17 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency     'scanf',           '~> 1.0'
   gem.add_runtime_dependency     'rdf',             '~> 3.3' # Required by sxp
   gem.add_runtime_dependency     'htmlentities',    '~> 4.3'
-  gem.add_runtime_dependency     'unicode-types',   '~> 1.8'
-  gem.add_runtime_dependency     'base64',      '~> 0.2'
-  gem.add_development_dependency 'amazing_print',   '~> 1.4'
+  gem.add_runtime_dependency     'unicode-types',   '~> 1.10'
+  gem.add_runtime_dependency     'base64',          '~> 0.2'
+  gem.add_development_dependency 'amazing_print',   '~> 1.6'
   gem.add_development_dependency 'rdf-spec',        '~> 3.3'
   gem.add_development_dependency 'rdf-turtle',      '~> 3.3'
-  gem.add_development_dependency 'nokogiri',        '~> 1.15', '>= 1.15.4'
+  gem.add_development_dependency 'nokogiri',        '~> 1.16'
   gem.add_development_dependency 'erubis',          '~> 2.7'
-  gem.add_development_dependency 'rspec',           '~> 3.12'
+  gem.add_development_dependency 'rspec',           '~> 3.13'
   gem.add_development_dependency 'rspec-its',       '~> 1.3'
   gem.add_development_dependency 'yard',            '~> 0.9'
-  gem.add_development_dependency 'rake',            '~> 13.0'
+  gem.add_development_dependency 'rake',            '~> 13.2'
 
   gem.post_install_message  = nil
 end
