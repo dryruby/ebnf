@@ -39,9 +39,9 @@
 
     [13] HEX        ::= '#x' ([a-f] | [A-F] | [0-9])+
 
-    [14] RANGE      ::= '[' ((R_CHAR '-' R_CHAR) | (HEX '-' HEX) | R_CHAR | HEX)+ '-'? ']'
+    [14] RANGE      ::= '[' ('-' ((R_CHAR '-' R_CHAR) | (HEX '-' HEX) | R_CHAR | HEX)+ | ((R_CHAR '-' R_CHAR) | (HEX '-' HEX) | R_CHAR | HEX)+ '-'?) ']'
 
-    [15] O_RANGE    ::= '[^' ((R_CHAR '-' R_CHAR) | (HEX '-' HEX) | R_CHAR | HEX)+ '-'? ']'
+    [15] O_RANGE    ::= '[^' ('-' ((R_CHAR '-' R_CHAR) | (HEX '-' HEX) | R_CHAR | HEX)+ | ((R_CHAR '-' R_CHAR) | (HEX '-' HEX) | R_CHAR | HEX)+ '-'?) ']'
 
     # Strings are unescaped Unicode, excepting control characters and hash (#)
     [16] STRING1    ::= '"' (CHAR - '"')* '"'
