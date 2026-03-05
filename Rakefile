@@ -21,7 +21,7 @@ task specs: :spec
 require 'rspec/core/rake_task'
 desc 'Run specifications'
 RSpec::Core::RakeTask.new do |spec|
-  spec.rspec_opts = %w(--options spec/spec.opts) if File.exists?('spec/spec.opts')
+  spec.rspec_opts = %w(--options spec/spec.opts) if File.exist?('spec/spec.opts')
 end
 
 desc "Run specs through RCov"
