@@ -42,6 +42,14 @@ describe EBNF::Parser do
                 UCHAR))
               '>')))},
       ],
+      "range with leading hyphen": [
+        %{[14] PubidChar ::= [-'()+,./:=?;!*#@$_%]},
+        %{((terminal PubidChar "14" (range "-'()+,./:=?;!*#@$_%")))}
+      ],
+      "range with trailing hyphen": [
+        %{[14] PubidChar ::= ['()+,./:=?;!*#@$_%-]},
+        %{((terminal PubidChar "14" (range "'()+,./:=?;!*#@$_%-")))}
+      ],
       "minimal whitespace": [
         %{[xx]minimal::=whitespace[yy]whitespace::=" "},
         %{((rule minimal "xx" (seq whitespace))
@@ -111,6 +119,8 @@ describe EBNF::Parser do
       %{[#x20-#x22]} => %{(range "#x20-#x22")},
       %{[abc]} => %{(range "abc")},
       %{[abc-]} => %{(range "abc-")},
+      %{[-abc]} => %{(range "-abc")},
+      %{[-'()+,./:=?;!*#@$_%]} => %{(range "-'()+,./:=?;!*#@$_%")},
       %{[#x20#x21#x22]} => %{(range "#x20#x21#x22")},
       %{BaseDecl? PrefixDecl*} => %{(seq (opt BaseDecl) (star PrefixDecl))},
       %{NCCHAR1 | '-' | [0-9] | #x00B7 | [#x0300-#x036F] | [#x203F-#x2040]} =>
@@ -130,7 +140,8 @@ describe EBNF::Parser do
       "illegal rule name": %{$rule.name ::= foo},
       "diff missing second operand": %{rule ::= a -},
       "unrecognized terminal" => %{rule ::= %foo%},
-      "unopened paren" => %{rule ::= a) b c}
+      "unopened paren" => %{rule ::= a) b c},
+      "leading and trailing hyphen in range" => %{rule ::= [-abc-]}
     }.each do |title, input|
       it title do
         expect {parse(input)}.to raise_error(SyntaxError)

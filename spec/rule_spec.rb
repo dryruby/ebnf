@@ -968,8 +968,20 @@ describe EBNF::Rule do
         "a ::= [#x20-b]",
         /Range contains illegal components/
       ],
-      "incomplete range": [
-        "a ::= [-b]",
+      "redundant '-' in range (one intervening)": [
+        "a ::= [-b-]",
+        /syntax error,/
+      ],
+      "redundant '-' in range (many intervening)": [
+        "a ::= [-def-]",
+        /syntax error,/
+      ],
+      "redundant '-' in range (one hex intervening)": [
+        "a ::= [-#x20-]",
+        /syntax error,/
+      ],
+      "redundant '-' in range (many hex intervening)": [
+        "a ::= [-#x20#x5b#x5c -]",
         /syntax error,/
       ],
       "extra range": [
