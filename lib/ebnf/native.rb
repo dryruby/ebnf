@@ -291,8 +291,13 @@ module EBNF
         l, s = s[1..-1].split(m.rstrip, 2)
         [Unescape.unescape(l).tap {|str| str.quote_style = (m == "'" ? :squote : :dquote)}, s]
       when '[' # RANGE, O_RANGE
-        # Includes RANGE and O_RANGE which can't include a ']'
-        l, s = s[1..-1].split(']', 2)
+        matched = s.match(Terminals::RANGE) || s.match(Terminals::O_RANGE)
+        unless matched
+          error("terminal", "illegal range: #{s.inspect}")
+          raise SyntaxError, "illegal range: #{s.inspect}"
+        end
+        l = matched[0][1..-2]
+        s = s[matched[0].length..]
         [[:range, Unescape.unescape(l)], s]
       when '#' # HEX
         s.match(/(#x\h+)(.*)$/)

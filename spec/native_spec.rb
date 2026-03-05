@@ -128,6 +128,7 @@ describe EBNF::Native do
     {
       "diff missing second operand": %{rule ::= a -},
       "unrecognized terminal" => %{rule ::= %foo%},
+      "leading '-' in range" => %{rule ::= [-abc]},
     }.each do |title, input|
       it title do
         expect {parse(input)}.to raise_error(SyntaxError)
